@@ -1,5 +1,5 @@
-
-.tmp
+# temporary files
+tmp
 # Logs
 logs
 *.log
