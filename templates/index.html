@@ -17,30 +17,19 @@
         ></script>
     </head>
     <body>
-        <div id="header" class="text-3xl font-bold underline">
-            <div class="header__logo">
-                <img
-                    src="/static/Armed-Services-Logos.avif"
-                    alt="American Veterans Rebuilding"
-                />
-                <button
-                    hx-get="/team"
-                    hx-trigger="click"
-                    hx-target="#parent-div"
-                    hx-swap="outerHTML"
-                >
-                    Click Me!
-                </button>
-                <sl-button size="small">Click me</sl-button>
+        <div id="header" class="flex justify-center items-center">
+            <img
+                src="/static/Armed-Services-Logos.avif"
+                alt="American Veterans Rebuilding"
+                class="object-contain"
+            />
+            <img src="/static/logo.avif" alt="AVRNPO" />
+            <div id="socialIcons" class="flex gap-x-2">
+                <img src="/static/Facebook.svg" class="h-10 w-10" />
+                <img src="/static/XIcon.png" class="h-10 w-10" />
+                <img src="/static/Discord.svg" class="h-10 w-10" />
+                <img src="/static/Spotify.svg" class="h-10 w-10" />
             </div>
-            <nav class="header__nav">
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#services">Services</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
         </div>
     </body>
 </html>
