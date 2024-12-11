@@ -17,28 +17,67 @@
         ></script>
     </head>
     <body>
-        <div
-            id="header"
-            class="flex justify-around items-center border-b border-gray-300 p-4"
-        >
-            <img
-                src="/static/Armed-Services-Logos.avif"
-                alt="American Veterans Rebuilding"
-                class="object-contain"
-            />
+        <div id="header" class="grid grid-cols-3 gap-4 border-b p-2">
             <div class="flex flex-col items-center">
-                <img src="/static/logo.avif" alt="AVRNPO" class="h-16" />
-                <p class="text-center mt-2">
+                <section class="h-full flex items-center">
+                    <img
+                        src="/static/Armed-Services-Logos.avif"
+                        alt="American Veterans Rebuilding"
+                        class="object-contain flex items-center"
+                    />
+                </section>
+            </div>
+            <div class="flex flex-col items-center">
+                <img src="/static/logo.avif" alt="AVRNPO" class="h-30" />
+                <p class="text-center mt-2 italic text-lg">
                     Rebuilding the American Veteran's Self, Family and
                     Community.
                 </p>
             </div>
-            <div id="socialIcons" class="flex gap-x-2">
+            <div
+                id="socialIcons"
+                class="flex gap-x-2 flex justify-center items-center"
+            >
                 <img src="/static/Facebook.svg" class="h-10 w-10" />
                 <img src="/static/XIcon.png" class="h-10 w-10" />
                 <img src="/static/Discord.svg" class="h-10 w-10" />
                 <img src="/static/Spotify.svg" class="h-10 w-10" />
             </div>
         </div>
+
+        <div
+            id="nav"
+            class="flex justify-around items-center border-b border-gray-300 p-4"
+        >
+            <a
+                href="/"
+                class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
+                >Mission</a
+            >
+            <a
+                href="/templates/team.html"
+                class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
+                hx-get="/templates/team.html"
+                hx-target="#contentArea"
+                >Team</a
+            >
+            <a
+                href="/projects.html"
+                class="nav-button px-4 py-2 border-2 rounded-md army-gold transition-colors duration-300"
+                >Projects</a
+            >
+
+            <a
+                href="/join.html"
+                class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
+                >Join in</a
+            >
+            <a
+                href="/donate.html"
+                class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
+                >Donate</a
+            >
+        </div>
+        <div id="contentArea">Content goes here</div>
     </body>
 </html>
