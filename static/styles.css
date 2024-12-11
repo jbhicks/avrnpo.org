@@ -33,7 +33,25 @@ body {
 
 /* Footer Styles */
 
-/* team styles */
+/* footer {
+    background: black;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px
+}
+.footer-socials {
+    list-style-type: none;
+    padding: 0;
+}
+.footer-socials li {
+    display: inline-block;
+    margin-left: 10px;
+}
+.footer-socials img {
+    width: 32px;
+}
+
 .top {
     padding: 0 50px;
-}
+} */

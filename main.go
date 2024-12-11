@@ -40,6 +40,11 @@ func setupRouter() *gin.Engine {
 			"title": "Main website",
 		})
 	})
+	r.GET("/footer", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "footer.html", gin.H{
+			"title": "footer",
+		})
+	})
 	r.Static("/static", "./static")
 	r.Static("/templates", "./templates")
 
