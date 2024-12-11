@@ -47,7 +47,7 @@
 
         <div
             id="nav"
-            class="flex justify-around items-center border-b border-gray-300 p-4"
+            class="flex justify-center gap-x-10 border-b border-gray-300 p-4"
         >
             <a
                 href="/"
@@ -82,6 +82,13 @@
                 hx-get="/templates/donate.html"
                 hx-target="#contentArea"
                 >Donate</a
+            >
+            <a
+                href="/templates/contact.html"
+                class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
+                hx-get="/templates/contact.html"
+                hx-target="#contentArea"
+                >Contact</a
             >
         </div>
         <div id="contentArea">Content goes here</div>
