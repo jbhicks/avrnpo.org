@@ -14,13 +14,12 @@ body {
 
 /* Index Styles */
 
-
 .nav-button {
     border-color: #f8bd26;
     color: #f8bd26;
 }
 .nav-button:hover {
-    background-color: #c5b358;
+    background-color: "#A6932C";
     color: white;
 }
 /* Join styles */
