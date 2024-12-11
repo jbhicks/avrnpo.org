@@ -1,25 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>American Veterans Rebuilding</title>
-    <!-- <link href="css/style.css" rel="stylesheet"> -->
-    <script src="static/tailwind-3-4-16.css"></script>
-  </head>
-  <body>
-    <div id="header" class="text-3xl font-bold underline">
-      <div class="header__logo">
-        <img src="/static/Armed-Services-Logos.avif" alt="American Veterans Rebuilding">
-      </div>
-      <nav class="header__nav">
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#services">Services</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>American Veterans Rebuilding</title>
+        <!-- <link href="css/style.css" rel="stylesheet"> -->
+        <script src="static/htmx-2-0-3.js"></script>
+        <script src="static/tailwind-3-4-16.css"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css"
+        />
+        <script
+            type="module"
+            src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace-autoloader.js"
+        ></script>
+    </head>
+    <body>
+        <div id="header" class="text-3xl font-bold underline">
+            <div class="header__logo">
+                <img
+                    src="/static/Armed-Services-Logos.avif"
+                    alt="American Veterans Rebuilding"
+                />
+                <button
+                    hx-get="/team"
+                    hx-trigger="click"
+                    hx-target="#parent-div"
+                    hx-swap="outerHTML"
+                >
+                    Click Me!
+                </button>
+                <sl-button size="small">Click me</sl-button>
+            </div>
+            <nav class="header__nav">
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </body>
 </html>
