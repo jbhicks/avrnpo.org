@@ -4,45 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Contact</title>
-    <link href="/static/team.css" rel="stylesheet"> 
+    <link href="static/styles.css" rel="stylesheet" />
+    <script src="static/htmx-2-0-3.js"></script>
+    <script src="static/tailwind-3-4-16.css"></script>
   </head>
   <body>
 
-    <div class="rows">
-      <div class="column">
-        <div class="row">
-          <a href="\static\LA_AVR_Articles_of_Incorporation.pdf">
+    <div class="flex text-center">
+      
+      <div class="basis-1/3">
+          <a href="\static\LA_AVR_Articles_of_Incorporation.pdf" target="_blank" class="mx-4 my-2">
             <embed src="\static\Page1_Image_LA_AVR_Articles_of_Incorpartion.jpg" width="256px" height="332px" />
           </a>    
-        </div>
-        <div class="row">
-          <a href="\static\AVR_501c3_determination_letter.pdf">
+        
+          <a href="\static\AVR_501c3_determination_letter.pdf" target="_blank" class="mx-4 my-2">
             <embed src="\static\AVR_501c3_determination_letter.jpg" width="256px" height="332px" />
           </a>
-        </div>
-        
+      </div>   
+      <div class="basis-1/3">
+          <h2 class="text-2xl font-medium pb-2">Contact AVR</h2>
+          <p class="pb-3">If you are or know of a veteran desiring technical training, contact us. If you know of a potential monetary or goods donor, contact us. If you know anything about fundraising, legalese, contracting, residential construction, residential property management, program management, VA resources or anything else you wish to assist us with, contact us. Your input is invaluable. We look forward to building a ground up network of personal and professional contacts with you. Every piece of advice and knowledge is welcomed and encouraged.</p>
       </div>
-      <div class="column">
-          <h1>Contact AVR</h1>
-          <p>If you are or know of a veteran desiring technical training, contact us. If you know of a potential monetary or goods donor, contact us. If you know anything about fundraising, legalese, contracting, residential construction, residential property management, program management, VA resources or anything else you wish to assist us with, contact us. Your input is invaluable. We look forward to building a ground up network of personal and professional contacts with you. Every piece of advice and knowledge is welcomed and encouraged.</p>
-        </div>
-      <div class="column">
-        <h1>Contact Form</h1>
-        <p>Please fill out and submit the form below to contact us. We look forward to your hearing from and working with you.</p>
+      <div class="basis-1/3">
+        <h2 class="text-2xl font-medium pb-2">Contact Form</h2>
+        <p class="pb-3">Please fill out and submit the form below to contact us. We look forward to your hearing from and working with you.</p>
         
         <form action="/action_page.php">
-          <label for="fname">First name:</label>
-          <input type="text" id="fname" name="fname"><br><br>
-          <label for="lname">Last name:</label>
-          <input type="text" id="lname" name="lname"><br><br>
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email"><br><br>
-          <label for="message">Message:</label>
-          <textarea id="w3review" name="w3review" rows="4" cols="50"></textarea><br><br>
-          <input type="submit" value="Submit">
+          <div class="relative">
+            <label for="fname" class="block text-left">First name:</label>
+            <input type="text" id="fname" name="fname" class="border border-gray-300 rounded-md px-2 py-2 w-full mt-2"><br><br>
+            <label for="lname" class="block text-left">Last name:</label>
+            <input type="text" id="lname" name="lname" class="border border-gray-300 rounded-md px-2 py-2 w-full mt-2"><br><br>
+            <label for="email" class="block text-left">Email:</label>
+            <input type="email" id="email" name="email" class="border border-gray-300 rounded-md px-2 py-2 w-full mt-2"><br><br>
+            <label for="message" class="block text-left">Message:</label>
+            <textarea id="message" name="message" rows="4" cols="50" class="border border-gray-300 rounded-md px-2 py-2 w-full mt-2"></textarea><br><br>
+            <button class="rounded-md bg-slate-500 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2" type="button">
+              Submit
+            </button>
+          </div>
         </form>
       </div>
-      <div class="column"></div>
     </div>
   </body>
 </html>
