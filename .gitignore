@@ -133,3 +133,5 @@ dist
 
 # go air config
  .air.toml
+tmp/main
+tmp/main.exe
