@@ -4,10 +4,16 @@ body {
     background-color: rgb(51, 52, 63);
 }
 
-/* Index Styles */
 * {
     color: white;
 }
+
+.socials img:hover {
+    opacity: 0.5;
+}
+
+/* Index Styles */
+
 
 /* Join styles */
 
