@@ -9,7 +9,7 @@
         <script src="static/tailwind-3-4-16.css"></script>
         <link
             rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css"
+            href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css"
         />
         <script
             type="module"
@@ -17,13 +17,22 @@
         ></script>
     </head>
     <body>
-        <div id="header" class="flex justify-center items-center">
+        <div
+            id="header"
+            class="flex justify-around items-center border-b border-gray-300 p-4"
+        >
             <img
                 src="/static/Armed-Services-Logos.avif"
                 alt="American Veterans Rebuilding"
                 class="object-contain"
             />
-            <img src="/static/logo.avif" alt="AVRNPO" />
+            <div class="flex flex-col items-center">
+                <img src="/static/logo.avif" alt="AVRNPO" class="h-16" />
+                <p class="text-center mt-2">
+                    Rebuilding the American Veteran's Self, Family and
+                    Community.
+                </p>
+            </div>
             <div id="socialIcons" class="flex gap-x-2">
                 <img src="/static/Facebook.svg" class="h-10 w-10" />
                 <img src="/static/XIcon.png" class="h-10 w-10" />
