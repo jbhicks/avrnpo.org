@@ -6,6 +6,11 @@
         <title>American Veterans Rebuilding</title>
         <link href="static/styles.css" rel="stylesheet" />
         <script src="static/htmx-2-0-3.js"></script>
+        <script>
+            htmx.config.getCacheBusterParam = function() {
+                return new Date().getTime();
+            }
+        </script>
         <script src="static/tailwind-3-4-16.css"></script>
         <link
             rel="stylesheet"
