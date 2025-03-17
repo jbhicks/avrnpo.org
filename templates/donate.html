@@ -1,43 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>AVRNPO</title>
-    <!-- <link href="css/style.css" rel="stylesheet"> -->
-  </head>
-  <body>
-    <div class="w-1/2 mx-auto text-center pb-6">
-      <h1 class="text-2xl font-medium pb-2">Donations</h1>
-      <p class="pb-3">American Veterans Rebuilding has achieved it's goal of obtaining 501(c)(3) tax exempt status. This means that AVR is now full "go" into fundraising operations. We are currently in process of putting together a video introduction to American Veterans Rebuilding. The video will focus on our mission and what a project looks like from start to finish to include financials. We plan to premier the video here soon. We cannot thank all of you enough for the support to date. Monetary donations will serve as the foundation on which we build. In the coming months, as we prepare to break ground on our first project home, AVR will begin improving its position by investing in legal services, contracting veteran General Contractors and engaging with local technical colleges so that we can fulfill our end of the mission statement. All donations are tax deductible to both AVR and the donor. </p>  
-    </div>
-    <div class="w-1/2 mx-auto text-center pb-6">
-      <h2 class="text-2xl font-medium pb-2">Donate to AVR</h2>
-      <p class="pb-3">Thank you for improving our fighting position</p>
-      <form action="/action_page.php">
-        <div class="relative">
-          <label for="fname" class="block text-left">First name:</label>
-          <input type="text" id="fname" name="fname" required class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2"><br><br>
-          <label for="lname" class="block text-left">Last name:</label>
-          <input type="text" id="lname" name="lname" required class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2"><br><br>
-          <label for="email" class="block text-left">Email:</label>
-          <input type="email" id="email" name="email" required class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2"><br><br>
-          
-          <label for="intent">Donation intended for?</label>
-          <select name="intent" id="intent" required class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2">
-            <option value="AVR General Fund">AVR General Fund</option>
-            <option value="Surfing With Perez Reunion">Surfing With Perez Reunion</option>
-          </select>
-          
-          <label for="refferal" class="block text-left">How did you hear about us?</label>
-          <textarea id="refferal" name="refferal" rows="4" cols="50" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2" required></textarea><br><br>
-          <label for="Donation" class="block text-left" required>What would to like to give?</label>
-          <input type="number" id="Donation" name="Donation" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2"><br><br>
-          <button class="rounded-md bg-slate-500 py-2 px-4 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2" type="button">
-            Submit
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AVRNPO - Donate</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 font-sans py-8">
+  <div class="container mx-auto px-4 max-w-6xl mb-12">
+    <div class="rounded-lg overflow-hidden border border-gray-200 pt-4">
+      <h2 class="text-2xl font-semibold text-center mb-4">Donate to AVR</h2>
+      <div class="p-6">
+        <p class="font-light leading-loose text-gray-100">
+          American Veterans Rebuilding has achieved its goal of obtaining 501(c)(3) tax-exempt status. This means that
+          AVR is now fully "go" into fundraising operations. We are currently in the process of putting together a video
+          introduction to American Veterans Rebuilding. The video will focus on our mission and what a project looks
+          like from start to finish, including financials. We plan to premiere the video here soon.
+        </p>
+        <p class="font-light leading-loose text-gray-100 mt-4">
+          We cannot thank all of you enough for the support to date. Monetary donations will serve as the foundation on
+          which we build. In the coming months, as we prepare to break ground on our first project home, AVR will begin
+          improving its position by investing in legal services, contracting veteran General Contractors, and engaging
+          with local technical colleges so that we can fulfill our end of the mission statement. All donations are tax
+          deductible to both AVR and the donor.
+        </p>
+      </div>
+      <div class="flex justify-center pb-4">
+        <form id="donateForm" onsubmit="initiateHelcimCheckout(); return false;" class="flex items-center">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="text-gray-700">$</span>
+            </div>
+            <input type="number" id="donationAmount" placeholder="Enter amount" class="shadow appearance-none border rounded py-2 px-3 pl-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+          </div>
+          <button id="donateButton"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit">
+            Donate Now
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
+      <div id="transactionDetails" class="flex justify-center pb-4"></div>
     </div>
-  </body>
+  </div>
+
+  <script>
+    async function initiateHelcimCheckout() {
+      const donationAmount = document.getElementById('donationAmount').value;
+      try {
+        const response = await fetch(`/api/checkout_token?amount=${donationAmount}`);
+        const data = await response.json();
+        const checkoutToken = data.checkoutToken;
+        console.log('init data', data);
+        window.addEventListener('message', (event) => {
+          const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+          if (event.data.eventName === helcimPayJsIdentifierKey) {
+            if (event.data.eventStatus === 'ABORTED') {
+              console.error('Transaction failed!', event.data.eventMessage);
+            }
+            if (event.data.eventStatus === 'SUCCESS') {
+              console.log('Transaction success!', event.data.eventMessage);
+              const transactionData = event.data.eventMessage.data.data;
+              const transactionDetailsHTML = `
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                  <strong class="font-bold">Thank you for helping to improve our fighting position!</strong>
+                  <span class="block sm:inline">
+                    Transaction ID: ${transactionData.transactionId},
+                    Amount: ${transactionData.amount} ${transactionData.currency},
+                    Date: ${transactionData.dateCreated}
+                  </span>
+                </div>
+              `;
+              document.getElementById('transactionDetails').innerHTML = transactionDetailsHTML;
+            }
+          }
+        });
+        appendHelcimPayIframe(checkoutToken);
+      } catch (error) {
+        console.error('Error fetching checkout token:', error);
+        // Handle the error appropriately (e.g., display an error message to the user)
+      }
+    }
+  </script>
+</body>
+
 </html>
