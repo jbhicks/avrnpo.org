@@ -7,10 +7,11 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/smtp" // Add this import for the standard library SMTP client
 	"os"
 	"time"
 
-	"github.com/emersion/go-smtp"
+	gosmtp "github.com/emersion/go-smtp" // Rename this import to avoid conflicts
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -42,7 +43,7 @@ var messageQueue = make(chan Message, 100)
 // Simple backend that implements emersion/go-smtp Backend interface
 type Backend struct{}
 
-func (bkd *Backend) NewSession(_ *smtp.Conn) (smtp.Session, error) {
+func (bkd *Backend) NewSession(_ *gosmtp.Conn) (gosmtp.Session, error) {
 	return &Session{}, nil
 }
 
@@ -57,12 +58,12 @@ func (s *Session) AuthPlain(username, password string) error {
 	return nil // No auth needed for internal usage
 }
 
-func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
+func (s *Session) Mail(from string, opts *gosmtp.MailOptions) error {
 	s.From = from
 	return nil
 }
 
-func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
+func (s *Session) Rcpt(to string, opts *gosmtp.RcptOptions) error {
 	s.To = append(s.To, to)
 	return nil
 }
@@ -90,7 +91,7 @@ func (s *Session) Logout() error {
 func startSMTPServer() {
 	be := &Backend{}
 
-	s := smtp.NewServer(be)
+	s := gosmtp.NewServer(be)
 	s.Addr = "localhost:1025" // Use a non-standard port
 	s.Domain = "localhost"
 	s.ReadTimeout = 10 * time.Second
