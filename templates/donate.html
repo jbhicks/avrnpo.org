@@ -42,33 +42,55 @@
         
         <form id="donateForm" onsubmit="initiateHelcimCheckout(); return false;" class="mt-4">
           <div class="form-control w-full">
-            <label for="fname" class="label">
-              <span class="label-text">First name</span>
-            </label>
-            <input type="text" id="fname" name="fname" class="input input-bordered w-full" required>
-            
-            <label for="lname" class="label">
-              <span class="label-text">Last name</span>
-            </label>
-            <input type="text" id="lname" name="lname" class="input input-bordered w-full" required>
+            <!-- Name fields in two columns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="fname" class="label">
+                  <span class="label-text">First name</span>
+                </label>
+                <input type="text" id="fname" name="fname" class="input input-bordered w-full" required>
+              </div>
+              
+              <div>
+                <label for="lname" class="label">
+                  <span class="label-text">Last name</span>
+                </label>
+                <input type="text" id="lname" name="lname" class="input input-bordered w-full" required>
+              </div>
+            </div>
             
             <label for="email" class="label">
               <span class="label-text">Email</span>
             </label>
             <input type="email" id="email" name="email" class="input input-bordered w-full" required>
             
-            <label for="donationPurpose" class="label">
-              <span class="label-text">Donation intended for</span>
-            </label>
-            <select id="donationPurpose" name="donationPurpose" class="select select-bordered w-full">
-              <option value="general">AVR General Fund</option>
-              <option value="surfing">Surfing with Perez reunion</option>
-            </select>
+            <!-- Donation purpose and amount in two columns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="donationPurpose" class="label">
+                  <span class="label-text">Donation intended for</span>
+                </label>
+                <select id="donationPurpose" name="donationPurpose" class="select select-bordered w-full">
+                  <option value="general">AVR General Fund</option>
+                  <option value="surfing">Surfing with Perez reunion</option>
+                </select>
+              </div>
+              
+              <div>
+                <label for="donationAmount" class="label">
+                  <span class="label-text">Donation Amount</span>
+                </label>
+                <div class="join">
+                  <div class="join-item flex items-center justify-center px-3 bg-base-200 border border-base-300">$</div>
+                  <input type="number" id="donationAmount" placeholder="Enter amount" class="input input-bordered join-item w-full" required>
+                </div>
+              </div>
+            </div>
             
             <label for="referralSource" class="label">
               <span class="label-text">How did you hear about us?</span>
             </label>
-            <select id="referralSource" name="referralSource" class="select select-bordered w-full">
+            <select id="referralSource" name="referralSource" class="select select-bordered w-full" onchange="toggleOtherField()">
               <option value="">Please select...</option>
               <option value="social">Social Media</option>
               <option value="friend">Friend/Family</option>
@@ -77,13 +99,15 @@
               <option value="search">Search Engine</option>
               <option value="other">Other</option>
             </select>
+            <div class="text-xs opacity-70 mt-1 ml-1">
+              This information helps us understand which outreach efforts are most effective.
+            </div>
             
-            <label for="donationAmount" class="label">
-              <span class="label-text">Donation Amount</span>
-            </label>
-            <div class="join">
-              <div class="join-item flex items-center justify-center px-3 bg-base-200 border border-base-300">$</div>
-              <input type="number" id="donationAmount" placeholder="Enter amount" class="input input-bordered join-item w-full" required>
+            <div id="otherReferralContainer" class="mt-2 hidden">
+              <label for="otherReferral" class="label">
+                <span class="label-text">Please specify:</span>
+              </label>
+              <input type="text" id="otherReferral" name="otherReferral" class="input input-bordered w-full" placeholder="Please tell us how you heard about us">
             </div>
             
             <div class="mt-6">
@@ -100,6 +124,17 @@
   </div>
 
   <script>
+    function toggleOtherField() {
+      const referralSelect = document.getElementById('referralSource');
+      const otherContainer = document.getElementById('otherReferralContainer');
+      
+      if (referralSelect.value === 'other') {
+        otherContainer.classList.remove('hidden');
+      } else {
+        otherContainer.classList.add('hidden');
+      }
+    }
+
     async function initiateHelcimCheckout() {
       const donationAmount = document.getElementById('donationAmount').value;
       const firstName = document.getElementById('fname').value;
@@ -107,6 +142,15 @@
       const email = document.getElementById('email').value;
       const purpose = document.getElementById('donationPurpose').value;
       const referral = document.getElementById('referralSource').value;
+      
+      // Get other referral text if applicable
+      let referralText = referral;
+      if (referral === 'other') {
+        const otherReferral = document.getElementById('otherReferral').value;
+        if (otherReferral) {
+          referralText = "Other: " + otherReferral;
+        }
+      }
       
       try {
         // Include all form fields in the API request
@@ -116,7 +160,7 @@
         apiUrl.searchParams.append('lastName', lastName);
         apiUrl.searchParams.append('email', email);
         apiUrl.searchParams.append('purpose', purpose);
-        apiUrl.searchParams.append('referral', referral);
+        apiUrl.searchParams.append('referral', referralText);
         
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -128,7 +172,7 @@
           lastName, 
           email, 
           purpose, 
-          referral
+          referral: referralText
         }));
 
         window.addEventListener('message', (event) => {
