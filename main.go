@@ -351,6 +351,7 @@ func setupRouter() *gin.Engine {
 			"paymentType": "purchase",
 			"amount":      amount,
 			"currency":    "USD",
+			"companyName": "American Veterans Rebuilding",
 		}
 
 		// Add customer information if available
