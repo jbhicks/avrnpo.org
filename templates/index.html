@@ -1,11 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>American Veterans Rebuilding</title>
-    <link href="static/styles.css" rel="stylesheet" />
     <script src="static/htmx-2-0-3.js"></script>
     <script>
         htmx.config.getCacheBusterParam = function () {
@@ -13,128 +12,191 @@
         }
     </script>
     <script src="static/tailwind-3-4-16.css"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/dark.css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
 </head>
 
-<body>
-    <div id="header" class="grid grid-cols-3 gap-4 border-b p-2">
-        <div class="flex flex-col items-center">
-            <section class="h-full flex items-center">
-                <img src="/static/Armed-Services-Logos.avif" alt="American Veterans Rebuilding"
-                    class="object-contain flex items-center" />
-            </section>
-        </div>
-        <div class="flex flex-col items-center">
-            <img src="/static/logo.avif" alt="AVRNPO" class="h-30" />
-            <p class="text-center mt-2 italic text-lg">
-                Rebuilding the American Veteran's Self, Family and
-                Community.
-            </p>
-        </div>
-        <div id="socialIcons" class="flex gap-x-2 flex justify-center items-center">
-            <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="socials"><img
-                    class="h-10 w-10" src="static/Facebook.svg" alt="Facebook" /></a>
-            <a href="https://x.com/avrnpo" target="_blank" class="socials"><img class="h-10 w-10" src="static/XIcon.png"
-                    alt="X" /></a>
-            <a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="socials"><img class="h-10 w-10"
-                    src="static/Discord.svg" alt="discord" /></a>
-            <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="socials"><img
-                    class="h-10 w-10" src="static/Spotify.svg" alt="Spotify" /></a>
-        </div>
-    </div>
-
-    <div id="nav" class="flex justify-center gap-x-10 border-b border-gray-300 p-4">
-        <a href="/" class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300">Mission</a>
-        <a href="/templates/team.html" class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
-            hx-get="/templates/team.html" hx-target="#contentArea">Team</a>
-        <a href="/templates/projects.html"
-            class="nav-button px-4 py-2 border-2 rounded-md army-gold transition-colors duration-300"
-            hx-get="/templates/projects.html" hx-target="#contentArea">Projects</a>
-
-        <a href="/templates/join.html" class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
-            hx-get="/templates/join.html" hx-target="#contentArea">Join in</a>
-        <a href="/templates/donate.html" class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
-            hx-get="/templates/donate.html" hx-target="#contentArea">Donate</a>
-        <a href="/templates/contact.html"
-            class="nav-button px-4 py-2 border-2 rounded-md transition-colors duration-300"
-            hx-get="/templates/contact.html" hx-target="#contentArea">Contact</a>
-    </div>
-
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div class="p-8" id="contentArea">
-            <h1 class="text-4xl font-bold text-center mb-8">
-                THE AVR MISSION
-            </h1>
-            <p class="text-lg mb-6">
-                American Veterans Rebuilding is dedicated to the improvement
-                of the American Veteran's Self, Family and Community through
-                Technical Training, Occupational Licensing, Home Ownership
-                Options and Professional Networking.
-            </p>
-            <div class="space-y-8">
-                <div>
-                    <h2 class="text-2xl font-semibold mb-4">
-                        Technical Training
-                    </h2>
-                    <p>
-                        Participants in AVR construction projects will
-                        receive tools and training in the Residential
-                        Construction occupation of their choosing.
+<body class="min-h-screen bg-base-300 text-base-content">
+    <div class="drawer">
+        <input id="theme-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content">
+            <div id="header" class="grid grid-cols-3 gap-4 border-b border-base-content/20 p-2 bg-base-200">
+                <div class="flex flex-col items-center">
+                    <section class="h-full flex items-center">
+                        <img src="/static/Armed-Services-Logos.avif" alt="American Veterans Rebuilding"
+                            class="object-contain flex items-center" />
+                    </section>
+                </div>
+                <div class="flex flex-col items-center">
+                    <img src="/static/logo.avif" alt="AVRNPO" class="h-30" />
+                    <p class="text-center mt-2 italic text-lg">
+                        Rebuilding the American Veteran's Self, Family and
+                        Community.
                     </p>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-semibold mb-4">
-                        Occupational Licensing
-                    </h2>
-                    <p>
-                        Participants who complete Technical Training
-                        apprenticeship will then receive assistance in
-                        acquiring their Occupational Licenses providing them
-                        the opportunity of a steady income.
-                    </p>
+                <div id="socialIcons" class="flex gap-x-2 justify-center items-center">
+                    <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="hover:opacity-50"><img
+                            class="h-10 w-10" src="static/Facebook.svg" alt="Facebook" /></a>
+                    <a href="https://x.com/avrnpo" target="_blank" class="hover:opacity-50"><img class="h-10 w-10" src="static/XIcon.png"
+                            alt="X" /></a>
+                    <a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="hover:opacity-50"><img class="h-10 w-10"
+                            src="static/Discord.svg" alt="discord" /></a>
+                    <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="hover:opacity-50"><img
+                            class="h-10 w-10" src="static/Spotify.svg" alt="Spotify" /></a>
+                    
+                    <!-- Theme toggle button -->
+                    <label for="theme-drawer" class="btn btn-circle btn-ghost ml-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" />
+                        </svg>
+                    </label>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-semibold mb-4">
-                        Home Ownership Options
-                    </h2>
-                    <p>
-                        Select participants will be offered the opportunity
-                        to purchase AVR project homes at the total
-                        construction cost of the project rather than at the
-                        inflated market values. They will also be assisted
-                        by AVR's growing network of resources to assist them
-                        in securing their VA Home Loan and other earned
-                        benefits.
+            </div>
+
+            <div id="nav" class="flex justify-center gap-x-10 border-b border-base-content/20 p-4 bg-base-100">
+                <a href="/" class="btn btn-outline btn-warning btn-sm">Mission</a>
+                <a href="/templates/team.html" class="btn btn-outline btn-warning btn-sm"
+                    hx-get="/templates/team.html" hx-target="#contentArea">Team</a>
+                <a href="/templates/projects.html"
+                    class="btn btn-outline btn-warning btn-sm"
+                    hx-get="/templates/projects.html" hx-target="#contentArea">Projects</a>
+
+                <a href="/templates/join.html" class="btn btn-outline btn-warning btn-sm"
+                    hx-get="/templates/join.html" hx-target="#contentArea">Join in</a>
+                <a href="/templates/donate.html" class="btn btn-outline btn-warning btn-sm"
+                    hx-get="/templates/donate.html" hx-target="#contentArea">Donate</a>
+                <a href="/templates/contact.html"
+                    class="btn btn-outline btn-warning btn-sm"
+                    hx-get="/templates/contact.html" hx-target="#contentArea">Contact</a>
+            </div>
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="p-8 bg-base-100 rounded-lg shadow-xl" id="contentArea">
+                    <h1 class="text-4xl font-bold text-center mb-8">
+                        THE AVR MISSION
+                    </h1>
+                    <p class="text-lg mb-6">
+                        American Veterans Rebuilding is dedicated to the improvement
+                        of the American Veteran's Self, Family and Community through
+                        Technical Training, Occupational Licensing, Home Ownership
+                        Options and Professional Networking.
                     </p>
+                    <div class="space-y-8">
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-4">
+                                Technical Training
+                            </h2>
+                            <p>
+                                Participants in AVR construction projects will
+                                receive tools and training in the Residential
+                                Construction occupation of their choosing.
+                            </p>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-4">
+                                Occupational Licensing
+                            </h2>
+                            <p>
+                                Participants who complete Technical Training
+                                apprenticeship will then receive assistance in
+                                acquiring their Occupational Licenses providing them
+                                the opportunity of a steady income.
+                            </p>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-4">
+                                Home Ownership Options
+                            </h2>
+                            <p>
+                                Select participants will be offered the opportunity
+                                to purchase AVR project homes at the total
+                                construction cost of the project rather than at the
+                                inflated market values. They will also be assisted
+                                by AVR's growing network of resources to assist them
+                                in securing their VA Home Loan and other earned
+                                benefits.
+                            </p>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-semibold mb-4">
+                                Professional Networking
+                            </h2>
+                            <p class="mb-4">
+                                Participants who receive professional trade licenses
+                                will rest easy knowing that AVR is covering their
+                                six. Professional Networking Services include but
+                                are not limited to...
+                            </p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>
+                                    Job opportunities outside of AVR project homes.
+                                </li>
+                                <li>
+                                    Resources and assistance with claiming their VA
+                                    benefits.
+                                </li>
+                                <li>
+                                    Access to a network of like-minded veterans with
+                                    similar experiences.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-semibold mb-4">
-                        Professional Networking
-                    </h2>
-                    <p class="mb-4">
-                        Participants who receive professional trade licenses
-                        will rest easy knowing that AVR is covering their
-                        six. Professional Networking Services include but
-                        are not limited to...
-                    </p>
-                    <ul class="list-disc list-inside text-gray-700 space-y-2">
-                        <li>
-                            Job opportunities outside of AVR project homes.
-                        </li>
-                        <li>
-                            Resources and assistance with claiming their VA
-                            benefits.
-                        </li>
-                        <li>
-                            Access to a network of like-minded veterans with
-                            similar experiences.
-                        </li>
-                    </ul>
+            </div>
+        </div>
+        
+        <div class="drawer-side z-10">
+            <label for="theme-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+            <div class="p-4 w-80 min-h-full bg-base-200 text-base-content">
+                <h2 class="text-xl font-bold mb-4">Theme Settings</h2>
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Light</span>
+                        <input type="radio" name="theme-radio" class="radio theme-controller" value="light" />
+                    </label>
+                </div>
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Dark</span>
+                        <input type="radio" name="theme-radio" class="radio theme-controller" value="dark" checked />
+                    </label>
+                </div>
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Coffee</span>
+                        <input type="radio" name="theme-radio" class="radio theme-controller" value="coffee" />
+                    </label>
+                </div>
+                <div class="form-control">
+                    <label class="label cursor-pointer">
+                        <span class="label-text">Military</span>
+                        <input type="radio" name="theme-radio" class="radio theme-controller" value="forest" />
+                    </label>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Store the selected theme in localStorage
+        document.querySelectorAll('.theme-controller').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                document.documentElement.setAttribute('data-theme', this.value);
+                localStorage.setItem('theme', this.value);
+                document.getElementById('theme-drawer').checked = false;
+            });
+        });
+
+        // Apply saved theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                document.querySelector(`.theme-controller[value="${savedTheme}"]`).checked = true;
+            }
+        });
+    </script>
 </body>
 
 </html>
