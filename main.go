@@ -16,17 +16,27 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Add this struct to define the contact form data
+// Update contact form struct to include referral source
 type ContactForm struct {
-	FirstName string `form:"fname"`
-	LastName  string `form:"lname"`
-	Email     string `form:"email"`
-	Message   string `form:"message"`
+	FirstName      string `form:"fname"`
+	LastName       string `form:"lname"`
+	Email          string `form:"email"`
+	ReferralSource string `form:"referralSource"`
+	Message        string `form:"message"`
 }
 
 type HelcimInitializeResponse struct {
 	CheckoutToken string `json:"checkoutToken"`
 	SecretToken   string `json:"secretToken"` // Add SecretToken field
+}
+
+// DonationInfo holds information about a donor and their donation
+type DonationInfo struct {
+	FirstName string
+	LastName  string
+	Email     string
+	Purpose   string
+	Referral  string
 }
 
 // Define our internal mail message structure
@@ -158,10 +168,11 @@ func setupRouter() *gin.Engine {
 
 	// Set Gin mode based on environment
 	ginMode := os.Getenv("GIN_MODE")
-	if ginMode == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
+	isDevMode := ginMode != "release"
+	if isDevMode {
 		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	r := gin.New()
@@ -227,6 +238,9 @@ func setupRouter() *gin.Engine {
 	r.POST("/contact", func(c *gin.Context) {
 		var form ContactForm
 		if err := c.ShouldBind(&form); err != nil {
+			if isDevMode {
+				log.Println("Error binding form:", err)
+			}
 			c.HTML(http.StatusBadRequest, "contact.html", gin.H{
 				"title": "Error",
 				"error": "Invalid form submission. Please try again.",
@@ -238,16 +252,19 @@ func setupRouter() *gin.Engine {
 		to := []string{"michael@avrnpo.org"}
 		subject := "New Contact Form Submission from AVR Website"
 		body := fmt.Sprintf(
-			"Name: %s %s\nEmail: %s\n\nMessage:\n%s",
+			"Name: %s %s\nEmail: %s\nReferral Source: %s\n\nMessage:\n%s",
 			form.FirstName,
 			form.LastName,
 			form.Email,
+			form.ReferralSource,
 			form.Message,
 		)
 
 		err := sendEmail(to, subject, body, form.Email)
 		if err != nil {
-			fmt.Println("Error sending email:", err)
+			if isDevMode {
+				log.Println("Error sending email:", err)
+			}
 		}
 
 		// Return HTML response that will replace the form
@@ -273,19 +290,27 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/api/checkout_token", func(c *gin.Context) {
 		err := godotenv.Load()
-		if err != nil {
-			fmt.Println("Error loading .env file")
+		if err != nil && isDevMode {
+			log.Println("Error loading .env file")
 		}
 
 		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
-		fmt.Println(apiToken)
+		if isDevMode {
+			log.Println("Using API token:", apiToken[:4]+"****") // Log first 4 chars for identification
+		}
 
 		// Helcim API endpoint
 		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
+		if isDevMode {
+			log.Println("Making request to:", helcimAPIURL)
+		}
 
 		// Get amount from query parameters
 		amountStr := c.Query("amount")
 		if amountStr == "" {
+			if isDevMode {
+				log.Println("Error: Amount parameter is missing")
+			}
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Amount is required"})
 			return
 		}
@@ -293,24 +318,94 @@ func setupRouter() *gin.Engine {
 		var amount float64
 		_, err = fmt.Sscan(amountStr, &amount)
 		if err != nil {
+			if isDevMode {
+				log.Println("Error parsing amount:", err)
+			}
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount"})
 			return
 		}
 
-		// Request body
-		requestBody, err := json.Marshal(map[string]interface{}{
+		// Log all query parameters in dev mode
+		if isDevMode {
+			log.Println("Received parameters:")
+			for k, v := range c.Request.URL.Query() {
+				log.Printf("  %s: %v\n", k, v)
+			}
+		}
+
+		// Get the additional donor information
+		donorInfo := DonationInfo{
+			FirstName: c.Query("firstName"),
+			LastName:  c.Query("lastName"),
+			Email:     c.Query("email"),
+			Purpose:   c.Query("purpose"),
+			Referral:  c.Query("referral"),
+		}
+
+		if isDevMode {
+			log.Printf("Donor info: %+v\n", donorInfo)
+		}
+
+		// Create a payment request with customer info
+		requestData := map[string]interface{}{
 			"paymentType": "purchase",
 			"amount":      amount,
 			"currency":    "USD",
-		})
+		}
+
+		// Add customer information if available
+		if donorInfo.FirstName != "" || donorInfo.LastName != "" || donorInfo.Email != "" {
+			requestData["customer"] = map[string]interface{}{
+				"firstName": donorInfo.FirstName,
+				"lastName":  donorInfo.LastName,
+				"email":     donorInfo.Email,
+			}
+		}
+
+		// Add custom fields for donation purpose and referral source
+		if donorInfo.Purpose != "" || donorInfo.Referral != "" {
+			customFields := []map[string]string{}
+
+			if donorInfo.Purpose != "" {
+				customFields = append(customFields, map[string]string{
+					"label": "Donation Purpose",
+					"value": donorInfo.Purpose,
+				})
+			}
+
+			if donorInfo.Referral != "" {
+				customFields = append(customFields, map[string]string{
+					"label": "Referral Source",
+					"value": donorInfo.Referral,
+				})
+			}
+
+			if len(customFields) > 0 {
+				requestData["customFields"] = customFields
+			}
+		}
+
+		// Marshal request body
+		requestBody, err := json.Marshal(requestData)
 		if err != nil {
+			if isDevMode {
+				log.Println("Error marshaling request body:", err)
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal request body"})
 			return
+		}
+
+		// Log the request being sent to Helcim
+		if isDevMode {
+			log.Println("Sending to Helcim:", string(requestBody))
 		}
 
 		// Create request
 		req, err := http.NewRequest("POST", helcimAPIURL, bytes.NewBuffer(requestBody))
 		if err != nil {
+			if isDevMode {
+				log.Println("Error creating HTTP request:", err)
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
 		}
@@ -320,31 +415,63 @@ func setupRouter() *gin.Engine {
 		req.Header.Set("api-token", apiToken)
 		req.Header.Set("accept", "application/json")
 
+		if isDevMode {
+			log.Println("Request headers set")
+			for k, v := range req.Header {
+				if k != "api-token" {
+					log.Printf("  %s: %v\n", k, v)
+				} else {
+					log.Printf("  %s: %s****\n", k, v[0][:4])
+				}
+			}
+		}
+
 		// Make the request
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
+			if isDevMode {
+				log.Println("Error making HTTP request:", err)
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request"})
 			return
 		}
 		defer resp.Body.Close()
 
+		if isDevMode {
+			log.Println("Response status:", resp.Status)
+		}
+
+		// Read response for debugging in dev mode
+		if isDevMode {
+			responseBody, _ := io.ReadAll(resp.Body)
+			log.Println("Response body:", string(responseBody))
+
+			// Create a new reader with the same data for the JSON decoder
+			resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
+		}
+
 		// Read response
 		var helcimResponse HelcimInitializeResponse
 		err = json.NewDecoder(resp.Body).Decode(&helcimResponse)
 		if err != nil {
+			if isDevMode {
+				log.Println("Error decoding response:", err)
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode response"})
 			return
 		}
 
 		// Log the checkout token and secret token
-		fmt.Println("Checkout Token:", helcimResponse.CheckoutToken)
-		fmt.Println("Secret Token:", helcimResponse.SecretToken)
+		if isDevMode {
+			log.Println("Checkout Token:", helcimResponse.CheckoutToken)
+			log.Println("Secret Token:", helcimResponse.SecretToken[:4]+"****") // Only log part of the secret token
+		}
 
 		// Return the checkout token
 		c.JSON(http.StatusOK, gin.H{
 			"checkoutToken": helcimResponse.CheckoutToken,
-			"secretToken":   helcimResponse.SecretToken, // Include secretToken in the response
+			"secretToken":   helcimResponse.SecretToken,
 		})
 	})
 

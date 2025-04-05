@@ -1,19 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Contact</title>
-    <link href="static/styles.css" rel="stylesheet" />
     <script src="static/htmx-2-0-3.js"></script>
     <script src="static/tailwind-3-4-16.css"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      });
+    </script>
   </head>
-  <body>
-
-    <div class="flex text-center">
-      
-      <div class="  basis-1/3 m-5">
-          <a href="\static\LA_AVR_Articles_of_Incorporation.pdf" target="_blank" class="mx-4 my-2 ">
+  <body class="bg-base-300 text-base-content">
+    <div class="flex flex-col md:flex-row text-center">
+      <div class="md:basis-1/3 m-5">
+          <a href="\static\LA_AVR_Articles_of_Incorporation.pdf" target="_blank" class="mx-4 my-2">
             <embed src="\static\Page1_Image_LA_AVR_Articles_of_Incorpartion.jpg" width="256px" height="332px" />
           </a>    
         
@@ -21,27 +27,53 @@
             <embed src="\static\AVR_501c3_determination_letter.jpg" width="256px" height="332px" />
           </a>
       </div>   
-      <div class="basis-1/3 m-5">
+      <div class="md:basis-1/3 m-5">
           <h2 class="text-2xl font-medium pb-2">Contact AVR</h2>
           <p class="pb-3">If you are or know of a veteran desiring technical training, contact us. If you know of a potential monetary or goods donor, contact us. If you know anything about fundraising, legalese, contracting, residential construction, residential property management, program management, VA resources or anything else you wish to assist us with, contact us. Your input is invaluable. We look forward to building a ground up network of personal and professional contacts with you. Every piece of advice and knowledge is welcomed and encouraged.</p>
       </div>
-      <div class="basis-1/3 m-5" id="contact-form-container">
+      <div class="md:basis-1/3 m-5" id="contact-form-container">
         <h2 class="text-2xl font-medium pb-2">Contact Form</h2>
         <p class="pb-3">Please fill out and submit the form below to contact us. We look forward to your hearing from and working with you.</p>
         
-        <form hx-post="/contact" hx-target="#contact-form-container" hx-swap="innerHTML">
-          <div class="relative">
-            <label for="fname" class="block text-left">First name:</label>
-            <input type="text" id="fname" name="fname" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2" required><br><br>
-            <label for="lname" class="block text-left">Last name:</label>
-            <input type="text" id="lname" name="lname" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2" required><br><br>
-            <label for="email" class="block text-left">Email:</label>
-            <input type="email" id="email" name="email" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2" required><br><br>
-            <label for="message" class="block text-left">Message:</label>
-            <textarea id="message" name="message" rows="4" cols="50" class="border border-gray-600 bg-slate-500 rounded-md px-2 py-2 w-full mt-2" required></textarea><br><br>
-            <button class="block text-left rounded-md bg-slate-500 py-2 px-4 border border-transparent text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2" type="submit">
-              Submit
-            </button>
+        <form hx-post="/contact" hx-target="#contact-form-container" hx-swap="innerHTML" class="card bg-base-100 shadow-xl p-6">
+          <div class="form-control w-full">
+            <label for="fname" class="label">
+              <span class="label-text">First name</span>
+            </label>
+            <input type="text" id="fname" name="fname" class="input input-bordered w-full" required>
+            
+            <label for="lname" class="label">
+              <span class="label-text">Last name</span>
+            </label>
+            <input type="text" id="lname" name="lname" class="input input-bordered w-full" required>
+            
+            <label for="email" class="label">
+              <span class="label-text">Email</span>
+            </label>
+            <input type="email" id="email" name="email" class="input input-bordered w-full" required>
+            
+            <label for="referralSource" class="label">
+              <span class="label-text">How did you hear about us?</span>
+            </label>
+            <select id="referralSource" name="referralSource" class="select select-bordered w-full">
+              <option value="">Please select...</option>
+              <option value="social">Social Media</option>
+              <option value="friend">Friend/Family</option>
+              <option value="event">Community Event</option>
+              <option value="search">Search Engine</option>
+              <option value="other">Other</option>
+            </select>
+            
+            <label for="message" class="label">
+              <span class="label-text">Message</span>
+            </label>
+            <textarea id="message" name="message" rows="4" class="textarea textarea-bordered w-full" required></textarea>
+            
+            <div class="mt-6">
+              <button class="btn btn-primary" type="submit">
+                Submit
+              </button>
+            </div>
           </div>
         </form>
       </div>

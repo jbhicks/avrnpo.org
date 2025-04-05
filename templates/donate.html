@@ -1,58 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AVRNPO - Donate</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="static/htmx-2-0-3.js"></script>
+  <script src="static/tailwind-3-4-16.css"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+      }
+    });
+  </script>
 </head>
 
-<body class="bg-gray-100 font-sans py-8">
+<body class="bg-base-300 text-base-content py-8">
   <div class="container mx-auto px-4 max-w-6xl mb-12">
-    <div class="rounded-lg overflow-hidden border border-gray-200 pt-4">
-      <h2 class="text-2xl font-semibold text-center mb-4">Donate to AVR</h2>
-      <div class="p-6">
-        <p class="font-light leading-loose text-gray-100">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="text-2xl font-semibold text-center card-title">Donate to AVR</h2>
+        <p class="py-4">
           American Veterans Rebuilding has achieved its goal of obtaining 501(c)(3) tax-exempt status. This means that
           AVR is now fully "go" into fundraising operations. We are currently in the process of putting together a video
           introduction to American Veterans Rebuilding. The video will focus on our mission and what a project looks
           like from start to finish, including financials. We plan to premiere the video here soon.
         </p>
-        <p class="font-light leading-loose text-gray-100 mt-4">
+        <p class="py-4">
           We cannot thank all of you enough for the support to date. Monetary donations will serve as the foundation on
           which we build. In the coming months, as we prepare to break ground on our first project home, AVR will begin
           improving its position by investing in legal services, contracting veteran General Contractors, and engaging
           with local technical colleges so that we can fulfill our end of the mission statement. All donations are tax
           deductible to both AVR and the donor.
         </p>
-      </div>
-      <div class="flex justify-center pb-4">
-        <form id="donateForm" onsubmit="initiateHelcimCheckout(); return false;" class="flex items-center">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span class="text-gray-700">$</span>
+        
+        <h3 class="text-xl font-semibold mt-4">Thank you for improving our fighting position.</h3>
+        
+        <form id="donateForm" onsubmit="initiateHelcimCheckout(); return false;" class="mt-4">
+          <div class="form-control w-full">
+            <label for="fname" class="label">
+              <span class="label-text">First name</span>
+            </label>
+            <input type="text" id="fname" name="fname" class="input input-bordered w-full" required>
+            
+            <label for="lname" class="label">
+              <span class="label-text">Last name</span>
+            </label>
+            <input type="text" id="lname" name="lname" class="input input-bordered w-full" required>
+            
+            <label for="email" class="label">
+              <span class="label-text">Email</span>
+            </label>
+            <input type="email" id="email" name="email" class="input input-bordered w-full" required>
+            
+            <label for="donationPurpose" class="label">
+              <span class="label-text">Donation intended for</span>
+            </label>
+            <select id="donationPurpose" name="donationPurpose" class="select select-bordered w-full">
+              <option value="general">AVR General Fund</option>
+              <option value="surfing">Surfing with Perez reunion</option>
+            </select>
+            
+            <label for="referralSource" class="label">
+              <span class="label-text">How did you hear about us?</span>
+            </label>
+            <select id="referralSource" name="referralSource" class="select select-bordered w-full">
+              <option value="">Please select...</option>
+              <option value="social">Social Media</option>
+              <option value="friend">Friend/Family</option>
+              <option value="event">Community Event</option>
+              <option value="veteran">Veteran Organization</option>
+              <option value="search">Search Engine</option>
+              <option value="other">Other</option>
+            </select>
+            
+            <label for="donationAmount" class="label">
+              <span class="label-text">Donation Amount</span>
+            </label>
+            <div class="join">
+              <div class="join-item flex items-center justify-center px-3 bg-base-200 border border-base-300">$</div>
+              <input type="number" id="donationAmount" placeholder="Enter amount" class="input input-bordered join-item w-full" required>
             </div>
-            <input type="number" id="donationAmount" placeholder="Enter amount" class="shadow appearance-none border rounded py-2 px-3 pl-7 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            
+            <div class="mt-6">
+              <button id="donateButton" class="btn btn-primary" type="submit">
+                Donate Now
+              </button>
+            </div>
           </div>
-          <button id="donateButton"
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit">
-            Donate Now
-          </button>
         </form>
+        
+        <div id="transactionDetails" class="mt-6"></div>
       </div>
-      <div id="transactionDetails" class="flex justify-center pb-4"></div>
     </div>
   </div>
 
   <script>
     async function initiateHelcimCheckout() {
       const donationAmount = document.getElementById('donationAmount').value;
+      const firstName = document.getElementById('fname').value;
+      const lastName = document.getElementById('lname').value;
+      const email = document.getElementById('email').value;
+      const purpose = document.getElementById('donationPurpose').value;
+      const referral = document.getElementById('referralSource').value;
+      
       try {
-        const response = await fetch(`/api/checkout_token?amount=${donationAmount}`);
+        // Include all form fields in the API request
+        const apiUrl = new URL('/api/checkout_token', window.location.origin);
+        apiUrl.searchParams.append('amount', donationAmount);
+        apiUrl.searchParams.append('firstName', firstName);
+        apiUrl.searchParams.append('lastName', lastName);
+        apiUrl.searchParams.append('email', email);
+        apiUrl.searchParams.append('purpose', purpose);
+        apiUrl.searchParams.append('referral', referral);
+        
+        const response = await fetch(apiUrl);
         const data = await response.json();
         const checkoutToken = data.checkoutToken;
+
+        // Store form data in session storage to retrieve after payment
+        sessionStorage.setItem('donorInfo', JSON.stringify({
+          firstName, 
+          lastName, 
+          email, 
+          purpose, 
+          referral
+        }));
 
         window.addEventListener('message', (event) => {
           console.log('event.data:', event.data);
@@ -66,18 +143,31 @@
               try {
                 const eventMessageData = JSON.parse(event.data.eventMessage);
                 const transactionData = eventMessageData.data.data;
-                console.log('transactionData:', transactionData); // Logging the transaction data
+                console.log('transactionData:', transactionData);
+                
+                // Retrieve donor info
+                const donorInfo = JSON.parse(sessionStorage.getItem('donorInfo'));
+                
+                const purposeText = donorInfo.purpose === 'general' ? 'AVR General Fund' : 'Surfing with Perez reunion';
+                
                 const transactionDetailsHTML = `
-                  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                    <strong class="font-bold">Thank you for helping to improve our fighting position!</strong>
-                    <span class="block sm:inline">
-                      Transaction ID: ${transactionData.transactionId},
-                      Amount: ${transactionData.amount} ${transactionData.currency},
-                      Date: ${transactionData.dateCreated}
-                    </span>
+                  <div class="alert alert-success">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <div>
+                      <h3 class="font-bold">Thank you for helping to improve our fighting position!</h3>
+                      <div class="text-sm">
+                        <p>Name: ${donorInfo.firstName} ${donorInfo.lastName}</p>
+                        <p>Amount: $${transactionData.amount} ${transactionData.currency}</p>
+                        <p>Donation for: ${purposeText}</p>
+                        <p>Transaction ID: ${transactionData.transactionId}</p>
+                      </div>
+                    </div>
                   </div>
                 `;
                 document.getElementById('transactionDetails').innerHTML = transactionDetailsHTML;
+                
+                // Clear form
+                document.getElementById('donateForm').reset();
               } catch (error) {
                 console.error('Error parsing eventMessage:', error);
               }
@@ -87,7 +177,12 @@
         appendHelcimPayIframe(checkoutToken);
       } catch (error) {
         console.error('Error fetching checkout token:', error);
-        // Handle the error appropriately (e.g., display an error message to the user)
+        document.getElementById('transactionDetails').innerHTML = `
+          <div class="alert alert-error">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span>Error: Unable to process your donation. Please try again later.</span>
+          </div>
+        `;
       }
     }
   </script>
