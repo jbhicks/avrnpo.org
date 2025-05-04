@@ -302,7 +302,12 @@ func setupRouter() *gin.Engine {
 
 		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
 		if isDevMode {
-			log.Println("Using API token:", apiToken[:4]+"****") // Log first 4 chars for identification
+			// Safely log API token
+			if len(apiToken) >= 4 {
+				log.Println("Using API token:", apiToken[:4]+"****")
+			} else {
+				log.Println("Using API token: <not set or too short>")
+			}
 		}
 
 		// Helcim API endpoint
@@ -490,13 +495,31 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
-	// Load environment variables at startup
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Error loading .env file")
+	// Load environment variables from .env file at startup
+	if err := godotenv.Load(); err != nil {
+		log.Println("Error loading .env file, using system environment variables")
+	} else {
+		log.Println("Loaded environment variables from .env file")
+	}
+
+	// Print important environment variables for debugging
+	log.Println("Environment variables:")
+	log.Println("PORT:", os.Getenv("PORT"))
+	log.Println("GIN_MODE:", os.Getenv("GIN_MODE"))
+
+	// Safely print API key
+	apiKey := os.Getenv("HELCIM_PRIVATE_API_KEY")
+	if len(apiKey) >= 4 {
+		log.Println("HELCIM_PRIVATE_API_KEY:", apiKey[:4]+"****")
+	} else {
+		log.Println("HELCIM_PRIVATE_API_KEY: <not set or too short>")
 	}
 
 	r := setupRouter()
 	// Listen and Server in
-	r.Run(":3000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	r.Run(":" + port)
 }
