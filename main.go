@@ -168,6 +168,15 @@ func setupRouter() *gin.Engine {
 
 	// Set Gin mode based on environment
 	ginMode := os.Getenv("GIN_MODE")
+	apiKey := os.Getenv("HELCIM_PRIVATE_API_KEY")
+
+	// Safely log API key (first few chars only)
+	if len(apiKey) >= 4 {
+		log.Println("HELCIM_PRIVATE_API_KEY:", apiKey[:4]+"****")
+	} else {
+		log.Println("HELCIM_PRIVATE_API_KEY: <not set or too short>")
+	}
+
 	isDevMode := ginMode != "release"
 	if isDevMode {
 		gin.SetMode(gin.DebugMode)
@@ -289,10 +298,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.GET("/api/checkout_token", func(c *gin.Context) {
-		err := godotenv.Load()
-		if err != nil && isDevMode {
-			log.Println("Error loading .env file")
-		}
+		// Environment variables are now loaded at startup
 
 		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
 		if isDevMode {
@@ -316,6 +322,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		var amount float64
+		var err error
 		_, err = fmt.Sscan(amountStr, &amount)
 		if err != nil {
 			if isDevMode {
@@ -483,6 +490,12 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	// Load environment variables at startup
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
 	r := setupRouter()
 	// Listen and Server in
 	r.Run(":3000")
