@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/smtp" // Add this import for the standard library SMTP client
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	gosmtp "github.com/emersion/go-smtp" // Rename this import to avoid conflicts
@@ -188,10 +190,16 @@ func setupRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	// Trust all proxies (for development/testing, NOT recommended for production)
-	// In production, specify trusted proxies using:
-	// r.SetTrustedProxies([]string{"127.0.0.1"})
-	r.SetTrustedProxies(nil)
+	// Configure trusted proxies based on environment
+	if isDevMode {
+		// In development, trust no proxies for direct access
+		r.SetTrustedProxies(nil)
+	} else {
+		// In production, trust all proxies since we're behind Traefik in Coolify
+		// This ensures X-Forwarded-For headers are processed correctly
+		r.SetTrustedProxies([]string{"0.0.0.0/0"})
+		log.Println("Configured to trust proxies for production environment")
+	}
 
 	r.LoadHTMLGlob("templates/*")
 
@@ -298,30 +306,27 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.GET("/api/checkout_token", func(c *gin.Context) {
-		// Environment variables are now loaded at startup
-
+		// Get API token and validate it's not empty
 		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
-		if isDevMode {
-			// Safely log API token
-			if len(apiToken) >= 4 {
-				log.Println("Using API token:", apiToken[:4]+"****")
-			} else {
-				log.Println("Using API token: <not set or too short>")
-			}
+		if apiToken == "" {
+			log.Println("ERROR: HELCIM_PRIVATE_API_KEY is not set or empty")
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment gateway configuration error"})
+			return
+		}
+
+		// Safely log API token
+		if len(apiToken) >= 4 {
+			log.Println("Using API token:", apiToken[:4]+"****")
 		}
 
 		// Helcim API endpoint
 		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
-		if isDevMode {
-			log.Println("Making request to:", helcimAPIURL)
-		}
+		log.Println("Making request to:", helcimAPIURL)
 
 		// Get amount from query parameters
 		amountStr := c.Query("amount")
 		if amountStr == "" {
-			if isDevMode {
-				log.Println("Error: Amount parameter is missing")
-			}
+			log.Println("Error: Amount parameter is missing")
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Amount is required"})
 			return
 		}
@@ -488,6 +493,37 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// Add a diagnostic endpoint to check headers
+	r.GET("/debug/headers", func(c *gin.Context) {
+		// Only available in development mode or with a special header for security
+		if isDevMode || c.GetHeader("X-Debug-Access") == os.Getenv("DEBUG_ACCESS_KEY") {
+			headers := map[string]string{}
+			for k, v := range c.Request.Header {
+				headers[k] = strings.Join(v, ", ")
+			}
+
+			// Also include important request information
+			info := map[string]string{
+				"RemoteAddr":   c.Request.RemoteAddr,
+				"RequestURI":   c.Request.RequestURI,
+				"Method":       c.Request.Method,
+				"Host":         c.Request.Host,
+				"TLS":          fmt.Sprintf("%v", c.Request.TLS != nil),
+				"ProtoMajor":   fmt.Sprintf("%d", c.Request.ProtoMajor),
+				"ProtoMinor":   fmt.Sprintf("%d", c.Request.ProtoMinor),
+				"ClientIP":     c.ClientIP(),
+				"TrustedProxy": fmt.Sprintf("%v", c.Request.Header.Get("X-Forwarded-For") != ""),
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"headers": headers,
+				"info":    info,
+			})
+		} else {
+			c.Status(http.StatusNotFound)
+		}
+	})
+
 	r.GET("/healthz", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
@@ -519,6 +555,9 @@ func main() {
 		log.Println("HELCIM_PRIVATE_API_KEY: <not set or too short>")
 	}
 
+	// Download static assets
+	downloadStaticAssets()
+
 	r := setupRouter()
 	// Listen and Server in
 	port := os.Getenv("PORT")
@@ -526,4 +565,48 @@ func main() {
 		port = "3001"
 	}
 	r.Run(":" + port)
+}
+
+// downloadStaticAssets fetches the latest CSS libraries at startup
+func downloadStaticAssets() {
+	// Create the static directory if it doesn't exist
+	staticDir := "./static"
+	if _, err := os.Stat(staticDir); os.IsNotExist(err) {
+		if err := os.Mkdir(staticDir, os.ModePerm); err != nil {
+			log.Fatalf("Failed to create static directory: %v", err)
+		}
+	}
+
+	// Download Tailwind CSS
+	tailwindURL := "https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css"
+	downloadAsset(tailwindURL, filepath.Join(staticDir, "tailwind.min.css"), "Tailwind CSS")
+
+	// Download DaisyUI
+	daisyUIURL := "https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.min.css"
+	downloadAsset(daisyUIURL, filepath.Join(staticDir, "daisyui.min.css"), "DaisyUI")
+}
+
+// downloadAsset downloads a file from url and saves it to the specified path
+func downloadAsset(url, filePath, name string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("Failed to download %s: %v", name, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("Failed to download %s: received status code %d", name, resp.StatusCode)
+	}
+
+	out, err := os.Create(filePath)
+	if err != nil {
+		log.Fatalf("Failed to create %s file: %v", name, err)
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, resp.Body); err != nil {
+		log.Fatalf("Failed to write %s to file: %v", name, err)
+	}
+
+	log.Printf("Successfully downloaded %s", name)
 }

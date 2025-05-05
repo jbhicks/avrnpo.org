@@ -6,8 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AVRNPO - Donate</title>
   <script src="static/htmx-2-0-3.js"></script>
-  <script src="static/tailwind-3-4-16.css"></script>
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <link href="static/tailwind.min.css" rel="stylesheet" type="text/css" />
+  <link href="static/daisyui.min.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -153,6 +153,17 @@
       }
       
       try {
+        // Show loading state
+        document.getElementById('donateButton').classList.add('loading');
+        document.getElementById('transactionDetails').innerHTML = `
+          <div class="alert alert-info">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Processing your donation...</span>
+          </div>
+        `;
+        
         // Include all form fields in the API request
         const apiUrl = new URL('/api/checkout_token', window.location.origin);
         apiUrl.searchParams.append('amount', donationAmount);
@@ -162,17 +173,22 @@
         apiUrl.searchParams.append('purpose', purpose);
         apiUrl.searchParams.append('referral', referralText);
         
-        console.log('API URL:', apiUrl.toString()); // Debugging log
+        console.log('API URL:', apiUrl.toString());
 
         const response = await fetch(apiUrl);
-        console.log('Response status:', response.status); // Debugging log
+        console.log('Response status:', response.status);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Response data:', data); // Debugging log
+        console.log('Response data:', data);
+
+        // Check if we have a valid checkout token
+        if (!data.checkoutToken) {
+          throw new Error('Payment gateway returned an empty checkout token');
+        }
 
         const checkoutToken = data.checkoutToken;
 
@@ -191,6 +207,14 @@
           if (event.data.eventName === helcimPayJsIdentifierKey) {
             if (event.data.eventStatus === 'ABORTED') {
               console.error('Transaction failed!', event.data.eventMessage);
+              document.getElementById('transactionDetails').innerHTML = `
+                <div class="alert alert-warning">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  <span>The payment process was canceled. Please try again.</span>
+                </div>
+              `;
+              // Remove loading state
+              document.getElementById('donateButton').classList.remove('loading');
             }
             if (event.data.eventStatus === 'SUCCESS') {
               console.log('Transaction success!', event.data.eventMessage);
@@ -222,21 +246,41 @@
                 
                 // Clear form
                 document.getElementById('donateForm').reset();
+                // Remove loading state
+                document.getElementById('donateButton').classList.remove('loading');
               } catch (error) {
                 console.error('Error parsing eventMessage:', error);
+                // Show error message
+                document.getElementById('transactionDetails').innerHTML = `
+                  <div class="alert alert-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>Error processing transaction response. Your payment may have been successful, please check your email for confirmation.</span>
+                  </div>
+                `;
+                // Remove loading state
+                document.getElementById('donateButton').classList.remove('loading');
               }
             }
           }
         });
         appendHelcimPayIframe(checkoutToken);
       } catch (error) {
-        console.error('Error fetching checkout token:', error);
+        console.error('Error:', error.message);
+        // Provide more specific error messages based on the error
+        let errorMessage = 'Unable to process your donation. Please try again later.';
+        
+        if (error.message.includes('empty checkout token')) {
+          errorMessage = 'Payment system configuration error. Please contact support and try again later.';
+        }
+        
         document.getElementById('transactionDetails').innerHTML = `
           <div class="alert alert-error">
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>Error: Unable to process your donation. Please try again later.</span>
+            <span>Error: ${errorMessage}</span>
           </div>
         `;
+        // Remove loading state
+        document.getElementById('donateButton').classList.remove('loading');
       }
     }
   </script>
