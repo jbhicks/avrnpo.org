@@ -310,12 +310,7 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		// Safely log API token
-		if len(apiToken) >= 4 {
-			log.Println("Using API token:", apiToken[:4]+"****")
-		}
-
-		// Helcim API endpoint
+		// Helcim API URL
 		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
 		log.Println("Making request to:", helcimAPIURL)
 
