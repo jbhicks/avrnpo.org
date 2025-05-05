@@ -255,9 +255,7 @@ func setupRouter() *gin.Engine {
 	r.POST("/contact", func(c *gin.Context) {
 		var form ContactForm
 		if err := c.ShouldBind(&form); err != nil {
-			if isDevMode {
-				log.Println("Error binding form:", err)
-			}
+			log.Println("Error binding form:", err)
 			c.HTML(http.StatusBadRequest, "contact.html", gin.H{
 				"title": "Error",
 				"error": "Invalid form submission. Please try again.",
@@ -279,9 +277,7 @@ func setupRouter() *gin.Engine {
 
 		err := sendEmail(to, subject, body, form.Email)
 		if err != nil {
-			if isDevMode {
-				log.Println("Error sending email:", err)
-			}
+			log.Println("Error sending email:", err)
 		}
 
 		// Return HTML response that will replace the form
@@ -335,19 +331,15 @@ func setupRouter() *gin.Engine {
 		var err error
 		_, err = fmt.Sscan(amountStr, &amount)
 		if err != nil {
-			if isDevMode {
-				log.Println("Error parsing amount:", err)
-			}
+			log.Println("Error parsing amount:", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount"})
 			return
 		}
 
-		// Log all query parameters in dev mode
-		if isDevMode {
-			log.Println("Received parameters:")
-			for k, v := range c.Request.URL.Query() {
-				log.Printf("  %s: %v\n", k, v)
-			}
+		// Log all query parameters
+		log.Println("Received parameters:")
+		for k, v := range c.Request.URL.Query() {
+			log.Printf("  %s: %v\n", k, v)
 		}
 
 		// Get the additional donor information
@@ -359,9 +351,7 @@ func setupRouter() *gin.Engine {
 			Referral:  c.Query("referral"),
 		}
 
-		if isDevMode {
-			log.Printf("Donor info: %+v\n", donorInfo)
-		}
+		log.Printf("Donor info: %+v\n", donorInfo)
 
 		// Create a payment request with customer info
 		requestData := map[string]interface{}{
@@ -406,24 +396,18 @@ func setupRouter() *gin.Engine {
 		// Marshal request body
 		requestBody, err := json.Marshal(requestData)
 		if err != nil {
-			if isDevMode {
-				log.Println("Error marshaling request body:", err)
-			}
+			log.Println("Error marshaling request body:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal request body"})
 			return
 		}
 
 		// Log the request being sent to Helcim
-		if isDevMode {
-			log.Println("Sending to Helcim:", string(requestBody))
-		}
+		log.Println("Sending to Helcim:", string(requestBody))
 
 		// Create request
 		req, err := http.NewRequest("POST", helcimAPIURL, bytes.NewBuffer(requestBody))
 		if err != nil {
-			if isDevMode {
-				log.Println("Error creating HTTP request:", err)
-			}
+			log.Println("Error creating HTTP request:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 			return
 		}
@@ -433,14 +417,12 @@ func setupRouter() *gin.Engine {
 		req.Header.Set("api-token", apiToken)
 		req.Header.Set("accept", "application/json")
 
-		if isDevMode {
-			log.Println("Request headers set")
-			for k, v := range req.Header {
-				if k != "api-token" {
-					log.Printf("  %s: %v\n", k, v)
-				} else {
-					log.Printf("  %s: %s****\n", k, v[0][:4])
-				}
+		log.Println("Request headers set")
+		for k, v := range req.Header {
+			if k != "api-token" {
+				log.Printf("  %s: %v\n", k, v)
+			} else {
+				log.Printf("  %s: %s****\n", k, v[0][:4])
 			}
 		}
 
@@ -448,42 +430,56 @@ func setupRouter() *gin.Engine {
 		client := &http.Client{}
 		resp, err := client.Do(req)
 		if err != nil {
-			if isDevMode {
-				log.Println("Error making HTTP request:", err)
-			}
+			log.Println("Error making HTTP request:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to make request"})
 			return
 		}
 		defer resp.Body.Close()
 
-		if isDevMode {
-			log.Println("Response status:", resp.Status)
-		}
+		log.Println("Response status:", resp.Status)
 
-		// Read response for debugging in dev mode
-		if isDevMode {
-			responseBody, _ := io.ReadAll(resp.Body)
-			log.Println("Response body:", string(responseBody))
+		// Read response body for debugging
+		responseBody, _ := io.ReadAll(resp.Body)
+		log.Println("Response body:", string(responseBody))
 
-			// Create a new reader with the same data for the JSON decoder
-			resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-		}
+		// Create a new reader with the same data for the JSON decoder
+		resp.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 
 		// Read response
 		var helcimResponse HelcimInitializeResponse
 		err = json.NewDecoder(resp.Body).Decode(&helcimResponse)
 		if err != nil {
-			if isDevMode {
-				log.Println("Error decoding response:", err)
-			}
+			log.Println("Error decoding response:", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode response"})
 			return
 		}
 
+		// Check if the response contains valid tokens
+		if helcimResponse.CheckoutToken == "" {
+			log.Println("ERROR: Helcim API returned empty checkout token")
+			
+				// Try to read the response body again for error details
+				respBody, _ := json.Marshal(helcimResponse)
+				log.Println("Raw response:", string(respBody))
+				
+				// Check if the actual HTTP status from Helcim indicates an error
+				if resp.StatusCode >= 400 {
+					log.Println("Helcim API returned error status:", resp.Status)
+					}
+			
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Payment gateway returned an invalid response",
+				"details": "The payment service did not authorize this transaction. Check API credentials."
+			})
+			return
+		}
+
 		// Log the checkout token and secret token
-		if isDevMode {
-			log.Println("Checkout Token:", helcimResponse.CheckoutToken)
-			log.Println("Secret Token:", helcimResponse.SecretToken[:4]+"****") // Only log part of the secret token
+		log.Println("Checkout Token received successfully:", helcimResponse.CheckoutToken[:4] + "****")
+		if len(helcimResponse.SecretToken) > 0 {
+			log.Println("Secret Token received successfully:", helcimResponse.SecretToken[:4] + "****")
+		} else {
+			log.Println("WARNING: Secret token is empty")
 		}
 
 		// Return the checkout token

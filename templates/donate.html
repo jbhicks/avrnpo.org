@@ -179,7 +179,9 @@
         console.log('Response status:', response.status);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorData = await response.json();
+          console.error('API error:', errorData);
+          throw new Error(errorData.error || 'API Error: ' + response.status);
         }
 
         const data = await response.json();
@@ -187,7 +189,7 @@
 
         // Check if we have a valid checkout token
         if (!data.checkoutToken) {
-          throw new Error('Payment gateway returned an empty checkout token');
+          throw new Error('Payment gateway error: Empty checkout token');
         }
 
         const checkoutToken = data.checkoutToken;
@@ -201,10 +203,15 @@
           referral: referralText
         }));
 
-        window.addEventListener('message', (event) => {
+        // Setup event listener only once per token
+        const messageHandler = (event) => {
           console.log('event.data:', event.data);
           const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+          
           if (event.data.eventName === helcimPayJsIdentifierKey) {
+            // Remove the event listener once we get a response to avoid duplicates
+            window.removeEventListener('message', messageHandler);
+            
             if (event.data.eventStatus === 'ABORTED') {
               console.error('Transaction failed!', event.data.eventMessage);
               document.getElementById('transactionDetails').innerHTML = `
@@ -213,9 +220,9 @@
                   <span>The payment process was canceled. Please try again.</span>
                 </div>
               `;
-              // Remove loading state
               document.getElementById('donateButton').classList.remove('loading');
             }
+            
             if (event.data.eventStatus === 'SUCCESS') {
               console.log('Transaction success!', event.data.eventMessage);
               try {
@@ -246,40 +253,48 @@
                 
                 // Clear form
                 document.getElementById('donateForm').reset();
-                // Remove loading state
                 document.getElementById('donateButton').classList.remove('loading');
               } catch (error) {
                 console.error('Error parsing eventMessage:', error);
-                // Show error message
                 document.getElementById('transactionDetails').innerHTML = `
                   <div class="alert alert-error">
                     <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>Error processing transaction response. Your payment may have been successful, please check your email for confirmation.</span>
+                    <span>Error processing transaction response. Your payment may have been processed - please check your email for confirmation.</span>
                   </div>
                 `;
-                // Remove loading state
                 document.getElementById('donateButton').classList.remove('loading');
               }
             }
           }
-        });
+        };
+        
+        window.addEventListener('message', messageHandler);
+        
+        // Call the Helcim Pay iframe function with the token
         appendHelcimPayIframe(checkoutToken);
+        
       } catch (error) {
         console.error('Error:', error.message);
+        
         // Provide more specific error messages based on the error
         let errorMessage = 'Unable to process your donation. Please try again later.';
+        let errorDetails = '';
         
-        if (error.message.includes('empty checkout token')) {
-          errorMessage = 'Payment system configuration error. Please contact support and try again later.';
+        if (error.message.includes('Empty checkout token')) {
+          errorMessage = 'Payment system configuration error.';
+          errorDetails = 'Our payment processor returned an invalid response. This usually indicates an issue with API credentials.';
         }
         
         document.getElementById('transactionDetails').innerHTML = `
           <div class="alert alert-error">
             <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            <span>Error: ${errorMessage}</span>
+            <div>
+              <p><strong>Error:</strong> ${errorMessage}</p>
+              ${errorDetails ? `<p class="text-sm mt-1">${errorDetails}</p>` : ''}
+              <p class="text-sm mt-2">Please try again later or contact support.</p>
+            </div>
           </div>
         `;
-        // Remove loading state
         document.getElementById('donateButton').classList.remove('loading');
       }
     }
