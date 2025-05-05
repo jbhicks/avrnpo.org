@@ -407,10 +407,11 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		// Set headers
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("api-token", apiToken)
-		req.Header.Set("accept", "application/json")
+		// Set headers - using direct header manipulation to keep the exact case expected by Helcim
+		req.Header = make(http.Header)
+		req.Header["content-type"] = []string{"application/json"} // Force lowercase
+		req.Header["api-token"] = []string{apiToken}              // Keep lowercase as might be required by Helcim
+		req.Header["accept"] = []string{"application/json"}
 
 		log.Println("Request headers set")
 		for k, v := range req.Header {
@@ -540,6 +541,91 @@ func setupRouter() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{
 				"headers": headers,
 				"info":    info,
+			})
+		} else {
+			c.Status(http.StatusNotFound)
+		}
+	})
+
+	// Add a diagnostic endpoint specifically for Helcim API testing
+	r.GET("/api/payment/test", func(c *gin.Context) {
+		if isDevMode || c.GetHeader("X-Debug-Access") == os.Getenv("DEBUG_ACCESS_KEY") {
+			// Get API token and validate it's not empty
+			apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
+			if apiToken == "" {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "API token not set"})
+				return
+			}
+
+			// Create a test request to Helcim API
+			helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
+
+			// Create a minimal test request
+			testRequest := map[string]interface{}{
+				"paymentType": "test",
+				"amount":      1,
+				"currency":    "USD",
+			}
+
+			requestBody, _ := json.Marshal(testRequest)
+
+			// Create two requests - one with canonicalized headers and one with lowercase
+			req1, _ := http.NewRequest("POST", helcimAPIURL, bytes.NewBuffer(requestBody))
+			req1.Header.Set("Content-Type", "application/json")
+			req1.Header.Set("api-token", apiToken) // Standard way
+			req1.Header.Set("Accept", "application/json")
+
+			// Second request with custom header setting to prevent canonicalization
+			req2, _ := http.NewRequest("POST", helcimAPIURL, bytes.NewBuffer(requestBody))
+			req2.Header = make(http.Header)
+			req2.Header["content-type"] = []string{"application/json"}
+			req2.Header["api-token"] = []string{apiToken} // Lowercase forced
+			req2.Header["accept"] = []string{"application/json"}
+
+			// Make both requests
+			client := &http.Client{Timeout: 10 * time.Second}
+
+			// First request (standard headers)
+			resp1, err1 := client.Do(req1)
+			result1 := map[string]interface{}{
+				"success": false,
+				"error":   "Request failed",
+				"headers": req1.Header,
+			}
+
+			if err1 == nil {
+				defer resp1.Body.Close()
+				result1["status"] = resp1.Status
+				result1["success"] = resp1.StatusCode < 400
+				body1, _ := io.ReadAll(resp1.Body)
+				result1["body"] = string(body1)
+			} else {
+				result1["error"] = err1.Error()
+			}
+
+			// Second request (forced lowercase headers)
+			resp2, err2 := client.Do(req2)
+			result2 := map[string]interface{}{
+				"success": false,
+				"error":   "Request failed",
+				"headers": req2.Header,
+			}
+
+			if err2 == nil {
+				defer resp2.Body.Close()
+				result2["status"] = resp2.Status
+				result2["success"] = resp2.StatusCode < 400
+				body2, _ := io.ReadAll(resp2.Body)
+				result2["body"] = string(body2)
+			} else {
+				result2["error"] = err2.Error()
+			}
+
+			// Return results for comparison
+			c.JSON(http.StatusOK, gin.H{
+				"standardHeaders":  result1,
+				"lowercaseHeaders": result2,
+				"apiTokenPrefix":   apiToken[:5] + "...",
 			})
 		} else {
 			c.Status(http.StatusNotFound)

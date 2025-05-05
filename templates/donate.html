@@ -187,8 +187,15 @@
         const data = await response.json();
         console.log('Response data:', data);
 
+        // Enhanced debugging for API errors
+        if (data.error) {
+          console.error('API returned error:', data.error);
+          throw new Error(data.error || 'API Error: ' + response.status);
+        }
+
         // Check if we have a valid checkout token
         if (!data.checkoutToken) {
+          console.error('Missing checkout token. Full response:', JSON.stringify(data));
           throw new Error('Payment gateway error: Empty checkout token');
         }
 
@@ -202,6 +209,9 @@
           purpose, 
           referral: referralText
         }));
+        
+        // Debug info for Helcim integration
+        console.log('Using checkout token:', checkoutToken.substring(0, 5) + '...');
 
         // Setup event listener only once per token
         const messageHandler = (event) => {
