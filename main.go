@@ -489,6 +489,37 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	// Add dedicated endpoint for payment debugging
+	r.GET("/api/payment/debug", func(c *gin.Context) {
+		// Only available in development mode or with a special header for security
+		if isDevMode || c.GetHeader("X-Debug-Access") == os.Getenv("DEBUG_ACCESS_KEY") {
+			// Test Helcim API key validity without making a full transaction
+			apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
+			maskedToken := "not set"
+			if apiToken != "" && len(apiToken) >= 4 {
+				maskedToken = apiToken[:4] + "****"
+			}
+
+			// Create debug info
+			debugInfo := map[string]interface{}{
+				"apiKeySet":    apiToken != "",
+				"apiKeyMasked": maskedToken,
+				"mode":         os.Getenv("GIN_MODE"),
+				"environment": map[string]string{
+					"GIN_MODE": os.Getenv("GIN_MODE"),
+					"PORT":     os.Getenv("PORT"),
+				},
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"status": "Payment system debugging information",
+				"info":   debugInfo,
+			})
+		} else {
+			c.Status(http.StatusNotFound)
+		}
+	})
+
 	// Add a diagnostic endpoint to check headers
 	r.GET("/debug/headers", func(c *gin.Context) {
 		// Only available in development mode or with a special header for security
