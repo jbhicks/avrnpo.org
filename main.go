@@ -457,27 +457,27 @@ func setupRouter() *gin.Engine {
 		// Check if the response contains valid tokens
 		if helcimResponse.CheckoutToken == "" {
 			log.Println("ERROR: Helcim API returned empty checkout token")
-			
-				// Try to read the response body again for error details
-				respBody, _ := json.Marshal(helcimResponse)
-				log.Println("Raw response:", string(respBody))
-				
-				// Check if the actual HTTP status from Helcim indicates an error
-				if resp.StatusCode >= 400 {
-					log.Println("Helcim API returned error status:", resp.Status)
-					}
-			
+
+			// Try to read the response body again for error details
+			respBody, _ := json.Marshal(helcimResponse)
+			log.Println("Raw response:", string(respBody))
+
+			// Check if the actual HTTP status from Helcim indicates an error
+			if resp.StatusCode >= 400 {
+				log.Println("Helcim API returned error status:", resp.Status)
+			}
+
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Payment gateway returned an invalid response",
-				"details": "The payment service did not authorize this transaction. Check API credentials."
+				"error":   "Payment gateway returned an invalid response",
+				"details": "The payment service did not authorize this transaction. Check API credentials.",
 			})
 			return
 		}
 
 		// Log the checkout token and secret token
-		log.Println("Checkout Token received successfully:", helcimResponse.CheckoutToken[:4] + "****")
+		log.Println("Checkout Token received successfully:", helcimResponse.CheckoutToken[:4]+"****")
 		if len(helcimResponse.SecretToken) > 0 {
-			log.Println("Secret Token received successfully:", helcimResponse.SecretToken[:4] + "****")
+			log.Println("Secret Token received successfully:", helcimResponse.SecretToken[:4]+"****")
 		} else {
 			log.Println("WARNING: Secret token is empty")
 		}
