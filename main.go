@@ -488,6 +488,10 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
+	r.GET("/healthz", func(c *gin.Context) {
+		c.String(http.StatusOK, "OK")
+	})
+
 	r.Static("/static", "./static")
 	r.Static("/templates", "./templates")
 
@@ -519,7 +523,7 @@ func main() {
 	// Listen and Server in
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "3001"
 	}
 	r.Run(":" + port)
 }
