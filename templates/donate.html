@@ -162,8 +162,18 @@
         apiUrl.searchParams.append('purpose', purpose);
         apiUrl.searchParams.append('referral', referralText);
         
+        console.log('API URL:', apiUrl.toString()); // Debugging log
+
         const response = await fetch(apiUrl);
+        console.log('Response status:', response.status); // Debugging log
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log('Response data:', data); // Debugging log
+
         const checkoutToken = data.checkoutToken;
 
         // Store form data in session storage to retrieve after payment
