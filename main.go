@@ -310,6 +310,15 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
+		// Check if API token is potentially truncated
+		const expectedMinLength = 30
+		if len(apiToken) < expectedMinLength {
+			log.Printf("ERROR: HELCIM_PRIVATE_API_KEY appears to be truncated (length: %d, expected at least: %d)",
+				len(apiToken), expectedMinLength)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment gateway misconfiguration"})
+			return
+		}
+
 		// Helcim API URL
 		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
 		log.Println("Making request to:", helcimAPIURL)
@@ -407,18 +416,24 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		// Set headers - using direct header manipulation to keep the exact case expected by Helcim
-		req.Header = make(http.Header)
-		req.Header["content-type"] = []string{"application/json"} // Force lowercase
-		req.Header["api-token"] = []string{apiToken}              // Keep lowercase as might be required by Helcim
-		req.Header["accept"] = []string{"application/json"}
+		// Set headers - explicitly using the string, not using Header.Set
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+			"Api-Token":    []string{apiToken},
+			"Accept":       []string{"application/json"},
+		}
+
+		// Debug: Log the full token
+		log.Println("DEBUG - FULL API TOKEN:", apiToken)
+		log.Printf("API Token length: %d characters", len(apiToken))
 
 		log.Println("Request headers set")
 		for k, v := range req.Header {
-			if k != "api-token" {
+			if k != "Api-Token" {
 				log.Printf("  %s: %v\n", k, v)
 			} else {
-				log.Printf("  %s: %s****\n", k, v[0][:4])
+				// Also log the full header value for debugging
+				log.Printf("  %s: %s\n", k, v[0])
 			}
 		}
 
@@ -554,6 +569,15 @@ func setupRouter() *gin.Engine {
 			apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
 			if apiToken == "" {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "API token not set"})
+				return
+			}
+
+			// Check if API token is potentially truncated
+			const expectedMinLength = 30
+			if len(apiToken) < expectedMinLength {
+				log.Printf("ERROR: HELCIM_PRIVATE_API_KEY appears to be truncated (length: %d, expected at least: %d)",
+					len(apiToken), expectedMinLength)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Payment gateway misconfiguration"})
 				return
 			}
 
