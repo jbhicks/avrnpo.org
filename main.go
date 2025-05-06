@@ -416,22 +416,24 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		// Set headers - Use standard header setting method
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Api-Token", apiToken) // Original header that works in local env
-		req.Header.Set("Accept", "application/json")
+		// Set headers - explicitly using the string, not using Header.Set
+		req.Header = http.Header{
+			"Content-Type": []string{"application/json"},
+			"Api-Token":    []string{apiToken},
+			"Accept":       []string{"application/json"},
+		}
+
+		// Debug: Log the full token
+		log.Println("DEBUG - FULL API TOKEN:", apiToken)
+		log.Printf("API Token length: %d characters", len(apiToken))
 
 		log.Println("Request headers set")
 		for k, v := range req.Header {
 			if k != "Api-Token" {
 				log.Printf("  %s: %v\n", k, v)
 			} else {
-				// Log masked token for security
-				if len(v[0]) > 8 {
-					log.Printf("  %s: %s****%s\n", k, v[0][:4], v[0][len(v[0])-4:])
-				} else {
-					log.Printf("  %s: %s****\n", k, v[0][:min(4, len(v[0]))])
-				}
+				// Also log the full header value for debugging
+				log.Printf("  %s: %s\n", k, v[0])
 			}
 		}
 
@@ -654,6 +656,134 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	// Add a Helcim API relay endpoint for detailed diagnostics
+	r.GET("/api/diagnostics/helcim", func(c *gin.Context) {
+		// Secure this endpoint - only available with debug access key
+		if !isDevMode && c.GetHeader("X-Debug-Access") != os.Getenv("DEBUG_ACCESS_KEY") {
+			c.Status(http.StatusNotFound)
+			return
+		}
+
+		// Get API token from environment
+		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
+		if apiToken == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"error":   "HELCIM_PRIVATE_API_KEY not set",
+			})
+			return
+		}
+
+		// Diagnostic data to collect
+		diagnostics := map[string]interface{}{
+			"timestamp": time.Now().Format(time.RFC3339),
+			"tokenInfo": map[string]interface{}{
+				"length": len(apiToken),
+				"prefix": apiToken[:min(4, len(apiToken))],
+				"suffix": apiToken[max(0, len(apiToken)-4):],
+				"containsSpecialChars": map[string]bool{
+					"$":  strings.Contains(apiToken, "$"),
+					"*":  strings.Contains(apiToken, "*"),
+					"\\": strings.Contains(apiToken, "\\"),
+				},
+			},
+			"environment": map[string]string{
+				"GIN_MODE": os.Getenv("GIN_MODE"),
+				"mode":     gin.Mode(),
+			},
+			"requestTests": make(map[string]interface{}),
+		}
+
+		// Test API endpoint
+		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
+
+		// Create a minimal test request body
+		requestData := map[string]interface{}{
+			"paymentType": "purchase",
+			"amount":      1,
+			"currency":    "USD",
+			"companyName": "American Veterans Rebuilding",
+		}
+		requestBody, _ := json.Marshal(requestData)
+
+		// Create a relay function we'll use for different header combinations
+		makeRelayRequest := func(headerName, headerValue string) map[string]interface{} {
+			result := map[string]interface{}{
+				"success": false,
+				"requestInfo": map[string]interface{}{
+					"url":        helcimAPIURL,
+					"method":     "POST",
+					"headerName": headerName,
+					"headerMask": headerValue[:min(4, len(headerValue))] + "..." + headerValue[max(0, len(headerValue)-4):],
+				},
+			}
+
+			// Create request with specified header
+			req, err := http.NewRequest("POST", helcimAPIURL, bytes.NewBuffer(requestBody))
+			if err != nil {
+				result["error"] = "Failed to create request: " + err.Error()
+				return result
+			}
+
+			// Set request headers
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set(headerName, headerValue)
+			req.Header.Set("Accept", "application/json")
+
+			// Log all request headers for diagnostics
+			requestHeaders := make(map[string]string)
+			for k, v := range req.Header {
+				requestHeaders[k] = strings.Join(v, ", ")
+			}
+			result["requestHeaders"] = requestHeaders
+
+			// Make the request
+			client := &http.Client{Timeout: 10 * time.Second}
+			startTime := time.Now()
+			resp, err := client.Do(req)
+			requestDuration := time.Since(startTime)
+
+			result["requestDuration"] = requestDuration.String()
+
+			if err != nil {
+				result["error"] = "Request failed: " + err.Error()
+				return result
+			}
+			defer resp.Body.Close()
+
+			// Read response details
+			responseData, _ := io.ReadAll(resp.Body)
+
+			// Add response info to result
+			result["statusCode"] = resp.StatusCode
+			result["success"] = resp.StatusCode < 400
+			result["responseHeaders"] = resp.Header
+			result["responseBody"] = string(responseData)
+
+			// Try to parse the response if it's JSON
+			var parsedJSON interface{}
+			if err := json.Unmarshal(responseData, &parsedJSON); err == nil {
+				result["parsedResponse"] = parsedJSON
+			}
+
+			return result
+		}
+
+		// Test different authentication headers
+		diagnostics["requestTests"] = map[string]interface{}{
+			"apiToken":   makeRelayRequest("api-token", apiToken),
+			"ApiToken":   makeRelayRequest("Api-Token", apiToken),
+			"xAuthToken": makeRelayRequest("x-auth-token", apiToken),
+			"XAuthToken": makeRelayRequest("X-Auth-Token", apiToken),
+		}
+
+		// Return all diagnostic information
+		c.JSON(http.StatusOK, gin.H{
+			"success":     true,
+			"diagnostics": diagnostics,
+		})
+	})
+
 	r.GET("/healthz", func(c *gin.Context) {
 		c.String(http.StatusOK, "OK")
 	})
@@ -662,6 +792,21 @@ func setupRouter() *gin.Engine {
 	r.Static("/templates", "./templates")
 
 	return r
+}
+
+// Helper functions for min and max
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
 func main() {

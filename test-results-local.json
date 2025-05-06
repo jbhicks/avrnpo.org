@@ -1,0 +1,276 @@
+{
+    "diagnostics": {
+        "environment": {
+            "GIN_MODE": "release",
+            "mode": "release"
+        },
+        "requestTests": {
+            "ApiToken": {
+                "parsedResponse": {
+                    "checkoutToken": "b0995d572118fbb2eeb54f",
+                    "secretToken": "3e0501b0e0148db1a26c66"
+                },
+                "requestDuration": "362.646148ms",
+                "requestHeaders": {
+                    "Accept": "application/json",
+                    "Api-Token": "ae!z7R_Yw9GiId!tq7FLwMccVpNz.Rh.hTGsGQ6Gk4Ui.bM$apJQc*RFVwOpQjD_",
+                    "Content-Type": "application/json"
+                },
+                "requestInfo": {
+                    "headerMask": "ae!z...QjD_",
+                    "headerName": "Api-Token",
+                    "method": "POST",
+                    "url": "https://api.helcim.com/v2/helcim-pay/initialize"
+                },
+                "responseBody": "{\"secretToken\":\"3e0501b0e0148db1a26c66\",\"checkoutToken\":\"b0995d572118fbb2eeb54f\"}",
+                "responseHeaders": {
+                    "Access-Control-Allow-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Allow-Methods": [
+                        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    ],
+                    "Access-Control-Allow-Origin": [
+                        "*"
+                    ],
+                    "Access-Control-Expose-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Max-Age": [
+                        "600"
+                    ],
+                    "Alt-Svc": [
+                        "h3=\":443\"; ma=86400"
+                    ],
+                    "Cf-Cache-Status": [
+                        "DYNAMIC"
+                    ],
+                    "Cf-Ray": [
+                        "93b5c47038585529-PHX"
+                    ],
+                    "Content-Type": [
+                        "application/json"
+                    ],
+                    "Date": [
+                        "Tue, 06 May 2025 04:34:49 GMT"
+                    ],
+                    "Hour-Limit-Remaining": [
+                        "3000"
+                    ],
+                    "Minute-Limit-Remaining": [
+                        "97"
+                    ],
+                    "Server": [
+                        "cloudflare"
+                    ],
+                    "Set-Cookie": [
+                        "__cf_bm=Cv.xuS3jSv2S40ICB8qXfRbxh.HQQw241zp6WgTgJ6s-1746506089-1.0.1.1-dXNrPT874.yXWSq9obY2eB7F33mPbsf2Ih_hEi9MjKqIm73wXX8YzSgDLnJXF02RvxVCfWiTUNlNN6muBURcR6Qmoy2Q_Vf2g6S0ASk5uogASBOfQMo0pIEH8I7H3oQH; path=/; expires=Tue, 06-May-25 05:04:49 GMT; domain=.helcim.com; HttpOnly; Secure; SameSite=None"
+                    ],
+                    "Strict-Transport-Security": [
+                        "max-age=31536000; includeSubDomains; preload"
+                    ]
+                },
+                "statusCode": 200,
+                "success": true
+            },
+            "XAuthToken": {
+                "parsedResponse": [],
+                "requestDuration": "142.646628ms",
+                "requestHeaders": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": "ae!z7R_Yw9GiId!tq7FLwMccVpNz.Rh.hTGsGQ6Gk4Ui.bM$apJQc*RFVwOpQjD_"
+                },
+                "requestInfo": {
+                    "headerMask": "ae!z...QjD_",
+                    "headerName": "X-Auth-Token",
+                    "method": "POST",
+                    "url": "https://api.helcim.com/v2/helcim-pay/initialize"
+                },
+                "responseBody": "[]",
+                "responseHeaders": {
+                    "Access-Control-Allow-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Allow-Methods": [
+                        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    ],
+                    "Access-Control-Allow-Origin": [
+                        "*"
+                    ],
+                    "Access-Control-Expose-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Max-Age": [
+                        "600"
+                    ],
+                    "Alt-Svc": [
+                        "h3=\":443\"; ma=86400"
+                    ],
+                    "Cf-Cache-Status": [
+                        "DYNAMIC"
+                    ],
+                    "Cf-Ray": [
+                        "93b5c473890f5529-PHX"
+                    ],
+                    "Content-Type": [
+                        "application/json"
+                    ],
+                    "Date": [
+                        "Tue, 06 May 2025 04:34:49 GMT"
+                    ],
+                    "Server": [
+                        "cloudflare"
+                    ],
+                    "Set-Cookie": [
+                        "__cf_bm=oS_P9pm20vg2QbrgLiZGzrShq.gJkHWAn2gZ_yX6oxw-1746506089-1.0.1.1-cffvvVjWER1mYVqP4iNZ3ZcUAG9RfaXNIa_Hk6OqxMSnShXixt2VhXYJukvgo7z1NKAsQZJ_Y9xCUgNv8TUxfq6UblEmMOUUuGc.Ds8lWvtmT8aMjbp1lcjDdj.C6St1; path=/; expires=Tue, 06-May-25 05:04:49 GMT; domain=.helcim.com; HttpOnly; Secure; SameSite=None"
+                    ],
+                    "Strict-Transport-Security": [
+                        "max-age=31536000; includeSubDomains; preload"
+                    ]
+                },
+                "statusCode": 401,
+                "success": false
+            },
+            "apiToken": {
+                "parsedResponse": {
+                    "checkoutToken": "18b3cbae64f4e337714905",
+                    "secretToken": "366214317081305a3996b8"
+                },
+                "requestDuration": "334.762308ms",
+                "requestHeaders": {
+                    "Accept": "application/json",
+                    "Api-Token": "ae!z7R_Yw9GiId!tq7FLwMccVpNz.Rh.hTGsGQ6Gk4Ui.bM$apJQc*RFVwOpQjD_",
+                    "Content-Type": "application/json"
+                },
+                "requestInfo": {
+                    "headerMask": "ae!z...QjD_",
+                    "headerName": "api-token",
+                    "method": "POST",
+                    "url": "https://api.helcim.com/v2/helcim-pay/initialize"
+                },
+                "responseBody": "{\"secretToken\":\"366214317081305a3996b8\",\"checkoutToken\":\"18b3cbae64f4e337714905\"}",
+                "responseHeaders": {
+                    "Access-Control-Allow-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Allow-Methods": [
+                        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    ],
+                    "Access-Control-Allow-Origin": [
+                        "*"
+                    ],
+                    "Access-Control-Expose-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Max-Age": [
+                        "600"
+                    ],
+                    "Alt-Svc": [
+                        "h3=\":443\"; ma=86400"
+                    ],
+                    "Cf-Cache-Status": [
+                        "DYNAMIC"
+                    ],
+                    "Cf-Ray": [
+                        "93b5c46e0dbc5529-PHX"
+                    ],
+                    "Content-Type": [
+                        "application/json"
+                    ],
+                    "Date": [
+                        "Tue, 06 May 2025 04:34:48 GMT"
+                    ],
+                    "Hour-Limit-Remaining": [
+                        "3000"
+                    ],
+                    "Minute-Limit-Remaining": [
+                        "98"
+                    ],
+                    "Server": [
+                        "cloudflare"
+                    ],
+                    "Set-Cookie": [
+                        "__cf_bm=fCtc74Hs6r6nmeQnJsCi8RDYxhdycQ4F2PhVa0WAdvg-1746506088-1.0.1.1-_iQmT5RAl3NJCcm3tkf8IH0rGxFXkPgZQbrc6iKVWFCHuhSSVKj1H88PwaCbC1DnY_i377bUKFAZp3uqHqiqxPJrv8oqUN8DAQAXanpziQ7wylhtgkPHniCOjmR5tkj8; path=/; expires=Tue, 06-May-25 05:04:48 GMT; domain=.helcim.com; HttpOnly; Secure; SameSite=None"
+                    ],
+                    "Strict-Transport-Security": [
+                        "max-age=31536000; includeSubDomains; preload"
+                    ]
+                },
+                "statusCode": 200,
+                "success": true
+            },
+            "xAuthToken": {
+                "parsedResponse": [],
+                "requestDuration": "141.291055ms",
+                "requestHeaders": {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": "ae!z7R_Yw9GiId!tq7FLwMccVpNz.Rh.hTGsGQ6Gk4Ui.bM$apJQc*RFVwOpQjD_"
+                },
+                "requestInfo": {
+                    "headerMask": "ae!z...QjD_",
+                    "headerName": "x-auth-token",
+                    "method": "POST",
+                    "url": "https://api.helcim.com/v2/helcim-pay/initialize"
+                },
+                "responseBody": "[]",
+                "responseHeaders": {
+                    "Access-Control-Allow-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Allow-Methods": [
+                        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+                    ],
+                    "Access-Control-Allow-Origin": [
+                        "*"
+                    ],
+                    "Access-Control-Expose-Headers": [
+                        "Origin, Content-Type, X-Auth-Token, js-token"
+                    ],
+                    "Access-Control-Max-Age": [
+                        "600"
+                    ],
+                    "Alt-Svc": [
+                        "h3=\":443\"; ma=86400"
+                    ],
+                    "Cf-Cache-Status": [
+                        "DYNAMIC"
+                    ],
+                    "Cf-Ray": [
+                        "93b5c4729c815529-PHX"
+                    ],
+                    "Content-Type": [
+                        "application/json"
+                    ],
+                    "Date": [
+                        "Tue, 06 May 2025 04:34:49 GMT"
+                    ],
+                    "Server": [
+                        "cloudflare"
+                    ],
+                    "Set-Cookie": [
+                        "__cf_bm=6bZI5LEx7d4j90Qe5QlPoQU0.5aAEmtOXt5MqRUhO90-1746506089-1.0.1.1-ozaCJibUTCjdngzPY3vS_XWygP6ZnknoW52PkzhNy78Ehj8kTKzP0YSMCE6eXGjwiVfoqoOOjgl5CacQuYtTrX1PkMuUz_ZMiyaQFqIWqndbHlusLlnEc8TQdAogGoVw; path=/; expires=Tue, 06-May-25 05:04:49 GMT; domain=.helcim.com; HttpOnly; Secure; SameSite=None"
+                    ],
+                    "Strict-Transport-Security": [
+                        "max-age=31536000; includeSubDomains; preload"
+                    ]
+                },
+                "statusCode": 401,
+                "success": false
+            }
+        },
+        "timestamp": "2025-05-05T21:34:48-07:00",
+        "tokenInfo": {
+            "containsSpecialChars": {
+                "$": true,
+                "*": true,
+                "\\": false
+            },
+            "length": 64,
+            "prefix": "ae!z",
+            "suffix": "QjD_"
+        }
+    },
+    "success": true
+}
