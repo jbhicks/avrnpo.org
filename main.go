@@ -416,24 +416,22 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		// Set headers - explicitly using the string, not using Header.Set
-		req.Header = http.Header{
-			"Content-Type": []string{"application/json"},
-			"Api-Token":    []string{apiToken},
-			"Accept":       []string{"application/json"},
-		}
-
-		// Debug: Log the full token
-		log.Println("DEBUG - FULL API TOKEN:", apiToken)
-		log.Printf("API Token length: %d characters", len(apiToken))
+		// Set headers - Use standard header setting method
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Api-Token", apiToken) // Original header that works in local env
+		req.Header.Set("Accept", "application/json")
 
 		log.Println("Request headers set")
 		for k, v := range req.Header {
 			if k != "Api-Token" {
 				log.Printf("  %s: %v\n", k, v)
 			} else {
-				// Also log the full header value for debugging
-				log.Printf("  %s: %s\n", k, v[0])
+				// Log masked token for security
+				if len(v[0]) > 8 {
+					log.Printf("  %s: %s****%s\n", k, v[0][:4], v[0][len(v[0])-4:])
+				} else {
+					log.Printf("  %s: %s****\n", k, v[0][:min(4, len(v[0]))])
+				}
 			}
 		}
 
