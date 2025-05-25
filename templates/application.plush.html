@@ -3,21 +3,24 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
-    <title>Buffalo - My Go Saas Template</title>
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <%= stylesheetTag("buffalo.css") %>
+    <title>My Go SaaS - Modern SaaS Platform</title>
+    
+    <!-- Tailwind CSS via CDN for reliable styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <%= stylesheetTag("application.css") %>
+    
+    <% if (authenticity_token) { %>
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="<%= authenticity_token %>" />
+    <% } %>
     <link rel="icon" href="<%= assetPath("images/favicon.ico") %>">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   </head>
-  <body>
-
-    <div class="container">
-      <%= partial("flash.html") %>
-      <%= yield %>
-    </div>
-
+  <body class="bg-gray-50 min-h-screen">
+    <%= partial("flash.html") %>
+    <%= yield %>
     <%= javascriptTag("application.js") %>
   </body>
 </html>
