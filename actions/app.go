@@ -11,6 +11,7 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
+	"github.com/gobuffalo/middleware/csrf"
 	"github.com/gobuffalo/middleware/forcessl"
 	"github.com/gobuffalo/middleware/i18n"
 	"github.com/gobuffalo/middleware/paramlogger"
@@ -55,10 +56,9 @@ func App() *buffalo.App {
 
 		// Protect against CSRF attacks. https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 		// Remove to disable this.
-		// Disabled for now to allow tests to pass
-		// if envy.Get("GO_ENV", "development") != "test" {
-		// 	app.Use(csrf.New)
-		// }
+		if ENV == "production" {
+			app.Use(csrf.New)
+		}
 
 		// Wraps each request in a transaction.
 		//   c.Value("tx").(*pop.Connection)
@@ -67,29 +67,31 @@ func App() *buffalo.App {
 		// Setup and use translations:
 		app.Use(translations())
 
-		app.GET("/", HomeHandler)
-
-		// NOTE: this block should go before any resources
-		// that need to be protected by buffalo-goth!
-		//AuthMiddlewares
+		// Set current user for all requests
 		app.Use(SetCurrentUser)
-		app.Use(Authorize)
 
-		//Routes for Auth
+		// Routes
+		app.GET("/", HomeHandler)
+		app.GET("/dashboard", Authorize(DashboardHandler))
+
+		// User registration routes
+		app.GET("/users/new", UsersNew)
+		app.POST("/users", UsersCreate)
+
+		// Profile and Account Settings routes (protected)
+		app.GET("/profile", Authorize(ProfileSettings))
+		app.POST("/profile", Authorize(ProfileUpdate))
+		app.GET("/account", Authorize(AccountSettings))
+		app.POST("/account", Authorize(AccountUpdate))
+
+		// Auth routes
 		auth := app.Group("/auth")
 		auth.GET("/", AuthLanding)
 		auth.GET("/new", AuthNew)
 		auth.POST("/", AuthCreate)
 		auth.DELETE("/", AuthDestroy)
-		auth.Middleware.Skip(Authorize, AuthLanding, AuthNew, AuthCreate)
 
-		//Routes for User registration
-		users := app.Group("/users")
-		users.GET("/new", UsersNew)
-		users.POST("/", UsersCreate)
-		users.Middleware.Remove(Authorize)
-
-		// Serve static files LAST to avoid interfering with routes
+		// Serve static files
 		app.ServeFiles("/", http.FS(public.FS()))
 	})
 

@@ -39,11 +39,14 @@ func AuthCreate(c buffalo.Context) error {
 
 	// helper function to handle bad attempts
 	bad := func() error {
+		// Always perform a dummy bcrypt operation to prevent timing attacks
+		bcrypt.CompareHashAndPassword([]byte("$2a$10$dummy.hash.to.prevent.timing.attacks"), []byte("dummy"))
+
 		verrs := validate.NewErrors()
 		verrs.Add("email", "invalid email/password")
 
 		c.Set("errors", verrs)
-		c.Set("user", u)
+		c.Set("user", &models.User{}) // Don't leak the submitted email
 
 		return c.Render(http.StatusUnauthorized, r.HTML("auth/new.plush.html"))
 	}
@@ -62,12 +65,14 @@ func AuthCreate(c buffalo.Context) error {
 		return bad()
 	}
 	c.Session().Set("current_user_id", u.ID)
-	c.Flash().Add("success", "Welcome Back to Buffalo!")
+	c.Flash().Add("success", "Welcome Back!")
 
 	redirectURL := "/"
 	if redir, ok := c.Session().Get("redirectURL").(string); ok && redir != "" {
 		redirectURL = redir
 	}
+	// Always clear the redirect URL after use, even if empty
+	c.Session().Delete("redirectURL")
 
 	return c.Redirect(http.StatusFound, redirectURL)
 }

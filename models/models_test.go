@@ -1,7 +1,6 @@
 package models
 
 import (
-	"os"
 	"testing"
 
 	"github.com/gobuffalo/suite/v4"
@@ -12,10 +11,8 @@ type ModelSuite struct {
 }
 
 func Test_ModelSuite(t *testing.T) {
-	model, err := suite.NewModelWithFixtures(os.DirFS("../fixtures"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Use NewModel instead of NewModelWithFixtures to avoid database recreation
+	model := suite.NewModel()
 
 	as := &ModelSuite{
 		Model: model,

@@ -5,6 +5,7 @@ import (
 	"my_go_saas_template/templates"
 
 	"github.com/gobuffalo/buffalo/render"
+	"github.com/gobuffalo/helpers/forms"
 )
 
 var r *render.Engine
@@ -24,8 +25,8 @@ func init() {
 		Helpers: render.Helpers{
 			// for non-bootstrap form helpers uncomment the lines
 			// below and import "github.com/gobuffalo/helpers/forms"
-			// forms.FormKey:     forms.Form,
-			// forms.FormForKey:  forms.FormFor,
+			forms.FormKey:    forms.Form,
+			forms.FormForKey: forms.FormFor,
 		},
 	})
 }

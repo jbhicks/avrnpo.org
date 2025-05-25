@@ -7,6 +7,7 @@ require (
 	github.com/gobuffalo/buffalo-pop/v3 v3.0.7
 	github.com/gobuffalo/envy v1.10.2
 	github.com/gobuffalo/grift v1.5.2
+	github.com/gobuffalo/helpers v0.6.10
 	github.com/gobuffalo/middleware v1.0.0
 	github.com/gobuffalo/pop/v6 v6.1.1
 	github.com/gobuffalo/suite/v4 v4.0.4
@@ -32,7 +33,6 @@ require (
 	github.com/gobuffalo/fizz v1.14.4 // indirect
 	github.com/gobuffalo/flect v1.0.2 // indirect
 	github.com/gobuffalo/github_flavored_markdown v1.1.3 // indirect
-	github.com/gobuffalo/helpers v0.6.10 // indirect
 	github.com/gobuffalo/httptest v1.5.2 // indirect
 	github.com/gobuffalo/logger v1.0.7 // indirect
 	github.com/gobuffalo/meta v0.3.3 // indirect

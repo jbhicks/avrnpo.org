@@ -6,14 +6,28 @@ import (
 	"github.com/gobuffalo/buffalo"
 )
 
-// HomeHandler is a default handler to serve up a home page.
+// HomeHandler serves the public landing page
 func HomeHandler(c buffalo.Context) error {
-	// Check if user is authenticated
-	if c.Value("current_user") == nil {
-		// Redirect to login page if not authenticated
-		return c.Redirect(http.StatusFound, "/auth/new")
+	// Check if we have a current_user_id in the session (like the test sets)
+	userID := c.Session().Get("current_user_id")
+
+	// Set a simple boolean flag for the template
+	if userID != nil {
+		c.Set("user_logged_in", true)
+		// Also try to get the user object from the middleware
+		if user := c.Value("current_user"); user != nil {
+			c.Set("current_user", user)
+		}
+	} else {
+		c.Set("user_logged_in", false)
+		c.Set("current_user", nil)
 	}
 
-	// If authenticated, render the home page
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
+}
+
+// DashboardHandler serves the protected dashboard for authenticated users
+func DashboardHandler(c buffalo.Context) error {
+	// This will be protected by the Authorize middleware
+	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 }

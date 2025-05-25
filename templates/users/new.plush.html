@@ -12,7 +12,7 @@
 
     <!-- Registration Form -->
     <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
-      <%= formFor(user, {action: usersPath()}) { %>
+      <%= formFor(user, {action: "/users"}) { %>
         <div class="space-y-6">
           <div>
             <%= f.InputTag("Email", {
@@ -47,9 +47,9 @@
       <div class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Already have an account? 
-          <%= linkTo(newAuthPath(), {class: "text-blue-600 hover:text-blue-800 font-medium"}) { %>
+          <a href="/auth/new" class="text-blue-600 hover:text-blue-800 font-medium">
             Sign in
-          <% } %>
+          </a>
         </p>
       </div>
     </div>

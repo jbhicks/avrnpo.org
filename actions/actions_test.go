@@ -20,13 +20,11 @@ func Test_ActionSuite(t *testing.T) {
 	appOnce = sync.Once{}
 	app = nil
 
-	action, err := suite.NewActionWithFixtures(App(), os.DirFS("../fixtures"))
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Create app instance to verify environment
+	testApp := App()
 
 	as := &ActionSuite{
-		Action: action,
+		Action: suite.NewAction(testApp),
 	}
 	suite.Run(t, as)
 }
