@@ -14,7 +14,7 @@
         
         <!-- Auth Buttons -->
         <div class="flex items-center space-x-4">
-          <%= if (current_user != nil) { %>
+          <%= if (current_user) { %>
             <a href="/dashboard" class="text-gray-300 hover:text-white transition-colors">Dashboard</a>
             <a href="/signout" class="bg-white text-gray-900 px-4 py-2 rounded-md hover:bg-gray-100 transition-colors font-medium">Sign Out</a>
           <% } else { %>
@@ -41,7 +41,7 @@
       
       <!-- CTA Buttons -->
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <%= if (current_user != nil) { %>
+        <%= if (current_user) { %>
           <a href="/dashboard" class="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-lg">
             Go to Dashboard →
           </a>
@@ -105,10 +105,10 @@
     <p class="text-xl text-gray-600 mb-8">
       Join thousands of developers who trust our SaaS template
     </p>
-    <%= if (!current_user) { %>
+    <%= if (!current_user) { %>    <%= if (!current_user) { %>
       <a href="/users/new" class="bg-gray-900 text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition-colors font-semibold text-lg">
         Get Started Free →
       </a>
-    <% } %>
+    <% } %><% } %>
   </div>
 </div>

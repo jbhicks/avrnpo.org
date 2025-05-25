@@ -24,9 +24,23 @@ A Buffalo-based SaaS application template with containerized PostgreSQL database
 - Docker and Docker Compose
 - Buffalo CLI
 
-### Database Setup
+### Development Mode (Recommended)
 
-This application uses PostgreSQL running in a Docker container. The setup is fully automated:
+The easiest way to get started is using the Makefile shortcuts:
+
+```console
+# First time setup (creates database and runs migrations)
+make setup
+
+# Start development mode (database + Buffalo dev server)
+make dev
+```
+
+Visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your application.
+
+### Manual Setup
+
+If you prefer to run commands manually:
 
 ```console
 # Start PostgreSQL container
@@ -34,16 +48,18 @@ docker-compose up -d
 
 # Run database migrations (if needed)
 buffalo pop migrate
-```
 
-### Starting the Application
-
-```console
 # Start the development server
 buffalo dev
 ```
 
-Visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your application.
+### Available Make Commands
+
+- **`make dev`** - Start database and Buffalo development server
+- **`make setup`** - Initial setup (database + migrations)
+- **`make db-up`** - Start only the database
+- **`make test`** - Run tests with database
+- **`make clean`** - Stop all services and clean up
 
 ## 🔐 Authentication Features
 
@@ -98,6 +114,13 @@ The application includes a PostgreSQL container configured via `docker-compose.y
 ### Common Commands
 
 ```console
+# Development shortcuts (recommended)
+make dev                       # Start everything for development
+make setup                     # First-time setup
+make test                      # Run tests
+make clean                     # Stop and cleanup
+
+# Manual commands
 # Database operations
 buffalo pop create -a          # Create databases
 buffalo pop migrate            # Run migrations
@@ -107,6 +130,10 @@ buffalo pop generate migration # Create new migration
 buffalo dev                    # Start dev server with hot reload
 buffalo build                  # Build production binary
 buffalo test                   # Run tests
+
+# Docker
+docker-compose up -d           # Start database
+docker-compose down            # Stop database
 
 # User management (examples)
 # Register: POST /users with {email, password, first_name, last_name}

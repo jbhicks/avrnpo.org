@@ -24,7 +24,19 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	verrs, err := u.Create(as.DB)
 	as.NoError(err)
 	as.False(verrs.HasAny())
-	as.Session.Set("current_user_id", u.ID)
+
+	// Debug: check the user ID that was created
+	as.NotZero(u.ID)
+
+	// Instead of manually setting session, simulate actual login
+	loginData := map[string]interface{}{
+		"Email":    "mark@example.com",
+		"Password": "password",
+	}
+
+	// POST to login endpoint to get proper session
+	loginRes := as.HTML("/auth").Post(loginData)
+	as.Equal(http.StatusFound, loginRes.Code)
 
 	// Test that logged in users still see the landing page with dashboard link
 	res := as.HTML("/").Get()

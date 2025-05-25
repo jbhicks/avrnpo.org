@@ -70,8 +70,9 @@ func (ms *ModelSuite) Test_User_Create_UserExists() {
 	ms.Equal(1, count)
 
 	u = &User{
-		Email:    "mark@example.com",
-		Password: "password",
+		Email:                "mark@example.com",
+		Password:             "password",
+		PasswordConfirmation: "password",
 	}
 
 	verrs, err = u.Create(ms.DB)
