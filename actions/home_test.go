@@ -29,9 +29,9 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	as.NotZero(u.ID)
 
 	// Instead of manually setting session, simulate actual login
-	loginData := map[string]interface{}{
-		"Email":    "mark@example.com",
-		"Password": "password",
+	loginData := &models.User{
+		Email:    "mark@example.com",
+		Password: "password",
 	}
 
 	// POST to login endpoint to get proper session

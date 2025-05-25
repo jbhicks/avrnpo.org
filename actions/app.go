@@ -67,29 +67,34 @@ func App() *buffalo.App {
 		// Setup and use translations:
 		app.Use(translations())
 
-		// Set current user for all requests
+		// NOTE: this block should go before any resources
+		// that need to be protected by buffalo-auth!
+		//AuthMiddlewares
 		app.Use(SetCurrentUser)
+		app.Use(Authorize)
 
-		// Routes
+		// Skip Authorize middleware for public routes following official buffalo-auth pattern
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate)
+
+		// Public routes
 		app.GET("/", HomeHandler)
-		app.GET("/dashboard", Authorize(DashboardHandler))
 
-		// User registration routes
+		//Routes for Auth
+		app.GET("/auth/", AuthLanding)
+		app.GET("/auth/new", AuthNew)
+		app.POST("/auth/", AuthCreate)
+		app.DELETE("/auth/", AuthDestroy)
+
+		//Routes for User registration
 		app.GET("/users/new", UsersNew)
-		app.POST("/users", UsersCreate)
+		app.POST("/users/", UsersCreate)
 
-		// Profile and Account Settings routes (protected)
-		app.GET("/profile", Authorize(ProfileSettings))
-		app.POST("/profile", Authorize(ProfileUpdate))
-		app.GET("/account", Authorize(AccountSettings))
-		app.POST("/account", Authorize(AccountUpdate))
-
-		// Auth routes
-		auth := app.Group("/auth")
-		auth.GET("/", AuthLanding)
-		auth.GET("/new", AuthNew)
-		auth.POST("/", AuthCreate)
-		auth.DELETE("/", AuthDestroy)
+		// Protected routes - these will use the global Authorize middleware
+		app.GET("/dashboard", DashboardHandler)
+		app.GET("/profile", ProfileSettings)
+		app.POST("/profile", ProfileUpdate)
+		app.GET("/account", AccountSettings)
+		app.POST("/account", AccountUpdate)
 
 		// Serve static files
 		app.ServeFiles("/", http.FS(public.FS()))
