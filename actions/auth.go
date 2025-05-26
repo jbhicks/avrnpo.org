@@ -32,6 +32,9 @@ func AuthCreate(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 
+	// Preserve the plaintext password before database query
+	plaintextPassword := u.Password
+
 	tx := c.Value("tx").(*pop.Connection)
 
 	// find a user with the email
@@ -60,10 +63,11 @@ func AuthCreate(c buffalo.Context) error {
 	}
 
 	// confirm that the given password matches the hashed password from the db
-	err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(u.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(plaintextPassword))
 	if err != nil {
 		return bad()
 	}
+
 	c.Session().Set("current_user_id", u.ID)
 	c.Flash().Add("success", "Welcome Back!")
 

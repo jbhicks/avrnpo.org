@@ -1,26 +1,12 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"my_go_saas_template/models"
 )
-
-func (as *ActionSuite) createUser() (*models.User, error) {
-	u := &models.User{
-		Email:                "mark@example.com",
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Mark",
-		LastName:             "Smith",
-	}
-
-	verrs, err := u.Create(as.DB)
-	as.NoError(err)
-	as.False(verrs.HasAny(), "validation error: %v", verrs)
-
-	return u, err
-}
 
 func (as *ActionSuite) Test_Auth_Signin() {
 	res := as.HTML("/auth/").Get()
@@ -35,8 +21,20 @@ func (as *ActionSuite) Test_Auth_New() {
 }
 
 func (as *ActionSuite) Test_Auth_Create() {
-	u, err := as.createUser()
-	as.NoError(err)
+	timestamp := time.Now().UnixNano()
+
+	// Create a user through the signup endpoint (which works)
+	signupData := &models.User{
+		Email:                fmt.Sprintf("mark-%d@example.com", timestamp),
+		Password:             "password",
+		PasswordConfirmation: "password",
+		FirstName:            "Mark",
+		LastName:             "Smith",
+	}
+
+	// Create user via web interface to ensure it's properly committed
+	signupRes := as.HTML("/users").Post(signupData)
+	as.Equal(http.StatusFound, signupRes.Code)
 
 	tcases := []struct {
 		Email       string
@@ -46,9 +44,9 @@ func (as *ActionSuite) Test_Auth_Create() {
 
 		Identifier string
 	}{
-		{u.Email, u.Password, http.StatusFound, "/", "Valid"},
+		{signupData.Email, signupData.Password, http.StatusFound, "/", "Valid"},
 		{"noexist@example.com", "password", http.StatusUnauthorized, "", "Email Invalid"},
-		{u.Email, "invalidPassword", http.StatusUnauthorized, "", "Password Invalid"},
+		{signupData.Email, "invalidPassword", http.StatusUnauthorized, "", "Password Invalid"},
 	}
 
 	for _, tcase := range tcases {
@@ -65,8 +63,20 @@ func (as *ActionSuite) Test_Auth_Create() {
 }
 
 func (as *ActionSuite) Test_Auth_Redirect() {
-	u, err := as.createUser()
-	as.NoError(err)
+	timestamp := time.Now().UnixNano()
+
+	// Create a user through the signup endpoint (which works)
+	signupData := &models.User{
+		Email:                fmt.Sprintf("redirect-%d@example.com", timestamp),
+		Password:             "password",
+		PasswordConfirmation: "password",
+		FirstName:            "Redirect",
+		LastName:             "Test",
+	}
+
+	// Create user via web interface to ensure it's properly committed
+	signupRes := as.HTML("/users").Post(signupData)
+	as.Equal(http.StatusFound, signupRes.Code)
 
 	tcases := []struct {
 		redirectURL    interface{}
@@ -83,10 +93,48 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 		as.Run(tcase.identifier, func() {
 			as.Session.Set("redirectURL", tcase.redirectURL)
 
-			res := as.HTML("/auth").Post(u)
+			res := as.HTML("/auth").Post(signupData)
 
 			as.Equal(http.StatusFound, res.Code)
 			as.Equal(res.Location(), tcase.resultLocation)
 		})
 	}
+}
+
+func (as *ActionSuite) Test_Auth_Create_Password_Preservation() {
+	timestamp := time.Now().UnixNano()
+
+	// This test specifically verifies that the plaintext password is preserved
+	// during the authentication process and not overwritten by the database query.
+	// This would catch the bug where tx.First(u) overwrites the Password field.
+
+	// Create a user through the signup endpoint (which works)
+	signupData := &models.User{
+		Email:                fmt.Sprintf("test.password.preservation-%d@example.com", timestamp),
+		Password:             "secretpassword123",
+		PasswordConfirmation: "secretpassword123",
+		FirstName:            "Test",
+		LastName:             "User",
+	}
+
+	// Create user via web interface to ensure it's properly committed
+	signupRes := as.HTML("/users").Post(signupData)
+	as.Equal(http.StatusFound, signupRes.Code)
+
+	// Now attempt to login with the correct password
+	// This should succeed if the password is properly preserved during auth
+	loginUser := &models.User{
+		Email:    signupData.Email,
+		Password: "secretpassword123", // Same password used during creation
+	}
+
+	res := as.HTML("/auth").Post(loginUser)
+
+	// Should redirect to home page on successful authentication
+	as.Equal(http.StatusFound, res.Code, "Authentication should succeed with correct password")
+	as.Equal("/", res.Location(), "Should redirect to home page after successful login")
+
+	// Verify session was set
+	sessionUserID := as.Session.Get("current_user_id")
+	as.NotNil(sessionUserID, "Session should contain current_user_id after successful login")
 }
