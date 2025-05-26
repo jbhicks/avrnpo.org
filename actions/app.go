@@ -84,6 +84,7 @@ func App() *buffalo.App {
 		app.GET("/auth/new", AuthNew)
 		app.POST("/auth/", AuthCreate)
 		app.DELETE("/auth/", AuthDestroy)
+		app.GET("/signout", AuthDestroy) // Add GET route for signout links
 
 		//Routes for User registration
 		app.GET("/users/new", UsersNew)
