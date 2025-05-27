@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"my_go_saas_template/models"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -8,13 +9,9 @@ import (
 
 // HomeHandler serves the public landing page
 func HomeHandler(c buffalo.Context) error {
-	// Check if we have a current_user_id in the session (like the test sets)
 	userID := c.Session().Get("current_user_id")
-
-	// Set a simple boolean flag for the template
 	if userID != nil {
 		c.Set("user_logged_in", true)
-		// Also try to get the user object from the middleware
 		if user := c.Value("current_user"); user != nil {
 			c.Set("current_user", user)
 		}
@@ -23,17 +20,51 @@ func HomeHandler(c buffalo.Context) error {
 		c.Set("current_user", nil)
 	}
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("home/index.plush.html"))
+	htmxRequest := IsHTMX(c.Request())
+	c.LogField("is_htmx_request_in_handler_for_home", htmxRequest)
+	c.Set("isHTMXRequest", htmxRequest) // Still useful for _index_content.plush.html if it has conditionals
+
+	if htmxRequest {
+		// For ALL HTMX requests to home (including the initial hx-trigger='load'),
+		// render only the content part using rHTMX.
+		return c.Render(http.StatusOK, rHTMX.HTML("home/_index_content.plush.html"))
 	}
+
+	// For a full page load (non-HTMX), just render the main index page.
+	// The <main> tag in index.plush.html will now have hx-trigger="load"
+	// which will immediately make another request (this time an HTMX one) to this same handler
+	// to fetch and inject the _index_content.plush.html.
+
+	// No longer pre-rendering content to a string or setting initialPageContent
+	// c.Set("initialPageContent", ...)
+
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
 // DashboardHandler serves the protected dashboard for authenticated users
 func DashboardHandler(c buffalo.Context) error {
-	// This will be protected by the Authorize middleware
-	if c.Request().Header.Get("HX-Request") == "true" {
+	// Get current_user
+	currentUser, ok := c.Value("current_user").(*models.User)
+	if !ok || currentUser == nil {
+		// This should ideally not happen if AuthMiddleware is working
+		return c.Redirect(http.StatusSeeOther, "/")
+	}
+
+	// You can pass additional data to the template if needed
+	c.Set("user", currentUser) // This is the same as current_user, but explicit for template
+
+	if IsHTMX(c.Request()) { // IsHTMX is now defined in render.go
+		c.Set("isHTMXRequest", true) // Indicate HTMX request
+		// Ensure current_user is explicitly available for the HTMX render context
+		if cu := c.Value("current_user"); cu != nil {
+			c.Set("current_user", cu)
+		}
+		// When it's an HTMX request, we render with the minimal htmx.plush.html layout
 		return c.Render(http.StatusOK, rHTMX.HTML("home/dashboard.plush.html"))
 	}
+
+	// For a full page load (e.g. direct navigation to /dashboard, or refresh)
+	// we render with the main application.plush.html layout, which now includes the persistent header
+	c.Set("isHTMXRequest", false) // Indicate non-HTMX request
 	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 }

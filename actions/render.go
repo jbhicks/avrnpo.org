@@ -3,6 +3,7 @@ package actions
 import (
 	"my_go_saas_template/public"
 	"my_go_saas_template/templates"
+	"net/http"
 
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/helpers/forms"
@@ -34,4 +35,9 @@ func init() {
 		AssetsFS:    public.FS(),
 		Helpers:     commonHelpers, // Share the same helpers
 	})
+}
+
+// IsHTMX checks if the current request is an HTMX request.
+func IsHTMX(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true"
 }

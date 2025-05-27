@@ -78,7 +78,9 @@
     <% } %>
   </head>
   <body>
-    <%= partial("flash.html") %>
+    <% if (flash != nil && len(flash) > 0) { %>
+      <%= partial("flash.html") %>
+    <% } %>
     <%= yield %>
   </body>
 </html>
