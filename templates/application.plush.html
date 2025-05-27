@@ -1,16 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <title>My Go SaaS - Modern SaaS Platform</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     
-    <!-- Local Tailwind CSS with built-in typography support -->
-    <link rel="stylesheet" href="/css/tailwind.min.css">
-    
-    <!-- Custom Typography styles (Tailwind Typography inspired) -->
-    <link rel="stylesheet" href="/css/typography.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/styles.css">
     
     <!-- Local Alpine.js for interactive components -->
     <script defer src="/js/alpine.min.js"></script>
@@ -23,10 +20,8 @@
     <meta name="csrf-token" content="<%= authenticity_token %>" />
     <% } %>
   </head>
-  <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
+  <body>
     <%= partial("flash.html") %>
-    <div class="min-h-screen">
-      <%= yield %>
-    </div>
+    <%= yield %>
   </body>
 </html>

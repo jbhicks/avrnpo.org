@@ -1,22 +1,22 @@
 <!-- Profile Settings Page -->
-<div class="min-h-screen bg-gradient-to-b from-white to-gray-50">
+<div>
   <!-- Navigation -->
-  <nav class="bg-white border-b border-gray-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center py-4">
+  <nav>
+    <div>
+      <div>
         <!-- Logo -->
-        <div class="flex items-center">
-          <a href="/" class="flex items-center space-x-2">
-            <div class="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
+        <div>
+          <a href="/">
+            <div>
               <div x-html="getIcon('cube', 'w-4 h-4 text-white')"></div>
             </div>
-            <span class="text-xl font-bold text-gray-900">My Go SaaS</span>
+            <span>My Go SaaS</span>
           </a>
         </div>
         
         <!-- Back to Dashboard -->
-        <div class="flex items-center space-x-4">
-          <a href="/dashboard" class="text-gray-600 hover:text-gray-900 transition-colors flex items-center">
+        <div>
+          <a href="/dashboard">
             <div x-html="getIcon('arrowLeft', 'w-4 h-4 mr-2')"></div>Back to Dashboard
           </a>
         </div>
@@ -24,20 +24,20 @@
     </div>
   </nav>
 
-  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div>
     <!-- Page Header -->
-    <div class="text-center mb-8">
-      <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+    <div>
+      <div>
         <div x-html="getIcon('userCircle', 'w-8 h-8 text-white')"></div>
       </div>
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
-      <p class="text-gray-600">Manage your personal information and preferences</p>
+      <h1>Profile Settings</h1>
+      <p>Manage your personal information and preferences</p>
     </div>
 
     <!-- Flash Messages -->
     <%= if (flash["success"]) { %>
-      <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">
-        <div class="flex items-center">
+      <div>
+        <div>
           <div x-html="getIcon('checkCircle', 'w-5 h-5 mr-2')"></div>
           <%= for (msg) in flash["success"] { %><%= msg %><% } %>
         </div>
@@ -45,8 +45,8 @@
     <% } %>
 
     <%= if (flash["danger"]) { %>
-      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
-        <div class="flex items-center">
+      <div>
+        <div>
           <div x-html="getIcon('exclamationCircle', 'w-5 h-5 mr-2')"></div>
           <%= for (msg) in flash["danger"] { %><%= msg %><% } %>
         </div>
@@ -54,62 +54,50 @@
     <% } %>
 
     <!-- Profile Form -->
-    <div class="bg-white rounded-lg shadow-lg border border-gray-200 p-8">
+    <div>
       <%= formFor(user, {action: "/profile", method: "POST"}) { %>
-        <div class="space-y-6">
+        <div>
           <!-- First Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              First Name
-            </label>
+            <label>First Name</label>
             <%= f.InputTag("FirstName", {
               type: "text",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
               placeholder: "Enter your first name"
             }) %>
             <%= if (errors && errors["first_name"]) { %>
-              <p class="text-red-600 text-sm mt-1"><%= errors["first_name"] %></p>
+              <p><%= errors["first_name"] %></p>
             <% } %>
           </div>
 
           <!-- Last Name -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Last Name
-            </label>
+            <label>Last Name</label>
             <%= f.InputTag("LastName", {
               type: "text",
-              class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
               placeholder: "Enter your last name"
             }) %>
             <%= if (errors && errors["last_name"]) { %>
-              <p class="text-red-600 text-sm mt-1"><%= errors["last_name"] %></p>
+              <p><%= errors["last_name"] %></p>
             <% } %>
           </div>
 
           <!-- Email (read-only) -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
+            <label>Email Address</label>
             <input 
               type="email" 
               value="<%= user.Email %>" 
               readonly 
-              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 cursor-not-allowed"
             />
-            <p class="text-sm text-gray-500 mt-1">
+            <p>
               <div x-html="getIcon('informationCircle', 'w-4 h-4 mr-1 inline-block')"></div>
               Email changes require contacting support
             </p>
           </div>
 
           <!-- Submit Button -->
-          <div class="pt-4">
-            <button 
-              type="submit" 
-              class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium flex items-center justify-center"
-            >
+          <div>
+            <button type="submit">
               <div x-html="getIcon('save', 'w-5 h-5 mr-2')"></div>
               Update Profile
             </button>
@@ -118,12 +106,9 @@
       <% } %>
 
       <!-- Account Settings Link -->
-      <div class="mt-8 pt-6 border-t border-gray-200">
-        <div class="text-center">
-          <a 
-            href="/account" 
-            class="text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center justify-center"
-          >
+      <div>
+        <div>
+          <a href="/account">
             <div x-html="getIcon('cog', 'w-5 h-5 mr-2')"></div>
             Account Settings (Password & Security)
           </a>
