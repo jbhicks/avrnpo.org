@@ -7,39 +7,25 @@
       </li>
     </ul>
     <ul>
-      <% if (current_user) { %>
+      <%= if (current_user) { %>
         <li><a href="/dashboard">Dashboard</a></li>
         <li><a href="/users/account">Account</a></li>
         <li>
-          <!-- Dark/Light Mode Toggle -->
-          <details class="dropdown theme-selector">
-            <summary role="button">
-              <span id="theme-icon">🌙</span> Theme
-            </summary>
-            <ul dir="rtl">
-              <li><a href="#" onclick="setTheme('dark')">🌙 Dark</a></li>
-              <li><a href="#" onclick="setTheme('light')">☀️ Light</a></li>
-              <li><a href="#" onclick="setTheme('auto')">🔄 Auto</a></li>
-            </ul>
-          </details>
+          <!-- Compact Dark/Light Mode Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span id="theme-icon"></span>
+          </button>
         </li>
         <li><a href="/auth/signout" role="button" class="btn-danger">Sign Out</a></li>
       <% } else { %>
+        <li>
+          <!-- Compact Dark/Light Mode Toggle -->
+          <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span id="theme-icon"></span>
+          </button>
+        </li>
         <li><a href="/auth/new" role="button" class="btn-primary">Login</a></li>
         <li><a href="/users/new" role="button" class="btn-secondary">Sign Up</a></li>
-        <li>
-          <!-- Dark/Light Mode Toggle -->
-          <details class="dropdown theme-selector">
-            <summary role="button">
-              <span id="theme-icon">🌙</span> Theme
-            </summary>
-            <ul dir="rtl">
-              <li><a href="#" onclick="setTheme('dark')">🌙 Dark</a></li>
-              <li><a href="#" onclick="setTheme('light')">☀️ Light</a></li>
-              <li><a href="#" onclick="setTheme('auto')">🔄 Auto</a></li>
-            </ul>
-          </details>
-        </li>
       <% } %>
     </ul>
   </nav>
@@ -54,7 +40,7 @@
     </hgroup>
     
     <p>
-      <% if (current_user) { %>
+      <%= if (current_user) { %>
         <a href="/dashboard" role="button">View Dashboard</a>
         <a href="/users/account" role="button" class="secondary">Account Settings</a>
       <% } else { %>

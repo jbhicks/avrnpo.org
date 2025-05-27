@@ -10,14 +10,34 @@ function setTheme(theme) {
     localStorage.removeItem('picoPreferredColorScheme');
     document.documentElement.removeAttribute('data-theme');
     if (themeIcon) {
-      themeIcon.textContent = '🔄';
+      if (window.getIcon) {
+        themeIcon.innerHTML = window.getIcon('computerDesktop', 'w-4 h-4');
+      } else {
+        themeIcon.textContent = '🖥️';
+      }
     }
   } else {
     localStorage.setItem('picoPreferredColorScheme', theme);
     document.documentElement.setAttribute('data-theme', theme);
     if (themeIcon) {
-      themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+      if (window.getIcon) {
+        themeIcon.innerHTML = theme === 'dark' ? window.getIcon('moon', 'w-4 h-4') : window.getIcon('sun', 'w-4 h-4');
+      } else {
+        themeIcon.textContent = theme === 'dark' ? '🌙' : '☀️';
+      }
     }
+  }
+}
+
+function toggleTheme() {
+  const currentTheme = localStorage.getItem('picoPreferredColorScheme');
+  
+  if (!currentTheme || currentTheme === 'auto') {
+    setTheme('light');
+  } else if (currentTheme === 'light') {
+    setTheme('dark');
+  } else {
+    setTheme('light');
   }
 }
 
@@ -29,13 +49,34 @@ document.addEventListener('DOMContentLoaded', function() {
   if (savedTheme) {
     document.documentElement.setAttribute('data-theme', savedTheme);
     if (themeIcon) {
-      themeIcon.textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+      if (window.getIcon) {
+        if (savedTheme === 'dark') {
+          themeIcon.innerHTML = window.getIcon('moon', 'w-4 h-4');
+        } else if (savedTheme === 'light') {
+          themeIcon.innerHTML = window.getIcon('sun', 'w-4 h-4');
+        } else {
+          themeIcon.innerHTML = window.getIcon('computerDesktop', 'w-4 h-4');
+        }
+      } else {
+        // Fallback to emoji if getIcon is not available
+        if (savedTheme === 'dark') {
+          themeIcon.textContent = '🌙';
+        } else if (savedTheme === 'light') {
+          themeIcon.textContent = '☀️';
+        } else {
+          themeIcon.textContent = '🖥️';
+        }
+      }
     }
   } else {
     // Default to dark mode if no preference is set
     document.documentElement.setAttribute('data-theme', 'dark');
     if (themeIcon) {
-      themeIcon.textContent = '🌙';
+      if (window.getIcon) {
+        themeIcon.innerHTML = window.getIcon('moon', 'w-4 h-4');
+      } else {
+        themeIcon.textContent = '🌙';
+      }
     }
   }
 });
