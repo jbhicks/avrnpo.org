@@ -1,111 +1,298 @@
-<nav>
-  <div>
-    <h1>My Go SaaS</h1>
+<!-- Enhanced Header -->
+<header class="container-fluid site-header">
+  <nav>
+    <ul>
+      <li>
+        <strong>Buffalo SaaS</strong>
+      </li>
+    </ul>
     <ul>
       <% if (current_user) { %>
         <li><a href="/dashboard">Dashboard</a></li>
         <li><a href="/users/account">Account</a></li>
-        <li><a href="/auth/signout">Sign Out</a></li>
+        <li>
+          <!-- Dark/Light Mode Toggle -->
+          <details class="dropdown theme-selector">
+            <summary role="button">
+              <span id="theme-icon">🌙</span> Theme
+            </summary>
+            <ul dir="rtl">
+              <li><a href="#" onclick="setTheme('dark')">🌙 Dark</a></li>
+              <li><a href="#" onclick="setTheme('light')">☀️ Light</a></li>
+              <li><a href="#" onclick="setTheme('auto')">🔄 Auto</a></li>
+            </ul>
+          </details>
+        </li>
+        <li><a href="/auth/signout" role="button" class="btn-danger">Sign Out</a></li>
       <% } else { %>
-        <li><a href="/auth/new">Sign In</a></li>
-        <li><a href="/users/new">Sign Up</a></li>
+        <li><a href="/auth/new" role="button" class="btn-primary">Login</a></li>
+        <li><a href="/users/new" role="button" class="btn-secondary">Sign Up</a></li>
+        <li>
+          <!-- Dark/Light Mode Toggle -->
+          <details class="dropdown theme-selector">
+            <summary role="button">
+              <span id="theme-icon">🌙</span> Theme
+            </summary>
+            <ul dir="rtl">
+              <li><a href="#" onclick="setTheme('dark')">🌙 Dark</a></li>
+              <li><a href="#" onclick="setTheme('light')">☀️ Light</a></li>
+              <li><a href="#" onclick="setTheme('auto')">🔄 Auto</a></li>
+            </ul>
+          </details>
+        </li>
       <% } %>
     </ul>
-  </div>
-</nav>
+  </nav>
+</header>
 
-<main>
-  <header>
-    <h1>Build Your Next SaaS Product homie</h1>
-    <p>A complete Go-based SaaS template with authentication, user management, and everything you need to launch quickly.</p>
-    <div>
+<!-- Main Content -->
+<main class="container">
+  <section>
+    <hgroup>
+      <h1>Go Buffalo SaaS Template</h1>
+      <p>A functional web application template built with Go Buffalo framework, PostgreSQL, and Pico.css. Includes complete user authentication, account management, and dashboard functionality.</p>
+    </hgroup>
+    
+    <p>
       <% if (current_user) { %>
-        <a href="/dashboard">Go to Dashboard</a>
+        <a href="/dashboard" role="button">View Dashboard</a>
+        <a href="/users/account" role="button" class="secondary">Account Settings</a>
       <% } else { %>
-        <a href="/users/new">Get Started Free</a>
-        <a href="/auth/new">Sign In</a>
+        <a href="/users/new" role="button">Create Account</a>
+        <a href="/auth/new" role="button" class="secondary">Login</a>
       <% } %>
-    </div>
-  </header>
+    </p>
+  </section>
 
+  <!-- Technology Stack -->
   <section>
-    <h2>Why Choose Our SaaS Template?</h2>
-    <div>
-      <div>
-        <h3>🚀 Fast Setup</h3>
-        <p>Get your SaaS up and running in minutes, not weeks. Pre-configured with all essential features.</p>
-      </div>
-      <div>
-        <h3>🔐 Secure Authentication</h3>
-        <p>Built-in user authentication, session management, and security best practices included.</p>
-      </div>
-      <div>
-        <h3>📊 User Management</h3>
-        <p>Complete user registration, profiles, account management, and role-based access control.</p>
-      </div>
-      <div>
-        <h3>🛠 Production Ready</h3>
-        <p>Dockerized, database migrations, testing suite, and deployment-ready configuration.</p>
-      </div>
-      <div>
-        <h3>⚡ High Performance</h3>
-        <p>Built with Go and Buffalo framework for lightning-fast response times and scalability.</p>
-      </div>
-      <div>
-        <h3>🎨 Customizable</h3>
-        <p>Clean, semantic HTML templates ready for your custom styling and branding.</p>
-      </div>
+    <h2>Technology Stack</h2>
+    <figure>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Component</th>
+            <th scope="col">Technology</th>
+            <th scope="col">Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Backend Framework</td>
+            <td>Go Buffalo v0.18+</td>
+            <td>Web framework with routing, middleware, templating</td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td>PostgreSQL 13+</td>
+            <td>User data storage, migrations with Pop/Soda</td>
+          </tr>
+          <tr>
+            <td>Authentication</td>
+            <td>Buffalo Auth</td>
+            <td>Session-based auth with bcrypt password hashing</td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td>Pico.css v2</td>
+            <td>Semantic CSS framework with dark/light themes</td>
+          </tr>
+          <tr>
+            <td>Templates</td>
+            <td>Plush</td>
+            <td>Go templating with layout inheritance</td>
+          </tr>
+          <tr>
+            <td>Development</td>
+            <td>Docker Compose</td>
+            <td>Local development environment with hot reload</td>
+          </tr>
+          <tr>
+            <td>SEO & Performance</td>
+            <td>Meta Tags + Structured Data</td>
+            <td>Search engine optimization with social media previews</td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
+  </section>
+
+  <!-- Features Implemented -->
+  <section>
+    <h2>Features Implemented</h2>
+    <div class="grid">
+      <article>
+        <header>
+          <h3>🔐 Authentication System</h3>
+        </header>
+        <ul>
+          <li>User registration with email validation</li>
+          <li>Secure login/logout with session management</li>
+          <li>Password hashing with bcrypt</li>
+          <li>Form validation and error handling</li>
+        </ul>
+      </article>
+      
+      <article>
+        <header>
+          <h3>👤 User Management</h3>
+        </header>
+        <ul>
+          <li>Personal dashboard with account overview</li>
+          <li>Profile editing (name, email)</li>
+          <li>Password change functionality</li>
+          <li>Account information display</li>
+        </ul>
+      </article>
+      
+      <article>
+        <header>
+          <h3>🎨 Frontend & UX</h3>
+        </header>
+        <ul>
+          <li>Responsive design with Pico.css</li>
+          <li>Dark/light/auto theme switching</li>
+          <li>Semantic HTML structure</li>
+          <li>Accessible form components</li>
+        </ul>
+      </article>
+      
+      <article>
+        <header>
+          <h3>🔍 SEO & Performance</h3>
+        </header>
+        <ul>
+          <li>Search engine optimized meta tags</li>
+          <li>Open Graph social media previews</li>
+          <li>XML sitemap and robots.txt</li>
+          <li>Structured data (JSON-LD schema)</li>
+        </ul>
+      </article>
     </div>
   </section>
 
+  <!-- Available Routes -->
   <section>
-    <h2>Modern Tech Stack</h2>
-    <div>
-      <div>
-        <h3>Backend</h3>
-        <ul>
-          <li>Go programming language</li>
-          <li>Buffalo web framework</li>
-          <li>PostgreSQL database</li>
-          <li>Pop ORM for database operations</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Frontend</h3>
-        <ul>
-          <li>Semantic HTML5</li>
-          <li>Alpine.js for interactivity</li>
-          <li>Plush templating engine</li>
-          <li>Modern CSS-ready structure</li>
-        </ul>
-      </div>
-      <div>
-        <h3>DevOps</h3>
-        <ul>
-          <li>Docker containerization</li>
-          <li>Database migrations</li>
-          <li>Automated testing</li>
-          <li>Production configurations</li>
-        </ul>
-      </div>
-    </div>
+    <h2>Available Routes</h2>
+    <figure>
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Route</th>
+            <th scope="col">Method</th>
+            <th scope="col">Purpose</th>
+            <th scope="col">Auth Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/</code></td>
+            <td>GET</td>
+            <td>Homepage (this page)</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><code>/auth/new</code></td>
+            <td>GET</td>
+            <td>Login form</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><code>/auth</code></td>
+            <td>POST</td>
+            <td>Process login</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><code>/auth/signout</code></td>
+            <td>DELETE</td>
+            <td>Logout user</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><code>/users/new</code></td>
+            <td>GET</td>
+            <td>Registration form</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><code>/users</code></td>
+            <td>POST</td>
+            <td>Create new user</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard</code></td>
+            <td>GET</td>
+            <td>User dashboard</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><code>/users/account</code></td>
+            <td>GET</td>
+            <td>Account settings</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><code>/users/profile</code></td>
+            <td>GET</td>
+            <td>Profile settings</td>
+            <td>Yes</td>
+          </tr>
+        </tbody>
+      </table>
+    </figure>
   </section>
 
-  
+  <!-- Getting Started -->
+  <section>
+    <h2>Getting Started</h2>
+    <div class="grid">
+      <article>
+        <header>
+          <h3>🚀 Quick Start</h3>
+        </header>
+        <ol>
+          <li>Clone the repository</li>
+          <li>Run <code>docker-compose up</code></li>
+          <li>Visit <code>http://localhost:3000</code></li>
+          <li>Create an account or login</li>
+        </ol>
+      </article>
+      
+      <article>
+        <header>
+          <h3>🛠️ Development</h3>
+        </header>
+        <ol>
+          <li>Install Go 1.21+ and Buffalo CLI</li>
+          <li>Set up PostgreSQL database</li>
+          <li>Run migrations: <code>buffalo pop migrate</code></li>
+          <li>Start dev server: <code>buffalo dev</code></li>
+        </ol>
+      </article>
+      
+      <article>
+        <header>
+          <h3>📝 Customization</h3>
+        </header>
+        <ul>
+          <li>Edit templates in <code>/templates</code></li>
+          <li>Modify styles with CSS variables</li>
+          <li>Add routes in <code>/actions/app.go</code></li>
+          <li>Extend models in <code>/models</code></li>
+        </ul>
+      </article>
+    </div>
+  </section>
 </main>
 
-<footer>
-  <div>
-    <div>
-      <h4>Support</h4>
-      <ul>
-        <li><a href="#help">Help Center</a></li>
-        <li><a href="#community">Community</a></li>
-        <li><a href="#status">Status</a></li>
-      </ul>
-    </div>
-  </div>
-  <div>
-    <p>&copy; 2025 My Go SaaS Template. All rights reserved.</p>
-  </div>
+<!-- Footer -->
+<footer class="container">
+  <small>
+    <a href="/dashboard">Dashboard</a> • 
+    <a href="/auth/new">Login</a> • 
+    <a href="https://github.com/gobuffalo/buffalo">Buffalo Framework</a>
+  </small>
+  <small>Built with <a href="https://gobuffalo.io">Buffalo</a> and <a href="https://picocss.com">Pico.css</a></small>
 </footer>

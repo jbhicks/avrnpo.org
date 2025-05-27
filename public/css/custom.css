@@ -1,0 +1,231 @@
+/**
+ * Custom CSS for My Go SaaS Template
+ * Using Pico.css variables and semantic styling
+ */
+
+/* =============================================================================
+   Header & Navigation Styles
+   ============================================================================= */
+
+/* Enhanced header with gradient background */
+.site-header {
+  background: linear-gradient(135deg, var(--color) 0%, var(--muted-color) 100%);
+  border-bottom: 3px solid var(--primary);
+  padding: 1.5rem 2rem;
+  box-shadow: var(--box-shadow);
+  position: relative;
+  z-index: 10;
+}
+
+.site-header strong {
+  font-size: 1.5em;
+  color: var(--color);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.site-header a {
+  color: var(--color);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+}
+
+.site-header a:hover {
+  color: var(--primary);
+}
+
+/* Button styles for header actions */
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-inverse);
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 8px var(--primary-focus);
+  margin-right: 0.5rem;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  color: var(--primary-inverse);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color);
+  border: 2px solid var(--primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  text-decoration: none;
+  margin-right: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background: var(--primary);
+  color: var(--primary-inverse);
+}
+
+.btn-danger {
+  background: var(--del-color);
+  color: var(--color-inverse);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+}
+
+.btn-danger:hover {
+  background: var(--del-color);
+  opacity: 0.8;
+}
+
+/* =============================================================================
+   Theme Selector
+   ============================================================================= */
+
+.theme-selector summary {
+  margin-bottom: 0;
+  font-size: 0.9em;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: var(--color);
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+}
+
+[data-theme="light"] .theme-selector summary {
+  background: rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.2);
+}
+
+/* =============================================================================
+   Dashboard Specific Styles
+   ============================================================================= */
+
+.dashboard-nav {
+  border-bottom: var(--border-width) solid var(--muted-border-color);
+  margin-bottom: var(--spacing);
+}
+
+.dashboard-nav a.logo {
+  color: var(--contrast);
+  text-decoration: none;
+}
+
+.dashboard-nav a.logo:hover {
+  color: var(--primary);
+}
+
+.stats-card {
+  text-align: center;
+}
+
+.stats-card header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: var(--spacing);
+}
+
+.stats-card header svg {
+  color: var(--primary);
+}
+
+.stats-card p {
+  font-size: 2rem;
+  margin: var(--spacing) 0;
+}
+
+.stats-card footer small {
+  color: var(--muted-color);
+}
+
+/* =============================================================================
+   Form Enhancements
+   ============================================================================= */
+
+.form-grid {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing);
+}
+
+/* =============================================================================
+   Utility Classes
+   ============================================================================= */
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--muted-color);
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mt-2 {
+  margin-top: calc(var(--spacing) * 2);
+}
+
+.p-relative {
+  position: relative;
+}
+
+.z-10 {
+  z-index: 10;
+}
+
+/* =============================================================================
+   Responsive Adjustments
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .site-header {
+    padding: 1rem;
+  }
+  
+  .site-header strong {
+    font-size: 1.25em;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.5rem 1rem;
+    margin-right: 0.25rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* =============================================================================
+   Dark/Light Theme Specific Adjustments
+   ============================================================================= */
+
+[data-theme="dark"] .site-header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+[data-theme="light"] .site-header {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom-color: var(--primary);
+}
+
+/* Fix dropdown positioning in header */
+.site-header details[role="list"] ul {
+  right: 0;
+  left: auto;
+}

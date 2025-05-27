@@ -1,119 +1,99 @@
-<!-- Profile Settings Page -->
-<div>
-  <!-- Navigation -->
-  <nav>
-    <div>
-      <div>
-        <!-- Logo -->
-        <div>
-          <a href="/">
-            <div>
-              <div x-html="getIcon('cube', 'w-4 h-4 text-white')"></div>
-            </div>
-            <span>My Go SaaS</span>
-          </a>
-        </div>
-        
-        <!-- Back to Dashboard -->
-        <div>
-          <a href="/dashboard">
-            <div x-html="getIcon('arrowLeft', 'w-4 h-4 mr-2')"></div>Back to Dashboard
-          </a>
-        </div>
-      </div>
-    </div>
-  </nav>
+<!-- Profile Settings with Pico.css -->
+<nav class="container-fluid dashboard-nav">
+  <ul>
+    <li>
+      <a href="/" class="logo">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <strong>My Go SaaS</strong>
+      </a>
+    </li>
+  </ul>
+  <ul>
+    <li>
+      <a href="/dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Dashboard
+      </a>
+    </li>
+  </ul>
+</nav>
 
-  <div>
-    <!-- Page Header -->
-    <div>
-      <div>
-        <div x-html="getIcon('userCircle', 'w-8 h-8 text-white')"></div>
-      </div>
-      <h1>Profile Settings</h1>
+<main class="container">
+  <!-- Page Header -->
+  <section>
+    <hgroup>
+      <h1>👤 Profile Settings</h1>
       <p>Manage your personal information and preferences</p>
-    </div>
+    </hgroup>
+  </section>
 
-    <!-- Flash Messages -->
-    <%= if (flash["success"]) { %>
-      <div>
-        <div>
-          <div x-html="getIcon('checkCircle', 'w-5 h-5 mr-2')"></div>
-          <%= for (msg) in flash["success"] { %><%= msg %><% } %>
-        </div>
-      </div>
-    <% } %>
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
 
-    <%= if (flash["danger"]) { %>
-      <div>
-        <div>
-          <div x-html="getIcon('exclamationCircle', 'w-5 h-5 mr-2')"></div>
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
           <%= for (msg) in flash["danger"] { %><%= msg %><% } %>
         </div>
       </div>
     <% } %>
 
-    <!-- Profile Form -->
-    <div>
-      <%= formFor(user, {action: "/profile", method: "POST"}) { %>
-        <div>
-          <!-- First Name -->
-          <div>
-            <label>First Name</label>
-            <%= f.InputTag("FirstName", {
-              type: "text",
-              placeholder: "Enter your first name"
-            }) %>
-            <%= if (errors && errors["first_name"]) { %>
-              <p><%= errors["first_name"] %></p>
-            <% } %>
-          </div>
+  <!-- Profile Form -->
+  <article>
+    <header>
+      <h3>Edit Profile Information</h3>
+    </header>
+    
+    <%= formFor(user, {action: "/profile", method: "POST"}) { %>
+      <fieldset>
+        <label>
+          First Name
+          <%= f.InputTag("FirstName", {
+            type: "text",
+            placeholder: "Enter your first name"
+          }) %>
+          <%= if (errors && errors["first_name"]) { %>
+            <small><%= errors["first_name"] %></small>
+          <% } %>
+        </label>
 
-          <!-- Last Name -->
-          <div>
-            <label>Last Name</label>
-            <%= f.InputTag("LastName", {
-              type: "text",
-              placeholder: "Enter your last name"
-            }) %>
-            <%= if (errors && errors["last_name"]) { %>
-              <p><%= errors["last_name"] %></p>
-            <% } %>
-          </div>
+        <label>
+          Last Name
+          <%= f.InputTag("LastName", {
+            type: "text",
+            placeholder: "Enter your last name"
+          }) %>
+          <%= if (errors && errors["last_name"]) { %>
+            <small><%= errors["last_name"] %></small>
+          <% } %>
+        </label>
 
-          <!-- Email (read-only) -->
-          <div>
-            <label>Email Address</label>
-            <input 
-              type="email" 
-              value="<%= user.Email %>" 
-              readonly 
-            />
-            <p>
-              <div x-html="getIcon('informationCircle', 'w-4 h-4 mr-1 inline-block')"></div>
-              Email changes require contacting support
-            </p>
-          </div>
+        <label>
+          Email Address
+          <input 
+            type="email" 
+            value="<%= user.Email %>" 
+            readonly 
+          />
+          <small>Email changes require contacting support</small>
+        </label>
+      </fieldset>
 
-          <!-- Submit Button -->
-          <div>
-            <button type="submit">
-              <div x-html="getIcon('save', 'w-5 h-5 mr-2')"></div>
-              Update Profile
-            </button>
-          </div>
-        </div>
-      <% } %>
+      <button type="submit">Update Profile</button>
+    <% } %>
 
-      <!-- Account Settings Link -->
-      <div>
-        <div>
-          <a href="/account">
-            <div x-html="getIcon('cog', 'w-5 h-5 mr-2')"></div>
-            Account Settings (Password & Security)
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+    <footer>
+      <a href="/users/account" role="button" class="secondary">⚙️ Account Settings</a>
+    </footer>
+  </article>
+</main>

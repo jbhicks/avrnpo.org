@@ -1,172 +1,138 @@
-<!-- Account Settings Page -->
-<div>
-  <!-- Navigation -->
-  <nav>
-    <div>
-      <div>
-        <!-- Logo -->
-        <div>
-          <a href="/">
-            <div>
-              <div x-html="getIcon('cube', 'w-4 h-4 text-white')"></div>
-            </div>
-            <span>My Go SaaS</span>
-          </a>
-        </div>
-        
-        <!-- Back to Dashboard -->
-        <div>
-          <a href="/dashboard">
-            <div x-html="getIcon('arrowLeft', 'w-4 h-4 mr-2')"></div>Back to Dashboard
-          </a>
-        </div>
-      </div>
-    </div>
-  </nav>
+<!-- Account Settings with Pico.css -->
+<nav class="container-fluid dashboard-nav">
+  <ul>
+    <li>
+      <a href="/" class="logo">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <strong>My Go SaaS</strong>
+      </a>
+    </li>
+  </ul>
+  <ul>
+    <li>
+      <a href="/dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Dashboard
+      </a>
+    </li>
+  </ul>
+</nav>
 
-  <div>
-    <!-- Page Header -->
-    <div>
-      <div>
-        <div x-html="getIcon('cog', 'w-8 h-8 text-white')"></div>
-      </div>
-      <h1>Account Settings</h1>
+<main class="container">
+  <!-- Page Header -->
+  <section>
+    <hgroup>
+      <h1>⚙️ Account Settings</h1>
       <p>Manage your password and security preferences</p>
-    </div>
+    </hgroup>
+  </section>
 
-    <!-- Flash Messages -->
-    <%= if (flash["success"]) { %>
-      <div>
-        <div>
-          <div x-html="getIcon('checkCircle', 'w-5 h-5 mr-2')"></div>
-          <%= for (msg) in flash["success"] { %><%= msg %><% } %>
-        </div>
-      </div>
-    <% } %>
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
 
-    <%= if (flash["danger"]) { %>
-      <div>
-        <div>
-          <div x-html="getIcon('exclamationCircle', 'w-5 h-5 mr-2')"></div>
-          <%= for (msg) in flash["danger"] { %><%= msg %><% } %>
-        </div>
-      </div>
-    <% } %>
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
 
-    <%= if (flash["info"]) { %>
-      <div>
-        <div>
-          <div x-html="getIcon('informationCircle', 'w-5 h-5 mr-2')"></div>
-          <%= for (msg) in flash["info"] { %><%= msg %><% } %>
-        </div>
-      </div>
-    <% } %>
+  <%= if (flash["info"]) { %>
+    <article>
+      <p>ℹ️ <%= for (msg) in flash["info"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
 
-    <!-- Account Information Card -->
-    <div>
-      <h3>
-        <div x-html="getIcon('user', 'w-5 h-5 mr-2 text-gray-500')"></div>
-        Account Information
-      </h3>
-      <div>
-        <div>
-          <span>Email</span>
-          <span><%= user.Email %></span>
-        </div>
-        <div>
-          <span>Account Created</span>
-          <span><%= user.CreatedAt.Format("January 2, 2006") %></span>
-        </div>
-        <div>
-          <span>Last Updated</span>
-          <span><%= user.UpdatedAt.Format("January 2, 2006") %></span>
-        </div>
-      </div>
-    </div>
+  <!-- Account Information -->
+  <article>
+    <header>
+      <h3>📧 Account Information</h3>
+    </header>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>Email</strong></td>
+          <td><%= user.Email %></td>
+        </tr>
+        <tr>
+          <td><strong>Account Created</strong></td>
+          <td><%= user.CreatedAt.Format("January 2, 2006") %></td>
+        </tr>
+        <tr>
+          <td><strong>Last Updated</strong></td>
+          <td><%= user.UpdatedAt.Format("January 2, 2006") %></td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
 
-    <!-- Password Change Form -->
-    <div>
-      <h3>
-        <div x-html="getIcon('lockClosed', 'w-5 h-5 mr-2 text-gray-500')"></div>
-        Change Password
-      </h3>
-      
-      <form action="/account" method="POST">
-        <div>
-          <!-- Current Password -->
-          <div>
-            <label>Current Password</label>
-            <input 
-              type="password" 
-              name="current_password"
-              placeholder="Enter your current password"
-              required
-            />
-          </div>
+  <!-- Password Change Form -->
+  <article>
+    <header>
+      <h3>🔒 Change Password</h3>
+    </header>
+    
+    <form action="/account" method="POST">
+      <fieldset>
+        <label>
+          Current Password
+          <input 
+            type="password" 
+            name="current_password"
+            placeholder="Enter your current password"
+            required
+          />
+        </label>
 
-          <!-- New Password -->
-          <div>
-            <label>New Password</label>
-            <input 
-              type="password" 
-              name="new_password"
-              placeholder="Enter your new password"
-              minlength="8"
-              required
-            />
-            <p>
-              <div x-html="getIcon('informationCircle', 'w-4 h-4 mr-1')"></div>
-              Password must be at least 8 characters long
-            </p>
-          </div>
+        <label>
+          New Password
+          <input 
+            type="password" 
+            name="new_password"
+            placeholder="Enter your new password"
+            minlength="8"
+            required
+          />
+          <small>Password must be at least 8 characters long</small>
+        </label>
 
-          <!-- Confirm New Password -->
-          <div>
-            <label>Confirm New Password</label>
-            <input 
-              type="password" 
-              name="confirm_password"
-              placeholder="Confirm your new password"
-              minlength="8"
-              required
-            />
-          </div>
+        <label>
+          Confirm New Password
+          <input 
+            type="password" 
+            name="confirm_password"
+            placeholder="Confirm your new password"
+            minlength="8"
+            required
+          />
+        </label>
+      </fieldset>
 
-          <!-- Submit Button -->
-          <div>
-            <button type="submit">
-              <div x-html="getIcon('key', 'w-5 h-5 mr-2')"></div>
-              Update Password
-            </button>
-          </div>
-        </div>
-      </form>
+      <button type="submit">Update Password</button>
+    </form>
 
-      <!-- Profile Settings Link -->
-      <div>
-        <div>
-          <a href="/profile">
-            <div x-html="getIcon('userCircle', 'w-5 h-5 mr-2')"></div>
-            Profile Settings (Name & Info)
-          </a>
-        </div>
-      </div>
-    </div>
+    <footer>
+      <a href="/users/profile" role="button" class="secondary">👤 Profile Settings</a>
+    </footer>
+  </article>
 
-    <!-- Security Notice -->
-    <div>
-      <div>
-        <div x-html="getIcon('shield', 'w-6 h-6 text-amber-600 mr-3 mt-0.5')"></div>
-        <div>
-          <h4>Security Best Practices</h4>
-          <ul>
-            <li>• Use a strong, unique password for your account</li>
-            <li>• Don't share your password with anyone</li>
-            <li>• Sign out when using shared computers</li>
-            <li>• Contact support if you notice any suspicious activity</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <!-- Security Notice -->
+  <article>
+    <header>
+      <h3>🛡️ Security Best Practices</h3>
+    </header>
+    <ul>
+      <li>Use a strong, unique password for your account</li>
+      <li>Don't share your password with anyone</li>
+      <li>Sign out when using shared computers</li>
+      <li>Contact support if you notice any suspicious activity</li>
+    </ul>
+  </article>
+</main>
