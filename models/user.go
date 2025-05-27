@@ -21,6 +21,7 @@ type User struct {
 	PasswordHash string    `json:"password_hash" db:"password_hash"`
 	FirstName    string    `json:"first_name" db:"first_name"`
 	LastName     string    `json:"last_name" db:"last_name"`
+	Role         string    `json:"role" db:"role"` // Added Role field
 
 	Password             string `json:"-" db:"-"`
 	PasswordConfirmation string `json:"-" db:"-"`
@@ -35,6 +36,9 @@ func (u *User) Create(tx *pop.Connection) (*validate.Errors, error) {
 		return validate.NewErrors(), errors.WithStack(err)
 	}
 	u.PasswordHash = string(ph)
+	if u.Role == "" { // Default role to "user" if not specified
+		u.Role = "user"
+	}
 	return tx.ValidateAndCreate(u)
 }
 
@@ -50,6 +54,7 @@ func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
 		&validators.StringIsPresent{Field: u.Email, Name: "Email"},
 		&validators.EmailIsPresent{Field: u.Email, Name: "Email"},
 		&validators.StringIsPresent{Field: u.PasswordHash, Name: "PasswordHash"},
+		&validators.StringIsPresent{Field: u.Role, Name: "Role"}, // Validate Role is present
 		// check to see if the email address is already taken:
 		&validators.FuncValidator{
 			Field:   u.Email,
