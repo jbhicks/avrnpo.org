@@ -45,12 +45,16 @@
         </button>
       </li>
       <li>
-        <a href="/auth/new" role="button" class="btn-primary" aria-label="Login" title="Login" hx-get="/auth/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">
+        <a href="<%= newAuthPath() %>" role="button" class="btn-primary" aria-label="Login" title="Login"
+           data-target="modal-login" onclick="toggleModal(event)"
+           hx-get="<%= newAuthPath() %>" hx-target="#modal-login-content" hx-swap="innerHTML">
           Login
         </a>
       </li>
       <li>
-        <a href="/users/new" role="button" class="btn-primary" aria-label="Sign Up" title="Sign Up" hx-get="/users/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">
+        <a href="<%= newUsersPath() %>" role="button" class="btn-primary" aria-label="Sign Up" title="Sign Up"
+           data-target="modal-signup" onclick="toggleModal(event)"
+           hx-get="<%= newUsersPath() %>" hx-target="#modal-signup-content" hx-swap="innerHTML">
           Sign Up
         </a>
       </li>
@@ -77,6 +81,33 @@
   </small>
   <small>Built with <a href="https://gobuffalo.io" target="_blank">Buffalo</a> and <a href="https://picocss.com" target="_blank">Pico.css</a></small>
 </footer>
+
+<!-- Modals -->
+<dialog id="modal-login">
+  <article>
+    <header>
+      <button aria-label="Close" rel="prev" data-target="modal-login" onclick="toggleModal(event)"></button>
+      <h3>Login</h3>
+    </header>
+    <div id="modal-login-content">
+      <!-- Login form will be loaded here by HTMX -->
+      <p><span aria-busy="true">Loading login form...</span></p>
+    </div>
+  </article>
+</dialog>
+
+<dialog id="modal-signup">
+  <article>
+    <header>
+      <button aria-label="Close" rel="prev" data-target="modal-signup" onclick="toggleModal(event)"></button>
+      <h3>Sign Up</h3>
+    </header>
+    <div id="modal-signup-content">
+      <!-- Sign up form will be loaded here by HTMX -->
+      <p><span aria-busy="true">Loading sign up form...</span></p>
+    </div>
+  </article>
+</dialog>
 
 <script>
   // Optional: If you want to ensure the initial content for '/' is loaded via HTMX

@@ -75,3 +75,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// Pico.css Modal Toggle Function
+window.toggleModal = function(event) {
+  if (event) event.preventDefault();
+  const modalId = event.currentTarget.dataset.target;
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    if (modal.open) {
+      modal.close();
+    } else {
+      // Before showing, ensure HTMX has a chance to load content if it hasn't already.
+      // This is a simple approach; more robust would be to listen for htmx:afterSwap on the modal content div.
+      // For now, we assume the hx-get on the button will trigger and populate before or as this runs.
+      modal.showModal();
+    }
+  }
+};
