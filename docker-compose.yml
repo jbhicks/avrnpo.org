@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:15
+    image: docker.io/postgres:15
     container_name: my_go_saas_template_postgres
     environment:
       POSTGRES_USER: postgres

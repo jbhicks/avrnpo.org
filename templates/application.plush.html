@@ -4,26 +4,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8">
     <title>My Go SaaS - Modern SaaS Platform</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     
-    <!-- Tailwind CSS via CDN for reliable styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Local Tailwind CSS with built-in typography support -->
+    <link rel="stylesheet" href="/css/tailwind.min.css">
     
-    <!-- Alpine.js for interactive components -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Custom Typography styles (Tailwind Typography inspired) -->
+    <link rel="stylesheet" href="/css/typography.css">
     
-    <%= stylesheetTag("application.css") %>
+    <!-- Local Alpine.js for interactive components -->
+    <script defer src="/js/alpine.min.js"></script>
+    
+    <!-- Heroicons helper for SVG icons -->
+    <script src="/js/icons.js"></script>
     
     <% if (authenticity_token) { %>
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="<%= authenticity_token %>" />
     <% } %>
-    <link rel="icon" href="<%= assetPath("images/favicon.ico") %>">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   </head>
-  <body class="bg-gray-50 min-h-screen">
+  <body class="bg-gray-50 text-gray-900 min-h-screen antialiased">
     <%= partial("flash.html") %>
-    <%= yield %>
-    <%= javascriptTag("application.js") %>
+    <div class="min-h-screen">
+      <%= yield %>
+    </div>
   </body>
 </html>

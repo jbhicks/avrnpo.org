@@ -30,13 +30,13 @@ setup: db-up
 # Start PostgreSQL database
 db-up:
 	@echo "Starting PostgreSQL database..."
-	docker-compose up -d postgres
+	podman-compose up -d postgres
 	@echo "Database starting..."
 
 # Stop PostgreSQL database
 db-down:
 	@echo "Stopping PostgreSQL database..."
-	docker-compose down
+	podman-compose down
 
 # Reset database
 db-reset: db-up

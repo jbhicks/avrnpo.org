@@ -1,0 +1,312 @@
+<!-- Navigation -->
+<nav class="bg-white/80 backdrop-blur-lg border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="/" class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div x-html="getIcon('cube', 'w-6 h-6 text-gray-100')"></div>
+          </div>
+          <span class="text-xl font-bold text-gray-900">My Go SaaS</span>
+        </a>
+      </div>
+      
+      <!-- User Dropdown -->
+      <div class="flex items-center space-x-4">
+        <%= if (current_user) { %>
+          <div class="relative">
+            <!-- User Avatar Button -->
+            <div class="dropdown-container group">
+              <button class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <div x-html="getIcon('user', 'w-5 h-5 text-gray-100')"></div>
+                </div>
+                <div class="hidden sm:block text-left">
+                  <div class="text-gray-700 font-medium text-sm">
+                    <%= if (current_user.FirstName != "") { %>
+                      <%= current_user.FirstName %>
+                    <% } else { %>
+                      <%= current_user.Email %>
+                    <% } %>
+                  </div>
+                  <div class="text-gray-500 text-xs">Dashboard</div>
+                </div>
+                <div x-html="getIcon('chevronDown', 'w-4 h-4 text-gray-400 transition-transform group-focus-within:rotate-180')"></div>
+              </button>
+              
+              <!-- Dropdown Menu -->
+              <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200">
+                <!-- User Info -->
+                <div class="px-4 py-3 border-b border-gray-100">
+                  <p class="text-sm font-medium text-gray-900">
+                    <%= if (current_user.FirstName != "" && current_user.LastName != "") { %>
+                      <%= current_user.FirstName %> <%= current_user.LastName %>
+                    <% } else if (current_user.FirstName != "") { %>
+                      <%= current_user.FirstName %>
+                    <% } else { %>
+                      <%= current_user.Email %>
+                    <% } %>
+                  </p>
+                  <p class="text-sm text-gray-500 truncate"><%= current_user.Email %></p>
+                </div>
+                
+                <!-- Menu Items -->
+                <div class="py-2">
+                  <a href="/profile" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mx-2">
+                    <div x-html="getIcon('userCircle', 'w-5 h-5 text-gray-400 mr-3')"></div>
+                    Profile Settings
+                  </a>
+                  <a href="/account" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors rounded-lg mx-2">
+                    <div x-html="getIcon('cog', 'w-5 h-5 text-gray-400 mr-3')"></div>
+                    Account Settings
+                  </a>
+                  <div class="border-t border-gray-100 my-2 mx-2"></div>
+                  <a href="/signout" class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left rounded-lg mx-2">
+                    <div x-html="getIcon('logout', 'w-5 h-5 text-red-500 mr-3')"></div>
+                    Sign Out
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Dashboard Content -->
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+  <!-- Hero Section -->
+  <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">
+          Welcome Back!
+        </h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+          You're successfully logged in to your SaaS dashboard. Ready to build something amazing?
+        </p>
+        
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 max-w-2xl mx-auto">
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-2xl font-bold">0</div>
+            <div class="text-blue-100 text-sm">Projects</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-2xl font-bold">1</div>
+            <div class="text-blue-100 text-sm">User</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-2xl font-bold">99.9%</div>
+            <div class="text-blue-100 text-sm">Uptime</div>
+          </div>
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+            <div class="text-2xl font-bold">24/7</div>
+            <div class="text-blue-100 text-sm">Support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <!-- Dashboard Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+      <!-- User Management Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-blue-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div x-html="getIcon('users', 'w-7 h-7 text-gray-100')"></div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">User Management</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Manage your user accounts, permissions, and roles with enterprise-grade security and control.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-blue-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Coming soon
+            </span>
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Billing Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-green-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div x-html="getIcon('creditCard', 'w-7 h-7 text-gray-100')"></div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">Billing & Payments</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Handle subscriptions, billing cycles, and payment processing with integrated Stripe support.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-green-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Coming soon
+            </span>
+            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analytics Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div x-html="getIcon('chartBar', 'w-7 h-7 text-gray-100')"></div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">Analytics</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Track performance metrics, user engagement, and business insights with detailed analytics.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-purple-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Coming soon
+            </span>
+            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- API Management Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-indigo-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">API Management</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Create and manage API keys, rate limiting, and developer documentation for your API.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-indigo-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Coming soon
+            </span>
+            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-orange-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <div x-html="getIcon('cog', 'w-7 h-7 text-gray-100')"></div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">Settings</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Configure your application settings, integrations, and preferences for optimal performance.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-orange-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Configure now
+            </span>
+            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Support Card -->
+      <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-pink-200 hover:-translate-y-1">
+        <div class="p-8">
+          <div class="flex items-center mb-6">
+            <div class="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-7 h-7 text-gray-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 ml-4">Support</h3>
+          </div>
+          <p class="text-gray-700 mb-6 leading-relaxed">
+            Get help from our support team, access documentation, and submit feature requests.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-pink-600 font-medium group-hover:translate-x-2 transition-transform duration-300">
+              Get help
+            </span>
+            <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center group-hover:bg-pink-200 transition-colors">
+              <svg class="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-bold text-gray-900">Recent Activity</h3>
+        <button class="text-blue-600 hover:text-blue-700 font-medium text-sm">View all</button>
+      </div>
+      <div class="space-y-6">
+        <div class="flex items-center p-4 bg-green-50 rounded-xl border border-green-200">
+          <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mr-4">
+            <svg class="w-5 h-5 text-gray-100" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="text-gray-900 font-medium">Successfully logged in</div>
+            <div class="text-green-600 text-sm">Welcome to your dashboard!</div>
+          </div>
+          <span class="text-gray-400 text-sm">Just now</span>
+        </div>
+        
+        <div class="flex items-center p-4 bg-blue-50 rounded-xl border border-blue-200">
+          <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+            <svg class="w-5 h-5 text-gray-100" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 2L3 7v11a1 1 0 001 1h12a1 1 0 001-1V7l-7-5z"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="text-gray-900 font-medium">Account created</div>
+            <div class="text-blue-600 text-sm">Your SaaS journey begins!</div>
+          </div>
+          <span class="text-gray-400 text-sm">Today</span>
+        </div>
+        
+        <div class="text-center py-8">
+          <div class="text-gray-400 text-sm">No more activity to show</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
