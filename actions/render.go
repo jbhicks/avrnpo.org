@@ -9,24 +9,29 @@ import (
 )
 
 var r *render.Engine
+var rHTMX *render.Engine // New engine for HTMX requests
 
 func init() {
+	// Common helpers for both render engines
+	commonHelpers := render.Helpers{
+		forms.FormKey:    forms.Form,
+		forms.FormForKey: forms.FormFor,
+		// You can add other common helpers here
+	}
+
+	// Standard render engine
 	r = render.New(render.Options{
-		// HTML layout to be used for all HTML requests:
-		HTMLLayout: "application.plush.html",
-
-		// fs.FS containing templates
+		HTMLLayout:  "application.plush.html",
 		TemplatesFS: templates.FS(),
+		AssetsFS:    public.FS(),
+		Helpers:     commonHelpers,
+	})
 
-		// fs.FS containing assets
-		AssetsFS: public.FS(),
-
-		// Add template helpers here:
-		Helpers: render.Helpers{
-			// for non-bootstrap form helpers uncomment the lines
-			// below and import "github.com/gobuffalo/helpers/forms"
-			forms.FormKey:    forms.Form,
-			forms.FormForKey: forms.FormFor,
-		},
+	// Render engine for HTMX requests
+	rHTMX = render.New(render.Options{
+		HTMLLayout:  "htmx.plush.html", // Use the minimal layout for HTMX
+		TemplatesFS: templates.FS(),
+		AssetsFS:    public.FS(),
+		Helpers:     commonHelpers, // Share the same helpers
 	})
 }

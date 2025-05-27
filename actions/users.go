@@ -15,6 +15,9 @@ import (
 func UsersNew(c buffalo.Context) error {
 	u := models.User{}
 	c.Set("user", u)
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, rHTMX.HTML("users/new.plush.html"))
+	}
 	return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
 }
 
@@ -34,12 +37,23 @@ func UsersCreate(c buffalo.Context) error {
 	if verrs.HasAny() {
 		c.Set("user", u)
 		c.Set("errors", verrs)
+		if c.Request().Header.Get("HX-Request") == "true" {
+			// For HTMX, re-render the form with errors, using the htmx layout
+			// Ensure the htmx-target is the form itself or a container that includes the form and error messages.
+			return c.Render(http.StatusOK, rHTMX.HTML("users/new.plush.html"))
+		}
 		return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
 	}
 
 	c.Session().Set("current_user_id", u.ID)
 	c.Flash().Add("success", "Welcome to my-go-saas-template!")
 
+	if c.Request().Header.Get("HX-Request") == "true" {
+		// After successful creation, HTMX might expect a redirect or a content swap.
+		// Setting HX-Redirect header will cause the browser to redirect.
+		c.Response().Header().Set("HX-Redirect", "/")
+		return c.Render(http.StatusOK, nil) // Or an empty response
+	}
 	return c.Redirect(http.StatusFound, "/")
 }
 
@@ -47,6 +61,9 @@ func UsersCreate(c buffalo.Context) error {
 func ProfileSettings(c buffalo.Context) error {
 	user := c.Value("current_user").(*models.User)
 	c.Set("user", user)
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, rHTMX.HTML("users/profile.plush.html"))
+	}
 	return c.Render(http.StatusOK, r.HTML("users/profile.plush.html"))
 }
 
@@ -80,10 +97,17 @@ func ProfileUpdate(c buffalo.Context) error {
 	if verrs.HasAny() {
 		c.Set("user", updatedUser)
 		c.Set("errors", verrs)
+		if c.Request().Header.Get("HX-Request") == "true" {
+			return c.Render(http.StatusOK, rHTMX.HTML("users/profile.plush.html"))
+		}
 		return c.Render(http.StatusOK, r.HTML("users/profile.plush.html"))
 	}
 
 	c.Flash().Add("success", "Profile updated successfully!")
+	if c.Request().Header.Get("HX-Request") == "true" {
+		c.Response().Header().Set("HX-Redirect", "/profile")
+		return c.Render(http.StatusOK, nil)
+	}
 	return c.Redirect(http.StatusFound, "/profile")
 }
 
@@ -91,6 +115,9 @@ func ProfileUpdate(c buffalo.Context) error {
 func AccountSettings(c buffalo.Context) error {
 	user := c.Value("current_user").(*models.User)
 	c.Set("user", user)
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, rHTMX.HTML("users/account.plush.html"))
+	}
 	return c.Render(http.StatusOK, r.HTML("users/account.plush.html"))
 }
 

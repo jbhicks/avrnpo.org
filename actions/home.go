@@ -23,11 +23,17 @@ func HomeHandler(c buffalo.Context) error {
 		c.Set("current_user", nil)
 	}
 
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, rHTMX.HTML("home/index.plush.html"))
+	}
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
 // DashboardHandler serves the protected dashboard for authenticated users
 func DashboardHandler(c buffalo.Context) error {
 	// This will be protected by the Authorize middleware
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, rHTMX.HTML("home/dashboard.plush.html"))
+	}
 	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 }
