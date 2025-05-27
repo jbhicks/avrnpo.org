@@ -47,6 +47,31 @@ window.toggleTheme = function() { // Explicitly global
   }
 }
 
+// Toggle modal visibility
+function toggleModal(event) {
+  event.preventDefault();
+  const modalId = event.currentTarget.getAttribute('data-target');
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.open = !modal.open;
+  }
+}
+
+// Switch between modals
+function switchModal(event, currentModalId, targetModalId) {
+  event.preventDefault(); // Prevent default link navigation
+  const currentModal = document.getElementById(currentModalId);
+  const targetModal = document.getElementById(targetModalId);
+
+  if (currentModal && currentModal.open) { // Only close if open
+    currentModal.open = false; 
+  }
+  if (targetModal) {
+    targetModal.open = true; // Open the target modal
+    // HTMX attributes on the link (event.currentTarget) will handle content loading.
+  }
+}
+
 // Initialize theme on page load
 document.addEventListener('DOMContentLoaded', function() {
   const savedTheme = localStorage.getItem('picoPreferredColorScheme');
@@ -92,3 +117,18 @@ window.toggleModal = function(event) {
     }
   }
 };
+
+// Switch between modals
+function switchModal(event, currentModalId, targetModalId) {
+  event.preventDefault(); // Prevent default link navigation
+  const currentModal = document.getElementById(currentModalId);
+  const targetModal = document.getElementById(targetModalId);
+
+  if (currentModal && currentModal.open) { // Only close if open
+    currentModal.open = false; 
+  }
+  if (targetModal) {
+    targetModal.open = true; // Open the target modal
+    // HTMX attributes on the link (event.currentTarget) will handle content loading.
+  }
+}

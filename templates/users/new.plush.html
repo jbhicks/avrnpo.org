@@ -3,7 +3,12 @@
   <article class="form-grid">
     <hgroup>
       <h1>🚀 Create your account</h1>
-      <p>Already have an account? <a href="/auth/new">Sign in instead</a></p>
+      <p>Already have an account? <a href="<%= newAuthPath() %>" 
+                                   data-target="modal-login" 
+                                   onclick="switchModal(event, 'modal-signup', 'modal-login')" 
+                                   hx-get="<%= newAuthPath() %>" 
+                                   hx-target="#modal-login-content" 
+                                   hx-swap="innerHTML">Sign in instead</a></p>
     </hgroup>
     
     <%= formFor(user, {action: usersPath(), method: "POST"}) { %>
