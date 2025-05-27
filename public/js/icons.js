@@ -63,3 +63,17 @@ window.getIcon = function(name, classes = 'w-6 h-6') {
 
 // Make Icons available globally
 window.Icons = Icons;
+
+// Helper function to get icons with custom classes
+window.getIcon = function(iconName, customClasses = '') {
+  if (Icons[iconName]) {
+    // Replace default classes with custom ones if provided
+    let icon = Icons[iconName];
+    if (customClasses) {
+      // Replace class attributes in the SVG
+      icon = icon.replace(/class="[^"]*"/g, `class="${customClasses}"`);
+    }
+    return icon;
+  }
+  return '';
+};
