@@ -1,5 +1,23 @@
 # Copilot Instructions
 
+## 🚨 CRITICAL PROCESS MANAGEMENT RULES 🚨
+
+**NEVER KILL THE BUFFALO DEVELOPMENT SERVER PROCESS**
+
+- **Buffalo automatically reloads** on ALL file changes (Go code, templates, assets)
+- **DO NOT run `kill -9`, `pkill buffalo`, `kill $(lsof -t -i:3000)` or similar commands**
+- **DO NOT restart Buffalo** unless there are compilation errors or the user explicitly asks
+- **Assume Buffalo is running and working** - it should stay running throughout development
+- **Let Buffalo handle recompilation** - it's designed to auto-reload everything
+- **Only check processes** - don't kill them: `ps aux | grep buffalo` or `lsof -i :3000`
+
+**When Buffalo is running properly:**
+- ✅ Go code changes trigger automatic recompilation
+- ✅ Template changes reload immediately 
+- ✅ Static asset changes update automatically
+- ✅ Database migration commands work while Buffalo runs
+- ✅ Just refresh the browser to see changes
+
 ## General Guidelines
 
 - Never attempt to read `pico.min.css` files - they are minified and will only cause failures
@@ -11,18 +29,26 @@
 
 ### Buffalo Development Server
 - **Buffalo runs on port 3000** and automatically reloads on file changes
-- **DO NOT kill the Buffalo process** when testing changes - it has hot reload built-in
+- **🚨 NEVER KILL THE BUFFALO PROCESS 🚨** when testing changes - it has hot reload built-in
+- **🚨 DO NOT RUN `kill -9`, `pkill buffalo`, or similar commands 🚨** - Buffalo should stay running
+- **🚨 DO NOT RESTART Buffalo unless explicitly asked by the user 🚨**
 - **Check for existing Buffalo instances** before starting a new one:
   - Use `ps aux | grep buffalo` or `lsof -i :3000` to check for running instances
   - Buffalo dev server should be left running in a background terminal
-  - Changes to Go files, templates, and assets will auto-reload
+  - Changes to Go files, templates, and assets will auto-reload automatically
+- **Buffalo automatically handles**:
+  - Go code changes (recompiles and restarts the process)
+  - Template changes (reloads templates)
+  - Static asset changes (updates assets)
+  - Database schema changes (when migrations are run)
 
 ### Development Workflow
 1. **Start once**: Use `make dev` to start PostgreSQL + Buffalo
-2. **Keep running**: Leave Buffalo running in the background
-3. **Make changes**: Edit files and let Buffalo auto-reload
+2. **Keep running**: Leave Buffalo running in the background - DO NOT STOP IT
+3. **Make changes**: Edit files and let Buffalo auto-reload - NO MANUAL RESTARTS NEEDED
 4. **Test changes**: Refresh browser or use the running instance
-5. **Only restart if**: There are compilation errors or you need to reset the database
+5. **Only restart if**: There are compilation errors that prevent auto-reload, or you need to reset the database, OR the user explicitly asks you to restart
+6. **🚨 CRITICAL**: Assume Buffalo is running and working unless proven otherwise
 
 ### Database Management
 - **PostgreSQL**: Runs in a Podman container on port 5432
@@ -31,10 +57,11 @@
 - **Migrations**: Run `buffalo pop migrate` only when adding new migrations
 
 ### Testing Changes
-- **Templates**: Auto-reload on save, just refresh the browser
-- **Go code**: Auto-compiles and restarts Buffalo server
+- **Templates**: Auto-reload on save, just refresh the browser - NO RESTART NEEDED
+- **Go code**: Auto-compiles and restarts Buffalo server automatically
 - **Static assets**: Auto-reload via Buffalo's asset pipeline
 - **Database changes**: Require migration runs but Buffalo stays running
+- **🚨 IMPORTANT**: Let Buffalo handle all reloading - manual intervention not needed
 
 ### Common Commands
 - `make dev` - Start everything (use once)

@@ -98,6 +98,16 @@ func App() *buffalo.App {
 		app.GET("/account", AccountSettings)
 		app.POST("/account", AccountUpdate)
 
+		// Admin-only routes
+		adminGroup := app.Group("/admin")
+		adminGroup.Use(AdminRequired)
+		adminGroup.GET("/", AdminDashboard)
+		adminGroup.GET("/dashboard", AdminDashboard)
+		adminGroup.GET("/users", AdminUsers)
+		adminGroup.GET("/users/{user_id}", AdminUserShow)
+		adminGroup.POST("/users/{user_id}", AdminUserUpdate)
+		adminGroup.DELETE("/users/{user_id}", AdminUserDelete)
+
 		// Serve static files
 		app.ServeFiles("/", http.FS(public.FS()))
 	})

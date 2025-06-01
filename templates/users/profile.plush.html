@@ -93,6 +93,19 @@
           />
           <small>Email changes require contacting support</small>
         </label>
+
+        <%= if (current_user.Role == "admin") { %>
+        <label>
+          Role
+          <%= f.SelectTag("Role", {
+            options: roleOptions,
+            value: user.Role
+          }) %>
+          <%= if (errors && errors["role"]) { %>
+            <small><%= errors["role"] %></small>
+          <% } %>
+        </label>
+        <% } %>
       </fieldset>
 
       <button type="submit">Update Profile</button>

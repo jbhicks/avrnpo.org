@@ -61,6 +61,16 @@ func UsersCreate(c buffalo.Context) error {
 func ProfileSettings(c buffalo.Context) error {
 	user := c.Value("current_user").(*models.User)
 	c.Set("user", user)
+
+	// If user is admin, provide role options
+	if user.Role == "admin" {
+		roleOptions := map[string]string{
+			"user":  "User",
+			"admin": "Administrator",
+		}
+		c.Set("roleOptions", roleOptions)
+	}
+
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("users/profile.plush.html"))
 	}
@@ -87,6 +97,11 @@ func ProfileUpdate(c buffalo.Context) error {
 	updatedUser.CreatedAt = user.CreatedAt
 	updatedUser.Password = "" // Clear password fields for profile updates
 	updatedUser.PasswordConfirmation = ""
+
+	// Only allow role changes for admins
+	if user.Role != "admin" {
+		updatedUser.Role = user.Role // Preserve original role for non-admins
+	}
 
 	tx := c.Value("tx").(*pop.Connection)
 	verrs, err := tx.ValidateAndUpdate(updatedUser)

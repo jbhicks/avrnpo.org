@@ -39,6 +39,24 @@
     <!-- Removed Quick Settings card as it's redundant -->
   </section>
 
+  <!-- Admin Section - Only visible to admin users -->
+  <%= if (current_user.Role == "admin") { %>
+  <section>
+    <article style="border-left: 4px solid var(--pico-color-red-500);">
+      <header>
+        <h3>🛡️ Administrator Access</h3>
+      </header>
+      <p>You have administrator privileges. Access the admin panel to manage users and system settings.</p>
+      <footer>
+        <div class="grid">
+          <a href="/admin" role="button">Admin Dashboard</a>
+          <a href="/admin/users" role="button" class="outline">Manage Users</a>
+        </div>
+      </footer>
+    </article>
+  </section>
+  <% } %>
+
   <!-- Two Column Layout -->
   <div class="grid">
     <!-- Recent Activity -->

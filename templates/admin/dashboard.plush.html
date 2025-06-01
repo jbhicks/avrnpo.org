@@ -1,0 +1,121 @@
+<!-- Admin Dashboard with Pico.css -->
+<nav class="container-fluid dashboard-nav">
+  <ul>
+    <li>
+      <a href="/" class="logo">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <strong>My Go SaaS</strong>
+      </a>
+    </li>
+  </ul>
+  <ul>
+    <li>
+      <a href="/dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Dashboard
+      </a>
+    </li>
+    <li>
+      <!-- Compact Theme Toggle -->
+      <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span id="theme-icon"></span>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main class="container">
+  <!-- Page Header -->
+  <section>
+    <hgroup>
+      <h1>🛡️ Admin Dashboard</h1>
+      <p>System administration and user management</p>
+    </hgroup>
+  </section>
+
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <!-- Admin Stats -->
+  <div class="grid">
+    <article>
+      <header>
+        <h3>👥 Total Users</h3>
+      </header>
+      <p style="font-size: 2rem; margin: 0; text-align: center;"><%= userCount %></p>
+      <footer>
+        <a href="/admin/users" role="button">Manage Users</a>
+      </footer>
+    </article>
+    
+    <article>
+      <header>
+        <h3>🛡️ Administrators</h3>
+      </header>
+      <p style="font-size: 2rem; margin: 0; text-align: center;"><%= adminCount %></p>
+      <footer>
+        <small>Admin accounts with elevated privileges</small>
+      </footer>
+    </article>
+    
+    <article>
+      <header>
+        <h3>👤 Regular Users</h3>
+      </header>
+      <p style="font-size: 2rem; margin: 0; text-align: center;"><%= regularUserCount %></p>
+      <footer>
+        <small>Standard user accounts</small>
+      </footer>
+    </article>
+  </div>
+
+  <!-- Admin Actions -->
+  <section>
+    <h2>🔧 Admin Actions</h2>
+    <div class="grid">
+      <article>
+        <header>
+          <h4>User Management</h4>
+        </header>
+        <p>View, edit, and manage user accounts and their roles.</p>
+        <footer>
+          <a href="/admin/users" role="button">Manage Users</a>
+        </footer>
+      </article>
+      
+      <article>
+        <header>
+          <h4>System Settings</h4>
+        </header>
+        <p>Configure application settings and preferences.</p>
+        <footer>
+          <a href="#" role="button" class="secondary">Coming Soon</a>
+        </footer>
+      </article>
+      
+      <article>
+        <header>
+          <h4>Analytics</h4>
+        </header>
+        <p>View usage statistics and application metrics.</p>
+        <footer>
+          <a href="#" role="button" class="secondary">Coming Soon</a>
+        </footer>
+      </article>
+    </div>
+  </section>
+</main>

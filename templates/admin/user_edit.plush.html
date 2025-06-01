@@ -1,0 +1,153 @@
+<!-- Admin User Edit with Pico.css -->
+<nav class="container-fluid dashboard-nav">
+  <ul>
+    <li>
+      <a href="/" class="logo">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+        </svg>
+        <strong>My Go SaaS</strong>
+      </a>
+    </li>
+  </ul>
+  <ul>
+    <li>
+      <a href="/admin/users">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Users
+      </a>
+    </li>
+    <li>
+      <!-- Compact Theme Toggle -->
+      <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+        <span id="theme-icon"></span>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<main class="container">
+  <!-- Page Header -->
+  <section>
+    <hgroup>
+      <h1>✏️ Edit User</h1>
+      <p>Modify user information and role assignments</p>
+    </hgroup>
+  </section>
+
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <!-- Edit User Form -->
+  <article>
+    <header>
+      <h3>👤 User Information</h3>
+    </header>
+    
+    <%= formFor(user, {action: "/admin/users/" + user.ID.String(), method: "POST"}) { %>
+      <fieldset>
+        <label>
+          First Name
+          <%= f.InputTag("FirstName", {
+            type: "text",
+            placeholder: "Enter first name",
+            required: true
+          }) %>
+          <%= if (errors && errors["first_name"]) { %>
+            <small><%= errors["first_name"] %></small>
+          <% } %>
+        </label>
+
+        <label>
+          Last Name
+          <%= f.InputTag("LastName", {
+            type: "text",
+            placeholder: "Enter last name",
+            required: true
+          }) %>
+          <%= if (errors && errors["last_name"]) { %>
+            <small><%= errors["last_name"] %></small>
+          <% } %>
+        </label>
+
+        <label>
+          Email Address
+          <%= f.InputTag("Email", {
+            type: "email",
+            placeholder: "Enter email address",
+            required: true
+          }) %>
+          <%= if (errors && errors["email"]) { %>
+            <small><%= errors["email"] %></small>
+          <% } %>
+        </label>
+
+        <label>
+          Role
+          <%= f.SelectTag("Role", {
+            options: roleOptions,
+            value: user.Role,
+            required: true
+          }) %>
+          <%= if (errors && errors["role"]) { %>
+            <small><%= errors["role"] %></small>
+          <% } %>
+          <small>⚠️ Changing role affects user permissions</small>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <div class="grid">
+          <button type="submit">💾 Update User</button>
+          <a href="/admin/users" role="button" class="secondary">Cancel</a>
+        </div>
+      </fieldset>
+    <% } %>
+
+    <footer>
+      <details>
+        <summary>ℹ️ User Details</summary>
+        <dl>
+          <dt><strong>User ID:</strong></dt>
+          <dd><code><%= user.ID %></code></dd>
+          <dt><strong>Created:</strong></dt>
+          <dd><%= user.CreatedAt.Format("January 2, 2006 at 3:04 PM") %></dd>
+          <dt><strong>Last Updated:</strong></dt>
+          <dd><%= user.UpdatedAt.Format("January 2, 2006 at 3:04 PM") %></dd>
+        </dl>
+      </details>
+    </footer>
+  </article>
+
+  <!-- Danger Zone -->
+  <%= if (user.ID != current_user.ID) { %>
+    <article>
+      <header style="color: var(--pico-color-red-500);">
+        <h3>⚠️ Danger Zone</h3>
+      </header>
+      <p>Permanently delete this user account and all associated data.</p>
+      <footer>
+        <form method="POST" action="/admin/users/<%= user.ID %>" style="margin: 0;">
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="outline" 
+                  onclick="return confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')"
+                  style="color: var(--pico-color-red-500); border-color: var(--pico-color-red-500);">
+            🗑️ Delete User
+          </button>
+        </form>
+      </footer>
+    </article>
+  <% } %>
+</main>
