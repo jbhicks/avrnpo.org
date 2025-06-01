@@ -15,14 +15,14 @@ help:
 # Start database and development server
 dev: db-up
 	@echo "Waiting for database to be ready..."
-	@sleep 3
+	@./scripts/wait-for-postgres.sh
 	@echo "Starting Buffalo development server..."
 	buffalo dev
 
 # Initial setup
 setup: db-up
 	@echo "Waiting for database to be ready..."
-	@sleep 5
+	@./scripts/wait-for-postgres.sh
 	@echo "Running database migrations..."
 	buffalo pop migrate
 	@echo "Setup complete! Run 'make dev' to start development server."
@@ -30,7 +30,7 @@ setup: db-up
 # Start PostgreSQL database
 db-up:
 	@echo "Starting PostgreSQL database..."
-	podman-compose up -d postgres
+	@podman-compose up -d postgres
 	@echo "Database starting..."
 
 # Stop PostgreSQL database
@@ -41,7 +41,7 @@ db-down:
 # Reset database
 db-reset: db-up
 	@echo "Waiting for database to be ready..."
-	@sleep 3
+	@./scripts/wait-for-postgres.sh
 	@echo "Resetting database..."
 	buffalo pop drop -e development
 	buffalo pop create -e development
