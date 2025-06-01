@@ -25,6 +25,16 @@
 - Focus on using semantic HTML with minimal CSS classes - Pico.css provides styling automatically
 - Use semantic HTML elements and follow modern web development practices with accessibility in mind
 
+### Pico.css Styling Guidelines
+
+**CRITICAL: Always use Pico.css variables instead of custom CSS**
+
+- **For ALL styling changes**: Consult `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` FIRST
+- **Use CSS variables**: Modify `--pico-primary`, `--pico-background-color`, etc. instead of writing custom CSS
+- **Follow Pico patterns**: Use semantic HTML with Pico's built-in classes and roles
+- **Never override Pico directly**: Always work within Pico's variable system for customization
+- **Check `/docs/` first**: All styling requests should reference the Pico documentation in `/docs/`
+
 ## Buffalo Development Environment Guidelines
 
 ### Buffalo Development Server
@@ -123,11 +133,19 @@
 
 ## Implementation Guidelines
 
+**CRITICAL: For ALL styling changes, always check `/docs/` folder FIRST**
+
 **IMPORTANT**: Always refer to the documentation in `/docs/` folder for implementation strategies:
 
-- **Pico.css CSS Variables**: Read `/docs/pico-css-variables.md` for customization with CSS variables
+- **Pico.css CSS Variables**: Read `/docs/pico-css-variables.md` for customization with CSS variables - USE THIS FOR ALL STYLING
 - **Implementation Patterns**: Read `/docs/pico-implementation-guide.md` for semantic HTML patterns and best practices
 - **Template Syntax**: Read `/docs/buffalo-template-syntax.md` for Plush templating patterns
+
+**Styling Change Process:**
+1. **Check `/docs/pico-css-variables.md`** - Find the appropriate Pico variable to modify
+2. **Check `/docs/pico-implementation-guide.md`** - Use semantic HTML patterns instead of custom CSS
+3. **Use CSS variables only** - Modify `--pico-*` variables, never write custom CSS rules
+4. **Test in both themes** - Ensure changes work in light and dark modes
 
 ### Key Implementation Strategies
 
@@ -136,6 +154,7 @@
 3. **CSS Variables for Customization**: Use `--pico-primary`, `--pico-background-color`, etc. instead of hardcoded values
 4. **Theme Support**: Always test both light and dark modes using `[data-theme="dark"]` selectors
 5. **Responsive by Default**: Trust Pico.css responsive behavior, avoid custom breakpoints unless necessary
+6. **Documentation First**: Always consult `/docs/` before making any styling changes
 
 ### Authentication Patterns
 
@@ -149,6 +168,7 @@
 - Don't override Pico.css with excessive inline styles
 - Don't use Alpine.js or JavaScript for basic interactions that Pico.css handles
 - Don't hardcode colors - use CSS variables for theme compatibility
+- Don't write custom CSS without first checking if Pico variables can achieve the same result
 
 ### Documentation and Communication Guidelines
 

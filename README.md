@@ -552,13 +552,21 @@ The application uses a persistent shell architecture where the main layout stays
 
 This project uses Buffalo's Plush templating engine, Pico.css for styling, and HTMX for dynamic interactions.
 
+**Important: For ALL styling changes, always consult `/docs/` folder FIRST**
+
 - **Main Shell**: `templates/home/index.plush.html` is the primary persistent layout containing the header, footer, and the `<main id="htmx-content">` target.
 - **Content Partials**: Most page-specific content is in separate partial files (e.g., `templates/home/_index_content.plush.html`, `templates/home/dashboard.plush.html`). These are loaded into `#htmx-content`.
 - **HTMX Fragments Layout**: `templates/htmx.plush.html` (containing just `<%= yield %>`) is used by the `rHTMX` render engine for HTMX responses.
 - **Plush Syntax**: See `/docs/buffalo-template-syntax.md`.
-- **Pico.css**: See `/docs/pico-implementation-guide.md` and `/docs/pico-css-variables.md`.
+- **Pico.css Styling**: **CRITICAL** - See `/docs/pico-implementation-guide.md` and `/docs/pico-css-variables.md` - Use Pico CSS variables instead of custom CSS
 - **Modals**: Pico.css `<dialog>` elements are used for login/signup, triggered by JavaScript and populated by HTMX.
 - **Theme Switching**: Built-in dark/light/auto mode support, works with the persistent header.
+
+#### Pico.css Styling Guidelines
+- **Always use CSS variables**: Modify `--pico-primary`, `--pico-background-color`, etc. instead of writing custom CSS
+- **Check documentation first**: Consult `/docs/pico-css-variables.md` for all available Pico variables
+- **Use semantic HTML**: Follow patterns in `/docs/pico-implementation-guide.md` for proper Pico.css usage
+- **Never override Pico directly**: Work within Pico's variable system for all customization
 
 ### Database Management
 The application includes a PostgreSQL container configured via `docker-compose.yml`:
@@ -611,9 +619,14 @@ When working with this Buffalo SaaS template:
 5.  **Modals**: Login/signup forms are in modals. Ensure HTMX attributes on trigger buttons target modal content divs. Server responses for modal forms (e.g., validation errors) should re-render the form fragment. Successful modal submissions often use `HX-Refresh: true`.
 
 ### Styling with Pico.css
-1.  **Semantic HTML**: Key for Pico.css.
-2.  **Modals**: Use `<dialog>` and `<article>` structure.
-3.  **Theme Support**: Works with the persistent header.
+
+**CRITICAL: Always use Pico.css variables instead of custom CSS**
+
+1.  **Semantic HTML**: Key for Pico.css - use proper HTML elements
+2.  **CSS Variables Only**: Modify `--pico-primary`, `--pico-background-color`, etc. instead of writing custom CSS
+3.  **Documentation First**: Always check `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` BEFORE making styling changes
+4.  **Modals**: Use `<dialog>` and `<article>` structure as documented in `/docs/`
+5.  **Theme Support**: Use CSS variables to ensure compatibility with dark/light modes
 
 ### Authentication & Authorization
 1.  **Modal Forms**: Login/signup are via modals loaded with HTMX.
@@ -655,10 +668,15 @@ When working with this Buffalo SaaS template, follow these patterns and guidelin
    - Reference `/docs/buffalo-template-syntax.md` for Plush syntax patterns
 
 #### Styling with Pico.css Framework
-1. **Semantic HTML First**: Use proper HTML elements (`<nav>`, `<article>`, `<section>`, `<details>`)
-2. **Minimal CSS Classes**: Prefer `role="button"`, `class="secondary"`, `class="dropdown"` over custom styles
-3. **Theme Compatibility**: Use CSS variables (`--pico-primary`, `--pico-background-color`) instead of hardcoded colors
-4. **Responsive Design**: Trust Pico.css responsive behavior, avoid custom breakpoints unless necessary
+
+**CRITICAL: Always consult `/docs/` folder before making ANY styling changes**
+
+1. **Documentation First**: Check `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` BEFORE styling
+2. **CSS Variables Only**: Use `--pico-primary`, `--pico-background-color`, etc. - NEVER write custom CSS rules
+3. **Semantic HTML First**: Use proper HTML elements (`<nav>`, `<article>`, `<section>`, `<details>`) as shown in `/docs/`
+4. **Minimal CSS Classes**: Prefer `role="button"`, `class="secondary"`, `class="dropdown"` over custom styles
+5. **Theme Compatibility**: Use CSS variables to ensure dark/light mode compatibility
+6. **Responsive Design**: Trust Pico.css responsive behavior, avoid custom breakpoints unless necessary
 
 #### Authentication & Authorization Patterns
 1. **Modal Authentication**: Login/signup forms load via HTMX into modal dialogs
@@ -798,25 +816,92 @@ my-go-saas-template/
 
 This file structure supports a maintainable SaaS application with clear separation of concerns.
 
-## 📚 Additional Resources
+## 📝 Development Roadmap
 
-### Documentation
-- **Buffalo Framework**: [https://gobuffalo.io/documentation](https://gobuffalo.io/documentation)
-- **Pico.css Documentation**: [https://picocss.com/docs](https://picocss.com/docs)
-- **HTMX Documentation**: [https://htmx.org/docs](https://htmx.org/docs)
-- **PostgreSQL Documentation**: [https://www.postgresql.org/docs](https://www.postgresql.org/docs)
+### 🚀 Unified Logging Implementation Plan
 
-### Project-Specific Documentation
-- **Template Syntax Guide**: `/docs/buffalo-template-syntax.md`
-- **Pico.css Implementation**: `/docs/pico-implementation-guide.md`
-- **CSS Customization**: `/docs/pico-css-variables.md`
-- **SEO Implementation**: `/docs/seo-implementation.md`
+**Status**: Planning Phase - Not Started
 
-### Development Resources
-- **Go Documentation**: [https://golang.org/doc](https://golang.org/doc)
-- **Podman Documentation**: [https://docs.podman.io](https://docs.podman.io)
-- **Database Migrations**: Buffalo Pop documentation
+Buffalo already has a solid logging foundation via `gobuffalo/logger` (logrus-based). This plan enhances it with configurability and structured business event logging.
+
+#### **📋 Current State Analysis**
+
+**✅ What Buffalo Already Provides:**
+- [x] Built-in structured logging with request IDs, timing, status codes
+- [x] paramlogger middleware for HTTP request logging  
+- [x] Context-aware logger via `c.Logger()`
+- [x] Log levels (info, debug, error, etc.)
+- [x] JSON-like structured output
+
+**❌ What's Missing:**
+- [ ] Configurable file output location
+- [ ] Consistent application-level logging
+- [ ] Business event logging (user actions, errors)
+- [ ] Centralized logging configuration
+
+#### **🎯 Implementation Phases**
+
+##### **Phase 1: Configuration & File Output** 
+- [ ] Create logging configuration structure
+  - [ ] Environment-based log levels (`LOG_LEVEL`)
+  - [ ] Configurable file paths with sensible defaults (`LOG_FILE_PATH`)
+  - [ ] Development vs production settings
+- [ ] Add file output support
+  - [ ] Default: `/logs/application.log`
+  - [ ] Log rotation support
+- [ ] Enhance Buffalo's existing logger
+  - [ ] Keep Buffalo's middleware logging (already good)
+  - [ ] Add custom fields for business context
+  - [ ] Configure log level via environment
+
+##### **Phase 2: Structured Application Logging**
+- [ ] Create centralized logging service
+  - [ ] Wrapper around Buffalo's logger
+  - [ ] Consistent field names and formats
+  - [ ] Request correlation ID support
+- [ ] Add business event logging
+  - [ ] User registration/login/logout events
+  - [ ] Admin actions (user management, role changes)
+  - [ ] Error tracking with context
+  - [ ] Security events (failed login attempts, etc.)
+
+##### **Phase 3: Integration & Standards**
+- [ ] Update existing codebase
+  - [ ] Replace scattered `c.Logger().Debugf()` calls
+  - [ ] Add structured logging to key business flows
+  - [ ] Standardize error logging
+- [ ] Documentation and guidelines
+  - [ ] Logging standards for the team
+  - [ ] Examples and best practices
+
+#### **🔧 Technical Implementation Details**
+
+**Directory Structure:**
+```
+logs/
+├── application.log          # Main application logs
+├── access.log              # HTTP request logs (optional)
+├── error.log               # Error-only logs
+└── audit.log               # Security/admin events
+```
+
+**Configuration Approach:**
+- Use Buffalo's existing logger infrastructure (don't reinvent)
+- Environment variables for configuration
+- Sensible defaults that work out of the box
+- Compatible with Docker/container deployments
+
+**Log Levels & Events:**
+- **INFO**: User actions, business events
+- **WARN**: Unusual but handled conditions
+- **ERROR**: Application errors, failed operations
+- **DEBUG**: Development debugging (current usage)
+
+**Structured Fields Standard:**
+- `user_id`: Current user context
+- `request_id`: Buffalo's existing request IDs
+- `action`: Business action being performed
+- `resource`: What resource is being acted upon
+- `ip_address`: Client IP for security events
 
 ---
-
-**Ready to build your SaaS application!** Start with `make setup` and follow this guide.

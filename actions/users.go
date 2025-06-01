@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"my_go_saas_template/models"
+	"my_go_saas_template/pkg/logging"
 )
 
 // UsersNew renders the users form
@@ -35,6 +36,12 @@ func UsersCreate(c buffalo.Context) error {
 	}
 
 	if verrs.HasAny() {
+		// Log failed registration attempt
+		logging.SecurityEvent(c, "registration_failed", "failure", "validation_errors", logging.Fields{
+			"email":             u.Email,
+			"validation_errors": verrs.Error(),
+		})
+
 		c.Set("user", u)
 		c.Set("errors", verrs)
 		if c.Request().Header.Get("HX-Request") == "true" {
@@ -44,6 +51,12 @@ func UsersCreate(c buffalo.Context) error {
 		}
 		return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
 	}
+
+	// Log successful user registration
+	logging.UserAction(c, u.Email, "register", "User registration successful", logging.Fields{
+		"user_id":   u.ID.String(),
+		"user_role": u.Role,
+	})
 
 	c.Session().Set("current_user_id", u.ID)
 	c.Flash().Add("success", "Welcome to my-go-saas-template!")
@@ -211,7 +224,9 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 		if uid := c.Session().Get("current_user_id"); uid != nil {
 			// Debug logging for tests
 			if c.Value("test_mode") != nil {
-				c.Logger().Debugf("SetCurrentUser: Found session user ID: %v", uid)
+				logging.Debug("SetCurrentUser: Found session user ID", logging.Fields{
+					"session_user_id": uid,
+				})
 			}
 
 			u := &models.User{}
@@ -221,18 +236,25 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 				// If user not found, clear the session and continue
 				// This handles cases where user was deleted but session still exists
 				if c.Value("test_mode") != nil {
-					c.Logger().Debugf("SetCurrentUser: User not found in DB for ID %v: %v", uid, err)
+					logging.Debug("SetCurrentUser: User not found in DB", logging.Fields{
+						"session_user_id": uid,
+						"error":           err.Error(),
+					})
 				}
 				c.Session().Delete("current_user_id")
 			} else {
 				if c.Value("test_mode") != nil {
-					c.Logger().Debugf("SetCurrentUser: Found user in DB: ID=%s, Email=%s, Role=%s", u.ID, u.Email, u.Role)
+					logging.Debug("SetCurrentUser: Found user in DB", logging.Fields{
+						"user_id": u.ID.String(),
+						"email":   u.Email,
+						"role":    u.Role,
+					})
 				}
 				c.Set("current_user", u)
 			}
 		} else {
 			if c.Value("test_mode") != nil {
-				c.Logger().Debugf("SetCurrentUser: No current_user_id in session")
+				logging.Debug("SetCurrentUser: No current_user_id in session", logging.Fields{})
 			}
 		}
 		return next(c)
@@ -247,9 +269,9 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 		if !ok || user == nil {
 			if c.Value("test_mode") != nil {
 				if !ok {
-					c.Logger().Debugf("Authorize: current_user not found in context or wrong type")
+					logging.Debug("Authorize: current_user not found in context or wrong type", logging.Fields{})
 				} else {
-					c.Logger().Debugf("Authorize: current_user is nil")
+					logging.Debug("Authorize: current_user is nil", logging.Fields{})
 				}
 			}
 
@@ -265,7 +287,11 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 		}
 
 		if c.Value("test_mode") != nil {
-			c.Logger().Debugf("Authorize: User authorized: ID=%s, Email=%s, Role=%s", user.ID, user.Email, user.Role)
+			logging.Debug("Authorize: User authorized", logging.Fields{
+				"user_id": user.ID.String(),
+				"email":   user.Email,
+				"role":    user.Role,
+			})
 		}
 		return next(c)
 	}

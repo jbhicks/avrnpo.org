@@ -6,6 +6,7 @@ import (
 
 	"my_go_saas_template/locales"
 	"my_go_saas_template/models"
+	"my_go_saas_template/pkg/logging"
 	"my_go_saas_template/public"
 
 	"github.com/gobuffalo/buffalo"
@@ -43,6 +44,12 @@ var (
 // declared after it to never be called.
 func App() *buffalo.App {
 	appOnce.Do(func() {
+		// Initialize logging service
+		if err := logging.Init(nil); err != nil {
+			// Fallback to standard library logging if our logger fails
+			println("Warning: Failed to initialize logging service:", err.Error())
+		}
+
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
 			SessionName: "_my_go_saas_template_session",

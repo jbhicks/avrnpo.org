@@ -1,158 +1,56 @@
 /**
  * Custom CSS for My Go SaaS Template
- * Using Pico.css variables and semantic styling
+ * Using ONLY Pico.css variables - NO custom CSS rules
+ * All customization done through CSS variables in :root
  */
 
 /* =============================================================================
-   Header & Navigation Styles
+   PICO CSS VARIABLE CUSTOMIZATIONS
    ============================================================================= */
 
-/* Enhanced header with gradient background - REMOVE OR COMMENT OUT */
-/*
-.site-header {
-  background: linear-gradient(135deg, #000000 0%, #3D0066 100%);
-  border-bottom: var(--pico-border-width) solid var(--pico-primary);
-  padding: calc(var(--pico-spacing) / 5) var(--pico-spacing); 
-  box-shadow: var(--pico-card-box-shadow);
-  position: relative;
-  z-index: 10;
-  display: flex; 
-  align-items: center; 
+:root {
+  /* Custom primary color scheme */
+  --pico-primary: hsl(250, 67%, 35%);
+  --pico-primary-hover: hsl(250, 67%, 45%);
+  --pico-primary-focus: hsl(250, 67%, 40%);
+  
+  /* Enhanced spacing for better visual hierarchy */
+  --pico-spacing: 1rem;
+  --pico-typography-spacing-vertical: 1.5rem;
+  
+  /* Improved form element spacing */
+  --pico-form-element-spacing-vertical: 0.75rem;
+  --pico-form-element-spacing-horizontal: 1rem;
+  
+  /* Better border radius for modern feel */
+  --pico-border-radius: 0.5rem;
+  
+  /* Enhanced shadows for depth */
+  --pico-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --pico-card-box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
 }
 
-.site-header nav {
-  width: 100%; 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Dark theme adjustments */
+[data-theme="dark"] {
+  --pico-background-color: hsl(205, 30%, 8%);
+  --pico-card-background-color: hsl(205, 25%, 12%);
+  --pico-muted-background-color: hsl(205, 20%, 15%);
 }
 
-.site-header nav ul {
-  margin-bottom: 0;
-  padding-left: 0;
-  display: flex;
-  align-items: center;
-  list-style-type: none;
+/* Light theme adjustments */
+[data-theme="light"] {
+  --pico-background-color: hsl(0, 0%, 98%);
+  --pico-card-background-color: hsl(0, 0%, 100%);
+  --pico-muted-background-color: hsl(0, 0%, 96%);
 }
 
-.site-header nav li {
-  margin-left: calc(var(--pico-spacing) * 0.5); 
-}
-.site-header nav li:first-child {
-  margin-left: 0;
-}
-
-.site-header strong {
-  font-size: 1rem; 
-  color: var(--pico-primary-inverse) !important;
-  text-shadow: none; 
-  margin-right: auto; 
-}
-
-
-.site-header a,
-.site-header button {
-  color: var(--pico-primary-inverse) !important;
-  background-color: transparent !important;
-  text-decoration: none;
-  padding: calc(var(--pico-spacing) * 0.25) !important; 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--pico-border-radius) !important; 
-  border: 1px solid rgba(255, 255, 255, 0.2) !important; 
-  height: auto; 
-  line-height: 1; 
-  transition: background-color 0.2s ease, border-color 0.2s ease; 
-  vertical-align: middle !important; 
-}
-
-.site-header a:hover,
-.site-header a:focus,
-.site-header button:hover,
-.site-header button:focus {
-  color: var(--pico-primary-inverse) !important;
-  background-color: rgba(255, 255, 255, 0.1) !important; 
-  border-color: rgba(255, 255, 255, 0.5) !important; 
-}
-
-
-.site-header a svg,
-.site-header button svg {
-  width: 1.25rem !important; 
-  height: 1.25rem !important; 
-  stroke: currentColor !important; 
-  fill: none !important;
-  stroke-width: 2 !important; 
-}
-
-
-.site-header button #theme-icon {
-  display: inline-flex; 
-  align-items: center;   
-  justify-content: center; 
-  padding: 0;
-  margin: 0;
-  line-height: inherit; 
-}
-
-
-[data-theme="light"] .site-header .theme-toggle-btn {
-  color: var(--pico-contrast) !important;
-  border-color: rgba(0, 0, 0, 0.2) !important; 
-}
-
-[data-theme="light"] .site-header .theme-toggle-btn svg {
-  stroke: var(--pico-contrast) !important; 
-}
-
-[data-theme="light"] .site-header .theme-toggle-btn:hover,
-[data-theme="light"] .site-header .theme-toggle-btn:focus {
-  background-color: var(--pico-muted-background-hover) !important;
-  color: var(--pico-contrast-hover) !important;
-  border-color: rgba(0, 0, 0, 0.4) !important; 
-}
-
-[data-theme="light"] .site-header .theme-toggle-btn:hover svg, 
-[data-theme="light"] .site-header .theme-toggle-btn:focus svg {
-    stroke: var(--pico-contrast-hover) !important;
-}
-*/
-
-/* =============================================================================
-   Theme Selector
-   ============================================================================= */
-
-.theme-toggle-btn {
-  background-color: transparent; /* Make theme toggle distinct, no background */
-  color: var(--pico-contrast); /* Use contrast color for visibility */
-  /* border: var(--pico-border-width) solid var(--pico-secondary-border); */ /* Removed for consistency */
-  border-radius: var(--pico-border-radius);
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease; /* Pico transition */
-}
-
-.theme-toggle-btn:hover,
-.theme-toggle-btn:focus {
-  background-color: var(--pico-muted-background-hover); /* Subtle hover for icon-only button */
-  color: var(--pico-contrast-hover);
-  /* border-color: var(--pico-secondary-hover-border); */ /* Removed for consistency */
-}
-
-/* Theme toggle button icon sizing */
-.theme-toggle-btn svg {
-  width: 1.25rem; /* 20px */
-  height: 1.25rem; /* 20px */
-  vertical-align: middle; /* Align icon with button text if any */
-}
-
-/* Ensure the button itself is styled minimally if it's just an icon */
+/* Theme toggle button styling using Pico variables */
 .theme-toggle-btn {
   background: none;
   border: none;
-  padding: 0.25rem; /* Adjust as needed for click area */
+  padding: 0.25rem;
   cursor: pointer;
-  color: inherit; /* Inherit text color for the SVG stroke */
+  color: inherit;
 }
 
 .theme-toggle-btn:hover,
@@ -197,8 +95,15 @@
 }
 
 .stats-card p {
-  font-size: 2rem; /* Large custom font size. Consider if this should be a heading. */
+  font-size: 2rem;
   margin: var(--pico-spacing) 0;
+  text-align: center;
+}
+
+.stats-number {
+  font-size: 2rem;
+  margin: 0;
+  text-align: center;
 }
 
 .stats-card footer small {
@@ -222,10 +127,47 @@
   margin-top: var(--pico-spacing);
 }
 
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0;
+}
+
+.action-buttons button,
+.action-buttons a {
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.admin-role {
+  color: var(--pico-color-red-500);
+}
+
+.warning-header {
+  color: var(--pico-color-red-500);
+}
+
+.inline-form {
+  margin: 0;
+}
+
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.pagination-spacing {
+  margin: 0 1rem;
+}
+
+.danger-zone {
+  border-left: 4px solid var(--pico-color-red-500);
+}
+
 /* =============================================================================
-   Utility Classes
+   Utility Classes (Minimal - Prefer semantic HTML)
    ============================================================================= */
-/* Pico advises against overusing utility classes. Prefer semantic HTML. */
 
 .text-center {
   text-align: center;
@@ -235,49 +177,13 @@
   color: var(--pico-muted-color);
 }
 
-.mb-0 {
-  margin-bottom: 0;
-}
-
-.mt-2 {
-  margin-top: calc(var(--pico-spacing) * 2);
-}
-
-.p-relative {
-  position: relative;
-}
-
-.z-10 {
-  z-index: 10;
-}
-
 /* =============================================================================
-   Responsive Adjustments
+   Responsive Adjustments (Minimal - Pico is mobile-first)
    ============================================================================= */
 
-@media (max-width: 768px) { /* Pico is mobile-first; these are specific overrides. */
-  .site-header {
-    padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
-  }
-  
-  .site-header strong {
-    font-size: 1.1em; /* Relative sizing */
-  }
-  
+@media (max-width: 768px) {
   .dashboard-nav {
     padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
-  }
-  
-  .btn-primary,
-  .btn-secondary {
-    padding: calc(var(--pico-spacing) * 0.4) calc(var(--pico-spacing) * 0.8);
-    margin-right: calc(var(--pico-spacing) * 0.25);
-    font-size: 0.8rem; /* Smaller font on mobile */
-  }
-  
-  .theme-toggle-btn {
-    padding: calc(var(--pico-spacing) * 0.3) calc(var(--pico-spacing) * 0.5);
-    font-size: 0.8rem;
   }
   
   .form-actions {
@@ -291,14 +197,14 @@
    ============================================================================= */
 
 [data-theme="dark"] .site-header {
-  background: linear-gradient(135deg, #000000 0%, #3D0066 100%); /* Custom gradient */
-  color: var(--pico-color); /* Use Pico\'s standard text color for dark theme */
-  border-bottom-color: var(--pico-primary-border); /* Ensure dark theme has appropriate border */
+  background-color: var(--pico-card-background-color);
+  color: var(--pico-color);
+  border-bottom-color: var(--pico-muted-border-color);
 }
 
 [data-theme="light"] .site-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); /* Custom gradient */
-  border-bottom-color: var(--pico-primary-border); /* Pico variable */
+  background-color: var(--pico-card-background-color);
+  border-bottom-color: var(--pico-muted-border-color);
 }
 
 /* Fix any dropdown positioning issues */

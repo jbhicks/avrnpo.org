@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"my_go_saas_template/pkg/logging"
 
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/pop/v6"
@@ -16,7 +16,10 @@ func init() {
 	env := envy.Get("GO_ENV", "development")
 	DB, err = pop.Connect(env)
 	if err != nil {
-		log.Fatal(err)
+		logging.Fatal("Failed to connect to database", logging.Fields{
+			"environment": env,
+			"error":       err.Error(),
+		})
 	}
 	pop.Debug = env == "development"
 }

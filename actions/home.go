@@ -64,7 +64,6 @@ func DashboardHandler(c buffalo.Context) error {
 	}
 
 	// For a full page load (e.g. direct navigation to /dashboard, or refresh)
-	// we render with the main application.plush.html layout, which now includes the persistent header
-	c.Set("isHTMXRequest", false) // Indicate non-HTMX request
-	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
+	// use the same layout as the home page but with dashboard content
+	return c.Render(http.StatusOK, r.HTML("home/dashboard_fixed.plush.html"))
 }

@@ -42,7 +42,7 @@
   <!-- Admin Section - Only visible to admin users -->
   <%= if (current_user.Role == "admin") { %>
   <section>
-    <article style="border-left: 4px solid var(--pico-color-red-500);">
+    <article class="danger-zone">
       <header>
         <h3>🛡️ Administrator Access</h3>
       </header>

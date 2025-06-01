@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"my_go_saas_template/models"
+	"my_go_saas_template/pkg/logging"
 )
 
 // AuthLanding shows a landing page to login
@@ -51,6 +52,11 @@ func AuthCreate(c buffalo.Context) error {
 		// Always perform a dummy bcrypt operation to prevent timing attacks
 		bcrypt.CompareHashAndPassword([]byte("$2a$10$dummy.hash.to.prevent.timing.attacks"), []byte("dummy"))
 
+		// Log failed login attempt
+		logging.SecurityEvent(c, "login_failed", "failure", "invalid_credentials", logging.Fields{
+			"email": strings.ToLower(strings.TrimSpace(u.Email)),
+		})
+
 		verrs := validate.NewErrors()
 		verrs.Add("email", "invalid email/password")
 
@@ -77,6 +83,12 @@ func AuthCreate(c buffalo.Context) error {
 		return bad()
 	}
 
+	// Log successful login
+	logging.UserAction(c, u.Email, "login", "User logged in successfully", logging.Fields{
+		"user_id":   u.ID.String(),
+		"user_role": u.Role,
+	})
+
 	c.Session().Set("current_user_id", u.ID)
 	c.Flash().Add("success", "Welcome Back!")
 
@@ -96,7 +108,21 @@ func AuthCreate(c buffalo.Context) error {
 
 // AuthDestroy clears the session and logs a user out
 func AuthDestroy(c buffalo.Context) error {
+	// Get user info before clearing session for logging
+	var userID string
+	if uid := c.Session().Get("current_user_id"); uid != nil {
+		if id, ok := uid.(string); ok {
+			userID = id
+		}
+	}
+
 	c.Session().Clear()
+
+	// Log logout event
+	if userID != "" {
+		logging.UserAction(c, userID, "logout", "User logged out", logging.Fields{})
+	}
+
 	c.Flash().Add("success", "You have been logged out!")
 	if c.Request().Header.Get("HX-Request") == "true" {
 		// Instead of relying on HX-Refresh or HX-Redirect,

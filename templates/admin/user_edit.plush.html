@@ -134,16 +134,16 @@
   <!-- Danger Zone -->
   <%= if (user.ID != current_user.ID) { %>
     <article>
-      <header style="color: var(--pico-color-red-500);">
+      <header class="warning-header">
         <h3>⚠️ Danger Zone</h3>
       </header>
       <p>Permanently delete this user account and all associated data.</p>
       <footer>
-        <form method="POST" action="/admin/users/<%= user.ID %>" style="margin: 0;">
+        <form method="POST" action="/admin/users/<%= user.ID %>" class="inline-form">
           <input type="hidden" name="_method" value="DELETE">
           <button type="submit" class="outline" 
                   onclick="return confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')"
-                  style="color: var(--pico-color-red-500); border-color: var(--pico-color-red-500);">
+                  class="outline contrast">
             🗑️ Delete User
           </button>
         </form>

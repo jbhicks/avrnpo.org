@@ -1,9 +1,8 @@
 package main
 
 import (
-	"log"
-
 	"my_go_saas_template/actions"
+	"my_go_saas_template/pkg/logging"
 )
 
 // main is the starting point for your Buffalo application.
@@ -15,7 +14,9 @@ import (
 func main() {
 	app := actions.App()
 	if err := app.Serve(); err != nil {
-		log.Fatal(err)
+		logging.Fatal("Failed to start Buffalo application", logging.Fields{
+			"error": err.Error(),
+		})
 	}
 }
 

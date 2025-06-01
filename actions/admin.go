@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -8,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"my_go_saas_template/models"
+	"my_go_saas_template/pkg/logging"
 )
 
 // AdminRequired middleware ensures only admins can access admin routes
@@ -17,9 +19,9 @@ func AdminRequired(next buffalo.Handler) buffalo.Handler {
 		if !ok || user == nil {
 			if c.Value("test_mode") != nil {
 				if !ok {
-					c.Logger().Debugf("AdminRequired: current_user not found in context or wrong type")
+					logging.Debug("AdminRequired: current_user not found in context or wrong type", logging.Fields{})
 				} else {
-					c.Logger().Debugf("AdminRequired: current_user is nil")
+					logging.Debug("AdminRequired: current_user is nil", logging.Fields{})
 				}
 			}
 			c.Flash().Add("danger", "Access denied. Administrator privileges required.")
@@ -27,15 +29,32 @@ func AdminRequired(next buffalo.Handler) buffalo.Handler {
 		}
 
 		if user.Role != "admin" {
+			// Log unauthorized admin access attempt
+			logging.SecurityEvent(c, "unauthorized_admin_access", "failure", "insufficient_privileges", logging.Fields{
+				"user_id": user.ID.String(),
+				"email":   user.Email,
+				"role":    user.Role,
+			})
+
 			if c.Value("test_mode") != nil {
-				c.Logger().Debugf("AdminRequired: User is not admin. Role=%s", user.Role)
+				logging.Debug("AdminRequired: User is not admin", logging.Fields{
+					"role": user.Role,
+				})
 			}
 			c.Flash().Add("danger", "Access denied. Administrator privileges required.")
 			return c.Redirect(http.StatusFound, "/dashboard")
 		}
 
+		// Log successful admin access
+		logging.UserAction(c, user.ID.String(), "admin_access", "User accessed admin area", logging.Fields{
+			"email": user.Email,
+		})
+
 		if c.Value("test_mode") != nil {
-			c.Logger().Debugf("AdminRequired: Admin access granted for user: ID=%s, Email=%s", user.ID, user.Email)
+			logging.Debug("AdminRequired: Admin access granted", logging.Fields{
+				"user_id": user.ID.String(),
+				"email":   user.Email,
+			})
 		}
 		return next(c)
 	}
@@ -157,6 +176,16 @@ func AdminUserUpdate(c buffalo.Context) error {
 		return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
 	}
 
+	// Log admin user update
+	adminUser := c.Value("current_user").(*models.User)
+	logging.UserAction(c, adminUser.ID.String(), "admin_update_user", fmt.Sprintf("Admin updated user %s", updatedUser.Email), logging.Fields{
+		"admin_email":    adminUser.Email,
+		"target_user_id": updatedUser.ID.String(),
+		"target_email":   updatedUser.Email,
+		"updated_role":   updatedUser.Role,
+		"previous_role":  user.Role,
+	})
+
 	c.Flash().Add("success", "User updated successfully!")
 	if c.Request().Header.Get("HX-Request") == "true" {
 		c.Response().Header().Set("HX-Redirect", "/admin/users")
@@ -184,6 +213,15 @@ func AdminUserDelete(c buffalo.Context) error {
 	if err := tx.Destroy(user); err != nil {
 		return errors.WithStack(err)
 	}
+
+	// Log admin user deletion
+	adminUser := c.Value("current_user").(*models.User)
+	logging.UserAction(c, adminUser.ID.String(), "admin_delete_user", fmt.Sprintf("Admin deleted user %s", user.Email), logging.Fields{
+		"admin_email":     adminUser.Email,
+		"deleted_user_id": user.ID.String(),
+		"deleted_email":   user.Email,
+		"deleted_role":    user.Role,
+	})
 
 	c.Flash().Add("success", "User deleted successfully!")
 	if c.Request().Header.Get("HX-Request") == "true" {
