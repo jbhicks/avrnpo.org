@@ -1,66 +1,66 @@
 # My Go SaaS Template
 
-A production-ready Buffalo-based SaaS application template with containerized PostgreSQL database, complete authentication system, comprehensive role-based admin management, and a modern HTMX-driven UI using Pico.css semantic styling.
+A Buffalo web application template with PostgreSQL database, user authentication, admin panel, and HTMX-based UI.
 
 ## ✅ Features Checklist
 
 ### Core Infrastructure
-- [x] **Buffalo application** - Modern Go web framework with hot reload development
-- [x] **PostgreSQL containerized** - Podman Compose setup with PostgreSQL 15
-- [x] **Database configuration** - All environments configured (development, test, production)
-- [x] **Database migrations** - Complete schema with role-based user system
-- [x] **Robust development workflow** - Enhanced make commands with health checks and error handling
+- [x] **Buffalo application** - Go web framework with hot reload
+- [x] **PostgreSQL database** - Podman Compose setup with PostgreSQL 15
+- [x] **Database configuration** - Development, test, production environments
+- [x] **Database migrations** - User table with role field
+- [x] **Development workflow** - Make commands for common tasks
 
 ### Authentication & Authorization
-- [x] **Complete authentication system** - User registration, login, logout with secure session management
-- [x] **Role-based access control** - User and admin roles with proper authorization middleware
-- [x] **User profile management** - Edit profile information with admin role management
-- [x] **Password security** - bcrypt hashing with proper validation
+- [x] **Authentication system** - User registration, login, logout with sessions
+- [x] **Role-based access control** - User and admin roles
+- [x] **User profile management** - Profile editing
+- [x] **Password security** - bcrypt hashing
 
 ### Admin Management System
-- [x] **Admin dashboard** - Statistics and overview panel for administrators
-- [x] **User management CRUD** - Complete user listing, editing, and deletion with safety controls
-- [x] **Role assignment** - Promote/demote users between user and admin roles
-- [x] **Admin promotion system** - Automated first-user admin promotion via grift tasks
-- [x] **Authorization middleware** - Secure admin-only route protection
-- [x] **Safety controls** - Prevent self-deletion and unauthorized access
+- [x] **Admin dashboard** - User statistics and basic admin interface
+- [x] **User management** - User listing, editing, and deletion
+- [x] **Role assignment** - Change user roles between user and admin
+- [x] **Admin promotion** - Promote first user to admin via command
+- [x] **Authorization middleware** - Admin-only route protection
+- [x] **Safety controls** - Prevent admin self-deletion
 
 ### User Interface & Experience
-- [x] **Template system** - Plush templates with semantic Pico.css styling
-- [x] **HTMX integration** - Dynamic content loading without page refreshes
-- [x] **Persistent UI shell** - Header and footer persist, content area updates dynamically
-- [x] **Modal authentication** - Login and Sign Up forms in responsive modals
-- [x] **Theme system** - Dark/light/auto modes with system preference detection
-- [x] **Responsive design** - Mobile-first approach with semantic HTML
-- [x] **Professional UI components** - User dropdowns, admin tables, and management interfaces
+- [x] **Template system** - Plush templates with Pico.css styling
+- [x] **HTMX integration** - Dynamic content loading without full page refreshes
+- [x] **Persistent UI shell** - Header and footer persist across navigation
+- [x] **Modal authentication** - Login and signup forms in modals
+- [x] **Theme system** - Dark/light/auto modes
+- [x] **Responsive design** - Mobile-friendly layout
+- [x] **UI components** - User dropdowns, admin tables, basic interface elements
 
 ### SEO & Performance
-- [x] **SEO optimization** - Meta tags, Open Graph, structured data, and XML sitemap
-- [x] **Performance optimization** - Minimal CSS/JS footprint with efficient HTMX updates
-- [x] **Accessibility** - WCAG-compliant markup and keyboard navigation
-- [x] **Search engine friendly** - Proper robots.txt and canonical URLs
+- [x] **SEO optimization** - Meta tags, Open Graph, structured data, XML sitemap
+- [x] **Performance optimization** - Minimal CSS/JS footprint
+- [x] **Accessibility** - Semantic HTML and keyboard navigation
+- [x] **Search engine friendly** - robots.txt and canonical URLs
 
 ### Development & Testing
 - [x] **Hot reload development** - Buffalo dev server with automatic recompilation
-- [x] **Testing framework** - Buffalo testing suite with database integration
-- [x] **Database health checks** - Automated PostgreSQL readiness verification
-- [x] **Error handling** - Comprehensive error handling in make commands and scripts
+- [x] **Testing framework** - Go testing with database integration
+- [x] **Database health checks** - PostgreSQL readiness verification
+- [x] **Error handling** - Basic error handling in commands and scripts
 
 ### Pending Features
 - [ ] **Billing/subscription features** - Payment processing and subscription management
 - [ ] **Email services** - Transactional emails and notifications
 - [ ] **Production deployment** - Docker containers and cloud deployment guides
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - **Go 1.19+** - [Download Go](https://golang.org/dl/)
 - **Podman/Docker** - For PostgreSQL container ([Install Podman](https://podman.io/getting-started/installation))
 - **Buffalo CLI** - `go install github.com/gobuffalo/cli/cmd/buffalo@latest`
 
-### One-Command Setup
+### Setup
 
-The fastest way to get started with a fully functional SaaS application:
+Setup steps for the application:
 
 ```console
 # Clone the repository
@@ -76,12 +76,7 @@ make dev
 
 After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your application running.
 
-### Setting Up Admin Access
-1. **Create a user account** through the web interface at `http://127.0.0.1:3000`
-2. **Promote to admin** with: `make admin`
-3. **Login and access admin panel** at `http://127.0.0.1:3000/admin`
-
-## 🔥 Buffalo Auto-Reload Development
+## Buffalo Auto-Reload Development
 
 **Important**: Buffalo has built-in hot reload that automatically handles all file changes. Once you run `make dev`, the server stays running and automatically reloads when you make changes.
 
@@ -118,58 +113,29 @@ This automatically promotes the first registered user to admin role, giving them
 
 ## 👑 Admin Management System
 
-This template includes a comprehensive role-based admin management system with full CRUD operations, safety controls, and a professional interface.
+This template includes a role-based admin management system with basic CRUD operations and safety controls.
 
 ### Admin System Features
 
 #### User Management
-- **Complete CRUD Operations** - Create, read, update, and delete users
-- **Role Assignment** - Promote/demote users between admin and user roles
-- **Bulk Operations** - Efficient user management with pagination
+- **Basic CRUD Operations** - Create, read, update, and delete users
+- **Role Assignment** - Change user roles between admin and user
+- **User Management** - User listing with basic pagination
 - **Safety Controls** - Admins cannot delete their own accounts
-- **Audit Trail** - Track role changes and admin actions
 
 #### Admin Interface
-- **Professional Dashboard** - Overview with user statistics and system metrics
-- **User Management Table** - Sortable, paginated list with search capabilities
-- **Role Management Forms** - Easy role assignment with visual feedback
-- **Responsive Design** - Works seamlessly on desktop and mobile devices
+- **Basic Dashboard** - User statistics and system overview
+- **User Management Table** - User list with edit/delete actions
+- **Role Management Forms** - Simple role assignment interface
+- **Responsive Design** - Works on desktop and mobile devices
 
 #### Security Features
-- **Authorization Middleware** - All admin routes protected with `AdminRequired` middleware
-- **Role-Based Access** - Dynamic UI based on user permissions
-- **Session Security** - Secure session management with role verification
-- **Input Validation** - Comprehensive validation for all admin operations
+- **Authorization Middleware** - Admin routes protected with `AdminRequired` middleware
+- **Role-Based Access** - UI shows/hides features based on user permissions
+- **Session Security** - Session management with role verification
+- **Input Validation** - Basic validation for admin operations
 
 ### Setting Up Admin Access
-
-#### Step-by-Step Admin Setup
-
-1. **Start the Application**
-   ```console
-   make dev
-   ```
-   Application will be available at `http://127.0.0.1:3000`
-
-2. **Create Your First User Account**
-   - Navigate to `http://127.0.0.1:3000`
-   - Click "Start your free trial today" or go to `/users/new`
-   - Fill out the registration form with your details
-   - Complete account creation
-
-3. **Promote to Admin Role**
-   ```console
-   make admin
-   ```
-   This automatically promotes the first registered user to admin role.
-
-4. **Login and Access Admin Panel**
-   - Go to `http://127.0.0.1:3000/auth/new`
-   - Login with your credentials
-   - Access admin features:
-     - **Admin Dashboard**: `http://127.0.0.1:3000/admin`
-     - **User Management**: `http://127.0.0.1:3000/admin/users`
-     - **Admin Section**: Visible on main dashboard when logged in as admin
 
 #### Automatic Admin Promotion
 ```console
@@ -177,7 +143,7 @@ This template includes a comprehensive role-based admin management system with f
 make admin
 ```
 
-This grift task automatically finds the first user (by creation date) and promotes them to admin role.
+This grift task finds the first user (by creation date) and promotes them to admin role.
 
 #### Manual Admin Promotion
 ```console
@@ -187,30 +153,6 @@ buffalo task db:promote_admin
 # Or promote a specific user via database
 psql -d my_go_saas_template_development -c "UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';"
 ```
-
-#### Testing Admin Features
-
-Once logged in as admin, test these key features:
-
-- **📊 Admin Dashboard** - View user statistics and system overview
-- **👥 User Management** - Create, edit, delete, and manage user roles
-- **🔐 Role Assignment** - Promote/demote users between admin and user roles
-- **🛡️ Security Controls** - Self-deletion prevention and access controls
-- **🎨 Admin UI** - Professional interface with Pico.css styling
-
-#### What Users See vs. Admins
-
-**Regular Users:**
-- Dashboard with personal account information
-- Profile management and account settings
-- Standard application features
-
-**Admin Users:**
-- Everything regular users see, plus:
-- **"🛡️ Administrator Access"** section on main dashboard
-- **Admin Dashboard** button linking to `/admin`
-- **Manage Users** button linking to `/admin/users`
-- Full user management capabilities
 
 ### Admin Routes & API
 
@@ -278,8 +220,7 @@ if userToDelete.ID == currentUser.ID {
 | `make setup` | First-time setup | Creates database, runs migrations |
 | `make dev` | Development mode | Starts database + Buffalo dev server |
 | `make admin` | Admin setup | Promotes first user to admin role |
-| `make test` | Run tests | Executes Buffalo test suite with database |
-| `make test-fast` | Quick tests | Runs Buffalo tests (assumes DB running) |
+| `make test` | Run tests | Executes full test suite with database |
 | `make clean` | Cleanup | Stops services and cleans containers |
 | `make db-status` | Health check | Shows database container status |
 
@@ -308,14 +249,8 @@ make dev
 
 #### Testing & Quality Assurance
 ```console
-# Run all tests with Buffalo (recommended)
+# Run all tests (includes database setup)
 make test
-
-# Quick test run (assumes database is running)
-make test-fast
-
-# Run Buffalo tests directly
-buffalo test
 
 # Check database health
 make db-status
@@ -466,33 +401,33 @@ This template heavily utilizes HTMX for a modern, single-page application feel w
 ##  SEO & Performance Features
 
 ### Search Engine Optimization
-- **Search Engine Friendly**: Fixed robots.txt to allow crawling while protecting private areas. Initial content for the homepage is loaded via HTMX on page load, ensuring it's available.
-- **Dynamic Meta Tags**: Page-specific titles, descriptions, and keywords (managed in `application.plush.html` and passed from handlers).
-- **Open Graph**: Rich social media previews for Facebook, Twitter, and LinkedIn.
-- **Structured Data**: JSON-LD schema markup for SaaS applications.
-- **Canonical URLs**: Prevent duplicate content issues.
-- **XML Sitemap**: Auto-generated sitemap for search engines.
+- **Search Engine Friendly**: robots.txt configured to allow crawling while protecting private areas
+- **Dynamic Meta Tags**: Page-specific titles, descriptions, and keywords
+- **Open Graph**: Social media preview tags for Facebook, Twitter, and LinkedIn
+- **Structured Data**: JSON-LD schema markup for SaaS applications
+- **Canonical URLs**: Prevent duplicate content issues
+- **XML Sitemap**: Basic sitemap for search engines
 
 ### Performance & Accessibility
-- **Semantic HTML**: Proper HTML5 structure with Pico.css semantic styling.
-- **HTMX for Dynamic Updates**: Enhances perceived performance by only updating necessary page parts.
-- **Mobile-First**: Responsive design with proper viewport settings.
-- **Theme Support**: Dark/light/auto modes with system preference detection, functional within the persistent HTMX-driven UI.
-- **Fast Loading**: Minimal CSS/JS footprint.
-- **Accessibility**: WCAG-compliant markup and keyboard navigation.
+- **Semantic HTML**: Proper HTML5 structure with Pico.css styling
+- **HTMX for Dynamic Updates**: Updates page sections without full refreshes
+- **Mobile-First**: Responsive design with proper viewport settings
+- **Theme Support**: Dark/light/auto modes with system preference detection
+- **Fast Loading**: Minimal CSS/JS footprint
+- **Accessibility**: Semantic markup and keyboard navigation
 
 ## 📊 Architecture & Technology Stack
 
 ### Backend Architecture
-- **Framework**: Buffalo (Go web framework) - Modern, productive web development
-- **Database**: PostgreSQL 15 (containerized) - Reliable, ACID-compliant database
+- **Framework**: Buffalo (Go web framework)
+- **Database**: PostgreSQL 15 (containerized)
 - **Authentication**: Session-based with bcrypt password hashing
-- **Authorization**: Role-based access control (RBAC) with middleware protection
-- **Background Jobs**: Buffalo workers (available for async processing)
-- **Testing**: Buffalo testing framework with database integration
+- **Authorization**: Role-based access control with middleware
+- **Background Jobs**: Buffalo workers (available for future use)
+- **Testing**: Go testing framework with database integration
 
 ### Frontend Architecture
-- **Templating**: Plush templates - Buffalo's template engine with Go-like syntax
+- **Templating**: Plush templates - Buffalo's template engine
 - **Styling**: Pico.css - Semantic CSS framework with automatic theming
 - **Interactions**: HTMX - Dynamic content loading without complex JavaScript
 - **Theme System**: Dark/light/auto modes with localStorage persistence
@@ -514,11 +449,11 @@ users (
 ```
 
 #### Key Features
-- **UUID Primary Keys** - Secure, non-enumerable identifiers
+- **UUID Primary Keys** - Non-enumerable identifiers
 - **Timestamps** - Automatic created_at/updated_at tracking
 - **Email Uniqueness** - Prevents duplicate accounts
-- **Password Security** - bcrypt hashing with proper salt rounds
-- **Role System** - Extensible role-based permissions
+- **Password Security** - bcrypt hashing
+- **Role System** - User and admin roles
 
 ### Application Structure
 
@@ -567,27 +502,27 @@ The application uses a persistent shell architecture where the main layout stays
 
 #### Benefits
 - **Faster Navigation** - Only content area updates, header/footer persist
-- **Better UX** - No page flicker, smoother transitions
+- **Better UX** - No page flicker during navigation
 - **SEO Friendly** - Full pages still render for search engines
 - **Progressive Enhancement** - Works without JavaScript as fallback
 
 ### Security Architecture
 
 #### Authentication Security
-- **Session Management** - Secure session cookies with proper expiration
+- **Session Management** - Session cookies with expiration
 - **Password Hashing** - bcrypt with appropriate cost factor
 - **CSRF Protection** - Built-in Buffalo CSRF middleware
-- **Input Validation** - Comprehensive validation on all user inputs
+- **Input Validation** - Basic validation on user inputs
 
 #### Authorization Security
 - **Role-Based Access** - Middleware-enforced role checking
 - **Route Protection** - Admin routes protected with `AdminRequired` middleware
 - **Template Security** - Role-based conditional rendering
-- **API Security** - Proper authorization checks on all endpoints
+- **API Security** - Authorization checks on endpoints
 
 #### Database Security
-- **Prepared Statements** - All queries use proper parameterization
-- **Connection Pooling** - Secure database connection management
+- **Prepared Statements** - All queries use parameterization
+- **Connection Pooling** - Database connection management
 - **Migration Tracking** - Database schema version control
 - **Data Validation** - Model-level validation before database operations
 
@@ -596,19 +531,19 @@ The application uses a persistent shell architecture where the main layout stays
 #### Frontend Performance
 - **Minimal JavaScript** - HTMX provides dynamic behavior with minimal JS
 - **Semantic CSS** - Pico.css provides styling without utility class bloat
-- **Efficient Templates** - Plush templates compiled for performance
+- **Template Rendering** - Plush templates for server-side rendering
 - **Static Asset Optimization** - Minified CSS and optimized images
 
 #### Backend Performance
 - **Compiled Go Binary** - High-performance compiled application
-- **Connection Pooling** - Efficient database connection management
-- **Session Optimization** - Efficient session storage and retrieval
+- **Connection Pooling** - Database connection management
+- **Session Optimization** - Session storage and retrieval
 - **Template Caching** - Plush templates cached in production
 
 #### Database Performance
-- **Indexed Queries** - Proper indexing on frequently queried columns
-- **Query Optimization** - Efficient queries with minimal N+1 problems
-- **Connection Limits** - Proper connection pool sizing
+- **Indexed Queries** - Indexing on frequently queried columns
+- **Query Optimization** - Efficient queries
+- **Connection Limits** - Connection pool sizing
 - **Migration Efficiency** - Non-blocking migrations where possible
 
 ## 🛠️ Development
@@ -652,7 +587,7 @@ buffalo task db:promote_admin  # Promote first user to admin role
 # Development
 buffalo dev                    # Start dev server with hot reload
 buffalo build                  # Build production binary
-buffalo test                   # Run tests (always use this instead of 'go test')
+buffalo test                   # Run tests
 
 # Container management (Podman/Docker)
 podman-compose up -d           # Start database
@@ -861,7 +796,7 @@ my-go-saas-template/
 - **`scripts/wait-for-postgres.sh`** - Database readiness verification for reliable automation
 - **`docker-compose.yml`** - PostgreSQL container configuration for development environment
 
-This file structure supports a scalable, maintainable SaaS application with clear separation of concerns and professional development practices.
+This file structure supports a maintainable SaaS application with clear separation of concerns.
 
 ## 📚 Additional Resources
 
@@ -884,4 +819,4 @@ This file structure supports a scalable, maintainable SaaS application with clea
 
 ---
 
-**🎉 Ready to build your SaaS application!** Start with `make setup` and follow this guide for a comprehensive, production-ready foundation.
+**Ready to build your SaaS application!** Start with `make setup` and follow this guide.

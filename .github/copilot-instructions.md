@@ -149,72 +149,48 @@
 - Don't override Pico.css with excessive inline styles
 - Don't use Alpine.js or JavaScript for basic interactions that Pico.css handles
 - Don't hardcode colors - use CSS variables for theme compatibility
-6. **🚨 CRITICAL**: Assume Buffalo is running and working unless proven otherwise
 
-### Database Management
-- **PostgreSQL**: Runs in a Podman container on port 5432
-- **Use `podman-compose ps`** to check container status
-- **Database persists** between restarts via Docker volumes
-- **Migrations**: Run `buffalo pop migrate` only when adding new migrations
+### Documentation and Communication Guidelines
 
-### Testing Changes
-- **Templates**: Auto-reload on save, just refresh the browser - NO RESTART NEEDED
-- **Go code**: Auto-compiles and restarts Buffalo server automatically
-- **Static assets**: Auto-reload via Buffalo's asset pipeline
-- **Database changes**: Require migration runs but Buffalo stays running
-- **🚨 IMPORTANT**: Let Buffalo handle all reloading - manual intervention not needed
+### Tone and Language Requirements
 
-### Common Commands
-- `make dev` - Start everything (use once)
-- `podman-compose ps` - Check database status
-- `buffalo pop migrate` - Run new database migrations
-- `ps aux | grep buffalo` - Check for running Buffalo instances
-- `lsof -i :3000` - See what's using port 3000
+**ALWAYS maintain a factual, matter-of-fact tone in all documentation and communication:**
 
-### Troubleshooting
-- **Port 3000 in use**: Check if Buffalo is already running before starting new instance
-- **Database connection issues**: Check `podman-compose ps` and container logs
-- **Template errors**: Check Buffalo console output for Plush syntax errors
-- **Hot reload not working**: Restart Buffalo only if auto-reload stops working
+- **Avoid promotional language**: Never use words like "comprehensive", "professional", "robust", "powerful", "seamless", "cutting-edge"
+- **Avoid exaggerated claims**: Don't claim features are "production-ready", "enterprise-grade", or "industry-standard" unless verified
+- **Be specific about functionality**: Instead of "complete CRUD operations", say "basic CRUD operations" or list specific functions
+- **Avoid marketing speak**: Don't use phrases like "enhances perceived performance" - just state what it does
+- **Remove unnecessary qualifiers**: Instead of "secure session management", just say "session management"
+- **State actual capabilities**: Only document features that actually exist and work
 
-### HTMX Development Notes
-- **Content loaded via HTMX**: Changes to partial templates auto-reload
-- **JavaScript changes**: May require browser hard refresh (Ctrl+F5)
-- **Modal forms**: Test by triggering modals, don't assume full page reload needed
+### Documentation Best Practices
 
-## Project-Specific Notes
+- **Feature descriptions**: Describe what the feature actually does, not how amazing it is
+- **Technical accuracy**: Only claim technical capabilities that are implemented and tested
+- **Realistic scope**: Don't oversell the template's capabilities or production readiness
+- **Clear limitations**: Be honest about what's missing or needs work
+- **Simple language**: Use clear, direct language without unnecessary adjectives
 
-- This is a Go Buffalo SaaS template project
-- Templates use Plush templating engine (.plush.html files)
-- Styling is handled through Pico.css - a semantic CSS framework with automatic theming
-- Custom styles can be added with CSS variables to maintain Pico.css design consistency
-- Dark/light mode switching is built-in with localStorage persistence
+### Examples of Good vs. Bad Documentation
 
-## Implementation Guidelines
+**❌ Bad (Overly promotional):**
+> "Comprehensive role-based admin management system with full CRUD operations and professional dashboard"
 
-**IMPORTANT**: Always refer to the documentation in `/docs/` folder for implementation strategies:
+**✅ Good (Factual):**
+> "Role-based admin management system with basic CRUD operations and admin dashboard"
 
-- **Pico.css CSS Variables**: Read `/docs/pico-css-variables.md` for customization with CSS variables
-- **Implementation Patterns**: Read `/docs/pico-implementation-guide.md` for semantic HTML patterns and best practices
-- **Template Syntax**: Read `/docs/buffalo-template-syntax.md` for Plush templating patterns
+**❌ Bad (Exaggerated claims):**
+> "Production-ready foundation with enterprise-grade security and scalable architecture"
 
-### Key Implementation Strategies
+**✅ Good (Honest scope):**
+> "Template with basic authentication, role-based access control, and admin panel"
 
-1. **Semantic HTML First**: Use proper HTML elements (`<nav>`, `<article>`, `<section>`, `<details>`)
-2. **Minimal CSS Classes**: Prefer `role="button"`, `class="secondary"`, `class="dropdown"` over custom styles
-3. **CSS Variables for Customization**: Use `--pico-primary`, `--pico-background-color`, etc. instead of hardcoded values
-4. **Theme Support**: Always test both light and dark modes using `[data-theme="dark"]` selectors
-5. **Responsive by Default**: Trust Pico.css responsive behavior, avoid custom breakpoints unless necessary
+### When Writing or Updating Documentation
 
-### Authentication Patterns
+1. **Focus on functionality**: What does it actually do?
+2. **Avoid superlatives**: Remove words like "best", "most", "ultimate"
+3. **Be concrete**: Use specific technical terms rather than vague descriptors
+4. **Test claims**: Only document features you can verify work
+5. **Keep it simple**: Straightforward language is more trustworthy
 
-- Use `<details class="dropdown">` for user menus instead of JavaScript dropdowns
-- Implement theme switching with `localStorage.setItem('picoPreferredColorScheme', theme)`
-- Style CTAs with `role="button"` and appropriate classes (`secondary`, `contrast`, `outline`)
-
-### Anti-Patterns to Avoid
-
-- Don't use utility classes like Tailwind CSS (`bg-blue-500`, `text-white`, etc.)
-- Don't override Pico.css with excessive inline styles
-- Don't use Alpine.js or JavaScript for basic interactions that Pico.css handles
-- Don't hardcode colors - use CSS variables for theme compatibility
+## General Guidelines

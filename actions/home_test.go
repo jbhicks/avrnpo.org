@@ -21,7 +21,7 @@ func (as *ActionSuite) Test_HomeHandler_HTMX_Content() {
 	req := as.HTML("/")
 	req.Headers["HX-Request"] = "true"
 	res := req.Get()
-	
+
 	as.Equal(http.StatusOK, res.Code)
 	// Check for actual content that should be in _index_content.plush.html
 	as.Contains(res.Body.String(), "Technology Stack")
@@ -58,9 +58,9 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	// Test that logged in users see the main shell with authenticated nav
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "Dashboard")  // Should see Dashboard nav link
-	as.Contains(res.Body.String(), "Account")    // Should see Account nav link
-	as.Contains(res.Body.String(), "Profile")    // Should see Profile dropdown
+	as.Contains(res.Body.String(), "Dashboard") // Should see Dashboard nav link
+	as.Contains(res.Body.String(), "Account")   // Should see Account nav link
+	as.Contains(res.Body.String(), "Profile")   // Should see Profile dropdown
 
 	// Test HTMX content for logged in user
 	req := as.HTML("/")
