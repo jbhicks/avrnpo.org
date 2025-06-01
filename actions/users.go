@@ -209,15 +209,30 @@ func AccountUpdate(c buffalo.Context) error {
 func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		if uid := c.Session().Get("current_user_id"); uid != nil {
+			// Debug logging for tests
+			if c.Value("test_mode") != nil {
+				c.Logger().Debugf("SetCurrentUser: Found session user ID: %v", uid)
+			}
+
 			u := &models.User{}
 			tx := c.Value("tx").(*pop.Connection)
 			err := tx.Find(u, uid)
 			if err != nil {
 				// If user not found, clear the session and continue
 				// This handles cases where user was deleted but session still exists
+				if c.Value("test_mode") != nil {
+					c.Logger().Debugf("SetCurrentUser: User not found in DB for ID %v: %v", uid, err)
+				}
 				c.Session().Delete("current_user_id")
 			} else {
+				if c.Value("test_mode") != nil {
+					c.Logger().Debugf("SetCurrentUser: Found user in DB: ID=%s, Email=%s, Role=%s", u.ID, u.Email, u.Role)
+				}
 				c.Set("current_user", u)
+			}
+		} else {
+			if c.Value("test_mode") != nil {
+				c.Logger().Debugf("SetCurrentUser: No current_user_id in session")
 			}
 		}
 		return next(c)
@@ -227,7 +242,17 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 // Authorize require a user be logged in before accessing a route
 func Authorize(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		if uid := c.Session().Get("current_user_id"); uid == nil {
+		// Check if current_user was set by SetCurrentUser middleware
+		user, ok := c.Value("current_user").(*models.User)
+		if !ok || user == nil {
+			if c.Value("test_mode") != nil {
+				if !ok {
+					c.Logger().Debugf("Authorize: current_user not found in context or wrong type")
+				} else {
+					c.Logger().Debugf("Authorize: current_user is nil")
+				}
+			}
+
 			c.Session().Set("redirectURL", c.Request().URL.String())
 
 			err := c.Session().Save()
@@ -237,6 +262,10 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 
 			c.Flash().Add("danger", "You must be authorized to see that page")
 			return c.Redirect(http.StatusFound, "/auth/new")
+		}
+
+		if c.Value("test_mode") != nil {
+			c.Logger().Debugf("Authorize: User authorized: ID=%s, Email=%s, Role=%s", user.ID, user.Email, user.Role)
 		}
 		return next(c)
 	}

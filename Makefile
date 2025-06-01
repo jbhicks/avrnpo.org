@@ -18,7 +18,8 @@ help:
 	@echo "  migrate    - 🔀 Run database migrations"
 	@echo ""
 	@echo "Development:"
-	@echo "  test       - 🧪 Run all tests with database"
+	@echo "  test       - 🧪 Run all tests with Buffalo (recommended)"
+	@echo "  test-fast  - ⚡ Run Buffalo tests without database setup"
 	@echo "  build      - 🔨 Build the application for production"
 	@echo "  health     - 🏥 Check system health (dependencies, database, etc.)"
 	@echo "  clean      - 🧹 Stop all services and clean up containers"
@@ -218,7 +219,7 @@ db-reset:
 
 # Run tests with comprehensive setup
 test: check-deps db-up
-	@echo "🧪 Running test suite..."
+	@echo "🧪 Running test suite with Buffalo..."
 	@if ! ./scripts/wait-for-postgres.sh; then \
 		echo "❌ Database is not ready. Cannot run tests."; \
 		exit 1; \
@@ -226,8 +227,19 @@ test: check-deps db-up
 	@echo "🔄 Ensuring test database is ready..."
 	@buffalo pop create -e test >/dev/null 2>&1 || true
 	@buffalo pop migrate -e test >/dev/null 2>&1 || true
-	@echo "🏃 Executing tests..."
-	@if go test ./...; then \
+	@echo "🏃 Executing Buffalo tests..."
+	@if buffalo test; then \
+		echo "✅ All tests passed!"; \
+	else \
+		echo "❌ Some tests failed. Check the output above for details."; \
+		exit 1; \
+	fi
+
+# Run Buffalo tests quickly (assumes database is already running)
+test-fast: check-deps
+	@echo "⚡ Running Buffalo tests (fast mode)..."
+	@echo "🏃 Executing Buffalo tests..."
+	@if buffalo test; then \
 		echo "✅ All tests passed!"; \
 	else \
 		echo "❌ Some tests failed. Check the output above for details."; \

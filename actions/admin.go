@@ -13,10 +13,29 @@ import (
 // AdminRequired middleware ensures only admins can access admin routes
 func AdminRequired(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		user := c.Value("current_user").(*models.User)
-		if user.Role != "admin" {
+		user, ok := c.Value("current_user").(*models.User)
+		if !ok || user == nil {
+			if c.Value("test_mode") != nil {
+				if !ok {
+					c.Logger().Debugf("AdminRequired: current_user not found in context or wrong type")
+				} else {
+					c.Logger().Debugf("AdminRequired: current_user is nil")
+				}
+			}
 			c.Flash().Add("danger", "Access denied. Administrator privileges required.")
 			return c.Redirect(http.StatusFound, "/dashboard")
+		}
+
+		if user.Role != "admin" {
+			if c.Value("test_mode") != nil {
+				c.Logger().Debugf("AdminRequired: User is not admin. Role=%s", user.Role)
+			}
+			c.Flash().Add("danger", "Access denied. Administrator privileges required.")
+			return c.Redirect(http.StatusFound, "/dashboard")
+		}
+
+		if c.Value("test_mode") != nil {
+			c.Logger().Debugf("AdminRequired: Admin access granted for user: ID=%s, Email=%s", user.ID, user.Email)
 		}
 		return next(c)
 	}

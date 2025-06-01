@@ -88,7 +88,7 @@
                 <td>
                   <div class="grid">
                     <a href="/admin/users/<%= user.ID %>" role="button" class="outline">Edit</a>
-                    <%= if (user.ID != current_user.ID) { %>
+                    <%= if (user.ID.String() != current_user.ID.String()) { %>
                       <form method="POST" action="/admin/users/<%= user.ID %>" style="margin: 0;">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="outline" 

@@ -42,7 +42,7 @@ A production-ready Buffalo-based SaaS application template with containerized Po
 
 ### Development & Testing
 - [x] **Hot reload development** - Buffalo dev server with automatic recompilation
-- [x] **Testing framework** - Go testing with database integration
+- [x] **Testing framework** - Buffalo testing suite with database integration
 - [x] **Database health checks** - Automated PostgreSQL readiness verification
 - [x] **Error handling** - Comprehensive error handling in make commands and scripts
 
@@ -221,7 +221,8 @@ if userToDelete.ID == currentUser.ID {
 | `make setup` | First-time setup | Creates database, runs migrations |
 | `make dev` | Development mode | Starts database + Buffalo dev server |
 | `make admin` | Admin setup | Promotes first user to admin role |
-| `make test` | Run tests | Executes full test suite with database |
+| `make test` | Run tests | Executes Buffalo test suite with database |
+| `make test-fast` | Quick tests | Runs Buffalo tests (assumes DB running) |
 | `make clean` | Cleanup | Stops services and cleans containers |
 | `make db-status` | Health check | Shows database container status |
 
@@ -250,8 +251,14 @@ make dev
 
 #### Testing & Quality Assurance
 ```console
-# Run all tests (includes database setup)
+# Run all tests with Buffalo (recommended)
 make test
+
+# Quick test run (assumes database is running)
+make test-fast
+
+# Run Buffalo tests directly
+buffalo test
 
 # Check database health
 make db-status
@@ -425,7 +432,7 @@ This template heavily utilizes HTMX for a modern, single-page application feel w
 - **Authentication**: Session-based with bcrypt password hashing
 - **Authorization**: Role-based access control (RBAC) with middleware protection
 - **Background Jobs**: Buffalo workers (available for async processing)
-- **Testing**: Go testing framework with database integration
+- **Testing**: Buffalo testing framework with database integration
 
 ### Frontend Architecture
 - **Templating**: Plush templates - Buffalo's template engine with Go-like syntax
@@ -588,7 +595,7 @@ buffalo task db:promote_admin  # Promote first user to admin role
 # Development
 buffalo dev                    # Start dev server with hot reload
 buffalo build                  # Build production binary
-buffalo test                   # Run tests
+buffalo test                   # Run tests (always use this instead of 'go test')
 
 # Container management (Podman/Docker)
 podman-compose up -d           # Start database

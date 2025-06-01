@@ -5,6 +5,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/suite/v4"
 )
 
@@ -26,5 +27,14 @@ func Test_ActionSuite(t *testing.T) {
 	as := &ActionSuite{
 		Action: suite.NewAction(testApp),
 	}
+
+	// Add middleware to set test_mode flag for debug logging
+	as.Action.App.Use(func(next buffalo.Handler) buffalo.Handler {
+		return func(c buffalo.Context) error {
+			c.Set("test_mode", true)
+			return next(c)
+		}
+	})
+
 	suite.Run(t, as)
 }
