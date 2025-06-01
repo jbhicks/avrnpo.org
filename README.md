@@ -76,6 +76,11 @@ make dev
 
 After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your application running.
 
+### Setting Up Admin Access
+1. **Create a user account** through the web interface at `http://127.0.0.1:3000`
+2. **Promote to admin** with: `make admin`
+3. **Login and access admin panel** at `http://127.0.0.1:3000/admin`
+
 ## 🔥 Buffalo Auto-Reload Development
 
 **Important**: Buffalo has built-in hot reload that automatically handles all file changes. Once you run `make dev`, the server stays running and automatically reloads when you make changes.
@@ -138,6 +143,34 @@ This template includes a comprehensive role-based admin management system with f
 
 ### Setting Up Admin Access
 
+#### Step-by-Step Admin Setup
+
+1. **Start the Application**
+   ```console
+   make dev
+   ```
+   Application will be available at `http://127.0.0.1:3000`
+
+2. **Create Your First User Account**
+   - Navigate to `http://127.0.0.1:3000`
+   - Click "Start your free trial today" or go to `/users/new`
+   - Fill out the registration form with your details
+   - Complete account creation
+
+3. **Promote to Admin Role**
+   ```console
+   make admin
+   ```
+   This automatically promotes the first registered user to admin role.
+
+4. **Login and Access Admin Panel**
+   - Go to `http://127.0.0.1:3000/auth/new`
+   - Login with your credentials
+   - Access admin features:
+     - **Admin Dashboard**: `http://127.0.0.1:3000/admin`
+     - **User Management**: `http://127.0.0.1:3000/admin/users`
+     - **Admin Section**: Visible on main dashboard when logged in as admin
+
 #### Automatic Admin Promotion
 ```console
 # Promote the first registered user to admin
@@ -154,6 +187,30 @@ buffalo task db:promote_admin
 # Or promote a specific user via database
 psql -d my_go_saas_template_development -c "UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';"
 ```
+
+#### Testing Admin Features
+
+Once logged in as admin, test these key features:
+
+- **📊 Admin Dashboard** - View user statistics and system overview
+- **👥 User Management** - Create, edit, delete, and manage user roles
+- **🔐 Role Assignment** - Promote/demote users between admin and user roles
+- **🛡️ Security Controls** - Self-deletion prevention and access controls
+- **🎨 Admin UI** - Professional interface with Pico.css styling
+
+#### What Users See vs. Admins
+
+**Regular Users:**
+- Dashboard with personal account information
+- Profile management and account settings
+- Standard application features
+
+**Admin Users:**
+- Everything regular users see, plus:
+- **"🛡️ Administrator Access"** section on main dashboard
+- **Admin Dashboard** button linking to `/admin`
+- **Manage Users** button linking to `/admin/users`
+- Full user management capabilities
 
 ### Admin Routes & API
 
