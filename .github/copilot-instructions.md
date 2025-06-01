@@ -73,10 +73,11 @@
 - **Follow Buffalo suite patterns** as documented in `/docs/buffalo/auth-and-testing-patterns.md`
 
 **Proper Buffalo Testing Commands:**
-- `buffalo test` - Run all tests
+- `buffalo test` - Run all tests directly
+- `make test` - Run comprehensive test suite with database setup (recommended)
+- `make test-fast` - Run tests quickly (assumes database is already running)
 - `buffalo test --timeout=60s` - Run tests with timeout
 - `buffalo test -v` - Run tests with verbose output
-- `make test` - Use project Makefile test target (if available)
 
 **Buffalo Testing Best Practices:**
 - Always consult `/docs/buffalo/auth-and-testing-patterns.md` for authentication testing patterns
@@ -92,9 +93,10 @@
 
 ### Common Commands
 - `make dev` - Start everything (use once)
-- `buffalo test` - Run all tests (NEVER use `go test` directly)
+- `make test` - Run comprehensive test suite (recommended command)
+- `make test-fast` - Run tests quickly (assumes database running)
+- `buffalo test` - Run all tests directly (NEVER use `go test` directly)
 - `buffalo test -v` - Run tests with verbose output
-- `make test` - Run tests via Makefile (if available)
 - `podman-compose ps` - Check database status
 - `buffalo pop migrate` - Run new database migrations
 - `ps aux | grep buffalo` - Check for running Buffalo instances
