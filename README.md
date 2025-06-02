@@ -926,3 +926,199 @@ logs/
 - `ip_address`: Client IP for security events
 
 ---
+
+## 📝 Content Management System (CMS)
+
+This template includes a comprehensive blog and content management system with advanced features for content creation, management, and SEO optimization.
+
+### CMS Features Overview
+
+#### Content Creation & Editing
+- **Rich Text Editor** - Professional WYSIWYG editor powered by Quill.js
+- **Draft System** - Save content as drafts before publishing
+- **SEO Optimization** - Complete meta tags and Open Graph support
+- **Automatic Slug Generation** - URL-friendly slugs generated from titles
+- **Content Excerpts** - Auto-generated or custom excerpts for listings
+
+#### Content Management
+- **Search & Filter** - Find posts by title, content, author, or publication status
+- **Bulk Operations** - Manage multiple posts simultaneously
+- **Status Management** - Published/Draft status with visual indicators
+- **Author Attribution** - Posts linked to user accounts with proper attribution
+
+### Using the CMS
+
+#### Creating Blog Posts
+
+1. **Access Admin Panel** - Log in as an admin user and navigate to `/admin`
+2. **Create New Post** - Click "Blog Posts" → "New Post"
+3. **Content Creation**:
+   - **Title**: Enter a descriptive title (slug auto-generates)
+   - **Content**: Use the rich text editor for formatted content
+   - **Excerpt**: Add custom excerpt or leave blank for auto-generation
+   - **Publication Status**: Check "Published" to make live, uncheck for draft
+
+#### Rich Text Editor Features
+
+The Quill.js editor provides:
+- **Text Formatting**: Bold, italic, underline, strikethrough
+- **Headers**: H1, H2, H3 for content structure
+- **Lists**: Numbered and bulleted lists with indentation
+- **Links**: Insert and edit hyperlinks
+- **Quotes**: Blockquotes for emphasized content
+- **Code**: Inline code and code blocks
+- **Cleanup**: Remove formatting tool
+
+#### SEO & Social Media Optimization
+
+Each post includes comprehensive SEO fields accessible via the "SEO & Social Media Settings" section:
+
+##### Meta Tags (SEO)
+- **Meta Title**: Custom title for search engines (50-60 chars recommended)
+- **Meta Description**: Search result snippet (150-160 chars recommended)  
+- **Meta Keywords**: Comma-separated keywords for search engines
+
+##### Open Graph (Social Media)
+- **OG Title**: Title for social media shares
+- **OG Description**: Description for social media previews
+- **OG Image**: Image URL for social media previews (1200x630px recommended)
+
+**Best Practices:**
+- Leave fields blank to use post title/excerpt as defaults
+- Optimize meta descriptions for click-through rates
+- Use high-quality, relevant Open Graph images
+- Test social media previews before publishing
+
+#### Content Search & Filtering
+
+The admin posts interface provides powerful search capabilities:
+
+##### Search Options
+- **Text Search**: Search across post titles, content, and author names
+- **Status Filter**: Filter by Published, Draft, or All Posts
+- **Combined Filters**: Use search text and status filter together
+
+##### Usage Tips
+- Use specific keywords to quickly find posts
+- Filter by status to review drafts or published content
+- Clear filters to return to full post listing
+
+#### Bulk Operations
+
+Efficiently manage multiple posts with bulk actions:
+
+##### Available Actions
+- **Bulk Publish**: Make multiple drafts live simultaneously
+- **Bulk Unpublish**: Convert published posts to drafts
+- **Bulk Delete**: Remove multiple posts (with confirmation)
+
+##### How to Use Bulk Operations
+1. **Select Posts**: Check boxes next to posts you want to modify
+2. **Select All**: Use the header checkbox to select all visible posts
+3. **Choose Action**: Select desired action from dropdown
+4. **Apply**: Click "Apply" and confirm the action
+5. **Confirmation**: Review the confirmation dialog before proceeding
+
+**Safety Features:**
+- Confirmation dialogs for all bulk actions
+- Special confirmation for destructive delete operations
+- Flash messages confirm successful operations
+
+### CMS Administration
+
+#### Post Management Workflow
+
+##### Content Creation Process
+1. **Draft Creation**: Create posts as drafts for review
+2. **Content Development**: Use rich text editor for professional formatting
+3. **SEO Optimization**: Complete meta tags and social media fields
+4. **Review Process**: Preview content before publishing
+5. **Publication**: Publish when ready or schedule for later
+
+##### Content Maintenance
+- **Regular Reviews**: Use search/filter to find content needing updates
+- **Bulk Updates**: Use bulk operations for status changes
+- **SEO Monitoring**: Review and update meta descriptions periodically
+- **Content Audits**: Use draft status for content under revision
+
+#### Admin Routes for CMS
+
+| Route | Method | Description | Access Level |
+|-------|--------|-------------|--------------|
+| `/admin/posts` | GET | Post listing with search/filter | Admin Only |
+| `/admin/posts/new` | GET | New post creation form | Admin Only |
+| `/admin/posts` | POST | Create new post | Admin Only |
+| `/admin/posts/bulk` | POST | Bulk operations on posts | Admin Only |
+| `/admin/posts/{id}` | GET | View single post details | Admin Only |
+| `/admin/posts/{id}/edit` | GET | Edit post form | Admin Only |
+| `/admin/posts/{id}` | POST | Update existing post | Admin Only |
+| `/admin/posts/{id}` | DELETE | Delete single post | Admin Only |
+
+#### Database Schema for Posts
+
+```sql
+posts (
+    id INTEGER PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    content TEXT NOT NULL,
+    excerpt TEXT,
+    published BOOLEAN DEFAULT false,
+    author_id UUID NOT NULL REFERENCES users(id),
+    
+    -- SEO Fields
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    meta_keywords TEXT,
+    og_title VARCHAR(255),
+    og_description TEXT,
+    og_image VARCHAR(255),
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### CMS Best Practices
+
+#### Content Strategy
+- **Consistent Publishing**: Maintain regular content publication schedule
+- **SEO Optimization**: Always complete meta descriptions and titles
+- **Draft Workflow**: Use drafts for collaborative content creation
+- **Content Organization**: Use descriptive titles and proper excerpts
+
+#### Technical Considerations
+- **Image Optimization**: Optimize images before adding to Open Graph fields
+- **Link Management**: Regularly check and update external links
+- **Performance**: Monitor content length for page load performance
+- **Backup**: Regular database backups to protect content
+
+#### Security & Access Control
+- **Admin Access**: Only trusted users should have admin privileges
+- **Content Review**: Implement content review process for published materials
+- **Draft Protection**: Use draft status for sensitive content under development
+- **Audit Trail**: Monitor who creates and modifies content
+
+### Troubleshooting CMS Issues
+
+#### Common Problems
+
+**Rich Text Editor Not Loading**
+- Check that Quill.js assets are properly served from `/public/js/` and `/public/css/`
+- Verify JavaScript console for loading errors
+- Ensure proper MIME types for static assets
+
+**Search Not Working**
+- Verify database connection and query parameters
+- Check PostgreSQL ILIKE support for case-insensitive search
+- Review search term encoding and special characters
+
+**Bulk Operations Failing**
+- Confirm POST request includes CSRF token
+- Check that post IDs are properly submitted in form data
+- Verify admin permissions for bulk operation routes
+
+**SEO Fields Not Saving**
+- Ensure database migration for SEO fields completed successfully
+- Check form field names match model properties
+- Verify model validation allows optional SEO fields

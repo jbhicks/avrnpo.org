@@ -12,46 +12,18 @@
     <form method="GET" action="/admin/posts" style="margin-bottom: 1rem;">
         <fieldset role="group">
             <input type="search" name="search" placeholder="Search posts by title, content, or author..." 
-                   value="<%= params.search %>" style="margin-bottom: 0;">
+                   value="<%= search %>" style="margin-bottom: 0;">
             <select name="status" style="margin-bottom: 0;">
                 <option value="">All Posts</option>
-                <option value="published" <%= if (params.status == "published") { %>selected<% } %>>Published</option>
-                <option value="draft" <%= if (params.status == "draft") { %>selected<% } %>>Drafts</option>
+                <option value="published"<%= if (status == "published") { %> selected<% } %>>Published</option>
+                <option value="draft"<%= if (status == "draft") { %> selected<% } %>>Drafts</option>
             </select>
             <button type="submit">Search</button>
         </fieldset>
-        <%= if (params.search || params.status) { %>
+        <%= if (search != "" || status != "") { %>
             <p><a href="/admin/posts" role="button" class="outline secondary">Clear Filters</a></p>
         <% } %>
     </form>
-
-    <!-- Search and Filter Section -->
-    <section>
-        <form method="GET" action="/admin/posts" style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
-            <fieldset>
-                <label for="search">
-                    Search Posts
-                    <input type="search" id="search" name="search" value="<%= search %>" placeholder="Search by title or content...">
-                </label>
-            </fieldset>
-            <fieldset>
-                <label for="status">
-                    Status
-                    <select id="status" name="status">
-                        <option value="">All Posts</option>
-                        <option value="published" <%= if (status == "published") { %>selected<% } %>>Published</option>
-                        <option value="draft" <%= if (status == "draft") { %>selected<% } %>>Drafts</option>
-                    </select>
-                </label>
-            </fieldset>
-            <fieldset>
-                <button type="submit">Filter</button>
-                <%= if (search != "" || status != "") { %>
-                    <a href="/admin/posts" role="button" class="secondary">Clear</a>
-                <% } %>
-            </fieldset>
-        </form>
-    </section>
 
     <%= if (len(posts) == 0) { %>
         <article>

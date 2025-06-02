@@ -70,13 +70,17 @@ func AdminPostsIndex(c buffalo.Context) error {
 	// Build query with search and filter parameters
 	query := tx.Q()
 
+	// Get search and status parameters with defaults
+	search := c.Param("search")
+	status := c.Param("status")
+
 	// Handle search parameter
-	if search := c.Param("search"); search != "" {
+	if search != "" {
 		query = query.Where("title ILIKE ? OR content ILIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 
 	// Handle status filter
-	if status := c.Param("status"); status != "" {
+	if status != "" {
 		if status == "published" {
 			query = query.Where("published = ?", true)
 		} else if status == "draft" {
@@ -96,7 +100,10 @@ func AdminPostsIndex(c buffalo.Context) error {
 		}
 	}
 
+	// Set template variables
 	c.Set("posts", posts)
+	c.Set("search", search)
+	c.Set("status", status)
 	return c.Render(200, r.HTML("admin/posts/index.plush.html"))
 }
 
