@@ -1,0 +1,147 @@
+<section>
+    <header>
+        <h1>Blog Posts</h1>
+        <nav>
+            <ul>
+                <li><a href="/admin/posts/new" role="button">New Post</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Search and Filter Form -->
+    <form method="GET" action="/admin/posts" style="margin-bottom: 1rem;">
+        <fieldset role="group">
+            <input type="search" name="search" placeholder="Search posts by title, content, or author..." 
+                   value="<%= params.search %>" style="margin-bottom: 0;">
+            <select name="status" style="margin-bottom: 0;">
+                <option value="">All Posts</option>
+                <option value="published" <%= if (params.status == "published") { %>selected<% } %>>Published</option>
+                <option value="draft" <%= if (params.status == "draft") { %>selected<% } %>>Drafts</option>
+            </select>
+            <button type="submit">Search</button>
+        </fieldset>
+        <%= if (params.search || params.status) { %>
+            <p><a href="/admin/posts" role="button" class="outline secondary">Clear Filters</a></p>
+        <% } %>
+    </form>
+
+    <!-- Search and Filter Section -->
+    <section>
+        <form method="GET" action="/admin/posts" style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
+            <fieldset>
+                <label for="search">
+                    Search Posts
+                    <input type="search" id="search" name="search" value="<%= search %>" placeholder="Search by title or content...">
+                </label>
+            </fieldset>
+            <fieldset>
+                <label for="status">
+                    Status
+                    <select id="status" name="status">
+                        <option value="">All Posts</option>
+                        <option value="published" <%= if (status == "published") { %>selected<% } %>>Published</option>
+                        <option value="draft" <%= if (status == "draft") { %>selected<% } %>>Drafts</option>
+                    </select>
+                </label>
+            </fieldset>
+            <fieldset>
+                <button type="submit">Filter</button>
+                <%= if (search != "" || status != "") { %>
+                    <a href="/admin/posts" role="button" class="secondary">Clear</a>
+                <% } %>
+            </fieldset>
+        </form>
+    </section>
+
+    <%= if (len(posts) == 0) { %>
+        <article>
+            <p>No blog posts found.</p>
+            <p><a href="/admin/posts/new" role="button">Create your first post</a></p>
+        </article>
+    <% } else { %>
+        <!-- Bulk Actions Form -->
+        <form id="bulk-form" method="POST" action="/admin/posts/bulk" style="margin-bottom: 1rem;">
+            <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+            <fieldset role="group">
+                <select name="bulk_action" required>
+                    <option value="">Select bulk action...</option>
+                    <option value="publish">Publish Selected</option>
+                    <option value="unpublish">Unpublish Selected</option>
+                    <option value="delete">Delete Selected</option>
+                </select>
+                <button type="submit" onclick="return confirmBulkAction()">Apply</button>
+            </fieldset>
+        </form>
+
+        <figure>
+            <table>
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="select-all"></th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (post) in posts { %>
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="post_ids" value="<%= post.ID %>" form="bulk-form">
+                            </td>
+                            <td>
+                                <a href="/admin/posts/<%= post.ID %>"><%= post.Title %></a>
+                            </td>
+                            <td><%= post.Author.FirstName %> <%= post.Author.LastName %></td>
+                            <td>
+                                <%= if (post.Published) { %>
+                                    <mark>Published</mark>
+                                <% } else { %>
+                                    <mark class="secondary">Draft</mark>
+                                <% } %>
+                            </td>
+                            <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
+                            <td>
+                                <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="outline secondary">Edit</a>
+                                <form method="POST" action="/admin/posts/<%= post.ID %>" style="display: inline;">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+                                    <button type="submit" class="outline contrast" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </figure>
+
+        <script>
+        // Select all checkbox functionality
+        document.getElementById('select-all').addEventListener('change', function() {
+            var checkboxes = document.querySelectorAll('input[name="post_ids"]');
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = this.checked;
+            }, this);
+        });
+
+        // Bulk action confirmation
+        function confirmBulkAction() {
+            var selected = document.querySelectorAll('input[name="post_ids"]:checked');
+            var action = document.querySelector('select[name="bulk_action"]').value;
+            
+            if (selected.length === 0) {
+                alert('Please select at least one post.');
+                return false;
+            }
+            
+            if (action === 'delete') {
+                return confirm('Are you sure you want to delete ' + selected.length + ' post(s)? This action cannot be undone.');
+            }
+            
+            return confirm('Are you sure you want to ' + action + ' ' + selected.length + ' post(s)?');
+        }
+        </script>
+    <% } %>
+</section>

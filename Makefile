@@ -18,11 +18,12 @@ help:
 	@echo "  migrate    - 🔀 Run database migrations"
 	@echo ""
 	@echo "Development:"
-	@echo "  test       - 🧪 Run all tests with Buffalo (recommended)"
-	@echo "  test-fast  - ⚡ Run Buffalo tests without database setup"
-	@echo "  build      - 🔨 Build the application for production"
-	@echo "  health     - 🏥 Check system health (dependencies, database, etc.)"
-	@echo "  clean      - 🧹 Stop all services and clean up containers"
+	@echo "  test            - 🧪 Run all tests with Buffalo (recommended)"
+	@echo "  test-fast       - ⚡ Run Buffalo tests without database setup"
+	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
+	@echo "  build           - 🔨 Build the application for production"
+	@echo "  health          - 🏥 Check system health (dependencies, database, etc.)"
+	@echo "  clean           - 🧹 Stop all services and clean up containers"
 	@echo ""
 	@echo "Dependencies:"
 	@echo "  check-deps - ✅ Check if all required dependencies are installed"
@@ -224,9 +225,9 @@ test: check-deps db-up
 		echo "❌ Database is not ready. Cannot run tests."; \
 		exit 1; \
 	fi
-	@echo "🔄 Ensuring test database is ready..."
-	@buffalo pop create -e test >/dev/null 2>&1 || true
-	@buffalo pop migrate -e test >/dev/null 2>&1 || true
+	@echo "🔄 Setting up test database..."
+	@GO_ENV=test soda create -a >/dev/null 2>&1 || true
+	@GO_ENV=test soda migrate up >/dev/null 2>&1 || true
 	@echo "🏃 Executing Buffalo tests..."
 	@if buffalo test; then \
 		echo "✅ All tests passed!"; \
@@ -238,6 +239,32 @@ test: check-deps db-up
 # Run Buffalo tests quickly (assumes database is already running)
 test-fast: check-deps
 	@echo "⚡ Running Buffalo tests (fast mode)..."
+	@echo "🏃 Executing Buffalo tests..."
+	@if buffalo test; then \
+		echo "✅ All tests passed!"; \
+	else \
+		echo "❌ Some tests failed. Check the output above for details."; \
+		exit 1; \
+	fi
+
+# Resilient test command that handles database startup automatically
+test-resilient: check-deps
+	@echo "🔄 Running resilient test suite..."
+	@echo "🔍 Checking if database is running..."
+	@if ! podman-compose ps | grep -q "postgres.*Up" 2>/dev/null; then \
+		echo "🗄️  Database not running, starting it..."; \
+		$(MAKE) db-up; \
+		sleep 3; \
+	else \
+		echo "✅ Database is already running"; \
+	fi
+	@if ! ./scripts/wait-for-postgres.sh; then \
+		echo "❌ Database failed to start or become ready. Cannot run tests."; \
+		exit 1; \
+	fi
+	@echo "🔄 Setting up test database..."
+	@GO_ENV=test soda create -a >/dev/null 2>&1 || true
+	@GO_ENV=test soda migrate up >/dev/null 2>&1 || true
 	@echo "🏃 Executing Buffalo tests..."
 	@if buffalo test; then \
 		echo "✅ All tests passed!"; \

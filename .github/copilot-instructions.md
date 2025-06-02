@@ -64,7 +64,18 @@
 - **PostgreSQL**: Runs in a Podman container on port 5432
 - **Use `podman-compose ps`** to check container status
 - **Database persists** between restarts via Docker volumes
-- **Migrations**: Run `buffalo pop migrate` only when adding new migrations
+- **Migrations**: Use `soda migrate up` for running migrations (NOT `buffalo pop migrate`)
+
+**🚨 CRITICAL: Use `soda` for database operations, NOT `buffalo pop` 🚨**
+
+Buffalo v0.18.14+ does not include the `pop` plugin. Use these commands:
+- `soda migrate up` - Run pending migrations
+- `soda reset` - Reset database (drop, create, migrate)
+- `GO_ENV=test soda reset` - Reset test database
+- `soda create -a` - Create all databases
+- `soda generate migration create_posts` - Create new migration
+
+**Legacy Documentation Warning**: Older Buffalo docs reference `buffalo pop` commands, but these don't work in v0.18.14+.
 
 ### Testing Changes
 - **Templates**: Auto-reload on save, just refresh the browser - NO RESTART NEEDED
@@ -108,7 +119,7 @@
 - `buffalo test` - Run all tests directly (NEVER use `go test` directly)
 - `buffalo test -v` - Run tests with verbose output
 - `podman-compose ps` - Check database status
-- `buffalo pop migrate` - Run new database migrations
+- `soda migrate up` - Run new database migrations
 - `ps aux | grep buffalo` - Check for running Buffalo instances
 - `lsof -i :3000` - See what's using port 3000
 

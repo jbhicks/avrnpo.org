@@ -1,0 +1,170 @@
+<section>
+    <header>
+        <h1>Create New Post</h1>
+        <nav>
+            <ul>
+                <li><a href="/admin/posts" role="button" class="secondary">← Back to Posts</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <form method="POST" action="/admin/posts">
+        
+        <fieldset>
+            <label for="title">
+                Title
+                <input type="text" id="title" name="title" value="<%= post.Title %>" required>
+            </label>
+            <%= if (errors && errors.Get("title")) { %>
+                <small class="error"><%= errors.Get("title") %></small>
+            <% } %>
+        </fieldset>
+
+        <fieldset>
+            <label for="slug">
+                Slug (URL-friendly version of title)
+                <input type="text" id="slug" name="slug" value="<%= post.Slug %>" 
+                       placeholder="leave-blank-to-auto-generate">
+            </label>
+            <small>Leave blank to auto-generate from title</small>
+            <%= if (errors && errors.Get("slug")) { %>
+                <small class="error"><%= errors.Get("slug") %></small>
+            <% } %>
+        </fieldset>
+
+        <fieldset>
+            <label for="excerpt">
+                Excerpt (optional)
+                <textarea id="excerpt" name="excerpt" rows="3" 
+                         placeholder="Brief description of the post"><%= post.Excerpt %></textarea>
+            </label>
+            <small>Leave blank to auto-generate from content</small>
+        </fieldset>
+
+        <fieldset>
+            <label for="content">
+                Content
+            </label>
+            <div id="quill-editor" style="height: 300px; border: var(--pico-border-width) solid var(--pico-border-color); border-radius: var(--pico-border-radius);"></div>
+            <textarea id="content" name="content" style="display: none;" required><%= post.Content %></textarea>
+            <%= if (errors && errors.Get("content")) { %>
+                <small class="error"><%= errors.Get("content") %></small>
+            <% } %>
+        </fieldset>
+
+        <fieldset>
+            <label>
+                <input type="checkbox" id="published" name="published" value="true" 
+                       <%= if (post.Published) { %>checked<% } %>>
+                Published
+            </label>
+            <small>Uncheck to save as draft</small>
+        </fieldset>
+
+        <!-- SEO Meta Fields -->
+        <details>
+            <summary>SEO & Social Media Settings</summary>
+            
+            <fieldset>
+                <label for="meta_title">
+                    Meta Title (SEO)
+                    <input type="text" id="meta_title" name="meta_title" value="<%= post.MetaTitle %>" 
+                           placeholder="Leave blank to use post title">
+                </label>
+                <small>Recommended: 50-60 characters. Leave blank to use post title.</small>
+            </fieldset>
+
+            <fieldset>
+                <label for="meta_description">
+                    Meta Description (SEO)
+                    <textarea id="meta_description" name="meta_description" rows="3" 
+                             placeholder="Brief description for search engines"><%= post.MetaDescription %></textarea>
+                </label>
+                <small>Recommended: 150-160 characters. Leave blank to use excerpt.</small>
+            </fieldset>
+
+            <fieldset>
+                <label for="meta_keywords">
+                    Meta Keywords
+                    <input type="text" id="meta_keywords" name="meta_keywords" value="<%= post.MetaKeywords %>" 
+                           placeholder="keyword1, keyword2, keyword3">
+                </label>
+                <small>Comma-separated keywords (optional).</small>
+            </fieldset>
+
+            <fieldset>
+                <label for="og_title">
+                    Open Graph Title (Social Media)
+                    <input type="text" id="og_title" name="og_title" value="<%= post.OgTitle %>" 
+                           placeholder="Leave blank to use meta title">
+                </label>
+                <small>For Facebook, Twitter, LinkedIn previews.</small>
+            </fieldset>
+
+            <fieldset>
+                <label for="og_description">
+                    Open Graph Description
+                    <textarea id="og_description" name="og_description" rows="2" 
+                             placeholder="Description for social media previews"><%= post.OgDescription %></textarea>
+                </label>
+                <small>For social media post previews.</small>
+            </fieldset>
+
+            <fieldset>
+                <label for="og_image">
+                    Open Graph Image URL
+                    <input type="url" id="og_image" name="og_image" value="<%= post.OgImage %>" 
+                           placeholder="https://example.com/image.jpg">
+                </label>
+                <small>Image for social media previews (recommended: 1200x630px).</small>
+            </fieldset>
+        </details>
+
+        <fieldset>
+            <button type="submit">Create Post</button>
+            <a href="/admin/posts" role="button" class="secondary">Cancel</a>
+        </fieldset>
+    </form>
+</section>
+
+    </form>
+</section>
+
+<link href="/public/css/quill.snow.css" rel="stylesheet">
+<script src="/public/js/quill.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Quill editor
+    var quill = new Quill('#quill-editor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                ['link', 'blockquote', 'code-block'],
+                ['clean']
+            ]
+        },
+        placeholder: 'Write your post content here...'
+    });
+
+    // Set initial content if editing
+    var initialContent = document.getElementById('content').value;
+    if (initialContent) {
+        quill.root.innerHTML = initialContent;
+    }
+
+    // Sync Quill content with hidden textarea on form submission
+    var form = document.querySelector('form');
+    form.addEventListener('submit', function() {
+        document.getElementById('content').value = quill.root.innerHTML;
+    });
+
+    // Also sync on content changes for autosave potential
+    quill.on('text-change', function() {
+        document.getElementById('content').value = quill.root.innerHTML;
+    });
+});
+</script>

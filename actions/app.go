@@ -81,10 +81,14 @@ func App() *buffalo.App {
 		app.Use(Authorize)
 
 		// Skip Authorize middleware for public routes following official buffalo-auth pattern
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate)
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow)
 
 		// Public routes
 		app.GET("/", HomeHandler)
+
+		// Blog routes
+		app.GET("/blog", BlogIndex)
+		app.GET("/blog/{slug}", BlogShow)
 
 		//Routes for Auth
 		app.GET("/auth/", AuthLanding)
@@ -114,6 +118,16 @@ func App() *buffalo.App {
 		adminGroup.GET("/users/{user_id}", AdminUserShow)
 		adminGroup.POST("/users/{user_id}", AdminUserUpdate)
 		adminGroup.DELETE("/users/{user_id}", AdminUserDelete)
+
+		// Admin blog post routes
+		adminGroup.GET("/posts", AdminPostsIndex)
+		adminGroup.POST("/posts/bulk", AdminPostsBulk)
+		adminGroup.GET("/posts/new", AdminPostsNew)
+		adminGroup.POST("/posts", AdminPostsCreate)
+		adminGroup.GET("/posts/{post_id}", AdminPostsShow)
+		adminGroup.GET("/posts/{post_id}/edit", AdminPostsEdit)
+		adminGroup.POST("/posts/{post_id}", AdminPostsUpdate)
+		adminGroup.DELETE("/posts/{post_id}", AdminPostsDelete)
 
 		// Serve static files
 		app.ServeFiles("/", http.FS(public.FS()))

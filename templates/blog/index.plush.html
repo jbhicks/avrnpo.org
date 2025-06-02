@@ -1,0 +1,8 @@
+<h1>Blog</h1>
+<p>Posts count: <%= len(posts) %></p>
+<%= for (post) in posts { %>
+    <div>
+        <h2><%= post.Title %></h2>
+        <p><%= post.Excerpt %></p>
+    </div>
+<% } %>

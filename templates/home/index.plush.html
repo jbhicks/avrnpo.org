@@ -12,6 +12,7 @@
   <!-- Original content of dashboard-nav's second ul (links, theme toggle, profile) -->
   <ul>
     <%= if (current_user) { %>
+      <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a></li>
       <li><a href="/dashboard" hx-get="/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Dashboard</a></li>
       <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Account</a></li>
       <li>
@@ -37,6 +38,7 @@
         </details>
       </li>
     <% } else { %>
+      <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a></li>
       <li>
         <button class="theme-toggle-btn" onclick="toggleTheme();" aria-label="Toggle theme" title="Toggle theme">
           <span id="theme-icon-header">
@@ -75,6 +77,7 @@
 <footer class="container" hx-preserve="true">
   <small>
     <!-- These links should also be HTMX enabled if they point to internal pages -->
+    <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a> • 
     <a href="/dashboard" hx-get="/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Dashboard</a> • 
     <a href="/auth/new" hx-get="/auth/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Login</a> • 
     <a href="https://github.com/gobuffalo/buffalo" target="_blank">Buffalo Framework</a>

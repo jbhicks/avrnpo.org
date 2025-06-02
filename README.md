@@ -46,6 +46,27 @@ A Buffalo web application template with PostgreSQL database, user authentication
 - [x] **Database health checks** - PostgreSQL readiness verification
 - [x] **Error handling** - Basic error handling in commands and scripts
 
+### Blog & CMS System
+- [x] **Blog post system** - CRUD operations for blog posts with admin management
+- [x] **Post validation** - Title, content, and slug validation with excerpt generation
+- [x] **Admin blog management** - Full admin interface for post creation, editing, and deletion
+- [x] **SEO-friendly URLs** - Automatic slug generation from titles
+- [x] **Post excerpts** - Automatic excerpt generation for blog listings
+
+### CMS Enhancement Roadmap
+- [x] **Rich Text Editor** - WYSIWYG editor (Quill.js) for post content with locally served assets
+- [ ] **Media Library** - File upload system with image management and thumbnails
+- [ ] **Content Categories/Tags** - Taxonomy system for content organization
+- [ ] **Content Scheduling** - Publish date functionality for scheduled posts
+- [x] **SEO Meta Fields** - Title tags, meta descriptions, keywords, and OpenGraph data for social media
+- [x] **Bulk Operations** - Select multiple posts for bulk actions (publish/unpublish/delete)
+- [x] **Content Search/Filtering** - Search posts by title, content, or author in admin with status filtering
+- [x] **Draft System** - Save drafts before publishing with status management
+- [ ] **Content Analytics** - View counts and popular posts dashboard
+- [ ] **Content Types** - Extend beyond blog posts to pages, FAQs, etc.
+- [ ] **Revision History** - Track content changes over time
+- [ ] **Multi-language Support** - Content translation capabilities
+
 ### Pending Features
 - [ ] **Billing/subscription features** - Payment processing and subscription management
 - [ ] **Email services** - Transactional emails and notifications
@@ -84,7 +105,7 @@ After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your ap
 - **Go code changes** → Buffalo automatically recompiles and restarts the server
 - **Template changes** → Templates reload instantly without server restart
 - **Static assets** → CSS/JS changes update automatically via the asset pipeline
-- **Database migrations** → Run migrations with `buffalo pop migrate` while server runs
+- **Database migrations** → Run migrations with `soda migrate up` while server runs
 
 ### Development Best Practices
 - **Start once**: Run `make dev` at the beginning of your development session
@@ -270,10 +291,10 @@ make db-reset                  # Reset database (drop/create/migrate)
 make migrate                   # Run migrations only
 
 # Buffalo database commands
-buffalo pop create -a          # Create all databases
-buffalo pop migrate            # Run migrations
-buffalo pop generate migration # Create new migration
-buffalo pop drop -e development # Drop development database
+soda create -a                 # Create all databases
+soda migrate up                # Run migrations
+soda generate migration        # Create new migration
+soda drop -e development       # Drop development database
 ```
 
 #### Admin Management
@@ -295,8 +316,8 @@ buffalo build                  # Direct Buffalo build
 buffalo build --static        # Static binary build
 
 # Production database setup
-buffalo pop create -e production
-buffalo pop migrate -e production
+GO_ENV=production soda create
+GO_ENV=production soda migrate up
 ```
 
 ### Development Tips
@@ -585,9 +606,9 @@ make admin                     # Promote first user to admin
 
 # Manual commands
 # Database operations
-buffalo pop create -a          # Create databases
-buffalo pop migrate            # Run migrations
-buffalo pop generate migration # Create new migration
+soda create -a                 # Create databases
+soda migrate up                # Run migrations
+soda generate migration        # Create new migration
 
 # Admin management
 buffalo task db:promote_admin  # Promote first user to admin role

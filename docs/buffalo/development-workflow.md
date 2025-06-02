@@ -75,7 +75,7 @@ pkill -f "my-go-saas-template"
 
 1. Ensure PostgreSQL is running: `docker-compose ps`
 2. Check database configuration in `database.yml`
-3. Verify migrations are up to date: `buffalo pop migrate`
+3. Verify migrations are up to date: `soda migrate up`
 
 ## Best Practices
 
@@ -98,11 +98,38 @@ buffalo test
 ```
 
 ### Database Operations
+
+**IMPORTANT: Buffalo v0.18.14+ uses `soda` for database migrations, NOT `buffalo pop`**
+
 ```bash
-buffalo pop migrate     # Run migrations
-buffalo pop create -a   # Create databases
-buffalo pop reset       # Reset database
+# Run migrations
+soda migrate up
+
+# Create databases  
+soda create -a
+
+# Reset database (drop, create, migrate)
+soda reset
+
+# Reset test database specifically
+GO_ENV=test soda reset
+
+# Check migration status
+soda migrate status
+
+# Create new migration
+soda generate migration create_posts
+
+# Rollback migrations
+soda migrate down
 ```
+
+**Legacy Documentation Note**: Older Buffalo documentation may reference `buffalo pop` commands, but these are not available in Buffalo v0.18.14+. Always use `soda` commands directly.
+
+**Testing Database Setup**: 
+- Buffalo tests automatically run migrations before each test suite
+- Use `GO_ENV=test soda reset` if you need to manually reset the test database
+- The test environment uses a separate database specified in `database.yml`
 
 ### Asset Management
 ```bash

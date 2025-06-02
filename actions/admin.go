@@ -75,9 +75,16 @@ func AdminDashboard(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 
+	// Get post statistics
+	postCount, err := tx.Count("posts")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	c.Set("userCount", userCount)
 	c.Set("adminCount", adminCount)
 	c.Set("regularUserCount", userCount-adminCount)
+	c.Set("postCount", postCount)
 
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("admin/dashboard.plush.html"))

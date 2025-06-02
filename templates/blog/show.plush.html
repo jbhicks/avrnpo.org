@@ -1,0 +1,23 @@
+<article>
+    <header>
+        <h1><%= post.Title %></h1>
+        <p>
+            <small>
+                By <%= post.Author.FirstName %> <%= post.Author.LastName %> 
+                on <time datetime="<%= post.CreatedAt.Format("2006-01-02") %>"><%= post.CreatedAt.Format("January 2, 2006") %></time>
+            </small>
+        </p>
+    </header>
+    
+    <div class="content">
+        <%= raw(post.Content) %>
+    </div>
+    
+    <footer>
+        <nav>
+            <ul>
+                <li><a href="/blog" role="button" class="secondary">← Back to Blog</a></li>
+            </ul>
+        </nav>
+    </footer>
+</article>
