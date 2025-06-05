@@ -38,7 +38,11 @@
     <link rel="stylesheet" href="/css/pico.min.css">
     
     <!-- Custom styles using Pico.css variables -->
-    <link rel="stylesheet" href="/css/custom.css">
+    <%= if (GO_ENV == "development") { %>
+        <link rel="stylesheet" href="/css/custom.css?v=<%= now().Unix() %>">
+    <% } else { %>
+        <link rel="stylesheet" href="/css/custom.css">
+    <% } %>
     
     <!-- Structured Data for SaaS -->
     <script type="application/ld+json">

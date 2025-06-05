@@ -1,34 +1,33 @@
-<!-- Account Settings with Pico.css -->
+<!-- Account Settings Partial for HTMX -->
 <%# The persistent header is now in templates/home/index.plush.html %>
 <%# The hx-get request for this page will load its content into #htmx-content %>
 
-<main class="container">
-  <!-- Page Header -->
-  <section>
-    <hgroup>
-      <h1>⚙️ Account Settings</h1>
-      <p>Manage your password and security preferences</p>
-    </hgroup>
-  </section>
+<!-- Page Header -->
+<section>
+  <hgroup>
+    <h1>⚙️ Account Settings</h1>
+    <p>Manage your password and security preferences</p>
+  </hgroup>
+</section>
 
-  <!-- Flash Messages -->
-  <%= if (flash["success"]) { %>
-    <article>
-      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
-    </article>
-  <% } %>
+<!-- Flash Messages -->
+<%= if (flash["success"]) { %>
+  <article>
+    <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+  </article>
+<% } %>
 
-  <%= if (flash["danger"]) { %>
-    <article>
-      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
-    </article>
-  <% } %>
+<%= if (flash["danger"]) { %>
+  <article>
+    <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+  </article>
+<% } %>
 
-  <%= if (flash["info"]) { %>
-    <article>
-      <p>ℹ️ <%= for (msg) in flash["info"] { %><%= msg %><% } %></p>
-    </article>
-  <% } %>
+<%= if (flash["info"]) { %>
+  <article>
+    <p>ℹ️ <%= for (msg) in flash["info"] { %><%= msg %><% } %></p>
+  </article>
+<% } %>
 
   <!-- Account Information -->
   <article>
@@ -115,4 +114,3 @@
       <li>Contact support if you notice any suspicious activity</li>
     </ul>
   </article>
-</main>

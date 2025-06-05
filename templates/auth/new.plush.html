@@ -1,15 +1,14 @@
-<!-- Sign In Page -->
-<main class="container">
-  <article class="form-grid">
-    <hgroup>
-      <h1>🔐 Sign in to your account</h1>
-      <p>Not a member? <a href="<%= newUsersPath() %>" 
-                           data-target="modal-signup" 
-                           onclick="switchModal(event, 'modal-login', 'modal-signup')" 
-                           hx-get="<%= newUsersPath() %>" 
-                           hx-target="#modal-signup-content" 
-                           hx-swap="innerHTML">Start your free trial today</a></p>
-    </hgroup>
+<!-- Sign In Partial for HTMX -->
+<article class="form-grid">
+  <hgroup>
+    <h1>🔐 Sign in to your account</h1>
+    <p>Not a member? <a href="<%= newUsersPath() %>" 
+                         data-target="modal-signup" 
+                         onclick="switchModal(event, 'modal-login', 'modal-signup')" 
+                         hx-get="<%= newUsersPath() %>" 
+                         hx-target="#modal-signup-content" 
+                         hx-swap="innerHTML">Start your free trial today</a></p>
+  </hgroup>
     
     <%= formFor(user, {action: "/auth", method: "POST"}) { %>
       <fieldset>
@@ -56,4 +55,3 @@
       </div>
     </details>
   </article>
-</main>

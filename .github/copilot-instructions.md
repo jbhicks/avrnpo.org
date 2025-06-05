@@ -133,6 +133,40 @@ Buffalo v0.18.14+ does not include the `pop` plugin. Use these commands:
 - **Content loaded via HTMX**: Changes to partial templates auto-reload
 - **JavaScript changes**: May require browser hard refresh (Ctrl+F5)
 - **Modal forms**: Test by triggering modals, don't assume full page reload needed
+- **🚨 CRITICAL: HTMX Template Structure**: Partial templates loaded into `#htmx-content` should NOT include `<main class="container">` wrapper since the target div already has this structure. This prevents nested main elements and rendering issues.
+
+**HTMX Template Best Practices:**
+- **Full page templates** (for direct loads): Include complete HTML with nav, main, footer
+- **Partial templates** (for HTMX): Only include content sections without main wrapper
+- **Avoid nested main elements**: Partial templates go inside existing `<main id="htmx-content">`
+- **Test both scenarios**: Direct page load vs HTMX navigation should both work correctly
+
+### Browser Testing Guidelines
+
+**🚨 CRITICAL: DO NOT TEST PROTECTED PAGES IN BROWSER WITHOUT LOGIN 🚨**
+
+- **NEVER use `open_simple_browser` for protected routes** like `/account`, `/profile`, `/dashboard`, `/admin/*`
+- **Protected pages require authentication** - opening them just shows the login page, not the actual functionality
+- **Use tests instead**: Run `buffalo test` to verify protected page functionality
+- **For public pages only**: Use browser for `/`, `/blog`, `/auth/new`, `/users/new` (login/signup)
+- **Testing protected functionality**: 
+  - Use Buffalo tests with authenticated users
+  - Test HTMX behavior through automated tests
+  - Verify template rendering through test assertions
+
+**Protected Routes to AVOID in Browser:**
+- `/account` - Account settings (requires login)
+- `/profile` - Profile settings (requires login) 
+- `/dashboard` - User dashboard (requires login)
+- `/admin/*` - Admin pages (requires admin role)
+- Any HTMX endpoint for authenticated content
+
+**Safe Public Routes for Browser Testing:**
+- `/` - Home/landing page
+- `/blog` - Public blog listing
+- `/auth/new` - Login page
+- `/users/new` - Registration page
+- `/blog/[slug]` - Individual blog posts (if public)
 
 ## Project-Specific Notes
 

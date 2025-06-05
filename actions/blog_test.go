@@ -4,6 +4,8 @@ import (
 	"my_go_saas_template/models"
 )
 
+// Tests for blog functionality
+// Test_BlogShow verifies the blog post details page displays correctly
 func (as *ActionSuite) Test_BlogShow() {
 	// Create a test admin user
 	user := &models.User{
@@ -31,12 +33,9 @@ func (as *ActionSuite) Test_BlogShow() {
 	as.NoError(err)
 	as.False(verrs.HasAny())
 
-	// Test blog show page
-	req := as.HTML("/blog/test-blog-post")
-	res := req.Get()
+	res := as.HTML("/blog/%s", post.Slug).Get()
 	as.Equal(200, res.Code)
 
-	// Check that post content appears
 	body := res.Body.String()
 	as.Contains(body, "Test Blog Post")
 	as.Contains(body, "This is a test blog post content with more details")
@@ -208,4 +207,69 @@ func (as *ActionSuite) Test_BlogIndex() {
 
 	// Check that unpublished post does not appear
 	as.NotContains(body, "Unpublished Post")
+}
+
+// Test that admin post pages have proper navigation headers
+func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
+	// Create a test admin user
+	user := &models.User{
+		Email:     "admin@test.com",
+		FirstName: "Admin",
+		LastName:  "User",
+		Role:      "admin",
+	}
+	user.Password = "password"
+	user.PasswordConfirmation = "password"
+	verrs, err := user.Create(as.DB)
+	as.NoError(err)
+	as.False(verrs.HasAny())
+
+	// Create session for admin user
+	sess := as.Session
+	sess.Set("current_user_id", user.ID)
+
+	// Create a test post for show/edit pages
+	post := &models.Post{
+		Title:     "Test Post",
+		Slug:      "test-post",
+		Content:   "Test content",
+		Excerpt:   "Test excerpt",
+		Published: true,
+		AuthorID:  user.ID,
+	}
+	verrs, err = as.DB.ValidateAndCreate(post)
+	as.NoError(err)
+	as.False(verrs.HasAny())
+
+	// Test admin posts index page
+	res := as.HTML("/admin/posts").Get()
+	as.Equal(200, res.Code)
+	body := res.Body.String()
+	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts index should have navigation header")
+	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
+	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+
+	// Test admin posts new page
+	res = as.HTML("/admin/posts/new").Get()
+	as.Equal(200, res.Code)
+	body = res.Body.String()
+	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts new should have navigation header")
+	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
+	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+
+	// Test admin posts show page
+	res = as.HTML("/admin/posts/%d", post.ID).Get()
+	as.Equal(200, res.Code)
+	body = res.Body.String()
+	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts show should have navigation header")
+	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
+	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+
+	// Test admin posts edit page
+	res = as.HTML("/admin/posts/%d/edit", post.ID).Get()
+	as.Equal(200, res.Code)
+	body = res.Body.String()
+	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts edit should have navigation header")
+	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
+	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
 }

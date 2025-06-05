@@ -2,6 +2,7 @@ package actions
 
 import (
 	"net/http"
+	"strings"
 	"sync"
 
 	"my_go_saas_template/locales"
@@ -28,6 +29,19 @@ var (
 	appOnce sync.Once
 	T       *i18n.Translator
 )
+
+// isStaticAsset checks if the path is for a static asset that should not be cached in development
+func isStaticAsset(path string) bool {
+	return strings.HasSuffix(path, ".css") ||
+		strings.HasSuffix(path, ".js") ||
+		strings.HasSuffix(path, ".ico") ||
+		strings.HasSuffix(path, ".png") ||
+		strings.HasSuffix(path, ".jpg") ||
+		strings.HasSuffix(path, ".svg") ||
+		strings.Contains(path, "/public/") ||
+		strings.Contains(path, "/css/") ||
+		strings.Contains(path, "/js/")
+}
 
 // App is where all routes and middleware for buffalo
 // should be defined. This is the nerve center of your
@@ -128,6 +142,24 @@ func App() *buffalo.App {
 		adminGroup.GET("/posts/{post_id}/edit", AdminPostsEdit)
 		adminGroup.POST("/posts/{post_id}", AdminPostsUpdate)
 		adminGroup.DELETE("/posts/{post_id}", AdminPostsDelete)
+
+		// Add no-cache headers for static files in development
+		if ENV == "development" {
+			app.Use(func(next buffalo.Handler) buffalo.Handler {
+				return func(c buffalo.Context) error {
+					// Add no-cache headers for CSS, JS, and other static assets
+					if req := c.Request(); req != nil {
+						path := req.URL.Path
+						if isStaticAsset(path) {
+							c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+							c.Response().Header().Set("Pragma", "no-cache")
+							c.Response().Header().Set("Expires", "0")
+						}
+					}
+					return next(c)
+				}
+			})
+		}
 
 		// Serve static files
 		app.ServeFiles("/", http.FS(public.FS()))

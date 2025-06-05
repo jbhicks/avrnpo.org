@@ -1,3 +1,4 @@
+<!-- Full Account Page with Persistent Header -->
 <!-- Persistent Header using Dashboard Nav Style -->
 <nav class="container-fluid dashboard-nav" hx-preserve="true">
   <!-- Original content of dashboard-nav's first ul (logo) -->
@@ -64,16 +65,123 @@
   </ul>
 </nav>
 
-<!-- HTMX Content Target -->
-<main class="container" id="htmx-content" hx-get="/" hx-trigger="load" hx-swap="innerHTML">
-  <%# This area will be populated by HTMX on load %>
-  <%# The hx-get="/" will call the HomeHandler again, but as an HTMX request %>
-  <%# HomeHandler will then return _index_content.plush.html %>
+<!-- HTMX Content Target with Account Content -->
+<main class="container" id="htmx-content">
+  <!-- Account Settings with Pico.css -->
+  <section>
+    <hgroup>
+      <h1>⚙️ Account Settings</h1>
+      <p>Manage your password and security preferences</p>
+    </hgroup>
+  </section>
+
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["info"]) { %>
+    <article>
+      <p>ℹ️ <%= for (msg) in flash["info"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <!-- Account Information -->
+  <article>
+    <header>
+      <h3>📧 Account Information</h3>
+    </header>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>Email</strong></td>
+          <td><%= user.Email %></td>
+        </tr>
+        <tr>
+          <td><strong>Account Created</strong></td>
+          <td><%= user.CreatedAt.Format("January 2, 2006") %></td>
+        </tr>
+        <tr>
+          <td><strong>Last Updated</strong></td>
+          <td><%= user.UpdatedAt.Format("January 2, 2006") %></td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+
+  <!-- Password Change Form -->
+  <article>
+    <header>
+      <h3>🔒 Change Password</h3>
+    </header>
+    
+    <form action="/account" method="POST">
+      <fieldset>
+        <label>
+          Current Password
+          <input 
+            type="password" 
+            name="current_password"
+            placeholder="Enter your current password"
+            required
+          />
+        </label>
+
+        <label>
+          New Password
+          <input 
+            type="password" 
+            name="new_password"
+            placeholder="Enter your new password"
+            minlength="8"
+            required
+          />
+          <small>Password must be at least 8 characters long</small>
+        </label>
+
+        <label>
+          Confirm New Password
+          <input 
+            type="password" 
+            name="confirm_password"
+            placeholder="Confirm your new password"
+            minlength="8"
+            required
+          />
+        </label>
+      </fieldset>
+
+      <button type="submit">Update Password</button>
+    </form>
+
+    <footer>
+      <a href="/users/profile" role="button" class="secondary">👤 Profile Settings</a>
+    </footer>
+  </article>
+
+  <!-- Security Notice -->
+  <article>
+    <header>
+      <h3>🛡️ Security Best Practices</h3>
+    </header>
+    <ul>
+      <li>Use a strong, unique password for your account</li>
+      <li>Don't share your password with anyone</li>
+      <li>Sign out when using shared computers</li>
+      <li>Contact support if you notice any suspicious activity</li>
+    </ul>
+  </article>
 </main>
 
 <!-- Footer -->
-<!-- The footer might also be part of the static shell or loaded with content. -->
-<!-- For simplicity, let's assume it's part of the static shell for now. -->
 <footer class="container" hx-preserve="true">
   <small>
     <!-- These links should also be HTMX enabled if they point to internal pages -->
@@ -111,14 +219,3 @@
     </div>
   </article>
 </dialog>
-
-<script>
-  // Optional: If you want to ensure the initial content for '/' is loaded via HTMX
-  // even on a direct page load, you could do something like this.
-  // However, for the very first load, rendering it directly as part of index.plush.html is fine.
-  // document.addEventListener('DOMContentLoaded', function() {
-  //   if (window.location.pathname === '/') {
-  //     htmx.ajax('GET', '/home/index_content', '#htmx-content');
-  //   }
-  // });
-</script>

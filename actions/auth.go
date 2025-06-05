@@ -29,7 +29,8 @@ func AuthNew(c buffalo.Context) error {
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("auth/new.plush.html"))
 	}
-	return c.Render(http.StatusOK, r.HTML("auth/new.plush.html"))
+	// For direct page loads, render the full page with persistent header
+	return c.Render(http.StatusOK, r.HTML("auth/new_full.plush.html"))
 }
 
 // AuthCreate attempts to log the user in with an existing account.

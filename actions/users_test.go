@@ -160,6 +160,50 @@ func (as *ActionSuite) Test_AccountSettings_RequiresAuth() {
 	as.Equal(http.StatusFound, res.Code) // Should redirect to signin
 }
 
+func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
+	timestamp := time.Now().UnixNano()
+
+	// Create and login user
+	signupData := &models.User{
+		Email:                fmt.Sprintf("htmx-test-%d@example.com", timestamp),
+		Password:             "password",
+		PasswordConfirmation: "password",
+		FirstName:            "HTMX",
+		LastName:             "Test",
+	}
+
+	signupRes := as.HTML("/users").Post(signupData)
+	as.Equal(http.StatusFound, signupRes.Code)
+
+	loginData := &models.User{
+		Email:    signupData.Email,
+		Password: "password",
+	}
+
+	loginRes := as.HTML("/auth").Post(loginData)
+	as.Equal(http.StatusFound, loginRes.Code)
+
+	// Test HTMX request (should return partial content)
+	req := as.HTML("/account")
+	req.Headers["HX-Request"] = "true"
+	htmxRes := req.Get()
+
+	as.Equal(http.StatusOK, htmxRes.Code)
+	as.Contains(htmxRes.Body.String(), "Account Settings")
+	// HTMX response should NOT contain navigation (it's a partial)
+	as.NotContains(htmxRes.Body.String(), "Buffalo SaaS")
+	as.NotContains(htmxRes.Body.String(), "<nav")
+
+	// Test regular request (should return full page)
+	regularRes := as.HTML("/account").Get()
+
+	as.Equal(http.StatusOK, regularRes.Code)
+	as.Contains(regularRes.Body.String(), "Account Settings")
+	// Regular response SHOULD contain navigation (it's a full page)
+	as.Contains(regularRes.Body.String(), "Buffalo SaaS")
+	as.Contains(regularRes.Body.String(), "<nav")
+}
+
 // Debug test to see what validation errors are happening
 func (as *ActionSuite) Test_Debug_User_Creation() {
 	timestamp := time.Now().Unix()

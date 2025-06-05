@@ -1,4 +1,6 @@
 .PHONY: help dev setup db-up db-down db-reset test clean build admin migrate db-status db-logs health check-deps install-deps
+# Add clean-caches target for clearing Go and gopls caches
+.PHONY: clean-caches
 
 # Default target
 help:
@@ -21,9 +23,11 @@ help:
 	@echo "  test            - 🧪 Run all tests with Buffalo (recommended)"
 	@echo "  test-fast       - ⚡ Run Buffalo tests without database setup"
 	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
+	@echo "  validate-templates - 🎨 Validate admin template structure"
 	@echo "  build           - 🔨 Build the application for production"
 	@echo "  health          - 🏥 Check system health (dependencies, database, etc.)"
 	@echo "  clean           - 🧹 Stop all services and clean up containers"
+	@echo "  clean-caches    - 🧹 Clear Go build, module, and gopls caches"
 	@echo ""
 	@echo "Dependencies:"
 	@echo "  check-deps - ✅ Check if all required dependencies are installed"
@@ -219,7 +223,7 @@ db-reset:
 	@echo "🎯 You can now run 'make dev' to start the development server"
 
 # Run tests with comprehensive setup
-test: check-deps db-up
+test: check-deps db-up validate-templates
 	@echo "🧪 Running test suite with Buffalo..."
 	@if ! ./scripts/wait-for-postgres.sh; then \
 		echo "❌ Database is not ready. Cannot run tests."; \
@@ -273,27 +277,19 @@ test-resilient: check-deps
 		exit 1; \
 	fi
 
-# System health check
-health: check-deps
-	@echo "🏥 System Health Check"
-	@echo ""
-	@echo "📊 Database Status:"
-	@$(MAKE) db-status 2>/dev/null || echo "❌ Database health check failed"
-	@echo ""
-	@echo "🔍 Buffalo Status:"
-	@if pgrep -f "buffalo.*dev" >/dev/null; then \
-		echo "✅ Buffalo development server is running"; \
-		echo "🌐 Application should be available at http://127.0.0.1:3000"; \
-	else \
-		echo "❌ Buffalo development server is not running"; \
-		echo "💡 Run 'make dev' to start the development server"; \
-	fi
-	@echo ""
-	@echo "📁 Project Structure:"
-	@if [ -f "go.mod" ]; then echo "✅ go.mod exists"; else echo "❌ go.mod missing"; fi
-	@if [ -f "database.yml" ]; then echo "✅ database.yml exists"; else echo "❌ database.yml missing"; fi
-	@if [ -d "templates" ]; then echo "✅ templates directory exists"; else echo "❌ templates directory missing"; fi
-	@if [ -d "actions" ]; then echo "✅ actions directory exists"; else echo "❌ actions directory missing"; fi
+# Template validation
+validate-templates:
+	@echo "🎨 Validating admin template structure..."
+	@./scripts/validate-templates.sh
+
+# Clear Go build, module, and gopls caches
+clean-caches:
+	@echo "🧹 Clearing Go and language server caches..."
+	@go clean -cache || echo "Go cache already clean"
+	@go clean -modcache || echo "Module cache already clean" 
+	@echo "💡 If VS Code still shows errors, restart the Go language server:"
+	@echo "   Ctrl+Shift+P -> 'Go: Restart Language Server'"
+	@echo "✅ Cache cleanup complete!"
 
 # Clean up everything with confirmation
 clean:
@@ -312,16 +308,3 @@ clean:
 		echo "❌ No compose command found."; \
 	fi
 	@echo "✅ Clean complete!"
-
-# Build the application with version info
-build:
-	@echo "🔨 Building application..."
-	@echo "📦 Compiling Go binary..."
-	@if buffalo build; then \
-		echo "✅ Build complete!"; \
-		echo "📁 Binary created: bin/my-go-saas-template"; \
-		echo "🚀 Run with: ./bin/my-go-saas-template"; \
-	else \
-		echo "❌ Build failed. Check the output above for errors."; \
-		exit 1; \
-	fi

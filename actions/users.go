@@ -19,7 +19,8 @@ func UsersNew(c buffalo.Context) error {
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("users/new.plush.html"))
 	}
-	return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
+	// For direct page loads, render the full page with persistent header
+	return c.Render(http.StatusOK, r.HTML("users/new_full.plush.html"))
 }
 
 // UsersCreate registers a new user with the application.
@@ -87,7 +88,8 @@ func ProfileSettings(c buffalo.Context) error {
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("users/profile.plush.html"))
 	}
-	return c.Render(http.StatusOK, r.HTML("users/profile.plush.html"))
+	// For direct page loads, render the full page with persistent header
+	return c.Render(http.StatusOK, r.HTML("users/profile_full.plush.html"))
 }
 
 // ProfileUpdate updates the user's profile information
@@ -146,7 +148,8 @@ func AccountSettings(c buffalo.Context) error {
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(http.StatusOK, rHTMX.HTML("users/account.plush.html"))
 	}
-	return c.Render(http.StatusOK, r.HTML("users/account.plush.html"))
+	// For direct page loads, render the full page with persistent header
+	return c.Render(http.StatusOK, r.HTML("users/account_full.plush.html"))
 }
 
 // AccountUpdate updates the user's account settings

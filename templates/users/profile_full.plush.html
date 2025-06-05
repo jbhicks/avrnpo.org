@@ -1,3 +1,4 @@
+<!-- Full Profile Page with Persistent Header -->
 <!-- Persistent Header using Dashboard Nav Style -->
 <nav class="container-fluid dashboard-nav" hx-preserve="true">
   <!-- Original content of dashboard-nav's first ul (logo) -->
@@ -64,16 +65,99 @@
   </ul>
 </nav>
 
-<!-- HTMX Content Target -->
-<main class="container" id="htmx-content" hx-get="/" hx-trigger="load" hx-swap="innerHTML">
-  <%# This area will be populated by HTMX on load %>
-  <%# The hx-get="/" will call the HomeHandler again, but as an HTMX request %>
-  <%# HomeHandler will then return _index_content.plush.html %>
+<!-- HTMX Content Target with Profile Content -->
+<main class="container" id="htmx-content">
+  <!-- Profile Settings with Pico.css -->
+  <section>
+    <hgroup>
+      <h1>👤 Profile Settings</h1>
+      <p>Manage your personal information and preferences</p>
+    </hgroup>
+  </section>
+
+  <!-- Flash Messages -->
+  <%= if (flash["success"]) { %>
+    <article>
+      <p>✅ <%= for (msg) in flash["success"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["danger"]) { %>
+    <article>
+      <p>❌ <%= for (msg) in flash["danger"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <%= if (flash["info"]) { %>
+    <article>
+      <p>ℹ️ <%= for (msg) in flash["info"] { %><%= msg %><% } %></p>
+    </article>
+  <% } %>
+
+  <!-- Profile Form -->
+  <article>
+    <header>
+      <h3>Edit Profile Information</h3>
+    </header>
+    
+    <%= formFor(user, {action: "/profile", method: "POST"}) { %>
+      <fieldset>
+        <label>
+          First Name
+          <%= f.InputTag("FirstName", {
+            type: "text",
+            placeholder: "Enter your first name"
+          }) %>
+          <%= if (errors && errors["first_name"]) { %>
+            <small><%= errors["first_name"] %></small>
+          <% } %>
+        </label>
+
+        <label>
+          Last Name
+          <%= f.InputTag("LastName", {
+            type: "text",
+            placeholder: "Enter your last name"
+          }) %>
+          <%= if (errors && errors["last_name"]) { %>
+            <small><%= errors["last_name"] %></small>
+          <% } %>
+        </label>
+
+        <label>
+          Email Address
+          <input 
+            type="email" 
+            value="<%= user.Email %>" 
+            readonly 
+          />
+          <small>Email changes require contacting support</small>
+        </label>
+
+        <%= if (current_user.Role == "admin") { %>
+        <label>
+          Role
+          <%= f.SelectTag("Role", {
+            options: roleOptions,
+            value: user.Role
+          }) %>
+          <%= if (errors && errors["role"]) { %>
+            <small><%= errors["role"] %></small>
+          <% } %>
+        </label>
+        <% } %>
+      </fieldset>
+
+      <button type="submit">Update Profile</button>
+    <% } %>
+
+    <footer>
+      <a href="/account" role="button" class="secondary">⚙️ Account Settings</a>
+    </footer>
+  </article>
 </main>
 
 <!-- Footer -->
-<!-- The footer might also be part of the static shell or loaded with content. -->
-<!-- For simplicity, let's assume it's part of the static shell for now. -->
 <footer class="container" hx-preserve="true">
   <small>
     <!-- These links should also be HTMX enabled if they point to internal pages -->
@@ -111,14 +195,3 @@
     </div>
   </article>
 </dialog>
-
-<script>
-  // Optional: If you want to ensure the initial content for '/' is loaded via HTMX
-  // even on a direct page load, you could do something like this.
-  // However, for the very first load, rendering it directly as part of index.plush.html is fine.
-  // document.addEventListener('DOMContentLoaded', function() {
-  //   if (window.location.pathname === '/') {
-  //     htmx.ajax('GET', '/home/index_content', '#htmx-content');
-  //   }
-  // });
-</script>

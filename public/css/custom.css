@@ -9,10 +9,8 @@
    ============================================================================= */
 
 :root {
-  /* Custom primary color scheme */
-  --pico-primary: hsl(250, 67%, 35%);
-  --pico-primary-hover: hsl(250, 67%, 45%);
-  --pico-primary-focus: hsl(250, 67%, 40%);
+  /* Custom primary color scheme - Bright and vibrant for better link visibility */
+  --pico-primary: hsl(210, 90%, 55%);
   
   /* Enhanced spacing for better visual hierarchy */
   --pico-spacing: 1rem;
@@ -28,20 +26,6 @@
   /* Enhanced shadows for depth */
   --pico-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   --pico-card-box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-}
-
-/* Dark theme adjustments */
-[data-theme="dark"] {
-  --pico-background-color: hsl(205, 30%, 8%);
-  --pico-card-background-color: hsl(205, 25%, 12%);
-  --pico-muted-background-color: hsl(205, 20%, 15%);
-}
-
-/* Light theme adjustments */
-[data-theme="light"] {
-  --pico-background-color: hsl(0, 0%, 98%);
-  --pico-card-background-color: hsl(0, 0%, 100%);
-  --pico-muted-background-color: hsl(0, 0%, 96%);
 }
 
 /* Theme toggle button styling using Pico variables */
