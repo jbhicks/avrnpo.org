@@ -1,4 +1,4 @@
-.PHONY: help dev setup db-up db-down db-reset test clean build admin migrate db-status db-logs health check-deps install-deps
+.PHONY: help dev setup db-up db-down db-reset test clean build admin migrate db-status db-logs health check-deps install-deps update-deps
 # Add clean-caches target for clearing Go and gopls caches
 .PHONY: clean-caches
 
@@ -30,8 +30,9 @@ help:
 	@echo "  clean-caches    - 🧹 Clear Go build, module, and gopls caches"
 	@echo ""
 	@echo "Dependencies:"
-	@echo "  check-deps - ✅ Check if all required dependencies are installed"
+	@echo "  check-deps  - ✅ Check if all required dependencies are installed"
 	@echo "  install-deps - 📦 Install missing dependencies (where possible)"
+	@echo "  update-deps - 🔄 Update all frontend dependencies (JS/CSS) to latest versions"
 
 # Check if all required dependencies are installed
 check-deps:
@@ -308,3 +309,51 @@ clean:
 		echo "❌ No compose command found."; \
 	fi
 	@echo "✅ Clean complete!"
+
+# Update all frontend dependencies to latest versions
+update-deps:
+	@echo "🔄 Updating frontend dependencies to latest versions..."
+	@echo ""
+	
+	# Check for required tools
+	@if ! command -v curl >/dev/null 2>&1; then \
+		echo "❌ curl is required but not installed."; \
+		exit 1; \
+	fi
+	
+	@echo "📦 Checking latest versions..."
+	
+	# Get latest Quill.js version
+	@echo "🔍 Checking Quill.js..."
+	@QUILL_VERSION=$$(curl -s "https://registry.npmjs.org/quill/latest" | grep '"version"' | head -1 | sed 's/.*"version":"\([^"]*\)".*/\1/'); \
+	echo "   Latest Quill.js version: $$QUILL_VERSION"; \
+	echo "   📥 Downloading Quill.js $$QUILL_VERSION..."; \
+	curl -s -o public/css/quill.snow.css "https://cdn.jsdelivr.net/npm/quill@$$QUILL_VERSION/dist/quill.snow.css" && \
+	curl -s -o public/js/quill.min.js "https://cdn.jsdelivr.net/npm/quill@$$QUILL_VERSION/dist/quill.js" && \
+	echo "   ✅ Quill.js updated to $$QUILL_VERSION"
+	
+	# Get latest HTMX version
+	@echo "🔍 Checking HTMX..."
+	@HTMX_VERSION=$$(curl -s "https://api.github.com/repos/bigskysoftware/htmx/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "v\([^"]*\)".*/\1/'); \
+	echo "   Latest HTMX version: $$HTMX_VERSION"; \
+	echo "   📥 Downloading HTMX $$HTMX_VERSION..."; \
+	curl -s -o public/js/htmx.min.js "https://unpkg.com/htmx.org@$$HTMX_VERSION/dist/htmx.min.js" && \
+	echo "   ✅ HTMX updated to $$HTMX_VERSION"
+	
+	# Get latest Pico.css version
+	@echo "🔍 Checking Pico.css..."
+	@PICO_VERSION=$$(curl -s "https://api.github.com/repos/picocss/pico/releases/latest" | grep '"tag_name"' | sed 's/.*"tag_name": "v\([^"]*\)".*/\1/'); \
+	echo "   Latest Pico.css version: $$PICO_VERSION"; \
+	echo "   📥 Downloading Pico.css $$PICO_VERSION..."; \
+	curl -s -o public/css/pico.min.css "https://cdn.jsdelivr.net/npm/@picocss/pico@$$PICO_VERSION/css/pico.min.css" && \
+	echo "   ✅ Pico.css updated to $$PICO_VERSION"
+	
+	@echo ""
+	@echo "🎉 All frontend dependencies updated successfully!"
+	@echo "📝 Updated files:"
+	@echo "   - public/css/quill.snow.css"
+	@echo "   - public/css/pico.min.css" 
+	@echo "   - public/js/quill.min.js"
+	@echo "   - public/js/htmx.min.js"
+	@echo ""
+	@echo "💡 Tip: Restart Buffalo dev server to see changes: make dev"

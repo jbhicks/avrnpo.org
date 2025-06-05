@@ -84,28 +84,16 @@
             <label for="content">
                 Content
             </label>
-            <!-- Fallback textarea with enhanced styling -->
-            <textarea id="content" name="content" rows="15" required 
-                      placeholder="Write your post content here... You can use HTML formatting."
-                      style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; resize: vertical;"><%= post.Content %></textarea>
+            <!-- Quill Editor Container -->
+            <div id="quill-editor-container" style="margin-bottom: 0.5rem;">
+                <div id="quill-editor" style="min-height: 350px;"></div>
+            </div>
+            <!-- Hidden textarea for form submission -->
+            <textarea id="content" name="content" style="display: none;" required><%= post.Content %></textarea>
             <%= if (errors && errors.Get("content")) { %>
                 <small class="error"><%= errors.Get("content") %></small>
             <% } %>
-            <details style="margin-top: 0.5rem;">
-                <summary style="cursor: pointer; color: var(--pico-primary);">HTML Formatting Guide</summary>
-                <small style="display: block; margin-top: 0.5rem; padding: 1rem; background: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-                    <strong>Common HTML tags you can use:</strong><br>
-                    • <code>&lt;p&gt;Paragraph text&lt;/p&gt;</code><br>
-                    • <code>&lt;h2&gt;Section Heading&lt;/h2&gt;</code><br>
-                    • <code>&lt;h3&gt;Subsection Heading&lt;/h3&gt;</code><br>
-                    • <code>&lt;strong&gt;Bold text&lt;/strong&gt;</code><br>
-                    • <code>&lt;em&gt;Italic text&lt;/em&gt;</code><br>
-                    • <code>&lt;a href="https://example.com"&gt;Link text&lt;/a&gt;</code><br>
-                    • <code>&lt;ul&gt;&lt;li&gt;List item&lt;/li&gt;&lt;/ul&gt;</code><br>
-                    • <code>&lt;blockquote&gt;Quote text&lt;/blockquote&gt;</code><br>
-                    • <code>&lt;code&gt;Inline code&lt;/code&gt;</code>
-                </small>
-            </details>
+            <small>Use the toolbar above to format your content. You can add headings, bold text, links, lists, and more.</small>
         </fieldset>
 
         <fieldset>

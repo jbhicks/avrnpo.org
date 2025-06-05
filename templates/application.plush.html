@@ -37,6 +37,10 @@
     <!-- Pico.css - Minimal CSS Framework -->
     <link rel="stylesheet" href="/css/pico.min.css">
     
+    <!-- Quill Rich Text Editor -->
+    <link rel="stylesheet" href="/css/quill.snow.css">
+    <link rel="stylesheet" href="/css/quill-custom.css">
+    
     <!-- Custom styles using Pico.css variables -->
     <%= if (GO_ENV == "development") { %>
         <link rel="stylesheet" href="/css/custom.css?v=dev">
@@ -70,11 +74,15 @@
     <!-- Heroicons helper for SVG icons -->
     <script src="/js/icons.js"></script>
     
+    <!-- Quill Rich Text Editor -->
+    <script src="/js/quill.min.js"></script>
+    <script src="/js/quill-editor.js"></script>
+    
     <!-- Theme switching functionality -->
     <script src="/js/theme.js"></script>
     
     <!-- HTMX Library -->
-    <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <script src="/js/htmx.min.js"></script>
     
     <% if (authenticity_token) { %>
     <meta name="csrf-param" content="authenticity_token" />
