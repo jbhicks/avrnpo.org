@@ -112,6 +112,36 @@ Buffalo v0.18.14+ does not include the `pop` plugin. Use these commands:
 - Follow patterns documented in Buffalo testing guides
 - Reference `/docs/buffalo/development-workflow.md` for testing workflow
 
+### Dependency and Technology Guidelines
+
+**🚨 CRITICAL: STRICT DEPENDENCY REQUIREMENTS 🚨**
+
+**ALWAYS follow the dependency guidelines in `/docs/dependency-guidelines.md` before adding ANY new dependencies:**
+
+- **Go-Only**: Only use Go modules and libraries - NO Node.js, Python, PHP, Ruby, or other language dependencies
+- **Open Source Only**: NEVER use commercial, SaaS, or corporate solutions (e.g., Strapi, Contentful, WordPress)  
+- **No External Services**: NEVER integrate commercial APIs or third-party services requiring paid plans
+- **Buffalo Ecosystem**: Prefer Buffalo-compatible modules and official Buffalo plugins
+- **Database-First**: Use Buffalo's built-in Pop/Soda ORM instead of external CMSs or headless solutions
+- **Self-Contained**: All functionality must be implemented within the Go application
+
+**Before adding any dependency:**
+1. **Read `/docs/dependency-guidelines.md`** - Check all requirements and restrictions
+2. **Verify it's Go-only** - No JavaScript/Node.js, Python, or other language requirements
+3. **Confirm open source** - Check license and ensure no commercial restrictions
+4. **Test compatibility** - Ensure it works with Buffalo and our current stack
+5. **Document the choice** - Add rationale to appropriate documentation
+
+**Forbidden Technologies:**
+- Content Management Systems (Strapi, WordPress, Drupal, Contentful, etc.)
+- Node.js/JavaScript backends or build tools (except for frontend assets)
+- Python/Django applications or services
+- PHP applications or frameworks
+- SaaS APIs requiring paid subscriptions
+- Docker images that aren't pure Go applications
+
+**For CMS-like functionality**: Use Buffalo's built-in database operations with Pop/Soda ORM instead of external CMS solutions.
+
 ### Common Commands
 - `make dev` - Start everything (use once)
 - `make test` - Run comprehensive test suite (recommended command)
