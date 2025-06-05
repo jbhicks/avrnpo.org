@@ -15,7 +15,6 @@
     <%= if (current_user) { %>
       <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a></li>
       <li><a href="/dashboard" hx-get="/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Dashboard</a></li>
-      <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Account</a></li>
       <li>
         <button class="theme-toggle-btn" onclick="toggleTheme();" aria-label="Toggle theme" title="Toggle theme">
           <span id="theme-icon-header">
@@ -33,7 +32,14 @@
           </summary>
           <ul>
             <li><a href="/profile" hx-get="/profile" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Your Profile</a></li>
-            <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Settings</a></li>
+            <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Account Settings</a></li>
+            <%= if (current_user.Role == "admin") { %>
+            <li><a href="/admin" hx-get="/admin/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 0.25rem;">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              Admin Dashboard</a></li>
+            <% } %>
             <li><a href="/signout" class="secondary" hx-post="/signout" hx-confirm="Are you sure you want to sign out?">Sign out</a></li>
           </ul>
         </details>

@@ -1,9 +1,10 @@
+<!-- Blog Post with Pico.css -->
 <article>
     <header>
         <h1><%= post.Title %></h1>
         <p>
             <small>
-                By <%= post.Author.FirstName %> <%= post.Author.LastName %> 
+                By <strong><%= post.Author.FirstName %> <%= post.Author.LastName %></strong>
                 on <time datetime="<%= post.CreatedAt.Format("2006-01-02") %>"><%= post.CreatedAt.Format("January 2, 2006") %></time>
             </small>
         </p>
@@ -16,7 +17,14 @@
     <footer>
         <nav>
             <ul>
-                <li><a href="/blog" role="button" class="secondary">← Back to Blog</a></li>
+                <li>
+                  <a href="/blog" role="button" class="secondary">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Back to Blog
+                  </a>
+                </li>
             </ul>
         </nav>
     </footer>

@@ -65,5 +65,5 @@ func DashboardHandler(c buffalo.Context) error {
 
 	// For a full page load (e.g. direct navigation to /dashboard, or refresh)
 	// use the same layout as the home page but with dashboard content
-	return c.Render(http.StatusOK, r.HTML("home/dashboard_fixed.plush.html"))
+	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 }

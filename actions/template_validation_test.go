@@ -7,8 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"my_go_saas_template/templates"
+
+	"github.com/stretchr/testify/require"
 )
 
 // Test_AdminTemplateStructure validates that all admin templates follow proper structure
@@ -36,7 +37,7 @@ func Test_AdminTemplateStructure(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		
+
 		if !d.IsDir() && strings.HasSuffix(path, ".plush.html") {
 			// Check if this template should be excluded
 			shouldExclude := false
@@ -46,7 +47,7 @@ func Test_AdminTemplateStructure(t *testing.T) {
 					break
 				}
 			}
-			
+
 			if !shouldExclude {
 				adminTemplates = append(adminTemplates, path)
 			}
@@ -59,31 +60,31 @@ func Test_AdminTemplateStructure(t *testing.T) {
 	for _, templatePath := range adminTemplates {
 		t.Run(fmt.Sprintf("Template_%s", templatePath), func(t *testing.T) {
 			r := require.New(t)
-			
+
 			// Read template content
 			content, err := fs.ReadFile(templateFS, templatePath)
 			r.NoError(err)
-			
+
 			templateContent := string(content)
-			
+
 			// Check for required elements
 			for _, element := range requiredElements {
-				r.Contains(templateContent, element, 
+				r.Contains(templateContent, element,
 					"Template %s is missing required element: %s", templatePath, element)
 			}
-			
+
 			// Verify navigation comes before main content
 			navIndex := strings.Index(templateContent, `<nav class="container-fluid dashboard-nav">`)
 			mainIndex := strings.Index(templateContent, `<main class="container">`)
-			
+
 			r.True(navIndex >= 0, "Template %s missing navigation", templatePath)
 			r.True(mainIndex >= 0, "Template %s missing main container", templatePath)
 			r.True(navIndex < mainIndex, "Template %s: navigation should come before main content", templatePath)
 		})
 	}
-	
+
 	// Ensure we found some templates to test
 	r.Greater(len(adminTemplates), 0, "No admin templates found to validate")
-	
+
 	t.Logf("Validated %d admin templates for proper structure", len(adminTemplates))
 }

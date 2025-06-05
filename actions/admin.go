@@ -123,10 +123,10 @@ func AdminUserShow(c buffalo.Context) error {
 
 	c.Set("user", user)
 
-	// Provide role options
-	roleOptions := map[string]string{
-		"user":  "User",
-		"admin": "Administrator",
+	// Provide role options - Buffalo SelectTag expects slice of maps with "value" and "label" keys
+	roleOptions := []map[string]interface{}{
+		{"value": "user", "label": "User"},
+		{"value": "admin", "label": "Administrator"},
 	}
 	c.Set("roleOptions", roleOptions)
 
@@ -170,10 +170,10 @@ func AdminUserUpdate(c buffalo.Context) error {
 		c.Set("user", updatedUser)
 		c.Set("errors", verrs)
 
-		// Provide role options for re-render
-		roleOptions := map[string]string{
-			"user":  "User",
-			"admin": "Administrator",
+		// Provide role options for re-render - Buffalo SelectTag expects slice of maps
+		roleOptions := []map[string]interface{}{
+			{"value": "user", "label": "User"},
+			{"value": "admin", "label": "Administrator"},
 		}
 		c.Set("roleOptions", roleOptions)
 

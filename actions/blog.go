@@ -31,7 +31,14 @@ func BlogIndex(c buffalo.Context) error {
 	}
 
 	c.Set("posts", posts)
-	return c.Render(200, r.HTML("blog/index.plush.html"))
+
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(200, r.HTML("blog/index.plush.html"))
+	}
+
+	// Direct access - render full page with navigation
+	return c.Render(200, r.HTML("blog/index_full.plush.html"))
 }
 
 // BlogShow displays a single post by slug
@@ -55,7 +62,14 @@ func BlogShow(c buffalo.Context) error {
 	}
 
 	c.Set("post", post)
-	return c.Render(200, r.HTML("blog/show.plush.html"))
+
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(200, r.HTML("blog/show.plush.html"))
+	}
+
+	// Direct access - render full page with navigation
+	return c.Render(200, r.HTML("blog/show_full.plush.html"))
 }
 
 // AdminPostsIndex lists all posts for admin with search and filtering
