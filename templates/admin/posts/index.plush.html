@@ -83,6 +83,7 @@
                 <thead>
                     <tr>
                         <th><input type="checkbox" id="select-all"></th>
+                        <th>Image</th>
                         <th>Title</th>
                         <th>Author</th>
                         <th>Status</th>
@@ -97,7 +98,20 @@
                                 <input type="checkbox" name="post_ids" value="<%= post.ID %>" form="bulk-form">
                             </td>
                             <td>
+                                <%= if (post.Image != "") { %>
+                                    <img src="<%= post.Image %>" alt="<%= post.ImageAlt %>" 
+                                         style="width: 60px; height: 40px; object-fit: cover; border-radius: var(--pico-border-radius);">
+                                <% } else { %>
+                                    <div style="width: 60px; height: 40px; background: var(--pico-muted-color); border-radius: var(--pico-border-radius); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--pico-muted-color);">
+                                        No Image
+                                    </div>
+                                <% } %>
+                            </td>
+                            <td>
                                 <a href="/admin/posts/<%= post.ID %>"><%= post.Title %></a>
+                                <%= if (post.Excerpt != "") { %>
+                                    <br><small style="color: var(--pico-muted-color);"><%= post.Excerpt %></small>
+                                <% } %>
                             </td>
                             <td><%= post.Author.FirstName %> <%= post.Author.LastName %></td>
                             <td>

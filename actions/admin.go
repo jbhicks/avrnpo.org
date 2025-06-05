@@ -86,9 +86,12 @@ func AdminDashboard(c buffalo.Context) error {
 	c.Set("regularUserCount", userCount-adminCount)
 	c.Set("postCount", postCount)
 
+	// Check if this is an HTMX request for partial content
 	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("admin/dashboard.plush.html"))
+		return c.Render(http.StatusOK, r.HTML("admin/dashboard.plush.html"))
 	}
+
+	// Direct access - render full page with navigation (same template since it includes nav)
 	return c.Render(http.StatusOK, r.HTML("admin/dashboard.plush.html"))
 }
 

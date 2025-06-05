@@ -2,8 +2,12 @@ package actions
 
 import (
 	"fmt"
+	"io"
 	"my_go_saas_template/models"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -166,6 +170,42 @@ func AdminPostsCreate(c buffalo.Context) error {
 	currentUser := c.Value("current_user").(*models.User)
 	post.AuthorID = currentUser.ID
 
+	// Handle file upload if present
+	if c.Request().MultipartForm != nil && c.Request().MultipartForm.File["image"] != nil {
+		fileHeaders := c.Request().MultipartForm.File["image"]
+		if len(fileHeaders) > 0 {
+			fileHeader := fileHeaders[0]
+			file, err := fileHeader.Open()
+			if err == nil {
+				defer file.Close()
+
+				// Create uploads directory if it doesn't exist
+				uploadDir := filepath.Join("public", "uploads")
+				if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+					return err
+				}
+
+				// Generate unique filename
+				filename := fmt.Sprintf("%d_%s", time.Now().Unix(), fileHeader.Filename)
+				filePath := filepath.Join(uploadDir, filename)
+
+				// Save the file
+				dst, err := os.Create(filePath)
+				if err != nil {
+					return err
+				}
+				defer dst.Close()
+
+				if _, err := io.Copy(dst, file); err != nil {
+					return err
+				}
+
+				// Set the image path relative to public directory
+				post.Image = "/uploads/" + filename
+			}
+		}
+	}
+
 	// Generate slug and excerpt before validation
 	post.GenerateSlug()
 	post.GenerateExcerpt()
@@ -230,6 +270,42 @@ func AdminPostsUpdate(c buffalo.Context) error {
 
 	if err := c.Bind(post); err != nil {
 		return err
+	}
+
+	// Handle file upload if present
+	if c.Request().MultipartForm != nil && c.Request().MultipartForm.File["image"] != nil {
+		fileHeaders := c.Request().MultipartForm.File["image"]
+		if len(fileHeaders) > 0 {
+			fileHeader := fileHeaders[0]
+			file, err := fileHeader.Open()
+			if err == nil {
+				defer file.Close()
+
+				// Create uploads directory if it doesn't exist
+				uploadDir := filepath.Join("public", "uploads")
+				if err := os.MkdirAll(uploadDir, os.ModePerm); err != nil {
+					return err
+				}
+
+				// Generate unique filename
+				filename := fmt.Sprintf("%d_%s", time.Now().Unix(), fileHeader.Filename)
+				filePath := filepath.Join(uploadDir, filename)
+
+				// Save the file
+				dst, err := os.Create(filePath)
+				if err != nil {
+					return err
+				}
+				defer dst.Close()
+
+				if _, err := io.Copy(dst, file); err != nil {
+					return err
+				}
+
+				// Set the image path relative to public directory
+				post.Image = "/uploads/" + filename
+			}
+		}
 	}
 
 	// Generate excerpt if not provided

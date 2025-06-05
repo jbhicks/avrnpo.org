@@ -26,6 +26,8 @@ type Post struct {
 	OgTitle         string    `json:"og_title" db:"og_title"`
 	OgDescription   string    `json:"og_description" db:"og_description"`
 	OgImage         string    `json:"og_image" db:"og_image"`
+	Image           string    `json:"image" db:"image"`
+	ImageAlt        string    `json:"image_alt" db:"image_alt"`
 	AuthorID        uuid.UUID `json:"author_id" db:"author_id" form:"-"`
 	Author          *User     `json:"author,omitempty" belongs_to:"user" fk_id:"author_id" form:"-"`
 	CreatedAt       time.Time `json:"created_at" db:"created_at" form:"-"`

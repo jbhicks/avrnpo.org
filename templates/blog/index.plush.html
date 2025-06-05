@@ -15,12 +15,20 @@
   <div class="grid">
     <%= for (post) in posts { %>
       <article>
+        <%= if (post.Image != "") { %>
+          <img src="<%= post.Image %>" alt="<%= post.ImageAlt %>" 
+               style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--pico-border-radius);">
+        <% } %>
+        
         <header>
           <h2><a href="/blog/<%= post.Slug %>" class="unstyled-link"><%= post.Title %></a></h2>
           <p><small>
             <time datetime="<%= post.CreatedAt.Format("2006-01-02") %>">
               <%= post.CreatedAt.Format("January 2, 2006") %>
             </time>
+            <%= if (post.Author != nil) { %>
+              by <%= post.Author.Name %>
+            <% } %>
           </small></p>
         </header>
         
@@ -41,11 +49,4 @@
     </header>
     <p>No blog posts have been published yet. Check back soon for new content!</p>
   </article>
-<% } %></h1>
-<p>Posts count: <%= len(posts) %></p>
-<%= for (post) in posts { %>
-    <div>
-        <h2><%= post.Title %></h2>
-        <p><%= post.Excerpt %></p>
-    </div>
 <% } %>

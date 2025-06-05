@@ -53,17 +53,11 @@ func DashboardHandler(c buffalo.Context) error {
 	// You can pass additional data to the template if needed
 	c.Set("user", currentUser) // This is the same as current_user, but explicit for template
 
-	if IsHTMX(c.Request()) { // IsHTMX is now defined in render.go
-		c.Set("isHTMXRequest", true) // Indicate HTMX request
-		// Ensure current_user is explicitly available for the HTMX render context
-		if cu := c.Value("current_user"); cu != nil {
-			c.Set("current_user", cu)
-		}
-		// When it's an HTMX request, we render with the minimal htmx.plush.html layout
-		return c.Render(http.StatusOK, rHTMX.HTML("home/dashboard.plush.html"))
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 	}
 
-	// For a full page load (e.g. direct navigation to /dashboard, or refresh)
-	// use the same layout as the home page but with dashboard content
-	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
+	// Direct access - render full page with navigation
+	return c.Render(http.StatusOK, r.HTML("home/dashboard_full.plush.html"))
 }

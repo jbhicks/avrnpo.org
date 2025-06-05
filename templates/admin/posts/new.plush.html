@@ -48,7 +48,7 @@
         </nav>
     </header>
 
-    <form method="POST" action="/admin/posts">
+    <form method="POST" action="/admin/posts" enctype="multipart/form-data">
         
         <fieldset>
             <label for="title">
@@ -85,11 +85,45 @@
             <label for="content">
                 Content
             </label>
-            <div id="quill-editor" style="height: 300px; border: var(--pico-border-width) solid var(--pico-border-color); border-radius: var(--pico-border-radius);"></div>
-            <textarea id="content" name="content" style="display: none;" required><%= post.Content %></textarea>
+            <!-- Fallback textarea with enhanced styling -->
+            <textarea id="content" name="content" rows="15" required 
+                      placeholder="Write your post content here... You can use HTML formatting."
+                      style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; resize: vertical;"><%= post.Content %></textarea>
             <%= if (errors && errors.Get("content")) { %>
                 <small class="error"><%= errors.Get("content") %></small>
             <% } %>
+            <details style="margin-top: 0.5rem;">
+                <summary style="cursor: pointer; color: var(--pico-primary);">HTML Formatting Guide</summary>
+                <small style="display: block; margin-top: 0.5rem; padding: 1rem; background: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+                    <strong>Common HTML tags you can use:</strong><br>
+                    • <code>&lt;p&gt;Paragraph text&lt;/p&gt;</code><br>
+                    • <code>&lt;h2&gt;Section Heading&lt;/h2&gt;</code><br>
+                    • <code>&lt;h3&gt;Subsection Heading&lt;/h3&gt;</code><br>
+                    • <code>&lt;strong&gt;Bold text&lt;/strong&gt;</code><br>
+                    • <code>&lt;em&gt;Italic text&lt;/em&gt;</code><br>
+                    • <code>&lt;a href="https://example.com"&gt;Link text&lt;/a&gt;</code><br>
+                    • <code>&lt;ul&gt;&lt;li&gt;List item&lt;/li&gt;&lt;/ul&gt;</code><br>
+                    • <code>&lt;blockquote&gt;Quote text&lt;/blockquote&gt;</code><br>
+                    • <code>&lt;code&gt;Inline code&lt;/code&gt;</code>
+                </small>
+            </details>
+        </fieldset>
+
+        <fieldset>
+            <label for="image">
+                Featured Image
+                <input type="file" id="image" name="image" accept="image/*">
+            </label>
+            <small>Upload a featured image for this post (JPG, PNG, GIF, WebP)</small>
+        </fieldset>
+
+        <fieldset>
+            <label for="image_alt">
+                Image Alt Text
+                <input type="text" id="image_alt" name="image_alt" value="<%= post.ImageAlt %>" 
+                       placeholder="Describe the image for accessibility">
+            </label>
+            <small>Alt text for screen readers and SEO</small>
         </fieldset>
 
         <fieldset>
@@ -166,47 +200,5 @@
         </fieldset>
     </form>
 </section>
-
-    </form>
-</section>
-
-<link href="/public/css/quill.snow.css" rel="stylesheet">
-<script src="/public/js/quill.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Quill editor
-    var quill = new Quill('#quill-editor', {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'indent': '-1'}, { 'indent': '+1' }],
-                ['link', 'blockquote', 'code-block'],
-                ['clean']
-            ]
-        },
-        placeholder: 'Write your post content here...'
-    });
-
-    // Set initial content if editing
-    var initialContent = document.getElementById('content').value;
-    if (initialContent) {
-        quill.root.innerHTML = initialContent;
-    }
-
-    // Sync Quill content with hidden textarea on form submission
-    var form = document.querySelector('form');
-    form.addEventListener('submit', function() {
-        document.getElementById('content').value = quill.root.innerHTML;
-    });
-
-    // Also sync on content changes for autosave potential
-    quill.on('text-change', function() {
-        document.getElementById('content').value = quill.root.innerHTML;
-    });
-});
-</script>
 
 </main>
