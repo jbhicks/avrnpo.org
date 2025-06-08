@@ -2,7 +2,7 @@ package grifts
 
 import (
 	"fmt"
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 
 	"github.com/gobuffalo/grift/grift"
 	"github.com/gobuffalo/pop/v6"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 )
 
 // Helper function to create and login a user following Buffalo patterns

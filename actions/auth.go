@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
-	"my_go_saas_template/models"
-	"my_go_saas_template/pkg/logging"
+	"avrnpo.org/models"
+	"avrnpo.org/pkg/logging"
 )
 
 // AuthLanding shows a landing page to login

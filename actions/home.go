@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"

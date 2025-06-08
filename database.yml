@@ -1,7 +1,7 @@
 ---
 development:
   dialect: postgres
-  database: my_go_saas_template_development
+  database: avrnpo_development
   user: postgres
   password: postgres
   host: 127.0.0.1
@@ -9,11 +9,11 @@ development:
 
 test:
   dialect: postgres
-  database: my_go_saas_template_test
+  database: avrnpo_test
   user: postgres
   password: postgres
   host: 127.0.0.1
   pool: 5
 
 production:
-  url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/my_go_saas_template_production?sslmode=disable"}}
+  url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_production?sslmode=disable"}}

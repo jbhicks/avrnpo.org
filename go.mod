@@ -1,4 +1,4 @@
-module my_go_saas_template
+module avrnpo.org
 
 go 1.24.3
 

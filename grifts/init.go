@@ -1,7 +1,7 @@
 package grifts
 
 import (
-	"my_go_saas_template/actions"
+	"avrnpo.org/actions"
 
 	"github.com/gobuffalo/buffalo"
 )

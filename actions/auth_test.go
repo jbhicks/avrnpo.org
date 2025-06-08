@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 )
 
 func (as *ActionSuite) Test_Auth_Signin() {

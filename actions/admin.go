@@ -8,8 +8,8 @@ import (
 	"github.com/gobuffalo/pop/v6"
 	"github.com/pkg/errors"
 
-	"my_go_saas_template/models"
-	"my_go_saas_template/pkg/logging"
+	"avrnpo.org/models"
+	"avrnpo.org/pkg/logging"
 )
 
 // AdminRequired middleware ensures only admins can access admin routes

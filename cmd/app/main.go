@@ -1,8 +1,8 @@
 package main
 
 import (
-	"my_go_saas_template/actions"
-	"my_go_saas_template/pkg/logging"
+	"avrnpo.org/actions"
+	"avrnpo.org/pkg/logging"
 )
 
 // main is the starting point for your Buffalo application.

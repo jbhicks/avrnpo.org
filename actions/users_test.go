@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 )
 
 func (as *ActionSuite) Test_Users_New() {

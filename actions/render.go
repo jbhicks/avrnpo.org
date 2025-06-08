@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"my_go_saas_template/public"
-	"my_go_saas_template/templates"
+	"avrnpo.org/public"
+	"avrnpo.org/templates"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo/render"

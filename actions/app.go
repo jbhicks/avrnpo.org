@@ -5,10 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"my_go_saas_template/locales"
-	"my_go_saas_template/models"
-	"my_go_saas_template/pkg/logging"
-	"my_go_saas_template/public"
+	"avrnpo.org/locales"
+	"avrnpo.org/models"
+	"avrnpo.org/pkg/logging"
+	"avrnpo.org/public"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
@@ -66,7 +66,7 @@ func App() *buffalo.App {
 
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
-			SessionName: "_my_go_saas_template_session",
+			SessionName: "_avrnpo.org_session",
 		})
 
 		// Automatically redirect to SSL

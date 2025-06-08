@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"my_go_saas_template/templates"
+	"avrnpo.org/templates"
 
 	"github.com/stretchr/testify/require"
 )

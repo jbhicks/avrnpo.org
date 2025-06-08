@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 )
 
 // Tests for blog functionality

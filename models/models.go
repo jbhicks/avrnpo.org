@@ -1,7 +1,7 @@
 package models
 
 import (
-	"my_go_saas_template/pkg/logging"
+	"avrnpo.org/pkg/logging"
 
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/pop/v6"

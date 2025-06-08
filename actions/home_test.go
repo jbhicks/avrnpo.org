@@ -3,7 +3,7 @@ package actions
 import (
 	"net/http"
 
-	"my_go_saas_template/models"
+	"avrnpo.org/models"
 )
 
 func (as *ActionSuite) Test_HomeHandler() {
