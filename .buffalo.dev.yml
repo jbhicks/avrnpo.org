@@ -1,0 +1,25 @@
+app_root: .
+ignored_folders:
+- vendor
+- log
+- logs
+- assets
+- grifts
+- tmp
+- bin
+- node_modules
+- .sass-cache
+included_extensions:
+- .go
+- .env
+- .html
+- .plush
+- .css
+- .js
+build_path: tmp
+build_delay: 200ns
+build_target_path: "./cmd/app"
+binary_name: my-go-saas-template-build
+command_flags: []
+enable_colors: true
+log_name: buffalo
