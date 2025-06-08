@@ -10,6 +10,21 @@ This is the official website for American Veterans Rebuilding (AVR), a 501(c)(3)
 - Which files need to be modified
 - Progress tracking with checkboxes
 
+## 📚 HELCIM INTEGRATION DOCUMENTATION
+**MANDATORY**: Before implementing any Helcim-related features, consult the documentation in `/docs/`:
+
+- **`/docs/helcim-api-reference.md`** - Complete API reference, authentication, endpoints
+- **`/docs/helcim-webhooks-guide.md`** - Step-by-step webhook implementation for Phase 2
+- **`/docs/helcim-error-handling.md`** - Error handling patterns and recovery procedures
+- **`/docs/README.md`** - Documentation index and quick reference
+
+### Helcim Integration Rules
+1. **Always use the Go patterns** shown in the documentation
+2. **Never make Helcim API calls from frontend** - backend only for PCI compliance
+3. **Always verify webhook signatures** using the patterns in webhooks guide
+4. **Follow error handling patterns** from the error handling reference
+5. **Test with the procedures** documented in each guide
+
 ## Technology Stack & Constraints
 
 ### Languages & Frameworks
@@ -128,9 +143,11 @@ r.POST("/api/endpoint", func(c *gin.Context) {
 - [ ] Read README.md to understand current status
 - [ ] Check which phase and task is active in README.md
 - [ ] Review PROJECT_TRACKING.md for detailed task requirements
-- [ ] Review environment setup (.env, port 3001)
+- [ ] **Review `/docs/` folder for Helcim integration guidance**
+- [ ] Check environment setup (.env, port 3001)
 
 ### During Development
+- [ ] **Consult relevant documentation in `/docs/` before implementing Helcim features**
 - [ ] Consider security implications for any changes
 - [ ] Use DaisyUI components for any UI changes
 - [ ] Follow minimal commenting style

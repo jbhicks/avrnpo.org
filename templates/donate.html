@@ -164,18 +164,25 @@
           </div>
         `;
         
-        // Include all form fields in the API request
-        const apiUrl = new URL('/api/checkout_token', window.location.origin);
-        apiUrl.searchParams.append('amount', donationAmount);
-        apiUrl.searchParams.append('firstName', firstName);
-        apiUrl.searchParams.append('lastName', lastName);
-        apiUrl.searchParams.append('email', email);
-        apiUrl.searchParams.append('purpose', purpose);
-        apiUrl.searchParams.append('referral', referralText);
+        // Send POST request with JSON body instead of GET with query params
+        const requestBody = {
+          amount: parseFloat(donationAmount),
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          purpose: purpose,
+          referral: referralText
+        };
         
-        console.log('API URL:', apiUrl.toString());
+        console.log('Request body:', requestBody);
 
-        const response = await fetch(apiUrl);
+        const response = await fetch('/api/checkout_token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody)
+        });
         console.log('Response status:', response.status);
 
         if (!response.ok) {

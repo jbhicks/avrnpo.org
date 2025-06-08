@@ -10,13 +10,62 @@ import (
 	"net/smtp" // Add this import for the standard library SMTP client
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	gosmtp "github.com/emersion/go-smtp" // Rename this import to avoid conflicts
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+// Rate limiting structure
+type RateLimiter struct {
+	requests map[string][]time.Time
+	mutex    sync.RWMutex
+	limit    int
+	window   time.Duration
+}
+
+// NewRateLimiter creates a new rate limiter
+func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
+	return &RateLimiter{
+		requests: make(map[string][]time.Time),
+		limit:    limit,
+		window:   window,
+	}
+}
+
+// Allow checks if a request from the given IP is allowed
+func (rl *RateLimiter) Allow(ip string) bool {
+	rl.mutex.Lock()
+	defer rl.mutex.Unlock()
+
+	now := time.Now()
+	// Clean up old requests
+	if times, exists := rl.requests[ip]; exists {
+		var validTimes []time.Time
+		for _, t := range times {
+			if now.Sub(t) < rl.window {
+				validTimes = append(validTimes, t)
+			}
+		}
+		rl.requests[ip] = validTimes
+	}
+
+	// Check if under limit
+	if len(rl.requests[ip]) >= rl.limit {
+		return false
+	}
+
+	// Add this request
+	rl.requests[ip] = append(rl.requests[ip], now)
+	return true
+}
+
+// Global rate limiter for donation endpoint
+var donationRateLimiter = NewRateLimiter(5, time.Minute) // 5 requests per minute per IP
 
 // Update contact form struct to include referral source
 type ContactForm struct {
@@ -301,7 +350,73 @@ func setupRouter() *gin.Engine {
 		})
 	})
 
-	r.GET("/api/checkout_token", func(c *gin.Context) {
+	r.POST("/api/checkout_token", func(c *gin.Context) {
+		// Rate limiting check
+		clientIP := c.ClientIP()
+		if !donationRateLimiter.Allow(clientIP) {
+			log.Printf("Rate limit exceeded for IP: %s", clientIP)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many requests. Please wait before trying again."})
+			return
+		}
+
+		// Define request structure for JSON body
+		var request struct {
+			Amount    float64 `json:"amount" binding:"required"`
+			FirstName string  `json:"firstName"`
+			LastName  string  `json:"lastName"`
+			Email     string  `json:"email"`
+			Purpose   string  `json:"purpose"`
+			Referral  string  `json:"referral"`
+		}
+
+		// Bind JSON request body
+		if err := c.ShouldBindJSON(&request); err != nil {
+			log.Printf("Error binding JSON request from IP %s: %v", clientIP, err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+			return
+		}
+
+		// Validate and sanitize amount
+		if err := validateAmount(request.Amount); err != nil {
+			log.Printf("Invalid amount from IP %s: %v", clientIP, err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// Sanitize and validate input fields
+		request.FirstName = sanitizeString(request.FirstName)
+		request.LastName = sanitizeString(request.LastName)
+		request.Email = sanitizeString(request.Email)
+		request.Purpose = sanitizeString(request.Purpose)
+		request.Referral = sanitizeString(request.Referral)
+
+		// Validate email format
+		if !validateEmail(request.Email) {
+			log.Printf("Invalid email format from IP %s: %s", clientIP, request.Email)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email format"})
+			return
+		}
+
+		// Validate names
+		if !validateName(request.FirstName) {
+			log.Printf("Invalid first name from IP %s: %s", clientIP, request.FirstName)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "First name contains invalid characters"})
+			return
+		}
+
+		if !validateName(request.LastName) {
+			log.Printf("Invalid last name from IP %s: %s", clientIP, request.LastName)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Last name contains invalid characters"})
+			return
+		}
+
+		// Validate purpose
+		if !validatePurpose(request.Purpose) {
+			log.Printf("Invalid purpose from IP %s: %s", clientIP, request.Purpose)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid donation purpose"})
+			return
+		}
+
 		// Get API token and validate it's not empty
 		apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
 		if apiToken == "" {
@@ -323,36 +438,17 @@ func setupRouter() *gin.Engine {
 		helcimAPIURL := "https://api.helcim.com/v2/helcim-pay/initialize"
 		log.Println("Making request to:", helcimAPIURL)
 
-		// Get amount from query parameters
-		amountStr := c.Query("amount")
-		if amountStr == "" {
-			log.Println("Error: Amount parameter is missing")
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Amount is required"})
-			return
-		}
-
-		var amount float64
-		var err error
-		_, err = fmt.Sscan(amountStr, &amount)
-		if err != nil {
-			log.Println("Error parsing amount:", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid amount"})
-			return
-		}
-
-		// Log all query parameters
-		log.Println("Received parameters:")
-		for k, v := range c.Request.URL.Query() {
-			log.Printf("  %s: %v\n", k, v)
-		}
+		// Log received data (without sensitive info, after validation)
+		log.Printf("Validated donation request: Amount=%.2f, FirstName=%s, LastName=%s, Email=%s, Purpose=%s, Referral=%s\n",
+			request.Amount, request.FirstName, request.LastName, request.Email, request.Purpose, request.Referral)
 
 		// Get the additional donor information
 		donorInfo := DonationInfo{
-			FirstName: c.Query("firstName"),
-			LastName:  c.Query("lastName"),
-			Email:     c.Query("email"),
-			Purpose:   c.Query("purpose"),
-			Referral:  c.Query("referral"),
+			FirstName: request.FirstName,
+			LastName:  request.LastName,
+			Email:     request.Email,
+			Purpose:   request.Purpose,
+			Referral:  request.Referral,
 		}
 
 		log.Printf("Donor info: %+v\n", donorInfo)
@@ -360,7 +456,7 @@ func setupRouter() *gin.Engine {
 		// Create a payment request with customer info
 		requestData := map[string]interface{}{
 			"paymentType": "purchase",
-			"amount":      amount,
+			"amount":      request.Amount,
 			"currency":    "USD",
 			"companyName": "American Veterans Rebuilding",
 		}
@@ -807,6 +903,61 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// Validation functions
+func sanitizeString(input string) string {
+	// Remove any HTML tags and dangerous characters
+	input = strings.TrimSpace(input)
+	input = strings.ReplaceAll(input, "<", "")
+	input = strings.ReplaceAll(input, ">", "")
+	input = strings.ReplaceAll(input, "\"", "")
+	input = strings.ReplaceAll(input, "'", "")
+	return input
+}
+
+func validateEmail(email string) bool {
+	if email == "" {
+		return true // Email is optional
+	}
+	// Basic email regex
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
+}
+
+func validateName(name string) bool {
+	if name == "" {
+		return true // Names are optional
+	}
+	// Only allow letters, spaces, hyphens, and apostrophes
+	nameRegex := regexp.MustCompile(`^[a-zA-Z\s\-']{1,50}$`)
+	return nameRegex.MatchString(name)
+}
+
+func validateAmount(amount float64) error {
+	if amount <= 0 {
+		return fmt.Errorf("amount must be greater than 0")
+	}
+	if amount > 10000 {
+		return fmt.Errorf("amount exceeds maximum allowed ($10,000)")
+	}
+	if amount < 1 {
+		return fmt.Errorf("minimum donation amount is $1")
+	}
+	return nil
+}
+
+func validatePurpose(purpose string) bool {
+	if purpose == "" {
+		return true // Purpose is optional
+	}
+	validPurposes := []string{"general", "veterans", "housing", "emergency", "education", "other"}
+	for _, valid := range validPurposes {
+		if purpose == valid {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
