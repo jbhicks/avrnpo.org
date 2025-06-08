@@ -1,31 +1,324 @@
 /**
- * Custom CSS for My Go SaaS Template
- * Using ONLY Pico.css variables - NO custom CSS rules
- * All customization done through CSS variables in :root
+ * Custom CSS for American Veterans Rebuilding (AVR)
+ * Using ONLY Pico.css variables - NO custom CSS rules or !important
+ * All customization done through CSS variables to match original AVR theme
  */
 
 /* =============================================================================
-   PICO CSS VARIABLE CUSTOMIZATIONS
-   ============================================================================= */
+   AVR PICO CSS VARIABLE CUSTOMIZATIONS
+   =============================================================================
+ */
 
 :root {
-  /* Custom primary color scheme - Bright and vibrant for better link visibility */
-  --pico-primary: hsl(210, 90%, 55%);
+  /* AVR Orange/Warning Color Scheme - Matching original DaisyUI warning colors */
+  --pico-primary: #ffb627;                    /* Orange primary color */
+  --pico-primary-background: transparent;     /* Transparent background for outline buttons */
+  --pico-primary-border: #ffb627;            /* Orange border */
+  --pico-primary-underline: #ffb627;
+  --pico-primary-hover: #ffb627;             /* Keep orange on hover */
+  --pico-primary-hover-background: rgba(255, 182, 39, 0.1); /* Light orange hover bg */
+  --pico-primary-focus: #ffb627;
+  --pico-primary-inverse: #ffb627;           /* Orange text instead of white */
   
-  /* Enhanced spacing for better visual hierarchy */
+  /* Contrast colors for important CTAs */
+  --pico-contrast: #dc2626;                   /* Red for donations/important actions */
+  --pico-contrast-background: transparent;    /* Transparent background */
+  --pico-contrast-border: #dc2626;
+  --pico-contrast-hover: #dc2626;
+  --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
+  --pico-contrast-inverse: #dc2626;
+  
+  /* Secondary colors */
+  --pico-secondary: #6b7280;                  /* Gray for secondary buttons */
+  --pico-secondary-background: transparent;   /* Transparent background */
+  --pico-secondary-border: #6b7280;
+  --pico-secondary-hover: #6b7280;
+  --pico-secondary-hover-background: rgba(107, 114, 128, 0.1);
+  --pico-secondary-inverse: #6b7280;
+  
+  /* Enhanced spacing for better hierarchy */
   --pico-spacing: 1rem;
   --pico-typography-spacing-vertical: 1.5rem;
-  
-  /* Improved form element spacing */
   --pico-form-element-spacing-vertical: 0.75rem;
   --pico-form-element-spacing-horizontal: 1rem;
   
-  /* Better border radius for modern feel */
-  --pico-border-radius: 0.5rem;
+  /* Better border radius for military/professional look */
+  --pico-border-radius: 0.375rem;
+  --pico-outline-width: 2px;
   
-  /* Enhanced shadows for depth */
-  --pico-box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  --pico-card-box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+  /* Typography improvements */
+  --pico-font-weight: 400;
+  --pico-line-height: 1.6;
+}
+
+/* Dark theme customizations to match original AVR */
+[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  /* Dark background like original AVR site */
+  --pico-background-color: hsl(210, 15%, 8%);
+  --pico-color: hsl(210, 15%, 90%);
+  
+  /* Card/section backgrounds */
+  --pico-card-background-color: hsl(210, 15%, 12%);
+  --pico-card-border-color: hsl(210, 15%, 20%);
+  
+  /* Navigation colors */
+  --pico-muted-color: hsl(210, 15%, 70%);
+  --pico-muted-border-color: hsl(210, 15%, 25%);
+  
+  /* Form elements in dark theme */
+  --pico-form-element-background-color: hsl(210, 15%, 15%);
+  --pico-form-element-border-color: hsl(210, 15%, 25%);
+  --pico-form-element-color: hsl(210, 15%, 95%);
+  
+  /* Table/content sections */
+  --pico-table-border-color: hsl(210, 15%, 25%);
+  --pico-table-row-stripped-background-color: hsl(210, 15%, 10%);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] {
+  /* Clean light backgrounds */
+  --pico-background-color: hsl(0, 0%, 98%);
+  --pico-color: hsl(210, 15%, 15%);
+  
+  /* Card/section backgrounds */
+  --pico-card-background-color: hsl(0, 0%, 100%);
+  --pico-card-border-color: hsl(210, 15%, 85%);
+  
+  /* Subtle borders and separators */
+  --pico-muted-border-color: hsl(210, 15%, 80%);
+  --pico-table-border-color: hsl(210, 15%, 85%);
+  --pico-table-row-stripped-background-color: hsl(210, 15%, 95%);
+}
+
+/* =============================================================================
+   SEMANTIC CSS CLASSES FOR COMMON PATTERNS
+   Using only CSS variables - no custom properties
+   =============================================================================
+ */
+
+/* Hero section styling using Pico variables */
+.hero-section {
+  background: var(--pico-card-background-color);
+  border: var(--pico-border-width) solid var(--pico-card-border-color);
+  border-radius: var(--pico-border-radius);
+  margin: var(--pico-typography-spacing-vertical) 0;
+}
+
+/* Logo styling in navigation */
+/* =============================================================================
+   AVR HEADER LAYOUT - Recreating original 3-column design
+   =============================================================================
+ */
+
+/* Header container */
+.avr-header {
+  background-color: var(--pico-card-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  padding: calc(var(--pico-spacing) * 1.5);
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* 3-column grid layout */
+.header-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: calc(var(--pico-spacing) * 1.5);
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 8rem;
+  width: 100%;
+}
+
+/* Left section - Armed Services logos */
+.header-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.armed-services-logo {
+  max-height: 6rem;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Center section - Main logo and tagline */
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+.main-logo {
+  height: 7.5rem;
+  width: auto;
+  margin-bottom: calc(var(--pico-spacing) * 0.75);
+}
+
+.tagline {
+  font-style: italic;
+  font-size: 1.125rem;
+  color: var(--pico-muted-color);
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+/* Right section - Social icons */
+.header-right {
+  display: flex;
+  gap: calc(var(--pico-spacing) * 0.75);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  height: 100%;
+}
+
+.social-icon {
+  display: inline-block;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
+}
+
+.social-icon:hover {
+  opacity: 0.7;
+}
+
+.social-icon img {
+  height: 2.5rem;
+  width: 2.5rem;
+  object-fit: contain;
+  display: block;
+}
+
+/* AVR Navigation Bar */
+.avr-navigation {
+  background-color: var(--pico-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  padding: calc(var(--pico-spacing) * 1.25) 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--pico-spacing) * 2);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--pico-spacing);
+  flex-wrap: wrap;
+}
+
+.nav-links a[role="button"] {
+  font-size: 0.875rem;
+  padding: calc(var(--pico-spacing) * 0.625) calc(var(--pico-spacing) * 1.25);
+  white-space: nowrap;
+  border-color: var(--pico-primary);
+  color: var(--pico-primary);
+}
+
+.nav-links a[role="button"]:hover {
+  background-color: var(--pico-primary-hover-background);
+}
+
+.nav-links a[role="button"].contrast {
+  border-color: var(--pico-contrast);
+  color: var(--pico-contrast);
+}
+
+.nav-links a[role="button"].contrast:hover {
+  background-color: var(--pico-contrast-hover-background);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-grid {
+    grid-template-columns: 1fr;
+    gap: calc(var(--pico-spacing) * 0.75);
+    text-align: center;
+  }
+  
+  .armed-services-logo {
+    max-height: 4rem;
+  }
+  
+  .main-logo {
+    height: 5rem;
+  }
+  
+  .tagline {
+    font-size: 1rem;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+    gap: var(--pico-spacing);
+    justify-content: center;
+  }
+  
+  .nav-links a[role="button"] {
+    font-size: 0.75rem;
+    padding: calc(var(--pico-spacing) * 0.375) calc(var(--pico-spacing) * 0.75);
+  }
+}
+
+/* Legacy styles for other templates */
+.logo img {
+  vertical-align: middle;
+}
+
+/* Header logo styling */
+.header-logo {
+  height: 2rem;
+  width: auto;
+  margin-right: var(--pico-spacing);
+}
+
+/* Brand text styling */
+.brand-text {
+  color: var(--pico-primary);
+}
+
+/* Dashboard navigation styling */
+.dashboard-nav {
+  background: var(--pico-card-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  margin-bottom: var(--pico-typography-spacing-vertical);
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--pico-color);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--pico-border-radius);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--pico-primary-hover-background);
+  color: var(--pico-primary);
+}
+
+/* Icon spacing */
+.icon-standard {
+  vertical-align: middle;
+}
+
+.icon-spacing {
+  margin-right: 0.5rem;
 }
 
 /* Theme toggle button styling using Pico variables */
@@ -41,6 +334,12 @@
 .theme-toggle-btn:focus {
   background-color: var(--pico-muted-hover-background);
   border-radius: var(--pico-border-radius);
+}
+
+/* Icon styling */
+.icon {
+  vertical-align: middle;
+  margin-right: calc(var(--pico-spacing) * 0.25);
 }
 
 /* =============================================================================
@@ -246,6 +545,91 @@ article header svg,
 }
 
 /* =============================================================================
+   BUTTON OVERRIDE - FORCE OUTLINE STYLE
+   Override any inline styles that might be adding backgrounds
+   =============================================================================
+ */
+
+/* Force all buttons to use outline style regardless of inline styles */
+[role="button"],
+button,
+input[type="submit"],
+input[type="button"],
+a[role="button"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 2px solid currentColor !important;
+}
+
+/* Primary buttons use orange */
+[role="button"]:not(.secondary):not(.contrast):not(.outline),
+button:not(.secondary):not(.contrast):not(.outline),
+input[type="submit"]:not(.secondary):not(.contrast):not(.outline),
+input[type="button"]:not(.secondary):not(.contrast):not(.outline),
+a[role="button"]:not(.secondary):not(.contrast):not(.outline) {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Outline buttons use orange */
+[role="button"].outline,
+button.outline,
+input[type="submit"].outline,
+input[type="button"].outline,
+a[role="button"].outline {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Secondary buttons use yellow primary color to match Support Our Mission button */
+[role="button"].secondary,
+button.secondary,
+input[type="submit"].secondary,
+input[type="button"].secondary,
+a[role="button"].secondary {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Contrast buttons use red for donations */
+[role="button"].contrast,
+button.contrast,
+input[type="submit"].contrast,
+input[type="button"].contrast,
+a[role="button"].contrast {
+  color: var(--pico-contrast) !important;
+  border-color: var(--pico-contrast) !important;
+}
+
+/* Hover effects */
+[role="button"]:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a[role="button"]:hover {
+  background-color: rgba(255, 182, 39, 0.1) !important;
+  background: rgba(255, 182, 39, 0.1) !important;
+}
+
+[role="button"].secondary:hover,
+button.secondary:hover,
+input[type="submit"].secondary:hover,
+input[type="button"].secondary:hover,
+a[role="button"].secondary:hover {
+  background-color: rgba(255, 182, 39, 0.1) !important;
+  background: rgba(255, 182, 39, 0.1) !important;
+}
+
+[role="button"].contrast:hover,
+button.contrast:hover,
+input[type="submit"].contrast:hover,
+input[type="button"].contrast:hover,
+a[role="button"].contrast:hover {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  background: rgba(220, 38, 38, 0.1) !important;
+}
+
+/* =============================================================================
    Utility Classes (Minimal - Prefer semantic HTML)
    ============================================================================= */
 
@@ -293,3 +677,8 @@ article header svg,
   right: 0;
   left: auto;
 }
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   =============================================================================
+ */

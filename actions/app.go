@@ -95,10 +95,16 @@ func App() *buffalo.App {
 		app.Use(Authorize)
 
 		// Skip Authorize middleware for public routes following official buffalo-auth pattern
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow)
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler)
 
 		// Public routes
 		app.GET("/", HomeHandler)
+
+		// Static pages
+		app.GET("/team", TeamHandler)
+		app.GET("/projects", ProjectsHandler)
+		app.GET("/contact", ContactHandler)
+		app.GET("/donate", DonateHandler)
 
 		// Blog routes
 		app.GET("/blog", BlogIndex)

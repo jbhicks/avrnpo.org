@@ -1,0 +1,35 @@
+<!-- Projects Full Page with Navigation -->
+<header>
+  <nav class="container">
+    <ul>
+      <li>
+        <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" class="logo">
+          <img src="/images/logo.avif" alt="AVR Logo" class="header-logo">
+          <strong>American Veterans Rebuilding</strong>
+        </a>
+      </li>
+    </ul>
+    <ul>
+      <li><a href="/team" hx-get="/team" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Team</a></li>
+      <li><a href="/projects" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Projects</a></li>
+      <li><a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a></li>
+      <li><a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Donate</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- HTMX Content Target -->
+<main class="container" id="htmx-content" hx-get="/projects" hx-trigger="load" hx-swap="innerHTML">
+  <%# This area will be populated by HTMX on load %>
+</main>
+
+<footer class="container footer">
+  <div class="footer-content">
+    <p>&copy; 2025 American Veterans Rebuilding. All rights reserved.</p>
+    <p>
+      <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">News</a> • 
+      <a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a> • 
+      <a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Donate</a>
+    </p>
+  </div>
+</footer>
