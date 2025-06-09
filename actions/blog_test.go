@@ -130,6 +130,13 @@ func (as *ActionSuite) Test_AdminPostsCreate() {
 	}
 
 	res := as.HTML("/admin/posts").Post(postData)
+	
+	// Debug: Print response details if not 302
+	if res.Code != 302 {
+		as.T().Logf("Expected 302, got %d", res.Code)
+		as.T().Logf("Response body: %s", res.Body.String())
+	}
+	
 	as.Equal(302, res.Code) // Should redirect after creation
 
 	// Verify post was created

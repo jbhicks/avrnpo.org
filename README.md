@@ -1,92 +1,62 @@
-# My Go SaaS Template
+# 🚨 CRITICAL SECURITY RULES 🚨
 
-A Buffalo web application template with PostgreSQL database, user authentication, admin panel, and HTMX-based UI.
+**NEVER EXPOSE SENSITIVE DATA IN DOCUMENTATION OR CODE**
 
-## ✅ Features Checklist
+- **NEVER** include real API keys, tokens, passwords, or secrets in ANY documentation files (.md, .txt, etc.)
+- **NEVER** commit real credentials to version control
+- **ALWAYS** use placeholder values like `your_api_key_here` or `REPLACE_WITH_ACTUAL_KEY`
+- **ALWAYS** use environment variables for sensitive configuration
+- **NEVER** expose production credentials in test files or examples
+- **IMMEDIATELY** flag and remove any exposed credentials found in files
 
-### Core Infrastructure
-- [x] **Buffalo application** - Go web framework with hot reload
-- [x] **PostgreSQL database** - Podman Compose setup with PostgreSQL 15
-- [x] **Database configuration** - Development, test, production environments
-- [x] **Database migrations** - User table with role field
-- [x] **Development workflow** - Make commands for common tasks
+---
 
-### Authentication & Authorization
-- [x] **Authentication system** - User registration, login, logout with sessions
-- [x] **Role-based access control** - User and admin roles
-- [x] **User profile management** - Profile editing
-- [x] **Password security** - bcrypt hashing
+# American Veterans Rebuilding (AVR NPO) Website
 
-### Admin Management System
-- [x] **Admin dashboard** - User statistics and basic admin interface
-- [x] **User management** - User listing, editing, and deletion
-- [x] **Role assignment** - Change user roles between user and admin
-- [x] **Admin promotion** - Promote first user to admin via command
-- [x] **Authorization middleware** - Admin-only route protection
-- [x] **Safety controls** - Prevent admin self-deletion
+Official website for American Veterans Rebuilding, a 501(c)(3) non-profit organization dedicated to helping combat veterans rebuild their lives through housing projects, skills training, and community support programs.
 
-### User Interface & Experience
-- [x] **Template system** - Plush templates with Pico.css styling
-- [x] **HTMX integration** - Dynamic content loading without full page refreshes
-- [x] **Persistent UI shell** - Header and footer persist across navigation
-- [x] **Modal authentication** - Login and signup forms in modals
-- [x] **Theme system** - Dark/light/auto modes
-- [x] **Responsive design** - Mobile-friendly layout
-- [x] **UI components** - User dropdowns, admin tables, basic interface elements
+## About AVR NPO
 
-### SEO & Performance
-- [x] **SEO optimization** - Meta tags, Open Graph, structured data, XML sitemap
-- [x] **Performance optimization** - Minimal CSS/JS footprint
-- [x] **Accessibility** - Semantic HTML and keyboard navigation
-- [x] **Search engine friendly** - robots.txt and canonical URLs
+American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghanistan and Iraq. We are soldiers who have lived through hell on earth and found a way to continue to dedicate our lives to the military's core values of Loyalty, Duty, Respect, Selfless Service, Honor, Integrity and Personal Courage.
 
-### Development & Testing
-- [x] **Hot reload development** - Buffalo dev server with automatic recompilation
-- [x] **Testing framework** - Go testing with database integration
-- [x] **Database health checks** - PostgreSQL readiness verification
-- [x] **Error handling** - Basic error handling in commands and scripts
+## Website Features
 
-### Blog & CMS System
-- [x] **Blog post system** - CRUD operations for blog posts with admin management
-- [x] **Post validation** - Title, content, and slug validation with excerpt generation
-- [x] **Admin blog management** - Full admin interface for post creation, editing, and deletion
-- [x] **SEO-friendly URLs** - Automatic slug generation from titles
-- [x] **Post excerpts** - Automatic excerpt generation for blog listings
+### Public Features
+- **Mission & About** - Information about AVR's mission and impact
+- **Team Profiles** - Meet the combat veterans who founded and run AVR
+- **Project Showcase** - Housing and community development projects
+- **Contact Information** - Ways to reach out and get involved
+- **Donation System** - Secure donation processing for supporter contributions
 
-### CMS Enhancement Roadmap
-- [x] **Rich Text Editor** - WYSIWYG editor (Quill.js) for post content with locally served assets
-- [ ] **Media Library** - File upload system with image management and thumbnails
-- [ ] **Content Categories/Tags** - Taxonomy system for content organization
-- [ ] **Content Scheduling** - Publish date functionality for scheduled posts
-- [x] **SEO Meta Fields** - Title tags, meta descriptions, keywords, and OpenGraph data for social media
-- [x] **Bulk Operations** - Select multiple posts for bulk actions (publish/unpublish/delete)
-- [x] **Content Search/Filtering** - Search posts by title, content, or author in admin with status filtering
-- [x] **Draft System** - Save drafts before publishing with status management
-- [ ] **Content Analytics** - View counts and popular posts dashboard
-- [ ] **Content Types** - Extend beyond blog posts to pages, FAQs, etc.
-- [ ] **Revision History** - Track content changes over time
-- [ ] **Multi-language Support** - Content translation capabilities
+### Content Management
+- **Blog System** - News updates and success stories
+- **Admin Dashboard** - Content management for authorized users
+- **SEO Optimization** - Search engine friendly with meta tags and structured data
+- **HTMX Navigation** - Fast, dynamic page loading without full refreshes
 
-### Pending Features
-- [ ] **Billing/subscription features** - Payment processing and subscription management
-- [ ] **Email services** - Transactional emails and notifications
-- [ ] **Production deployment** - Docker containers and cloud deployment guides
+### Technical Foundation
 
-## Quick Start
+This website is built using the [My Go SaaS Template](https://github.com/your-template-repo) with the following technologies:
+
+- **Buffalo** - Go web framework with hot reload development
+- **PostgreSQL** - Database with Podman container setup
+- **Pico.css** - Semantic CSS framework with automatic theming
+- **HTMX** - Dynamic content loading and interactions
+- **Plush** - Go templating engine for server-side rendering
+
+## Development Setup
 
 ### Prerequisites
 - **Go 1.19+** - [Download Go](https://golang.org/dl/)
 - **Podman/Docker** - For PostgreSQL container ([Install Podman](https://podman.io/getting-started/installation))
 - **Buffalo CLI** - `go install github.com/gobuffalo/cli/cmd/buffalo@latest`
 
-### Setup
-
-Setup steps for the application:
+### Local Development
 
 ```console
 # Clone the repository
-git clone <your-repo-url>
-cd my-go-saas-template
+git clone <repository-url>
+cd avrnpo.org
 
 # Complete setup (database + migrations + first run)
 make setup
@@ -95,9 +65,95 @@ make setup
 make dev
 ```
 
-After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see your application running.
+After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see the website running locally.
 
-## Buffalo Auto-Reload Development
+### Development Commands
+
+```console
+# Start development server with hot reload
+make dev
+
+# Run tests
+make test
+
+# Reset database (development)
+make db-reset
+
+# Create admin user (promote first registered user)
+make admin
+
+# Check database status
+make db-status
+```
+
+## Project Structure
+
+```
+avrnpo.org/
+├── actions/          # HTTP handlers and routing
+├── models/           # Database models and business logic
+├── templates/        # HTML templates (Plush)
+├── public/           # Static assets (CSS, images, JS)
+├── migrations/       # Database schema migrations
+├── docs/             # Development documentation
+├── scripts/          # Build and deployment scripts
+└── Makefile         # Development commands
+```
+
+### Key Files
+- `actions/home.go` - Homepage and mission content
+- `actions/pages.go` - Team, projects, contact, donate pages
+- `actions/blog.go` - Blog system for news and updates
+- `actions/admin.go` - Admin dashboard and content management
+- `templates/` - All HTML templates using Plush syntax
+- `public/images/` - Team photos and project images
+
+## Content Management
+
+### Adding Team Members
+1. Add team member photo to `public/images/`
+2. Update `templates/pages/_team.plush.html` with member information
+3. Follow the existing card structure for consistency
+
+### Managing Blog Posts
+1. Access admin dashboard at `/admin` (requires admin role)
+2. Navigate to "Blog Management"
+3. Create, edit, or delete blog posts
+4. Posts support rich text editing with embedded images
+
+### Updating Project Information
+1. Edit `templates/pages/_projects.plush.html`
+2. Add project photos to `public/images/`
+3. Update project descriptions and outcomes
+
+## Deployment
+
+This website can be deployed using:
+- **Traditional hosting** with Go binary and PostgreSQL
+- **Container deployment** using provided Dockerfile
+- **Cloud platforms** supporting Go applications
+
+Contact the development team for deployment assistance and environment configuration.
+
+## Contact & Support
+
+For technical issues with this website:
+- Review documentation in the `/docs/` folder
+- Check the Buffalo framework documentation
+- Contact the development team
+
+For AVR NPO program information:
+- Visit the contact page on the website
+- Email: info@avrnpo.org
+- See team member contact information
+
+## License
+
+This website code is built on open-source technologies. Content and imagery related to American Veterans Rebuilding is proprietary to the organization.
+
+---
+
+*Supporting combat veterans in rebuilding their lives and strengthening communities.*
 
 **Important**: Buffalo has built-in hot reload that automatically handles all file changes. Once you run `make dev`, the server stays running and automatically reloads when you make changes.
 

@@ -1,5 +1,8 @@
 # AVR Helcim Documentation Index
 
+## 🚨 [SECURITY GUIDELINES - READ FIRST](./SECURITY-GUIDELINES.md)
+**CRITICAL: Security rules for handling sensitive data - MUST READ before any development**
+
 This directory contains comprehensive documentation for integrating with the Helcim payment processing API in the AVR NPO donation system.
 
 ## Documentation Files

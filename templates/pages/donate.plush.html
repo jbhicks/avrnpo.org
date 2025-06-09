@@ -53,6 +53,14 @@
     <div class="donation-form">
       <div class="donation-card">
         <h3>Make a Donation</h3>
+        
+        <!-- Development Mode Notice -->
+        <div id="dev-notice" style="background: var(--pico-color-blue-100); border: 1px solid var(--pico-color-blue-300); padding: 1rem; margin: 1rem 0; border-radius: 0.5rem;">
+          <p style="margin: 0; color: var(--pico-color-blue-800); font-size: 0.9rem;">
+            <strong>🧪 Development Mode:</strong> Using real Helcim API with test credit cards. Test cards: Visa 4111 1111 1111 1111, MC 5555 5555 5555 4444 (CVV: 123, Exp: 12/25)
+          </p>
+        </div>
+        
         <p class="donation-subtitle">
           Choose your donation amount or enter a custom amount. All donations are tax-deductible.
         </p>
@@ -88,8 +96,62 @@
           </fieldset>
         </div>
         
-        <button role="button" class="contrast donation-submit">
-          Donate Now
+        <div class="donor-info">
+          <h4>Donor Information</h4>
+          <p><small>Required for payment processing and tax receipt</small></p>
+          
+          <div class="grid">
+            <label for="donor-name">
+              Full Name *
+              <input type="text" id="donor-name" name="donor-name" required>
+            </label>
+            
+            <label for="donor-email">
+              Email Address *
+              <input type="email" id="donor-email" name="donor-email" required>
+            </label>
+          </div>
+          
+          <label for="donor-phone">
+            Phone Number (optional)
+            <input type="tel" id="donor-phone" name="donor-phone">
+          </label>
+          
+          <details class="address-details">
+            <summary>Billing Address (optional)</summary>
+            <div class="address-fields">
+              <label for="address-line1">
+                Address Line 1
+                <input type="text" id="address-line1" name="address-line1">
+              </label>
+              
+              <div class="grid">
+                <label for="city">
+                  City
+                  <input type="text" id="city" name="city">
+                </label>
+                
+                <label for="state">
+                  State
+                  <input type="text" id="state" name="state">
+                </label>
+                
+                <label for="zip">
+                  ZIP Code
+                  <input type="text" id="zip" name="zip">
+                </label>
+              </div>
+            </div>
+          </details>
+          
+          <label for="comments">
+            Comments (optional)
+            <textarea id="comments" name="comments" rows="3" placeholder="Any special message or dedication..."></textarea>
+          </label>
+        </div>
+        
+        <button role="button" class="contrast donation-submit" disabled>
+          Select Amount
         </button>
         
         <small class="donation-note">

@@ -30,7 +30,7 @@ func HomeHandler(c buffalo.Context) error {
 
 	// For direct page loads, render the main index with home content
 	c.Set("currentPath", "/")
-	c.Set("initialContent", "home/index_content")
+	c.Set("initialContent", "home/_index_content")
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
