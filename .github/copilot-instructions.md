@@ -184,6 +184,17 @@ Buffalo v0.18.14+ does not include the `pop` plugin. Use these commands:
   - Test HTMX behavior through automated tests
   - Verify template rendering through test assertions
 
+**🚨 CRITICAL: ALWAYS VERIFY PAGES WORK PROPERLY 🚨**
+
+- **NEVER assume a page works** just because the browser opens or a tool call succeeds
+- **Always check for Buffalo 500 error pages** - they look like regular pages but contain error details
+- **Immediately check Buffalo logs** when any page shows unexpected behavior or errors
+- **Verify HTTP status codes** with `curl -s -I` before assuming success
+- **Look at actual page content** for error messages, don't just check if browser opens
+- **Check server logs immediately** when encountering issues: `tail -20 buffalo.log` or similar
+- **Validate template partial references** - ensure underscore-prefixed partials exist and are referenced correctly
+- **Test both direct loads and HTMX navigation** for each page to ensure both work properly
+
 **Protected Routes to AVOID in Browser:**
 - `/account` - Account settings (requires login)
 - `/profile` - Profile settings (requires login) 

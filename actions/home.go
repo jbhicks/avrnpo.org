@@ -22,22 +22,15 @@ func HomeHandler(c buffalo.Context) error {
 
 	htmxRequest := IsHTMX(c.Request())
 	c.LogField("is_htmx_request_in_handler_for_home", htmxRequest)
-	c.Set("isHTMXRequest", htmxRequest) // Still useful for _index_content.plush.html if it has conditionals
 
 	if htmxRequest {
-		// For ALL HTMX requests to home (including the initial hx-trigger='load'),
-		// render only the content part using rHTMX.
+		// For HTMX requests, render only the content part
 		return c.Render(http.StatusOK, rHTMX.HTML("home/_index_content.plush.html"))
 	}
 
-	// For a full page load (non-HTMX), just render the main index page.
-	// The <main> tag in index.plush.html will now have hx-trigger="load"
-	// which will immediately make another request (this time an HTMX one) to this same handler
-	// to fetch and inject the _index_content.plush.html.
-
-	// No longer pre-rendering content to a string or setting initialPageContent
-	// c.Set("initialPageContent", ...)
-
+	// For direct page loads, render the main index with home content
+	c.Set("currentPath", "/")
+	c.Set("initialContent", "home/index_content")
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 

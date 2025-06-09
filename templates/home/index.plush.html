@@ -39,60 +39,13 @@
   </div>
 </nav>
 
-<!-- AVR Hero Section -->
-<main class="container" id="htmx-content">  <section class="hero" style="text-align: center; padding: 2rem 0;">    <img src="/images/logo.avif" alt="American Veterans Rebuilding Logo" style="max-width: 120px; margin-bottom: 1rem;">
-    <h1>American Veterans Rebuilding</h1>
-    <p style="font-size: 1.2rem; color: #ffb627; margin-bottom: 2rem;">Rebuilding the American Veteran's Self, Family and Community.</p>
-    <a href="/donate" role="button">Support Our Mission</a>
-    <a href="/contact" role="button" class="secondary">Get Involved</a>
-  </section>
-
-  <!-- The AVR Mission -->
-  <section style="text-align: center; margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-    <h2 style="color: #ffb627;">THE AVR MISSION</h2>
-    <p style="font-size: 1.1rem; line-height: 1.6;">American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.</p>
-  </section>
-
-  <section class="grid" style="margin-top: 3rem;">
-    <article class="card">
-      <header>
-        <h3 style="color: #ffb627;">Technical Training</h3>
-      </header>
-      <p>Participants in AVR construction projects receive tools and training in the Residential Construction occupation of their choosing.</p>
-    </article>
-    
-    <article class="card">
-      <header>
-        <h3 style="color: #ffb627;">Occupational Licensing</h3>
-      </header>
-      <p>Participants who complete Technical Training apprenticeship receive assistance in acquiring their Occupational Licenses providing them the opportunity of a steady income.</p>
-    </article>
-    
-    <article class="card">
-      <header>
-        <h3 style="color: #ffb627;">Home Ownership Options</h3>
-      </header>
-      <p>Select participants are offered the opportunity to purchase AVR project homes at the total construction cost rather than inflated market values.</p>
-    </article>
-  </section>
-
-  <section class="grid" style="margin-top: 2rem;">
-    <article class="card">
-      <header>
-        <h3 style="color: #ffb627;">Professional Networking</h3>
-      </header>
-      <p>Participants who receive professional trade licenses have access to job opportunities, VA benefits assistance, and a network of like-minded veterans.</p>
-    </article>
-  </section>
-
-  <section style="text-align: center; margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-    <h2>Make a Difference</h2>
-    <p>Join us in supporting veterans on their path to recovery and success. Every contribution, big or small, makes a meaningful impact.</p>
-    <div style="margin-top: 1.5rem;">
-      <a href="/donate" role="button" class="secondary" style="margin-right: 1rem;">Donate Now</a>
-      <a href="/team" role="button" class="secondary">Meet Our Team</a>
-    </div>
-  </section>
+<!-- Main content container - HTMX will load content here -->
+<main class="container" id="htmx-content"<%= if (initialContent) { %><% } else { %> hx-get="/" hx-trigger="load" hx-swap="innerHTML"<% } %>>
+  <%= if (initialContent) { %>
+    <%= partial(initialContent) %>
+  <% } else { %>
+    <!-- Content will be loaded here via HTMX automatically on page load for home -->
+  <% } %>
 </main>
 
 <!-- Footer matching original AVR site -->

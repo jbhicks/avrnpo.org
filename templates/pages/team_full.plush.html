@@ -1,35 +1,74 @@
-<!-- Team Full Page with Navigation -->
-<header>
-  <nav class="container">
-    <ul>
-      <li>
-        <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" class="logo">
-          <img src="/images/logo.avif" alt="AVR Logo" class="header-logo">
-          <strong>American Veterans Rebuilding</strong>
-        </a>
-      </li>
-    </ul>
-    <ul>
-      <li><a href="/team" hx-get="/team" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Team</a></li>
-      <li><a href="/projects" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Projects</a></li>
-      <li><a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a></li>
-      <li><a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Donate</a></li>
-    </ul>
-  </nav>
+<!-- AVR Header - Recreating original 3-column layout -->
+<header class="avr-header">
+  <div class="header-grid">
+    <!-- Left: Armed Services Logos -->
+    <div class="header-left">
+      <img src="/images/Armed-Services-Logos.avif" alt="American Veterans Rebuilding" class="armed-services-logo">
+    </div>
+    
+    <!-- Center: AVR Logo and Tagline -->
+    <div class="header-center">
+      <img src="/images/logo.avif" alt="AVRNPO" class="main-logo">
+      <p class="tagline">Rebuilding the American Veteran's Self, Family and Community.</p>
+    </div>
+    
+    <!-- Right: Social Icons -->
+    <div class="header-right">
+      <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="social-icon">
+        <img src="/images/Facebook.svg" alt="Facebook">
+      </a>
+      <a href="https://x.com/avrnpo" target="_blank" class="social-icon">
+        <img src="/images/XIcon.png" alt="X">
+      </a>
+      <a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="social-icon">
+        <img src="/images/Discord.svg" alt="Discord">
+      </a>
+      <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="social-icon">
+        <img src="/images/Spotify.svg" alt="Spotify">
+      </a>
+    </div>
+  </div>
 </header>
 
-<!-- HTMX Content Target -->
-<main class="container" id="htmx-content" hx-get="/team" hx-trigger="load" hx-swap="innerHTML">
-  <%# This area will be populated by HTMX on load %>
+<!-- AVR Navigation Bar -->
+<nav class="avr-navigation" hx-preserve="true">
+  <div class="nav-links">
+    <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Mission</a>
+    <a href="/team" hx-get="/team" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Team</a>
+    <a href="/projects" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Projects</a>
+    <a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Donate</a>
+    <a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Contact</a>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container" id="htmx-content">
+  <%= partial("pages/team") %>
 </main>
 
-<footer class="container footer">
-  <div class="footer-content">
-    <p>&copy; 2025 American Veterans Rebuilding. All rights reserved.</p>
-    <p>
-      <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">News</a> • 
-      <a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a> • 
-      <a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Donate</a>
-    </p>
+<!-- Footer matching original AVR site -->
+<footer class="container" style="margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--pico-border-color); text-align: center;">
+  <div style="margin-bottom: 2rem;">
+    <p style="margin-bottom: 1rem;">© 2024 American Veterans Rebuilding (AVRNPO). All rights reserved.</p>
+    
+    <!-- Social Media Links -->
+    <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
+      <a href="https://discord.com/invite/f6TzKart7J" target="_blank" aria-label="Discord" style="text-decoration: none;">
+        <img src="/images/Discord.svg" alt="Discord" style="width: 2.5rem; height: 2.5rem;" />
+      </a>
+      <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" aria-label="Spotify" style="text-decoration: none;">
+        <img src="/images/Spotify.svg" alt="Spotify" style="width: 2.5rem; height: 2.5rem;" />
+      </a>
+      <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" aria-label="Facebook" style="text-decoration: none;">
+        <img src="/images/Facebook.svg" alt="Facebook" style="width: 2.5rem; height: 2.5rem;" />
+      </a>
+      <a href="https://x.com/avrnpo" target="_blank" aria-label="X (Twitter)" style="text-decoration: none;">
+        <img src="/images/XIcon.png" alt="X" style="width: 2.5rem; height: 2.5rem;" />
+      </a>
+    </div>
   </div>
+  
+  <small style="color: var(--pico-muted-color); line-height: 1.5;">
+    The information on this website is provided by American Veterans Rebuilding (AVRNPO) for general informational purposes only. While we strive for accuracy, we make no guarantees about the completeness or reliability of the content. Links to external sites are provided for convenience and do not imply endorsement. AVRNPO is a registered 501(c)(3) non-profit organization, and donations are tax-deductible as allowed by law. We are not responsible for any temporary unavailability of the website due to technical issues beyond our control.
+  </small>
 </footer>
