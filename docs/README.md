@@ -1,11 +1,22 @@
-# AVR Helcim Documentation Index
+# AVR Documentation Index
 
 ## 🚨 [SECURITY GUIDELINES - READ FIRST](./SECURITY-GUIDELINES.md)
 **CRITICAL: Security rules for handling sensitive data - MUST READ before any development**
 
-This directory contains comprehensive documentation for integrating with the Helcim payment processing API in the AVR NPO donation system.
+## 🧪 [Buffalo Test System - CRITICAL KNOWLEDGE](./buffalo-test-debugging-summary.md)
+**ESSENTIAL: Buffalo testing requirements and PostgreSQL troubleshooting - MUST UNDERSTAND before testing**
 
-## Documentation Files
+This directory contains comprehensive documentation for the AVR NPO website and Helcim payment integration.
+
+## Core Documentation Files
+
+### 🧪 [Buffalo Test System](./buffalo-test-debugging-summary.md)
+**Essential testing knowledge gained from troubleshooting**
+- Buffalo test command requirements (`buffalo test ./actions`)
+- PostgreSQL version requirements (v17)
+- Database troubleshooting procedures
+- Why `go test` directly fails
+- Complete debugging procedures
 
 ### 📖 [Helcim API Reference](./helcim-api-reference.md)
 **Complete reference guide for Helcim API integration**

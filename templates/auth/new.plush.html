@@ -1,18 +1,13 @@
 <!-- Sign In Partial for HTMX -->
 <article class="form-grid">
   <hgroup>
-    <h1>
-      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-      </svg>
-      Sign in to your account
-    </h1>
+    <h1>Sign in to your account</h1>
     <p>Not a member? <a href="<%= newUsersPath() %>" 
                          data-target="modal-signup" 
                          onclick="switchModal(event, 'modal-login', 'modal-signup')" 
                          hx-get="<%= newUsersPath() %>" 
                          hx-target="#modal-signup-content" 
-                         hx-swap="innerHTML">Start your free trial today</a></p>
+                         hx-swap="innerHTML">Sign up for a new account</a></p>
   </hgroup>
     
     <%= formFor(user, {action: "/auth", method: "POST"}) { %>

@@ -29,6 +29,7 @@
 <nav class="avr-navigation" hx-preserve="true">
   <div class="nav-links">
     <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Mission</a>
+    <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Updates</a>
     <a href="/team" hx-get="/team" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Team</a>
     <a href="/projects" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Projects</a>
     <a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Donate</a>
@@ -46,10 +47,86 @@
     <a href="/contact" role="button" class="secondary">Get Involved</a>
   </section>
   
-  <section id="mission" class="mission-section">
-    <div class="container">
-      <h2>Our Mission</h2>
-      <p><strong>American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.</strong></p>
+  <!-- The AVR Mission -->
+  <section style="text-align: center; margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+    <h2 style="color: #ffb627;">THE AVR MISSION</h2>
+    <p style="font-size: 1.1rem; line-height: 1.6;">American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.</p>
+  </section>
+
+  <!-- Recent Updates -->
+  <%= if (len(recentPosts) > 0) { %>
+  <section style="margin-top: 3rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <h2 style="color: #ffb627;">Latest Updates</h2>
+      <p>Stay informed about our recent activities and success stories</p>
+    </div>
+    
+    <div class="grid">
+      <%= for (post) in recentPosts { %>
+      <article class="card">
+        <%= if (post.Image != "") { %>
+        <img src="<%= post.Image %>" alt="<%= post.Title %>" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--pico-border-radius) var(--pico-border-radius) 0 0;">
+        <% } %>
+        <div style="padding: 1rem;">
+          <header>
+            <h3><a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;"><%= post.Title %></a></h3>
+            <small style="color: var(--pico-muted-color);">
+              <%= if (post.User != nil) { %>By <%= post.User.FirstName %> <%= post.User.LastName %><% } %>
+              • <%= post.CreatedAt.Format("January 2, 2006") %>
+            </small>
+          </header>
+          <p><%= post.Excerpt %></p>
+          <a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Read More</a>
+        </div>
+      </article>
+      <% } %>
+    </div>
+    
+    <div style="text-align: center; margin-top: 2rem;">
+      <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">View All Updates</a>
     </div>
   </section>
+  <% } %>
+
+  <section class="grid" style="margin-top: 3rem;">
+    <article class="card">
+      <header>
+        <h3 style="color: #ffb627;">Technical Training</h3>
+      </header>
+      <p>Participants in AVR construction projects receive tools and training in the Residential Construction occupation of their choosing.</p>
+    </article>
+    
+    <article class="card">
+      <header>
+        <h3 style="color: #ffb627;">Occupational Licensing</h3>
+      </header>
+      <p>Participants who complete Technical Training apprenticeship receive assistance in acquiring their Occupational Licenses providing them the opportunity of a steady income.</p>
+    </article>
+    
+    <article class="card">
+      <header>
+        <h3 style="color: #ffb627;">Home Ownership Options</h3>
+      </header>
+      <p>Select participants are offered the opportunity to purchase AVR project homes at the total construction cost rather than inflated market values.</p>
+    </article>
+  </section>
+
+  <section class="grid" style="margin-top: 2rem;">
+    <article class="card">
+      <header>
+        <h3 style="color: #ffb627;">Professional Networking</h3>
+      </header>
+      <p>Participants who receive professional trade licenses have access to job opportunities, VA benefits assistance, and a network of like-minded veterans.</p>
+    </article>
+  </section>
+
+  <section style="text-align: center; margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+    <h2>Make a Difference</h2>
+    <p>Join us in supporting veterans on their path to recovery and success. Every contribution, big or small, makes a meaningful impact.</p>
+    <div style="margin-top: 1.5rem;">
+      <a href="/donate" role="button" class="secondary" style="margin-right: 1rem;">Donate Now</a>
+      <a href="/team" role="button" class="secondary">Meet Our Team</a>
+    </div>
+  </section>
+
 </main>

@@ -5,26 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
     <!-- Primary Meta Tags -->
-    <title>Sign In - My Go SaaS</title>
-    <meta name="title" content="Sign In - My Go SaaS">
-    <meta name="description" content="Sign in to your account to access your SaaS dashboard.">
-    <meta name="keywords" content="SaaS, Go, Buffalo, web application, login, sign in">
-    <meta name="author" content="My Go SaaS">
+    <title>Sign In - American Veterans Rebuilding</title>
+    <meta name="title" content="Sign In - American Veterans Rebuilding">
+    <meta name="description" content="Sign in to your American Veterans Rebuilding account to access veteran programs and updates.">
+    <meta name="keywords" content="veterans, rebuilding, technical training, occupational licensing, home ownership, professional networking, American Veterans Rebuilding, AVR">
+    <meta name="author" content="American Veterans Rebuilding">
     <meta name="robots" content="index, follow">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://yourdomain.com/auth/new">
-    <meta property="og:title" content="Sign In - My Go SaaS">
-    <meta property="og:description" content="Sign in to your account to access your SaaS dashboard.">
-    <meta property="og:image" content="https://yourdomain.com/favicon.svg">
+    <meta property="og:url" content="https://avrnpo.org/auth/new">
+    <meta property="og:title" content="Sign In - American Veterans Rebuilding">
+    <meta property="og:description" content="Sign in to your American Veterans Rebuilding account to access veteran programs and updates.">
+    <meta property="og:image" content="https://avrnpo.org/images/logo.avif">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://yourdomain.com/auth/new">
-    <meta property="twitter:title" content="Sign In - My Go SaaS">
-    <meta property="twitter:description" content="Sign in to your account to access your SaaS dashboard.">
-    <meta property="twitter:image" content="https://yourdomain.com/favicon.svg">
+    <meta property="twitter:url" content="https://avrnpo.org/auth/new">
+    <meta property="twitter:title" content="Sign In - American Veterans Rebuilding">
+    <meta property="twitter:description" content="Sign in to your American Veterans Rebuilding account to access veteran programs and updates.">
+    <meta property="twitter:image" content="https://avrnpo.org/images/logo.avif">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -39,6 +39,23 @@
     <% } else { %>
         <link rel="stylesheet" href="/css/custom.css">
     <% } %>
+    
+    <!-- Auth page specific styles -->
+    <style>
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+      }
+      footer {
+        margin-top: auto;
+      }
+    </style>
     
     <!-- Theme switching functionality -->
     <script src="/js/theme.js"></script>
@@ -56,22 +73,13 @@
     <nav class="container-fluid dashboard-nav" hx-preserve="true">
       <ul>
         <li>
-          <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" class="logo">
-            <svg class="icon-spacing" width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path> </svg>
+          <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" class="logo" style="color: white;">
             <img src="/images/logo.avif" alt="AVR Logo" width="32" height="32" style="margin-right: 0.5rem;">
             <strong>American Veterans Rebuilding</strong>
           </a>
         </li>
       </ul>
       <ul>
-        <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a></li>
-        <li>
-          <button class="theme-toggle-btn" onclick="toggleTheme();" aria-label="Toggle theme" title="Toggle theme">
-            <span id="theme-icon-header">
-              <!-- SVG will be injected by JS -->
-            </span>
-          </button>
-        </li>
         <li>
           <a href="<%= newUsersPath() %>" role="button" class="btn-primary" aria-label="Sign Up" title="Sign Up"
              data-target="modal-signup" onclick="toggleModal(event)"
@@ -91,18 +99,13 @@
     <main class="container">
       <article class="form-grid">
         <hgroup>
-          <h1>
-            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-            </svg>
-            Sign in to your account
-          </h1>
+          <h1>Sign in to your account</h1>
           <p>Not a member? <a href="<%= newUsersPath() %>" 
                                data-target="modal-signup" 
                                onclick="switchModal(event, 'modal-login', 'modal-signup')" 
                                hx-get="<%= newUsersPath() %>" 
                                hx-target="#modal-signup-content" 
-                               hx-swap="innerHTML">Start your free trial today</a></p>
+                               hx-swap="innerHTML">Sign up for a new account</a></p>
         </hgroup>
         
         <%= formFor(user, {action: "/auth", method: "POST"}) { %>
@@ -154,13 +157,25 @@
 
     <!-- Footer -->
     <footer class="container" hx-preserve="true">
-      <small>
-        <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Blog</a> • 
-        <a href="/dashboard" hx-get="/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Dashboard</a> • 
-        <a href="/users/new" hx-get="/users/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Sign Up</a> • 
-        <a href="https://github.com/gobuffalo/buffalo" target="_blank">Buffalo Framework</a>
+      <hr>
+      <div class="grid">
+        <div>
+          <small>
+            <strong>American Veterans Rebuilding</strong><br>
+            Rebuilding the American Veteran's Self, Family and Community
+          </small>
+        </div>
+        <div>
+          <small>
+            <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Home</a> • 
+            <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Updates</a> • 
+            <a href="/contact">Contact</a>
+          </small>
+        </div>
+      </div>
+      <small style="text-align: center; display: block; margin-top: 1rem;">
+        © 2025 American Veterans Rebuilding. All rights reserved.
       </small>
-      <small>Built with <a href="https://gobuffalo.io" target="_blank">Buffalo</a> and <a href="https://picocss.com" target="_blank">Pico.css</a></small>
     </footer>
 
     <!-- Modals -->

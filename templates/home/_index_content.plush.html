@@ -4,6 +4,41 @@
   <p style="font-size: 1.1rem; line-height: 1.6;">American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.</p>
 </section>
 
+<!-- Recent Updates -->
+<%= if (len(recentPosts) > 0) { %>
+<section style="margin-top: 3rem;">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h2 style="color: #ffb627;">Latest Updates</h2>
+    <p>Stay informed about our recent activities and success stories</p>
+  </div>
+  
+  <div class="grid">
+    <%= for (post) in recentPosts { %>
+    <article class="card">
+      <%= if (post.Image != "") { %>
+      <img src="<%= post.Image %>" alt="<%= post.Title %>" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--pico-border-radius) var(--pico-border-radius) 0 0;">
+      <% } %>
+      <div style="padding: 1rem;">
+        <header>
+          <h3><a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;"><%= post.Title %></a></h3>
+          <small style="color: var(--pico-muted-color);">
+            <%= if (post.User != nil) { %>By <%= post.User.FirstName %> <%= post.User.LastName %><% } %>
+            • <%= post.CreatedAt.Format("January 2, 2006") %>
+          </small>
+        </header>
+        <p><%= post.Excerpt %></p>
+        <a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Read More</a>
+      </div>
+    </article>
+    <% } %>
+  </div>
+  
+  <div style="text-align: center; margin-top: 2rem;">
+    <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">View All Updates</a>
+  </div>
+</section>
+<% } %>
+
 <section class="grid" style="margin-top: 3rem;">
   <article class="card">
     <header>

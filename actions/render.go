@@ -17,6 +17,7 @@ func init() {
 	commonHelpers := render.Helpers{
 		forms.FormKey:    forms.Form,
 		forms.FormForKey: forms.FormFor,
+		"getCurrentURL":  getCurrentURL,
 		// You can add other common helpers here
 	}
 
@@ -40,4 +41,19 @@ func init() {
 // IsHTMX checks if the current request is an HTMX request.
 func IsHTMX(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true"
+}
+
+// getCurrentURL returns the current request URL for use in templates
+func getCurrentURL(c interface{}) string {
+	if ctx, ok := c.(interface {
+		Request() *http.Request
+	}); ok {
+		req := ctx.Request()
+		scheme := "http"
+		if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+			scheme = "https"
+		}
+		return scheme + "://" + req.Host + req.RequestURI
+	}
+	return ""
 }

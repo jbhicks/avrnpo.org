@@ -3,6 +3,9 @@ package actions
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -76,23 +79,53 @@ func AdminDashboard(c buffalo.Context) error {
 	}
 
 	// Get post statistics
-	postCount, err := tx.Count("posts")
+	totalPosts, err := tx.Count("posts")
 	if err != nil {
 		return errors.WithStack(err)
+	}
+
+	publishedPosts, err := tx.Where("published = ?", true).Count("posts")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	draftPosts := totalPosts - publishedPosts
+
+	// Get recent posts (this month)
+	recentPosts, err := tx.Where("created_at >= date_trunc('month', now())").Count("posts")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Get recent posts for display
+	posts := []models.Post{}
+	if err := tx.Order("created_at desc").Limit(5).All(&posts); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Load authors for each post
+	for i := range posts {
+		if err := tx.Load(&posts[i], "Author"); err != nil {
+			return errors.WithStack(err)
+		}
 	}
 
 	c.Set("userCount", userCount)
 	c.Set("adminCount", adminCount)
 	c.Set("regularUserCount", userCount-adminCount)
-	c.Set("postCount", postCount)
+	c.Set("totalPosts", totalPosts)
+	c.Set("publishedPosts", publishedPosts)
+	c.Set("draftPosts", draftPosts)
+	c.Set("recentPosts", recentPosts)
+	c.Set("posts", posts)
 
 	// Check if this is an HTMX request for partial content
 	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/dashboard.plush.html"))
+		return c.Render(http.StatusOK, r.HTML("admin/index.plush.html"))
 	}
 
-	// Direct access - render full page with navigation (same template since it includes nav)
-	return c.Render(http.StatusOK, r.HTML("admin/dashboard.plush.html"))
+	// Direct access - render full page with navigation
+	return c.Render(http.StatusOK, r.HTML("admin/index.plush.html"))
 }
 
 // AdminUsers lists all users for admin management
@@ -239,4 +272,325 @@ func AdminUserDelete(c buffalo.Context) error {
 		return c.Render(http.StatusOK, nil)
 	}
 	return c.Redirect(http.StatusFound, "/admin/users")
+}
+
+// ============================================================================
+// ADMIN BLOG POST HANDLERS
+// ============================================================================
+
+// AdminPostsIndex shows all posts for admin management
+func AdminPostsIndex(c buffalo.Context) error {
+	tx := c.Value("tx").(*pop.Connection)
+
+	posts := []models.Post{}
+	if err := tx.Order("created_at desc").All(&posts); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Load authors for each post
+	for i := range posts {
+		if err := tx.Load(&posts[i], "Author"); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	c.Set("posts", posts)
+
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("admin/posts/index.plush.html"))
+	}
+
+	return c.Render(http.StatusOK, r.HTML("admin/posts/index.plush.html"))
+}
+
+// AdminPostsNew shows the new post creation form
+func AdminPostsNew(c buffalo.Context) error {
+	post := &models.Post{}
+	c.Set("post", post)
+
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
+	}
+
+	return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
+}
+
+// AdminPostsCreate handles creation of new blog posts
+func AdminPostsCreate(c buffalo.Context) error {
+	tx := c.Value("tx").(*pop.Connection)
+
+	post := &models.Post{}
+	if err := c.Bind(post); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Set the author to the current user
+	currentUser := c.Value("current_user").(*models.User)
+	post.AuthorID = currentUser.ID
+
+	// Generate slug if not provided
+	if post.Slug == "" {
+		post.GenerateSlug()
+	}
+
+	// Handle published status based on form action
+	action := c.Param("action")
+	if action == "publish" {
+		post.Published = true
+	} else {
+		post.Published = false
+	}
+
+	// Validate and save
+	verrs, err := tx.ValidateAndCreate(post)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if verrs.HasAny() {
+		c.Set("post", post)
+		c.Set("errors", verrs)
+		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/new.plush.html"))
+	}
+
+	// Log post creation
+	logging.UserAction(c, currentUser.ID.String(), "post_created", fmt.Sprintf("Created blog post: %s", post.Title), logging.Fields{
+		"post_id":   fmt.Sprintf("%d", post.ID),
+		"post_slug": post.Slug,
+		"published": post.Published,
+	})
+
+	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" created successfully!", post.Title))
+
+	if c.Request().Header.Get("HX-Request") == "true" {
+		c.Response().Header().Set("HX-Redirect", "/admin/posts")
+		return c.Render(http.StatusOK, nil)
+	}
+	return c.Redirect(http.StatusFound, "/admin/posts")
+}
+
+// AdminPostsEdit shows the edit form for a blog post
+func AdminPostsEdit(c buffalo.Context) error {
+	tx := c.Value("tx").(*pop.Connection)
+
+	post := &models.Post{}
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+
+	// Load the author
+	if err := tx.Load(post, "Author"); err != nil {
+		return errors.WithStack(err)
+	}
+
+	c.Set("post", post)
+
+	// Check if this is an HTMX request for partial content
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
+	}
+
+	return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
+}
+
+// AdminPostsUpdate handles updating blog posts
+func AdminPostsUpdate(c buffalo.Context) error {
+	tx := c.Value("tx").(*pop.Connection)
+
+	post := &models.Post{}
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+
+	if err := c.Bind(post); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Generate slug if changed
+	if post.Slug == "" {
+		post.GenerateSlug()
+	}
+
+	// Validate and save
+	verrs, err := tx.ValidateAndUpdate(post)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	if verrs.HasAny() {
+		c.Set("post", post)
+		c.Set("errors", verrs)
+		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/edit.plush.html"))
+	}
+
+	// Log post update
+	currentUser := c.Value("current_user").(*models.User)
+	logging.UserAction(c, currentUser.ID.String(), "post_updated", fmt.Sprintf("Updated blog post: %s", post.Title), logging.Fields{
+		"post_id":   fmt.Sprintf("%d", post.ID),
+		"post_slug": post.Slug,
+		"published": post.Published,
+	})
+
+	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" updated successfully!", post.Title))
+
+	if c.Request().Header.Get("HX-Request") == "true" {
+		c.Response().Header().Set("HX-Redirect", "/admin/posts")
+		return c.Render(http.StatusOK, nil)
+	}
+	return c.Redirect(http.StatusFound, "/admin/posts")
+}
+
+// AdminPostsDestroy deletes a blog post
+func AdminPostsDestroy(c buffalo.Context) error {
+	tx := c.Value("tx").(*pop.Connection)
+
+	post := &models.Post{}
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		return c.Error(http.StatusNotFound, err)
+	}
+
+	if err := tx.Destroy(post); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Log post deletion
+	currentUser := c.Value("current_user").(*models.User)
+	logging.UserAction(c, currentUser.ID.String(), "post_deleted", fmt.Sprintf("Deleted blog post: %s", post.Title), logging.Fields{
+		"post_id":   fmt.Sprintf("%d", post.ID),
+		"post_slug": post.Slug,
+	})
+
+	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" deleted successfully!", post.Title))
+
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.String(""))
+	}
+	return c.Redirect(http.StatusFound, "/admin/posts")
+}
+
+// AdminPostsShow displays a single post for admin
+func AdminPostsShow(c buffalo.Context) error {
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	post := &models.Post{}
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		c.Flash().Add("error", "Post not found")
+		return c.Redirect(302, "/admin/posts")
+	}
+
+	// Load the user who created the post
+	if err := tx.Load(post, "User"); err != nil {
+		return err
+	}
+
+	c.Set("post", post)
+	return c.Render(200, r.HTML("admin/posts/show.plush.html"))
+}
+
+// AdminPostsDelete deletes a post
+func AdminPostsDelete(c buffalo.Context) error {
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	post := &models.Post{}
+	if err := tx.Find(post, c.Param("post_id")); err != nil {
+		c.Flash().Add("error", "Post not found")
+		return c.Redirect(302, "/admin/posts")
+	}
+
+	if err := tx.Destroy(post); err != nil {
+		return err
+	}
+
+	// Log post deletion
+	currentUser := c.Value("current_user").(*models.User)
+	logging.UserAction(c, currentUser.ID.String(), "post_deleted", fmt.Sprintf("Deleted blog post: %s", post.Title), logging.Fields{
+		"post_id":   fmt.Sprintf("%d", post.ID),
+		"post_slug": post.Slug,
+	})
+
+	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" deleted successfully!", post.Title))
+
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.String(""))
+	}
+	return c.Redirect(http.StatusFound, "/admin/posts")
+}
+
+// AdminPostsBulk handles bulk operations on posts
+func AdminPostsBulk(c buffalo.Context) error {
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	action := c.Param("bulk_action")
+	postIDsStr := c.Param("post_ids")
+
+	if postIDsStr == "" {
+		c.Flash().Add("error", "No posts selected")
+		return c.Redirect(302, "/admin/posts")
+	}
+
+	// Parse post IDs
+	postIDStrings := strings.Split(postIDsStr, ",")
+	postIDs := make([]int, 0, len(postIDStrings))
+
+	for _, idStr := range postIDStrings {
+		if id, err := strconv.Atoi(strings.TrimSpace(idStr)); err == nil {
+			postIDs = append(postIDs, id)
+		}
+	}
+
+	if len(postIDs) == 0 {
+		c.Flash().Add("error", "No valid posts selected")
+		return c.Redirect(302, "/admin/posts")
+	}
+
+	currentUser := c.Value("current_user").(*models.User)
+
+	switch action {
+	case "publish":
+		now := time.Now()
+		err := tx.RawQuery("UPDATE posts SET published_at = ? WHERE id IN (?)", now, postIDs).Exec()
+		if err != nil {
+			return err
+		}
+		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_published", "Bulk published posts", logging.Fields{
+			"post_count": len(postIDs),
+		})
+		c.Flash().Add("success", fmt.Sprintf("Published %d post(s)", len(postIDs)))
+
+	case "unpublish":
+		err := tx.RawQuery("UPDATE posts SET published_at = NULL WHERE id IN (?)", postIDs).Exec()
+		if err != nil {
+			return err
+		}
+		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_unpublished", "Bulk unpublished posts", logging.Fields{
+			"post_count": len(postIDs),
+		})
+		c.Flash().Add("success", fmt.Sprintf("Unpublished %d post(s)", len(postIDs)))
+
+	case "delete":
+		err := tx.RawQuery("DELETE FROM posts WHERE id IN (?)", postIDs).Exec()
+		if err != nil {
+			return err
+		}
+		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_deleted", "Bulk deleted posts", logging.Fields{
+			"post_count": len(postIDs),
+		})
+		c.Flash().Add("success", fmt.Sprintf("Deleted %d post(s)", len(postIDs)))
+
+	default:
+		c.Flash().Add("error", "Invalid bulk action")
+	}
+
+	return c.Redirect(302, "/admin/posts")
 }

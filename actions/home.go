@@ -1,14 +1,21 @@
 package actions
 
 import (
+	"fmt"
 	"avrnpo.org/models"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/pop/v6"
 )
 
 // HomeHandler serves the public landing page
 func HomeHandler(c buffalo.Context) error {
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
 	userID := c.Session().Get("current_user_id")
 	if userID != nil {
 		c.Set("user_logged_in", true)
@@ -20,12 +27,26 @@ func HomeHandler(c buffalo.Context) error {
 		c.Set("current_user", nil)
 	}
 
+	// Fetch recent published blog posts for homepage
+	posts := []models.Post{}
+	err := tx.Where("published = ?", true).
+		Order("created_at desc").
+		Limit(3).
+		Eager("User").
+		All(&posts)
+	if err != nil {
+		c.Logger().Errorf("Error fetching posts for homepage: %v", err)
+		// Don't fail the homepage if posts can't be loaded
+		posts = []models.Post{}
+	}
+	c.Set("recentPosts", posts)
+
 	htmxRequest := IsHTMX(c.Request())
 	c.LogField("is_htmx_request_in_handler_for_home", htmxRequest)
 
 	if htmxRequest {
 		// For HTMX requests, render only the content part
-		return c.Render(http.StatusOK, rHTMX.HTML("home/_index_content.plush.html"))
+		return c.Render(http.StatusOK, rHTMX.HTML("home/_index_content"))
 	}
 
 	// For direct page loads, render the main index with home content

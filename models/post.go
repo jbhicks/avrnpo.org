@@ -14,24 +14,25 @@ import (
 
 // Post represents a blog post
 type Post struct {
-	ID              int       `json:"id" db:"id" form:"-"`
-	Title           string    `json:"title" db:"title"`
-	Slug            string    `json:"slug" db:"slug"`
-	Content         string    `json:"content" db:"content"`
-	Excerpt         string    `json:"excerpt" db:"excerpt"`
-	Published       bool      `json:"published" db:"published"`
-	MetaTitle       string    `json:"meta_title" db:"meta_title"`
-	MetaDescription string    `json:"meta_description" db:"meta_description"`
-	MetaKeywords    string    `json:"meta_keywords" db:"meta_keywords"`
-	OgTitle         string    `json:"og_title" db:"og_title"`
-	OgDescription   string    `json:"og_description" db:"og_description"`
-	OgImage         string    `json:"og_image" db:"og_image"`
-	Image           string    `json:"image" db:"image"`
-	ImageAlt        string    `json:"image_alt" db:"image_alt"`
-	AuthorID        uuid.UUID `json:"author_id" db:"author_id" form:"-"`
-	Author          *User     `json:"author,omitempty" belongs_to:"user" fk_id:"author_id" form:"-"`
-	CreatedAt       time.Time `json:"created_at" db:"created_at" form:"-"`
-	UpdatedAt       time.Time `json:"updated_at" db:"updated_at" form:"-"`
+	ID              int        `json:"id" db:"id" form:"-"`
+	Title           string     `json:"title" db:"title"`
+	Slug            string     `json:"slug" db:"slug"`
+	Content         string     `json:"content" db:"content"`
+	Excerpt         string     `json:"excerpt" db:"excerpt"`
+	Published       bool       `json:"published" db:"published"`
+	PublishedAt     *time.Time `json:"published_at,omitempty" db:"published_at"`
+	MetaTitle       string     `json:"meta_title" db:"meta_title"`
+	MetaDescription string     `json:"meta_description" db:"meta_description"`
+	MetaKeywords    string     `json:"meta_keywords" db:"meta_keywords"`
+	OgTitle         string     `json:"og_title" db:"og_title"`
+	OgDescription   string     `json:"og_description" db:"og_description"`
+	OgImage         string     `json:"og_image" db:"og_image"`
+	Image           string     `json:"image" db:"image"`
+	ImageAlt        string     `json:"image_alt" db:"image_alt"`
+	AuthorID        uuid.UUID  `json:"author_id" db:"author_id" form:"-"`
+	User            *User      `json:"user,omitempty" belongs_to:"user" fk_id:"author_id" form:"-"`
+	CreatedAt       time.Time  `json:"created_at" db:"created_at" form:"-"`
+	UpdatedAt       time.Time  `json:"updated_at" db:"updated_at" form:"-"`
 }
 
 // String is not required by pop and may be deleted
@@ -55,7 +56,6 @@ func (p *Post) Validate(tx *pop.Connection) (*validate.Errors, error) {
 		&validators.StringIsPresent{Field: p.Title, Name: "Title"},
 		&validators.StringIsPresent{Field: p.Content, Name: "Content"},
 		&validators.StringIsPresent{Field: p.Slug, Name: "Slug"},
-		&validators.UUIDIsPresent{Field: p.AuthorID, Name: "AuthorID"},
 	), nil
 }
 

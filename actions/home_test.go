@@ -9,11 +9,10 @@ import (
 func (as *ActionSuite) Test_HomeHandler() {
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
-	// Check for main page structure (the shell)
-	as.Contains(res.Body.String(), "Buffalo SaaS")
+	// Check for main page structure (the AVR shell)
+	as.Contains(res.Body.String(), "American Veterans Rebuilding")
 	as.Contains(res.Body.String(), "htmx-content")
-	as.Contains(res.Body.String(), "Login")
-	as.Contains(res.Body.String(), "Sign Up")
+	as.Contains(res.Body.String(), "Rebuilding the American Veteran's Self")
 }
 
 func (as *ActionSuite) Test_HomeHandler_HTMX_Content() {
@@ -23,11 +22,11 @@ func (as *ActionSuite) Test_HomeHandler_HTMX_Content() {
 	res := req.Get()
 
 	as.Equal(http.StatusOK, res.Code)
-	// Check for actual content that should be in _index_content.plush.html
-	as.Contains(res.Body.String(), "Technology Stack")
-	as.Contains(res.Body.String(), "Welcome to Your Application")
-	as.Contains(res.Body.String(), "Go Buffalo")
-	as.Contains(res.Body.String(), "PostgreSQL")
+	// Check for actual AVR content that should be in the partial
+	as.Contains(res.Body.String(), "THE AVR MISSION")
+	as.Contains(res.Body.String(), "Technical Training")
+	as.Contains(res.Body.String(), "Occupational Licensing")
+	as.Contains(res.Body.String(), "Home Ownership Options")
 }
 
 func (as *ActionSuite) Test_HomeHandler_LoggedIn() {

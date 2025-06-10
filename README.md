@@ -672,7 +672,17 @@ buffalo task db:promote_admin  # Promote first user to admin role
 # Development
 buffalo dev                    # Start dev server with hot reload
 buffalo build                  # Build production binary
-buffalo test                   # Run tests
+
+# Testing - CRITICAL USAGE REQUIREMENTS
+buffalo test ./actions         # Test actions package (RECOMMENDED)
+buffalo test ./models          # Test models package  
+buffalo test ./pkg             # Test pkg package
+buffalo test ./actions ./models ./pkg  # Test multiple packages
+buffalo test ./actions -v      # Test with verbose output
+
+# ❌ DO NOT USE THESE COMMANDS:
+# buffalo test ./...           # Includes problematic backup directory
+# go test ./actions            # Bypasses Buffalo test setup
 
 # Container management (Podman/Docker)
 podman-compose up -d           # Start database
@@ -726,6 +736,45 @@ When working with this Buffalo SaaS template:
 ### Troubleshooting
 - **500 errors**: Often Plush syntax. Check Buffalo logs.
 - **HTMX Issues**: Use browser dev tools (Network tab) to inspect HTMX requests and responses. Check `HX-Request` headers and what HTML fragments are being returned. Ensure `hx-target` and `hx-swap` are correct.
+
+### Buffalo Testing - CRITICAL REQUIREMENTS
+
+**🚨 ALWAYS use Buffalo test commands, NEVER use `go test` directly!**
+
+#### Required Testing Commands:
+```bash
+# ✅ CORRECT - Test specific packages
+buffalo test ./actions         # Test actions package only
+buffalo test ./models          # Test models package only  
+buffalo test ./pkg             # Test pkg package only
+buffalo test ./actions ./models ./pkg  # Test multiple packages
+buffalo test ./actions -v      # Test with verbose output
+
+# ❌ WRONG - These will fail or cause issues
+buffalo test ./...             # Includes problematic backup directory
+go test ./actions              # Bypasses Buffalo's test setup
+go test ./...                  # Bypasses Buffalo entirely
+```
+
+#### Buffalo Test Process:
+Buffalo test automatically:
+1. Drops and recreates test database (`avrnpo_test`)
+2. Dumps schema from development database  
+3. Loads schema into test database
+4. Runs Go tests with Buffalo flags (`-p 1 -tags development`)
+
+#### Database Requirements:
+- **PostgreSQL Version**: 17+ (upgraded from 15 to fix transaction_timeout errors)
+- **Container Management**: Use `podman-compose up -d` to start database
+- **Schema Management**: Use `soda migrate up` (NOT `buffalo pop migrate`)
+
+#### If Tests Fail:
+1. **Check PostgreSQL**: `podman ps` to verify database container is running
+2. **Check Schema**: `GO_ENV=test soda migrate status` to verify migrations
+3. **Check Compilation**: Look for Go syntax errors in test output
+4. **Exclude Backup Dir**: Never include `backup/` directory in test patterns
+
+See `/docs/buffalo-test-debugging-summary.md` for complete troubleshooting guide.
 
 ## 🤖 Development Assistant Instructions
 
