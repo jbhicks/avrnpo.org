@@ -34,11 +34,22 @@
     <a href="/projects" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Projects</a>
     <a href="/donate" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Donate</a>
     <a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Contact</a>
+    <a href="/auth/new" hx-get="/auth/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="outline">Sign In</a>
   </div>
 </nav>
 
 <!-- Main Content -->
 <main class="container" id="htmx-content">
+<%= if (authContent) { %>
+  <!-- Auth Content -->
+  <section style="display: flex; align-items: center; min-height: 60vh;">
+    <%= partial("auth/new") %>
+  </section>
+<% } else if (blogContent) { %>
+  <!-- Blog Content -->
+  <%= partial("blog/index_simple") %>
+<% } else { %>
+  <!-- Home Content -->
   <section class="hero" style="text-align: center; padding: 2rem 0;">
     <img src="/images/logo.avif" alt="American Veterans Rebuilding Logo" style="max-width: 120px; margin-bottom: 1rem;">
     <h1>American Veterans Rebuilding</h1>
@@ -128,5 +139,29 @@
       <a href="/team" role="button" class="secondary">Meet Our Team</a>
     </div>
   </section>
+<% } %>
 
 </main>
+
+<!-- Universal Footer -->
+<footer class="container" hx-preserve="true">
+  <hr>
+  <div class="grid">
+    <div>
+      <small>
+        <strong>American Veterans Rebuilding</strong><br>
+        Rebuilding the American Veteran's Self, Family and Community
+      </small>
+    </div>
+    <div>
+      <small>
+        <a href="/" hx-get="/" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Home</a> • 
+        <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Updates</a> • 
+        <a href="/contact" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a>
+      </small>
+    </div>
+  </div>
+  <small style="text-align: center; display: block; margin-top: 1rem;">
+    © 2025 American Veterans Rebuilding. All rights reserved.
+  </small>
+</footer>

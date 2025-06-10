@@ -396,6 +396,26 @@ GO_ENV=production soda migrate up
 - **Plush templating** - Buffalo's template engine with Go-like syntax
 - **Live reload** - Template changes appear immediately
 
+**🚨 CRITICAL: Buffalo Template & Partial Guidelines**
+- **Partial naming** - Partials MUST be prefixed with underscore: `_partial.plush.html`
+- **Partial calls** - Reference without underscore or extension: `partial("auth/new")` finds `auth/_new.plush.html`
+- **Universal layout** - Use HTMX content swapping with persistent header/footer instead of full page templates
+- **Component architecture** - Create reusable partials for forms, content sections, navigation
+- **Template structure** - Direct route visits should load universal layout with content, HTMX requests load partials only
+
+**Template Architecture Pattern:**
+```go
+// In action handler
+func MyPageHandler(c buffalo.Context) error {
+    if c.Request().Header.Get("HX-Request") == "true" {
+        return c.Render(http.StatusOK, rHTMX.HTML("mypage/_content.plush.html"))
+    }
+    // Direct visits get universal layout with content flag
+    c.Set("myPageContent", true)
+    return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
+}
+```
+
 ### Troubleshooting
 
 #### Common Issues

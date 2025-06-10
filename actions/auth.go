@@ -27,10 +27,11 @@ func AuthLanding(c buffalo.Context) error {
 func AuthNew(c buffalo.Context) error {
 	c.Set("user", models.User{})
 	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("auth/new.plush.html"))
+		return c.Render(http.StatusOK, rHTMX.HTML("auth/_new.plush.html"))
 	}
-	// For direct page loads, render the full page with persistent header
-	return c.Render(http.StatusOK, r.HTML("auth/new_full.plush.html"))
+	// For direct page loads, render home layout with auth content
+	c.Set("authContent", true)
+	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
 // AuthCreate attempts to log the user in with an existing account.

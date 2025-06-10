@@ -1,0 +1,11 @@
+<!-- Simple Blog Index for Testing -->
+<section style="text-align: center; padding: 2rem 0;">
+  <h1>Updates & Stories</h1>
+  <p>Blog posts will appear here.</p>
+  
+  <%= if (len(posts) > 0) { %>
+    <p>Found <%= len(posts) %> posts.</p>
+  <% } else { %>
+    <p>No posts found.</p>
+  <% } %>
+</section>

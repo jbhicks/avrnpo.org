@@ -7,11 +7,12 @@
   </p>
 </section>
 
-<%= if (len(posts) > 0) { %>
-  <!-- Featured Post -->
+<%= if (len(posts) > 0) { %>  <!-- Featured Post -->
   <%= if (len(posts) > 0) { %>
   <section class="featured-post" style="margin-bottom: 3rem;">
-    <article style="border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); padding: 2rem;">      <header>        <%= if (posts[0].Image != "") { %>
+    <article style="border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); padding: 2rem;">
+      <header>
+        <%= if (posts[0].Image != "") { %>
         <img src="<%= posts[0].Image %>" alt="<%= posts[0].Title %>" style="width: 100%; height: 300px; object-fit: cover; border-radius: var(--pico-border-radius); margin-bottom: 1rem;">
         <% } %>
         <hgroup>
