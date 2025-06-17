@@ -209,17 +209,32 @@ rm -f db/schema.sql migrations/schema.sql
 - **Template errors**: Check Buffalo console output for Plush syntax errors
 - **Hot reload not working**: Restart Buffalo only if auto-reload stops working
 
-### HTMX Development Notes
-- **Content loaded via HTMX**: Changes to partial templates auto-reload
-- **JavaScript changes**: May require browser hard refresh (Ctrl+F5)
-- **Modal forms**: Test by triggering modals, don't assume full page reload needed
-- **🚨 CRITICAL: HTMX Template Structure**: Partial templates loaded into `#htmx-content` should NOT include `<main class="container">` wrapper since the target div already has this structure. This prevents nested main elements and rendering issues.
+### HTMX Development Guidelines
 
-**HTMX Template Best Practices:**
-- **Full page templates** (for direct loads): Include complete HTML with nav, main, footer
-- **Partial templates** (for HTMX): Only include content sections without main wrapper
-- **Avoid nested main elements**: Partial templates go inside existing `<main id="htmx-content">`
-- **Test both scenarios**: Direct page load vs HTMX navigation should both work correctly
+**🚨 CRITICAL: ALWAYS follow HTMX best practices documented in `/docs/htmx-best-practices.md` 🚨**
+
+**Navigation and Progressive Enhancement:**
+- **Use `hx-boost="true"`** for navigation links instead of explicit `hx-get`/`hx-target` attributes
+- **Return full pages** from handlers - let HTMX extract content automatically
+- **Avoid `HX-Request` header checks** in handlers - serve the same full page for both direct and HTMX requests
+- **Progressive enhancement first** - ensure all functionality works without JavaScript
+
+**Required Reading Before Any HTMX Work:**
+- **ALWAYS read `/docs/htmx-best-practices.md`** before implementing HTMX features
+- **Follow official HTMX patterns** documented in the best practices guide
+- **Use `hx-boost` for navigation** rather than manual HTMX attributes on every link
+
+**Development and Testing:**
+- **Content loaded via HTMX**: Changes to templates auto-reload with Buffalo
+- **JavaScript changes**: May require browser hard refresh (Ctrl+F5)
+- **Test both scenarios**: Direct page load vs HTMX navigation must both work correctly
+- **Progressive enhancement**: All features must work without JavaScript enabled
+
+**Template Structure Guidelines:**
+- **Full page templates**: Include complete HTML structure (nav, main, footer)
+- **HTMX boost navigation**: Uses full pages and extracts content automatically
+- **Avoid nested main elements**: Let HTMX handle content swapping correctly
+- **Semantic HTML**: Use proper HTML5 elements for better HTMX extraction
 
 ### Browser Testing Guidelines
 
@@ -276,6 +291,7 @@ rm -f db/schema.sql migrations/schema.sql
 - **Pico.css CSS Variables**: Read `/docs/pico-css-variables.md` for customization with CSS variables - USE THIS FOR ALL STYLING
 - **Implementation Patterns**: Read `/docs/pico-implementation-guide.md` for semantic HTML patterns and best practices
 - **Template Syntax**: Read `/docs/buffalo-template-syntax.md` for Plush templating patterns
+- **HTMX Best Practices**: Read `/docs/htmx-best-practices.md` for HTMX navigation, progressive enhancement, and official patterns
 
 **Styling Change Process:**
 1. **Check `/docs/pico-css-variables.md`** - Find the appropriate Pico variable to modify

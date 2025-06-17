@@ -37,19 +37,17 @@
 
     <!-- Quick Actions -->
     <section style="margin-bottom: 2rem;">
-      <h2>Quick Actions</h2>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="/admin/posts/new" hx-get="/admin/posts/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button">Create New Post</a>
-        <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">Manage Posts</a>
-        <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="outline">View Blog</a>
+      <h2>Quick Actions</h2>      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/admin/posts/new" role="button">Create New Post</a>
+        <a href="/admin/posts" role="button" class="secondary">Manage Posts</a>
+        <a href="/blog" role="button" class="outline">View Blog</a>
       </div>
     </section>
 
     <!-- Recent Posts -->
-    <section>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+    <section>      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2>Recent Posts</h2>
-        <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">View All →</a>
+        <a href="/admin/posts">View All →</a>
       </div>
       
       <%= if (len(posts) > 0) { %>
@@ -80,10 +78,9 @@
                 <% } %>
               </td>
               <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
-              <td>
-                <div style="display: flex; gap: 0.5rem;">
-                  <a href="/admin/posts/<%= post.ID %>/edit" hx-get="/admin/posts/<%= post.ID %>/edit" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                  <a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">View</a>
+              <td>                <div style="display: flex; gap: 0.5rem;">
+                  <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
+                  <a href="/blog/<%= post.Slug %>" role="button" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">View</a>
                 </div>
               </td>
             </tr>
@@ -91,11 +88,10 @@
           </tbody>
         </table>
       </div>
-      <% } else { %>
-      <div style="text-align: center; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+      <% } else { %>      <div style="text-align: center; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
         <h3>No Posts Yet</h3>
         <p>Get started by creating your first blog post about AVR's impact.</p>
-        <a href="/admin/posts/new" hx-get="/admin/posts/new" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button">Create First Post</a>
+        <a href="/admin/posts/new" role="button">Create First Post</a>
       </div>
       <% } %>
     </section>

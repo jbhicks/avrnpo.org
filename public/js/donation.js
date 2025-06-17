@@ -1,22 +1,44 @@
 /**
  * Donation System Frontend
- * Handles HelcimPay.js integration for secure payment processing
+ * Handles form interactions and basic amount selection
  */
 
-class DonationSystem {
-    constructor() {
-        this.currentAmount = null;
-        this.donationType = 'one-time';
-        this.isProcessing = false;
-        
-        this.init();
-    }
+// Prevent duplicate class declarations
+if (typeof window.DonationSystem === 'undefined') {
+    class DonationSystem {
+        constructor() {
+            this.currentAmount = null;
+            this.donationType = 'one-time';
+            this.isProcessing = false;
+            
+            this.init();
+        }
 
     init() {
-        this.bindEvents();        this.loadHelcimPayJS().catch(error => {
-            console.error('Failed to initialize HelcimPay:', error);
-            console.log('Donation system will still work with mock payment processing');
-        });
+        this.bindEvents();
+        console.log('Donation system initialized');
+        
+        // Auto-fill test data in development mode
+        if (this.isDevelopmentMode()) {
+            this.setupDevelopmentHelpers();
+        }
+    }
+
+    isDevelopmentMode() {
+        // Check if development notice is present
+        return document.getElementById('dev-notice') !== null;
+    }
+
+    setupDevelopmentHelpers() {
+        // Auto-select $25 amount for quick testing
+        const firstAmountBtn = document.querySelector('.amount-btn[data-amount="25"]');
+        if (firstAmountBtn) {
+            setTimeout(() => {
+                firstAmountBtn.click();
+            }, 100);
+        }
+        
+        console.log('Development helpers enabled - test data auto-fill available');
     }
 
     bindEvents() {
@@ -24,6 +46,7 @@ class DonationSystem {
         document.querySelectorAll('.amount-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('Amount button clicked:', btn.dataset.amount);
                 this.selectAmount(btn.dataset.amount);
                 this.updateAmountDisplay(btn);
             });
@@ -33,6 +56,7 @@ class DonationSystem {
         const customAmountInput = document.getElementById('custom-amount');
         if (customAmountInput) {
             customAmountInput.addEventListener('input', (e) => {
+                console.log('Custom amount entered:', e.target.value);
                 this.selectCustomAmount(e.target.value);
                 this.clearAmountButtons();
             });
@@ -54,10 +78,13 @@ class DonationSystem {
                 this.processDonation();
             });
         }
+
+        console.log('Event listeners bound');
     }
 
     selectAmount(amount) {
         this.currentAmount = parseFloat(amount);
+        console.log('Amount selected:', this.currentAmount);
         
         // Clear custom amount input
         const customInput = document.getElementById('custom-amount');
@@ -71,6 +98,7 @@ class DonationSystem {
     selectCustomAmount(amount) {
         const numAmount = parseFloat(amount);
         this.currentAmount = numAmount > 0 ? numAmount : null;
+        console.log('Custom amount selected:', this.currentAmount);
         this.updateDonateButton();
     }
 
@@ -82,12 +110,14 @@ class DonationSystem {
         
         // Add active class to selected button
         selectedBtn.classList.add('selected');
+        console.log('Amount display updated, selected button highlighted');
     }
 
     clearAmountButtons() {
         document.querySelectorAll('.amount-btn').forEach(btn => {
             btn.classList.remove('selected');
         });
+        console.log('Amount buttons cleared');
     }
 
     updateDonateButton() {
@@ -98,320 +128,309 @@ class DonationSystem {
             const frequencyText = this.donationType === 'monthly' ? 'Monthly' : '';
             donateBtn.textContent = `${frequencyText} Donate $${this.currentAmount.toFixed(2)}`.trim();
             donateBtn.disabled = false;
+            donateBtn.classList.remove('secondary');
+            donateBtn.classList.add('contrast');
         } else {
             donateBtn.textContent = 'Select Amount';
             donateBtn.disabled = true;
+            donateBtn.classList.remove('contrast');
+            donateBtn.classList.add('secondary');
         }
-    }
-
-    async processDonation() {
-        if (this.isProcessing || !this.currentAmount || this.currentAmount <= 0) {
+        console.log('Donate button updated:', donateBtn.textContent);
+    }    processDonation() {
+        if (!this.currentAmount || this.currentAmount <= 0) {
+            alert('Please select a donation amount');
             return;
         }
 
-        this.isProcessing = true;
-        this.showLoading();
+        if (this.isProcessing) {
+            return;
+        }
 
-        try {
-            // Collect donation data
-            const donationData = this.collectDonationData();
-            
-            // Validate required fields
-            if (!this.validateDonationData(donationData)) {
-                this.showError('Please fill in all required fields');
+        // Basic form validation
+        const requiredFields = ['donor-name', 'donor-email'];
+        for (const fieldId of requiredFields) {
+            const field = document.getElementById(fieldId);
+            if (!field || !field.value.trim()) {
+                alert(`Please fill out the ${fieldId.replace('-', ' ')} field`);
+                if (field) field.focus();
                 return;
             }
+        }
 
-            // Initialize donation with backend
-            const response = await this.initializeDonation(donationData);
-            
-            if (response.success) {
-                // Launch HelcimPay modal
-                await this.launchHelcimPay(response.checkoutToken, response.donationId);
-            } else {
-                this.showError(response.error || 'Failed to initialize donation');
-            }
-        } catch (error) {
-            console.error('Donation error:', error);
-            this.showError('Payment system is currently unavailable. Please try again later.');
-        } finally {
-            this.isProcessing = false;
-            this.hideLoading();
-        }
-    }
-
-    collectDonationData() {
-        const customAmount = document.getElementById('custom-amount')?.value || '';
-        
-        return {
-            amount: this.currentAmount <= 100 ? this.currentAmount.toString() : 'custom',
-            custom_amount: customAmount,
-            donation_type: this.donationType,
-            donor_name: document.getElementById('donor-name')?.value || '',
-            donor_email: document.getElementById('donor-email')?.value || '',
-            donor_phone: document.getElementById('donor-phone')?.value || '',
-            address_line1: document.getElementById('address-line1')?.value || '',
-            city: document.getElementById('city')?.value || '',            state: document.getElementById('state')?.value || '',
-            zip: document.getElementById('zip')?.value || '',
-            comments: document.getElementById('comments')?.value || ''
-        };
-    }
-
-    validateDonationData(data) {
-        // Check required fields
-        if (!this.currentAmount || this.currentAmount <= 0) {
-            this.showError('Please select a donation amount');
-            return false;
-        }
-        
-        if (!data.donor_name.trim()) {
-            this.showError('Please enter your full name');
-            this.focusField('donor-name');
-            return false;
-        }
-        
-        if (!data.donor_email.trim()) {
-            this.showError('Please enter your email address');
-            this.focusField('donor-email');
-            return false;
-        }
-        
-        // Basic email validation
+        // Email validation
+        const emailField = document.getElementById('donor-email');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(data.donor_email.trim())) {
-            this.showError('Please enter a valid email address');
-            this.focusField('donor-email');
-            return false;
-        }
-        
-        return true;
-    }
-
-    async initializeDonation(donationData) {
-        const response = await fetch('/api/donations/initialize', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(donationData)
-        });        return await response.json();
-    }
-
-    async launchHelcimPay(checkoutToken, donationId) {
-        // Ensure HelcimPay is loaded
-        if (!window.HelcimPay) {
-            console.log('HelcimPay not loaded, attempting to load...');
-            try {
-                await this.loadHelcimPayJS();
-            } catch (error) {
-                throw new Error('Failed to load HelcimPay.js: ' + error.message);
-            }
+        if (!emailRegex.test(emailField.value.trim())) {
+            alert('Please enter a valid email address');
+            emailField.focus();
+            return;
         }
 
-        if (!window.HelcimPay) {
-            throw new Error('HelcimPay.js is not available');
-        }
-
-        return new Promise((resolve, reject) => {
-            try {
-                const helcim = new window.HelcimPay();
-                  helcim.startPayment({
-                    checkoutToken: checkoutToken,
-                    amount: this.currentAmount,
-                    onSuccess: (result) => {
-                        this.handlePaymentSuccess(result, donationId);
-                        resolve(result);
-                    },
-                    onError: (error) => {
-                        this.handlePaymentError(error);
-                        reject(error);
-                    },
-                    onCancel: () => {
-                        this.handlePaymentCancel();
-                        resolve({ cancelled: true });
-                    }
-                });            } catch (error) {
-                console.error('Error initializing HelcimPay:', error);
-                reject(error);
-            }
+        console.log('Processing donation:', {
+            amount: this.currentAmount,
+            type: this.donationType
         });
+
+        this.isProcessing = true;
+        this.updateProcessingState(true);
+
+        // Collect form data
+        const formData = {
+            amount: this.currentAmount.toString(),
+            custom_amount: '',
+            donation_type: this.donationType,
+            donor_name: document.getElementById('donor-name').value.trim(),
+            donor_email: document.getElementById('donor-email').value.trim(),
+            donor_phone: document.getElementById('donor-phone').value.trim(),
+            address_line1: document.getElementById('address-line1').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            state: document.getElementById('state').value.trim(),
+            zip: document.getElementById('zip').value.trim(),
+            comments: document.getElementById('comments').value.trim()
+        };
+
+        // Initialize payment with Helcim
+        this.initializePayment(formData);
     }
 
-    async handlePaymentSuccess(result, donationId) {
+    updateProcessingState(isProcessing) {
+        const donateBtn = document.querySelector('.donation-submit');
+        if (donateBtn) {
+            if (isProcessing) {
+                donateBtn.textContent = 'Processing...';
+                donateBtn.disabled = true;
+            } else {
+                this.updateDonateButton();
+            }
+        }
+    }
+
+    async initializePayment(formData) {
         try {
-            // Complete donation on backend
-            const response = await fetch(`/api/donations/${donationId}/complete`, {
+            console.log('Initializing payment with data:', formData);
+            
+            const response = await fetch('/api/donations/initialize', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    transactionId: result.transactionId,
-                    status: 'APPROVED' // Use Helcim's standard status
-                })
+                body: JSON.stringify(formData)
             });
 
+            const result = await response.json();
+            console.log('Initialize response:', result);
+
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(result.error || 'Failed to initialize payment');
             }
 
-            const data = await response.json();
-            
-            if (data.success) {
-                this.showSuccess('Thank you for your donation! You should receive a receipt email shortly.');
-                this.resetForm();
-                  // Redirect to success page after a short delay
-                setTimeout(() => {
-                    window.location.href = '/donate/success';
-                }, 2000);
+            if (result.success && result.checkoutToken) {
+                // Load Helcim JS and show payment modal
+                this.loadHelcimJS(() => {
+                    this.showHelcimModal(result.checkoutToken, result.donationId);
+                });
             } else {
-                this.showError('Payment successful, but there was an issue processing your donation. Please contact us.');
+                throw new Error('Invalid response from payment processor');
             }
+
         } catch (error) {
-            console.error('Error completing donation:', error);
-            this.showError('Payment was processed, but there was an issue with our system. Please contact us to confirm your donation.');        }
+            console.error('Payment initialization error:', error);
+            alert('Error initializing payment: ' + error.message);
+            this.isProcessing = false;
+            this.updateProcessingState(false);
+        }
+    }    loadHelcimJS(callback) {
+        // Check if Helcim JS is already loaded
+        if (window.HelcimPay) {
+            callback();
+            return;
+        }
+        
+        // Load Helcim JS dynamically
+        const script = document.createElement('script');
+        script.src = '/js/helcim-pay.min.js';  // Use local copy
+        script.onload = callback;
+        script.onerror = () => {
+            console.error('Failed to load Helcim JS');
+            alert('Error loading payment processor. Please try again.');
+            this.isProcessing = false;
+            this.updateProcessingState(false);
+        };
+        document.head.appendChild(script);
+    }
+
+    showHelcimModal(checkoutToken, donationId) {
+        try {
+            console.log('Showing Helcim modal with token:', checkoutToken);
+            
+            const helcim = new window.HelcimPay();
+            
+            // Use callback-based API for local Helcim implementation
+            helcim.startPayment({
+                checkoutToken: checkoutToken,
+                amount: this.amount,
+                onSuccess: (response) => {
+                    console.log('Payment successful:', response);
+                    this.handlePaymentSuccess(response, donationId);
+                },
+                onError: (error) => {
+                    console.error('Payment error:', error);
+                    this.handlePaymentError(error);
+                },
+                onCancel: () => {
+                    console.log('Payment cancelled');
+                    this.handlePaymentCancelled();
+                }
+            });
+
+        } catch (error) {
+            console.error('Error showing Helcim modal:', error);
+            alert('Error loading payment form. Please try again.');
+            this.isProcessing = false;
+            this.updateProcessingState(false);
+        }
+    }
+
+    handlePaymentSuccess(response, donationId) {
+        console.log('Payment completed successfully');
+        
+        // Update our backend with the transaction details
+        fetch(`/api/donations/${donationId}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                transactionId: response.transactionId,
+                status: 'APPROVED'
+            })
+        }).then(response => response.json())
+        .then(result => {
+            console.log('Payment completion recorded:', result);
+            // Redirect to success page
+            window.location.href = '/donate/success';
+        })
+        .catch(error => {
+            console.error('Error recording payment completion:', error);
+            // Still show success since payment went through
+            window.location.href = '/donate/success';
+        });
     }
 
     handlePaymentError(error) {
-        console.error('Payment error:', error);
-        
-        let errorMessage = 'Payment failed. Please try again or contact us for assistance.';
-        
-        // Handle specific error types
-        if (error && error.message) {
-            if (error.message.includes('declined')) {
-                errorMessage = 'Your payment was declined. Please check your card details and try again.';
-            } else if (error.message.includes('network') || error.message.includes('timeout')) {
-                errorMessage = 'Network error occurred. Please check your connection and try again.';
-            }
-        }
-        
-        this.showError(errorMessage);
-        
-        // Redirect to failure page after a short delay
-        setTimeout(() => {
-            window.location.href = '/donation/failed';
-        }, 3000);
+        console.error('Payment failed:', error);
+        alert('Payment failed: ' + (error.message || 'Unknown error'));
+        this.isProcessing = false;
+        this.updateProcessingState(false);
     }
 
-    handlePaymentCancel() {
-        console.log('Payment cancelled by user');        this.showInfo('Payment cancelled. You can try again anytime.');
-    }
-
-    loadHelcimPayJS() {
-        // Load HelcimPay.js if not already loaded
-        if (window.HelcimPay) {
-            console.log('HelcimPay.js already loaded');
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve, reject) => {            const script = document.createElement('script');
-            // Use local minified library instead of CDN (following template philosophy)
-            script.src = '/js/helcim-pay.min.js';
-            script.async = true;            script.onload = () => {
-                console.log('HelcimPay.js loaded successfully from local source');
-                console.log('Development mode: Using real Helcim API with test cards');
-                resolve();
-            };            script.onerror = () => {
-                console.error('Failed to load local HelcimPay.js library');
-                reject(new Error('Could not load HelcimPay.js from local source'));
-            };
-            
-            document.head.appendChild(script);
-        });
-    }    showLoading() {
-        const donateBtn = document.querySelector('.donation-submit');
-        if (donateBtn) {
-            donateBtn.setAttribute('aria-busy', 'true');
-            donateBtn.textContent = 'Processing...';
-            donateBtn.disabled = true;
-        }
-    }
-
-    hideLoading() {
-        const donateBtn = document.querySelector('.donation-submit');
-        if (donateBtn) {
-            donateBtn.setAttribute('aria-busy', 'false');
-            donateBtn.disabled = false;
-            this.updateDonateButton();
-        }
-    }
-
-    showSuccess(message) {
-        this.showMessage(message, 'success');
-    }
-
-    showError(message) {
-        this.showMessage(message, 'error');
-    }
-
-    showInfo(message) {
-        this.showMessage(message, 'info');
-    }
-
-    showMessage(message, type = 'info') {
-        // Remove existing messages
-        const existingMessage = document.querySelector('.donation-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // Create message element
-        const messageEl = document.createElement('div');
-        messageEl.className = `donation-message ${type}`;
-        messageEl.setAttribute('role', 'alert');
-        messageEl.textContent = message;
-
-        // Insert message at top of donation form
-        const donationCard = document.querySelector('.donation-card');
-        if (donationCard) {
-            donationCard.insertBefore(messageEl, donationCard.firstChild);
-        }
-
-        // Auto-remove after 10 seconds for non-error messages
-        if (type !== 'error') {
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.remove();
-                }
-            }, 10000);
-        }
-    }
-
-    resetForm() {
-        // Reset amount selection
-        this.currentAmount = null;
-        this.clearAmountButtons();
-        
-        // Clear custom amount
-        const customInput = document.getElementById('custom-amount');
-        if (customInput) {
-            customInput.value = '';
-        }
-        
-        // Reset frequency to one-time
-        const oneTimeRadio = document.querySelector('input[name="frequency"][value="one-time"]');
-        if (oneTimeRadio) {
-            oneTimeRadio.checked = true;
-            this.donationType = 'one-time';
-        }
-          // Update button
-        this.updateDonateButton();
-    }
-    
-    focusField(fieldId) {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            field.focus();
-            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+    handlePaymentCancelled() {
+        console.log('Payment was cancelled by user');
+        this.isProcessing = false;
+        this.updateProcessingState(false);
     }
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking for donation form...');
     // Only initialize on donation page
     if (document.querySelector('.donation-form')) {
+        console.log('Donation form found, initializing system...');
         new DonationSystem();
+    } else {
+        console.log('No donation form found on this page');
     }
 });
+
+// Make DonationSystem available globally
+window.DonationSystem = DonationSystem;
+
+// Global helper functions for development mode
+window.copyTestCard = function(cardNumber) {
+    // Format the card number with spaces for display
+    const formatted = cardNumber.replace(/(.{4})/g, '$1 ').trim();
+    
+    // Copy unformatted number to clipboard
+    navigator.clipboard.writeText(cardNumber).then(() => {
+        showToast(`Copied: ${formatted}`, 'success');
+    }).catch(() => {
+        // Fallback for older browsers
+        alert(`Test card: ${formatted}\nCopy this number manually.`);
+    });
+};
+
+window.fillTestData = function() {
+    // Fill donor information with test data
+    const fields = {
+        'donor-name': 'John Test Donor',
+        'donor-email': 'test@example.com',
+        'donor-phone': '555-123-4567',
+        'address-line1': '123 Test Street',
+        'city': 'Test City',
+        'state': 'LA',
+        'zip': '70001'
+    };
+    
+    Object.entries(fields).forEach(([id, value]) => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.value = value;
+            // Trigger input event to update any listeners
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+    
+    showToast('Test donor information filled', 'info');
+    console.log('Test donor data filled');
+};
+
+// Simple toast notification system
+function showToast(message, type = 'info') {
+    // Remove existing toasts
+    document.querySelectorAll('.toast').forEach(toast => toast.remove());
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        padding: 0.75rem 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        max-width: 300px;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    // Type-specific styling
+    if (type === 'success') {
+        toast.style.borderColor = 'var(--pico-primary)';
+        toast.style.color = 'var(--pico-primary)';
+    } else if (type === 'error') {
+        toast.style.borderColor = 'var(--pico-contrast)';
+        toast.style.color = 'var(--pico-contrast)';
+    } else {
+        toast.style.borderColor = '#3b82f6';
+        toast.style.color = '#3b82f6';
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+} // Close the conditional check
+
+console.log('Donation.js loaded');

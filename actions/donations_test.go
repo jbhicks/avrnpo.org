@@ -33,8 +33,10 @@ func (as *ActionSuite) Test_DonateHandler() {
 	as.Contains(res.Body.String(), "Development Mode")
 	as.Contains(res.Body.String(), "4111 1111 1111 1111")
 	
-	// Check for JavaScript inclusion
-	as.Contains(res.Body.String(), "/js/donation.js")
+	// Pure HTMX approach - only returns content, no full HTML structure
+	as.NotContains(res.Body.String(), "/js/donation.js")
+	as.NotContains(res.Body.String(), "<!DOCTYPE")
+	as.NotContains(res.Body.String(), "<html>")
 }
 
 func (as *ActionSuite) Test_DonateHandler_HTMX_Content() {

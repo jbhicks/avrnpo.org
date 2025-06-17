@@ -20,21 +20,21 @@
       <% } %>
       <div style="padding: 1rem;">
         <header>
-          <h3><a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" style="text-decoration: none; color: inherit;"><%= post.Title %></a></h3>
+          <h3><a href="/blog/<%= post.Slug %>" style="text-decoration: none; color: inherit;"><%= post.Title %></a></h3>
           <small style="color: var(--pico-muted-color);">
             <%= if (post.User != nil) { %>By <%= post.User.FirstName %> <%= post.User.LastName %><% } %>
             • <%= post.CreatedAt.Format("January 2, 2006") %>
           </small>
         </header>
         <p><%= post.Excerpt %></p>
-        <a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">Read More</a>
+        <a href="/blog/<%= post.Slug %>" role="button" class="secondary outline">Read More</a>
       </div>
     </article>
     <% } %>
   </div>
   
   <div style="text-align: center; margin-top: 2rem;">
-    <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">View All Updates</a>
+    <a href="/blog" role="button" class="secondary">View All Updates</a>
   </div>
 </section>
 <% } %>

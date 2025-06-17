@@ -16,7 +16,6 @@ func BlogIndex(c buffalo.Context) error {
 	}
 
 	posts := []models.Post{}
-
 	// Get published posts ordered by created_at desc (simplified - no user loading for now)
 	if err := tx.Where("published = ?", true).Order("created_at desc").All(&posts); err != nil {
 		return err
@@ -48,14 +47,8 @@ func BlogShow(c buffalo.Context) error {
 	if err := tx.Where("slug = ? AND published = ?", slug, true).First(post); err != nil {
 		return c.Error(404, err)
 	}
-
 	c.Set("post", post)
 
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(200, r.HTML("blog/show.plush.html"))
-	}
-
-	// Direct access - render full page with navigation
+	// Always return full page - hx-boost with hx-select will extract the content
 	return c.Render(200, r.HTML("blog/show_full.plush.html"))
 }

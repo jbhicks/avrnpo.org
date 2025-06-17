@@ -82,8 +82,23 @@ install-deps:
 # Start database and development server with full health checks
 dev: check-deps db-up
 	@echo "🔍 Waiting for database to be ready..."
-	@if ! ./scripts/wait-for-postgres.sh; then \
-		echo "❌ Database failed to start. Check 'make db-logs' for details."; \
+	@MAX_WAIT=30; \
+	WAIT_COUNT=0; \
+	while [ $$WAIT_COUNT -lt $$MAX_WAIT ]; do \
+		if podman-compose exec postgres pg_isready -U postgres > /dev/null 2>&1; then \
+			echo "✅ PostgreSQL is ready!"; \
+			break; \
+		fi; \
+		echo "Waiting for PostgreSQL... ($$((WAIT_COUNT + 1))/$$MAX_WAIT)"; \
+		sleep 1; \
+		WAIT_COUNT=$$((WAIT_COUNT + 1)); \
+	done; \
+	if [ $$WAIT_COUNT -ge $$MAX_WAIT ]; then \
+		echo "❌ PostgreSQL failed to become ready within $$MAX_WAIT seconds"; \
+		echo "Container status:"; \
+		podman-compose ps; \
+		echo "Container logs:"; \
+		podman-compose logs postgres --tail 20; \
 		exit 1; \
 	fi
 	@echo "🚀 Starting Buffalo development server..."

@@ -594,3 +594,210 @@ func AdminPostsBulk(c buffalo.Context) error {
 
 	return c.Redirect(302, "/admin/posts")
 }
+
+// AdminDonationsIndex shows the donations management page
+func AdminDonationsIndex(c buffalo.Context) error {
+	// Get current user
+	currentUser, ok := c.Value("current_user").(*models.User)
+	if !ok || currentUser == nil {
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	// Get database connection
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	// Parse query parameters
+	page := 1
+	if p := c.Param("page"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	status := c.Param("status")
+	search := c.Param("search")
+
+	// Build query
+	query := tx.Q()
+
+	if status != "" && status != "all" {
+		query = query.Where("status = ?", status)
+	}
+
+	if search != "" {
+		query = query.Where("donor_name ILIKE ? OR donor_email ILIKE ?",
+			"%"+search+"%", "%"+search+"%")
+	}
+
+	// Get total count for pagination
+	totalCount, err := query.Count(&models.Donation{})
+	if err != nil {
+		c.Logger().Errorf("Error counting donations: %v", err)
+		c.Flash().Add("error", "Error loading donations")
+		return c.Redirect(http.StatusFound, "/admin")
+	}
+
+	// Calculate pagination
+	perPage := 20
+	totalPages := (totalCount + perPage - 1) / perPage
+
+	// Get donations for current page
+	donations := []models.Donation{}
+	err = query.Order("created_at desc").
+		Paginate(page, perPage).
+		All(&donations)
+	if err != nil {
+		c.Logger().Errorf("Error fetching donations: %v", err)
+		c.Flash().Add("error", "Error loading donations")
+		return c.Redirect(http.StatusFound, "/admin")
+	}
+
+	// Calculate summary statistics
+	stats, err := getDonationStats(tx)
+	if err != nil {
+		c.Logger().Errorf("Error getting donation stats: %v", err)
+		// Continue without stats
+		stats = DonationStats{}
+	}
+
+	// Set template data
+	c.Set("donations", donations)
+	c.Set("stats", stats)
+	c.Set("currentPage", page)
+	c.Set("totalPages", totalPages)
+	c.Set("totalCount", totalCount)
+	c.Set("currentStatus", status)
+	c.Set("currentSearch", search)
+	c.Set("user", currentUser)
+
+	// Check if this is an HTMX request
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("admin/donations/index.plush.html"))
+	}
+
+	// Direct access - render full page
+	return c.Render(http.StatusOK, r.HTML("admin/donations/index_full.plush.html"))
+}
+
+// DonationStats holds donation statistics
+type DonationStats struct {
+	TotalDonations    int     `json:"total_donations"`
+	CompletedCount    int     `json:"completed_count"`
+	PendingCount      int     `json:"pending_count"`
+	FailedCount       int     `json:"failed_count"`
+	TotalAmount       float64 `json:"total_amount"`
+	CompletedAmount   float64 `json:"completed_amount"`
+	AverageAmount     float64 `json:"average_amount"`
+	MonthlyTotal      float64 `json:"monthly_total"`
+	RecurringCount    int     `json:"recurring_count"`
+}
+
+// getDonationStats calculates donation statistics
+func getDonationStats(tx *pop.Connection) (DonationStats, error) {
+	stats := DonationStats{}
+
+	// Total donations count
+	totalCount, err := tx.Count(&models.Donation{})
+	if err != nil {
+		return stats, err
+	}
+	stats.TotalDonations = totalCount
+
+	// Count by status
+	completed, _ := tx.Where("status = ?", "completed").Count(&models.Donation{})
+	pending, _ := tx.Where("status = ?", "pending").Count(&models.Donation{})
+	failed, _ := tx.Where("status = ?", "failed").Count(&models.Donation{})
+
+	stats.CompletedCount = completed
+	stats.PendingCount = pending
+	stats.FailedCount = failed
+
+	// Amount calculations
+	var totalAmountResult struct {
+		TotalAmount     float64 `db:"total_amount"`
+		CompletedAmount float64 `db:"completed_amount"`
+		AverageAmount   float64 `db:"average_amount"`
+	}
+
+	err = tx.RawQuery(`
+		SELECT 
+			COALESCE(SUM(amount), 0) as total_amount,
+			COALESCE(SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END), 0) as completed_amount,
+			COALESCE(AVG(CASE WHEN status = 'completed' THEN amount ELSE NULL END), 0) as average_amount
+		FROM donations
+	`).First(&totalAmountResult)
+
+	if err == nil {
+		stats.TotalAmount = totalAmountResult.TotalAmount
+		stats.CompletedAmount = totalAmountResult.CompletedAmount
+		stats.AverageAmount = totalAmountResult.AverageAmount
+	}
+
+	// Monthly total (current month)
+	var monthlyResult struct {
+		MonthlyTotal float64 `db:"monthly_total"`
+	}
+
+	err = tx.RawQuery(`
+		SELECT COALESCE(SUM(amount), 0) as monthly_total
+		FROM donations 
+		WHERE status = 'completed' 
+		AND created_at >= date_trunc('month', now())
+	`).First(&monthlyResult)
+
+	if err == nil {
+		stats.MonthlyTotal = monthlyResult.MonthlyTotal
+	}
+
+	// Recurring donations count
+	recurringCount, _ := tx.Where("donation_type = ?", "recurring").Count(&models.Donation{})
+	stats.RecurringCount = recurringCount
+
+	return stats, nil
+}
+
+// AdminDonationShow shows a single donation details
+func AdminDonationShow(c buffalo.Context) error {
+	// Get current user
+	currentUser, ok := c.Value("current_user").(*models.User)
+	if !ok || currentUser == nil {
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	// Get database connection
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	// Get donation ID from URL
+	donationID := c.Param("donation_id")
+	if donationID == "" {
+		c.Flash().Add("error", "Donation ID is required")
+		return c.Redirect(http.StatusFound, "/admin/donations")
+	}
+
+	// Find the donation
+	donation := &models.Donation{}
+	err := tx.Find(donation, donationID)
+	if err != nil {
+		c.Logger().Errorf("Error finding donation %s: %v", donationID, err)
+		c.Flash().Add("error", "Donation not found")
+		return c.Redirect(http.StatusFound, "/admin/donations")
+	}
+
+	// Set template data
+	c.Set("donation", donation)
+	c.Set("user", currentUser)
+
+	// Check if this is an HTMX request
+	if c.Request().Header.Get("HX-Request") == "true" {
+		return c.Render(http.StatusOK, r.HTML("admin/donations/show.plush.html"))
+	}
+
+	// Direct access - render full page
+	return c.Render(http.StatusOK, r.HTML("admin/donations/show_full.plush.html"))
+}

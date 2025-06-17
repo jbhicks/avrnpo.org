@@ -2,6 +2,9 @@ package actions
 
 import (
 	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,6 +17,7 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
 	"github.com/gofrs/uuid"
+	"avrnpo.org/models"
 	"avrnpo.org/services"
 )
 
@@ -71,6 +75,33 @@ type Donation struct {
 	Comments            string    `json:"comments" db:"comments"`
 	CreatedAt           time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// Webhook event structures
+type HelcimWebhookEvent struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
+	Data HelcimWebhookData `json:"data"`
+}
+
+type HelcimWebhookData struct {
+	ID                string  `json:"id"`
+	Amount            float64 `json:"amount"`
+	Currency          string  `json:"currency"`
+	Status            string  `json:"status"`
+	TransactionID     string  `json:"transactionId"`
+	CardToken         string  `json:"cardToken"`
+	CustomerCode      string  `json:"customerCode"`
+	Customer          HelcimWebhookCustomer `json:"customer"`
+	CreatedAt         string  `json:"createdAt"`
+	ProcessedAt       string  `json:"processedAt"`
+}
+
+type HelcimWebhookCustomer struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
 }
 
 // DonationInitializeHandler initializes a Helcim payment session
@@ -300,6 +331,190 @@ func DonationStatusHandler(c buffalo.Context) error {
 		"status":       donation.Status,
 		"createdAt":    donation.CreatedAt,
 	}))
+}
+
+// HelcimWebhookHandler processes webhook notifications from Helcim
+func HelcimWebhookHandler(c buffalo.Context) error {
+	// Get the raw body for signature verification
+	body, err := io.ReadAll(c.Request().Body)
+	if err != nil {
+		c.Logger().Errorf("Failed to read webhook body: %v", err)
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid request body"}))
+	}
+
+	// Verify webhook signature
+	signature := c.Request().Header.Get("X-Helcim-Signature")
+	if !verifyWebhookSignature(body, signature) {
+		c.Logger().Errorf("Invalid webhook signature")
+		return c.Render(http.StatusUnauthorized, r.JSON(map[string]string{"error": "Invalid signature"}))
+	}
+
+	// Parse webhook event
+	var event HelcimWebhookEvent
+	if err := json.Unmarshal(body, &event); err != nil {
+		c.Logger().Errorf("Failed to parse webhook event: %v", err)
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid JSON"}))
+	}
+
+	// Log the webhook event
+	c.Logger().Infof("Received Helcim webhook: type=%s, id=%s, transactionId=%s", 
+		event.Type, event.ID, event.Data.TransactionID)
+
+	// Get database connection
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		c.Logger().Errorf("No database transaction found")
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{"error": "Database error"}))
+	}
+
+	// Process based on event type
+	switch event.Type {
+	case "payment_success", "payment.success":
+		err = handlePaymentSuccess(tx, &event, c)
+	case "payment_declined", "payment.declined":
+		err = handlePaymentDeclined(tx, &event, c)
+	case "payment_refunded", "payment.refunded":
+		err = handlePaymentRefunded(tx, &event, c)
+	case "payment_cancelled", "payment.cancelled":
+		err = handlePaymentCancelled(tx, &event, c)
+	default:
+		c.Logger().Warnf("Unknown webhook event type: %s", event.Type)
+		return c.Render(http.StatusOK, r.JSON(map[string]string{"status": "ignored", "reason": "unknown event type"}))
+	}
+
+	if err != nil {
+		c.Logger().Errorf("Error processing webhook event: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{"error": "Processing failed"}))
+	}
+
+	return c.Render(http.StatusOK, r.JSON(map[string]string{"status": "processed"}))
+}
+
+// verifyWebhookSignature verifies the webhook signature from Helcim
+func verifyWebhookSignature(body []byte, signature string) bool {
+	verifierToken := os.Getenv("HELCIM_WEBHOOK_VERIFIER_TOKEN")
+	if verifierToken == "" {
+		// In development, we might not have this configured yet
+		if os.Getenv("GO_ENV") == "development" {
+			return true
+		}
+		return false
+	}
+
+	// Helcim uses HMAC-SHA256 for signature verification
+	// Format: sha256=<signature>
+	expectedSig := "sha256=" + generateHMACSignature(body, verifierToken)
+	return signature == expectedSig
+}
+
+// generateHMACSignature generates HMAC-SHA256 signature
+func generateHMACSignature(body []byte, secret string) string {
+	h := hmac.New(sha256.New, []byte(secret))
+	h.Write(body)
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// handlePaymentSuccess processes successful payment webhooks
+func handlePaymentSuccess(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	// Find the donation record by transaction ID
+	donation := &models.Donation{}
+	err := tx.Where("helcim_transaction_id = ?", event.Data.TransactionID).First(donation)
+	if err != nil {
+		// If we can't find the donation, log it but don't fail the webhook
+		c.Logger().Warnf("Could not find donation for transaction ID: %s", event.Data.TransactionID)
+		return nil
+	}
+
+	// Update donation status
+	donation.Status = "completed"
+	donation.UpdatedAt = time.Now()
+
+	if err := tx.Save(donation); err != nil {
+		return fmt.Errorf("failed to update donation status: %v", err)
+	}
+	// Send thank you email
+	emailService := services.NewEmailService()
+	receiptData := services.DonationReceiptData{
+		DonorName:           donation.DonorName,
+		DonationAmount:      donation.Amount,
+		DonationType:        donation.DonationType,
+		TransactionID:       event.Data.TransactionID,
+		DonationDate:        donation.CreatedAt,
+		TaxDeductibleAmount: donation.Amount, // Full amount is tax deductible
+		OrganizationEIN:     "XX-XXXXXXX", // Replace with actual EIN
+		OrganizationName:    "American Veterans Rebuilding",
+		OrganizationAddress: "Your Organization Address", // Replace with actual address
+	}
+	
+	if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
+		c.Logger().Errorf("Failed to send donation receipt: %v", err)
+		// Don't fail the webhook if email fails
+	}
+
+	c.Logger().Infof("Payment completed for donation ID: %s, amount: $%.2f", 
+		donation.ID.String(), donation.Amount)
+
+	return nil
+}
+
+// handlePaymentDeclined processes declined payment webhooks
+func handlePaymentDeclined(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	donation := &models.Donation{}
+	err := tx.Where("helcim_transaction_id = ?", event.Data.TransactionID).First(donation)
+	if err != nil {
+		c.Logger().Warnf("Could not find donation for transaction ID: %s", event.Data.TransactionID)
+		return nil
+	}
+
+	donation.Status = "failed"
+	donation.UpdatedAt = time.Now()
+
+	if err := tx.Save(donation); err != nil {
+		return fmt.Errorf("failed to update donation status: %v", err)
+	}
+
+	c.Logger().Infof("Payment declined for donation ID: %s", donation.ID.String())
+	return nil
+}
+
+// handlePaymentRefunded processes refunded payment webhooks
+func handlePaymentRefunded(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	donation := &models.Donation{}
+	err := tx.Where("helcim_transaction_id = ?", event.Data.TransactionID).First(donation)
+	if err != nil {
+		c.Logger().Warnf("Could not find donation for transaction ID: %s", event.Data.TransactionID)
+		return nil
+	}
+
+	donation.Status = "refunded"
+	donation.UpdatedAt = time.Now()
+
+	if err := tx.Save(donation); err != nil {
+		return fmt.Errorf("failed to update donation status: %v", err)
+	}
+
+	c.Logger().Infof("Payment refunded for donation ID: %s", donation.ID.String())
+	return nil
+}
+
+// handlePaymentCancelled processes cancelled payment webhooks
+func handlePaymentCancelled(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	donation := &models.Donation{}
+	err := tx.Where("helcim_transaction_id = ?", event.Data.TransactionID).First(donation)
+	if err != nil {
+		c.Logger().Warnf("Could not find donation for transaction ID: %s", event.Data.TransactionID)
+		return nil
+	}
+
+	donation.Status = "cancelled"
+	donation.UpdatedAt = time.Now()
+
+	if err := tx.Save(donation); err != nil {
+		return fmt.Errorf("failed to update donation status: %v", err)
+	}
+
+	c.Logger().Infof("Payment cancelled for donation ID: %s", donation.ID.String())
+	return nil
 }
 
 // Helper function to call Helcim API

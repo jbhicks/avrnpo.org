@@ -95,7 +95,7 @@ func App() *buffalo.App {
 		app.Use(Authorize)
 
 		// Skip Authorize middleware for public routes following official buffalo-auth pattern
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler)
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, HelcimWebhookHandler)
 
 		// Public routes
 		app.GET("/", HomeHandler)
@@ -112,6 +112,9 @@ func App() *buffalo.App {
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
 		app.POST("/api/donations/{donationId}/complete", DonationCompleteHandler)
 		app.GET("/api/donations/{donationId}/status", DonationStatusHandler)
+		
+		// Webhook routes (public - external services)
+		app.POST("/api/webhooks/helcim", HelcimWebhookHandler)
 
 		// Blog routes
 		app.GET("/blog", BlogIndex)
@@ -155,6 +158,10 @@ func App() *buffalo.App {
 		adminGroup.GET("/posts/{post_id}/edit", AdminPostsEdit)
 		adminGroup.POST("/posts/{post_id}", AdminPostsUpdate)
 		adminGroup.DELETE("/posts/{post_id}", AdminPostsDelete)
+
+		// Admin donation routes
+		adminGroup.GET("/donations", AdminDonationsIndex)
+		adminGroup.GET("/donations/{donation_id}", AdminDonationShow)
 
 		// Add no-cache headers for static files in development
 		if ENV == "development" {

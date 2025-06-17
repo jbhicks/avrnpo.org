@@ -195,8 +195,8 @@
 }
 
 .social-icon img {
-  height: 2.5rem;
-  width: 2.5rem;
+  height: 40px;
+  width: 40px;
   object-fit: contain;
   display: block;
 }
@@ -270,6 +270,12 @@
   .nav-links a[role="button"] {
     font-size: 0.75rem;
     padding: calc(var(--pico-spacing) * 0.375) calc(var(--pico-spacing) * 0.75);
+  }
+  
+  /* Responsive amount button grid */
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: calc(var(--pico-spacing) * 0.75);
   }
 }
 
@@ -697,7 +703,7 @@ a[role="button"].contrast:hover {
 /* Donation amount selection */
 .amount-grid {
   --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
-  --pico-grid-row-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
   grid-template-columns: repeat(3, 1fr);
   margin-bottom: var(--pico-spacing);
 }
@@ -705,13 +711,23 @@ a[role="button"].contrast:hover {
 .amount-btn {
   text-align: center;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .amount-btn.selected {
-  background-color: var(--pico-primary-hover-background);
-  border-color: var(--pico-primary);
-  color: var(--pico-primary);
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Donation card styling */
@@ -837,6 +853,1568 @@ a[role="button"].contrast:hover {
   opacity: 0.7;
 }
 
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
 /* =============================================================================
    CUSTOM CLASSES USING PICO VARIABLES
    ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+  border: 2px solid var(--pico-primary-border);
+  background: transparent;
+  color: var(--pico-primary);
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+}
+
+/* Selected state - clear visual feedback */
+.amount-btn.selected {
+  background: var(--pico-primary);
+  color: white;
+  border-color: var(--pico-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.3);
+}
+
+/* Hover state for non-selected buttons */
+.amount-btn:hover:not(.selected) {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(255, 182, 39, 0.2);
+}
+
+/* Focus state for accessibility */
+.amount-btn:focus {
+  outline: var(--pico-outline-width) solid var(--pico-primary-focus);
+  outline-offset: 2px;
+}
+
+/* Active state */
+.amount-btn:active {
+  transform: scale(0.98);
+}
+
+/* Dark theme adjustments for selected state */
+[data-theme="dark"] .amount-btn.selected,
+:root:not([data-theme="light"]) .amount-btn.selected {
+  background: var(--pico-primary);
+  color: hsl(210, 15%, 8%);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   ============================================================================= */
+
+/* =============================================================================
+   DONATION SYSTEM STYLES
+   ============================================================================= */
+
+/* Donation page grid layout */
+.donation-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: calc(var(--pico-spacing) * 2);
+  align-items: start;
+}
+
+/* Donation amount selection */
+.amount-grid {
+  --pico-grid-column-gap: calc(var(--pico-spacing) / 2);
+  --pico-grid-row-gap: var(--pico-spacing);
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.amount-btn.selected {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: white !important;
+  font-weight: 700;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255, 182, 39, 0.4);
+  z-index: 1;
+}
+
+.amount-btn:hover:not(.selected) {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Donation card styling */
+.donation-card {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+
+/* Donor information section */
+.donor-info {
+  margin: calc(var(--pico-spacing) * 1.5) 0;
+  padding: var(--pico-spacing);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  background-color: var(--pico-card-background-color);
+}
+
+.donor-info h4 {
+  margin-bottom: calc(var(--pico-spacing) / 2);
+  color: var(--pico-color);
+}
+
+.donor-info p small {
+  color: var(--pico-muted-color);
+}
+
+/* Address details styling */
+.address-details {
+  margin-top: var(--pico-spacing);
+}
+
+.address-fields {
+  margin-top: calc(var(--pico-spacing) / 2);
+}
+
+/* Donation messages */
+.donation-message {
+  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: var(--pico-spacing);
+  font-weight: 500;
+}
+
+.donation-message.success {
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #059669;
+}
+
+.donation-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.donation-message.info {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #2563eb;
+}
+
+/* Impact information styling */
+.impact-info {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * 1.25);
+}
+
+.impact-item {
+  border-left: 3px solid var(--pico-primary);
+  padding-left: var(--pico-spacing);
+}
+
+.impact-title {
+  color: var(--pico-primary);
+  margin-bottom: calc(var(--pico-spacing) / 2);
+}
+
+/* Tax information section */
+.tax-info {
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: calc(var(--pico-spacing) * 1.5);
+  margin-top: calc(var(--pico-spacing) * 2);
+}
+
+.contact-details {
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive design for donation page */
+@media (max-width: 768px) {
+  .donation-grid {
+    grid-template-columns: 1fr;
+    gap: var(--pico-spacing);
+  }
+  
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .donation-card {
+    padding: var(--pico-spacing);
+  }
+  
+  .donor-info {
+    padding: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* Loading state for donation button */
+[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Donation amount button styling */
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--pico-spacing);
+  margin-bottom: calc(var(--pico-typography-spacing-vertical) * 1.5);
+}
+
+.amount-btn {
+  transition: all 0.2s ease;
+}

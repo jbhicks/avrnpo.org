@@ -1,19 +1,9 @@
 ---
 development:
-  dialect: postgres
-  database: avrnpo_development
-  user: postgres
-  password: postgres
-  host: 127.0.0.1
-  pool: 5
+  url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_development?sslmode=disable"}}
 
 test:
-  dialect: postgres
-  database: avrnpo_test
-  user: postgres
-  password: postgres
-  host: 127.0.0.1
-  pool: 5
+  url: {{envOr "TEST_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_test?sslmode=disable"}}
 
 production:
   url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_production?sslmode=disable"}}

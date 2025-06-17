@@ -11,12 +11,12 @@
     </li>
   </ul>
   <ul>
-    <li><a href="/" hx-get="/" hx-target="#htmx-content" hx-push-url="true">Home</a></li>
-    <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-push-url="true">Blog</a></li>
-    <li><a href="/dashboard" hx-get="/dashboard" hx-target="#htmx-content" hx-push-url="true" aria-current="page">Dashboard</a></li>
+    <li><a href="/">Home</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/dashboard" aria-current="page">Dashboard</a></li>
     
     <%= if (current_user && current_user.Role == "admin") { %>
-      <li><a href="/admin" hx-get="/admin" hx-target="#htmx-content" hx-push-url="true">Admin</a></li>
+      <li><a href="/admin">Admin</a></li>
     <% } %>
     
     <li>
@@ -25,7 +25,7 @@
           <%= current_user.Email %>
         </summary>
         <ul dir="rtl">
-          <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-push-url="true">Account Settings</a></li>
+          <li><a href="/account">Account Settings</a></li>
           <li><a href="/auth/logout">Logout</a></li>
         </ul>
       </details>
@@ -99,7 +99,7 @@
       <p>Access admin dashboard and manage system settings.</p>
       <nav>
         <ul>
-          <li><a href="/admin" hx-get="/admin" hx-target="#htmx-content" hx-push-url="true" role="button">Admin Dashboard</a></li>
+          <li><a href="/admin" role="button">Admin Dashboard</a></li>
         </ul>
       </nav>
     </article>
@@ -113,8 +113,8 @@
     </header>
     <nav>
       <ul>
-        <li><a href="/account" hx-get="/account" hx-target="#htmx-content" hx-push-url="true" role="button" class="outline">Account Settings</a></li>
-        <li><a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-push-url="true" role="button" class="outline">View Blog</a></li>
+        <li><a href="/account" role="button" class="outline">Account Settings</a></li>
+        <li><a href="/blog" role="button" class="outline">View Blog</a></li>
         <li><a href="/auth/logout" role="button" class="secondary">Logout</a></li>
       </ul>
     </nav>
