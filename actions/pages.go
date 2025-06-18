@@ -40,7 +40,12 @@ func ContactHandler(c buffalo.Context) error {
 
 // DonateHandler shows the donation page content
 func DonateHandler(c buffalo.Context) error {
-	// Always return full page - HTMX handles content extraction
+	// Check if this is an HTMX request
+	if c.Request().Header.Get("HX-Request") == "true" {
+		// Return just the content for HTMX
+		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+	}
+	// Return full page for direct access
 	return c.Render(http.StatusOK, r.HTML("pages/donate_full.plush.html"))
 }
 

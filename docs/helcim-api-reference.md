@@ -2,9 +2,28 @@
 
 This document serves as a comprehensive reference for integrating with the Helcim API for the AVR NPO donation system.
 
+## 🚨 CRITICAL: Official HelcimPay.js Integration Only
+
+**⚠️ IMPORTANT:** This project now uses the **official HelcimPay.js integration** from Helcim. Previous implementations using custom modals were incorrect and have been replaced.
+
+**Official Helcim Documentation:** https://devdocs.helcim.com/docs/overview-of-helcimpayjs
+
 ## Overview
 
-Helcim is a payment processing company that provides APIs for handling credit card transactions, invoicing, customer management, and more. This guide focuses on the functionality needed for the AVR donation system.
+Helcim is a payment processing company that provides APIs for handling credit card transactions, invoicing, customer management, and more. This guide focuses on the functionality needed for the AVR donation system using the **official HelcimPay.js library**.
+
+## Correct Integration Architecture
+
+### Backend (Go/Buffalo)
+- Calls `/helcim-pay/initialize` API endpoint to get `checkoutToken` and `secretToken`
+- Handles webhooks for payment confirmation
+- Processes payment completion callbacks
+
+### Frontend (JavaScript)
+- Loads official HelcimPay.js: `https://secure.helcim.app/helcim-pay/services/start.js`
+- Uses `appendHelcimPayIframe(checkoutToken)` to display payment modal
+- Listens for postMessage events from the Helcim iframe
+- Uses `removeHelcimPayIframe()` to clean up after payment
 
 ## Authentication
 
@@ -97,9 +116,59 @@ Or for general errors:
 - Implement exponential backoff for 429 responses
 - Consider implementing client-side rate limiting for donation endpoints
 
-## API Endpoints Used by AVR
+## Official HelcimPay.js Implementation
 
-### 1. HelcimPay Initialize (Currently Used)
+### 1. Frontend Integration
+
+**Load the Official Library:**
+```html
+<script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
+```
+
+**Display Payment Modal:**
+```javascript
+// After getting checkoutToken from backend
+appendHelcimPayIframe(checkoutToken);
+```
+
+**Listen for Payment Events:**
+```javascript
+window.addEventListener('message', (event) => {
+  const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+  
+  if (event.data.eventName === helcimPayJsIdentifierKey) {
+    
+    if (event.data.eventStatus === 'SUCCESS') {
+      // Payment successful - eventMessage contains transaction data
+      const transactionData = JSON.parse(event.data.eventMessage);
+      handlePaymentSuccess(transactionData);
+    }
+    
+    if (event.data.eventStatus === 'ABORTED') {
+      // Payment failed
+      handlePaymentError(event.data.eventMessage);
+    }
+    
+    if (event.data.eventStatus === 'HIDE') {
+      // Modal closed without payment
+      handlePaymentCancelled();
+    }
+  }
+});
+```
+
+**Clean Up After Payment:**
+```javascript
+// Remove the iframe and event listeners
+removeHelcimPayIframe();
+window.removeEventListener('message', eventHandler);
+```
+
+### 2. Backend API Integration
+
+## API Endpoints Used by AVR
+#### HelcimPay Initialize (Currently Used)
+
 **Purpose:** Create a checkout session for HelcimPay.js integration
 
 **Endpoint:** `POST /helcim-pay/initialize`
@@ -131,7 +200,41 @@ Or for general errors:
 - Tokens expire after 60 minutes
 - Must be called from backend server (CORS restrictions on frontend)
 - `secretToken` used for transaction validation
-- `checkoutToken` used to render payment modal
+- `checkoutToken` used with `appendHelcimPayIframe(checkoutToken)` function
+
+#### Transaction Response Format
+
+When a payment is successful, the Helcim modal emits a postMessage event with this structure:
+
+```javascript
+{
+  eventName: "helcim-pay-js-" + checkoutToken,
+  eventStatus: "SUCCESS", // or "ABORTED" or "HIDE"
+  eventMessage: "{\"status\":200,\"data\":{\"data\":{\"amount\":\"100.00\",\"approvalCode\":\"T5E5ST\",\"avsResponse\":\"X\",\"cardBatchId\":\"2578965\",\"cardHolderName\":\"Jane Doe\",\"cardNumber\":\"5454545454\",\"cardToken\":\"684a4a03400fadd1e7bdc9\",\"currency\":\"CAD\",\"customerCode\":\"CST1200\",\"dateCreated\":\"2022-01-05 12:30:45\",\"invoiceNumber\":\"INV000010\",\"status\":\"APPROVED\",\"transactionId\":\"17701631\",\"type\":\"purchase\"},\"hash\":\"dbcb570cca52c38d597941adbed03f01be78c43cba89048722925b2f168226a9\"}}"
+}
+```
+
+**Note:** The `eventMessage` is a JSON.stringify'd string that needs to be parsed to access transaction details.
+
+### 🚨 Previous Incorrect Implementation (FIXED)
+
+**What Was Wrong:**
+- Used a custom local modal instead of official HelcimPay.js
+- Created `/js/helcim-pay.min.js` as a custom implementation
+- Did not use the official Helcim iframe and postMessage system
+- Manually styled and created payment forms (incorrect for PCI compliance)
+
+**What We Fixed:**
+- Replaced custom modal with official `https://secure.helcim.app/helcim-pay/services/start.js`
+- Use `appendHelcimPayIframe(checkoutToken)` function provided by Helcim
+- Listen for official postMessage events from Helcim's secure iframe
+- Removed all custom payment form code - Helcim handles the secure payment collection
+
+**Why This Matters:**
+- **PCI Compliance:** Only Helcim's official iframe is PCI compliant
+- **Security:** Custom payment forms can expose card data to our servers
+- **Updates:** Official library gets security updates automatically
+- **Features:** Access to all Helcim features (digital wallets, ACH, etc.)
 
 ### 2. Card Transaction API (Future Use)
 **Purpose:** Retrieve transaction details after payment

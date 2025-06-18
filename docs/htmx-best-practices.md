@@ -1,5 +1,45 @@
 # HTMX Best Practices (Based on Official v2.0.4 Docs)
 
+## 🚨 CRITICAL SAFEGUARD: NEVER CREATE DUPLICATE HEADERS
+
+**BEFORE making ANY handler changes, ALWAYS verify HTMX navigation:**
+
+### ✅ Required Check Process:
+1. **Test HTMX navigation**: Click nav links - should NOT show duplicate headers
+2. **Test direct access**: Visit URL directly - should show single header
+3. **Verify handler pattern**: ALL page handlers must follow the same pattern
+
+### ❌ COMMON MISTAKE: Inconsistent Handler Patterns
+```go
+// ❌ BAD: This handler always returns full page
+func DonateHandler(c buffalo.Context) error {
+    return c.Render(http.StatusOK, r.HTML("pages/donate_full.plush.html"))
+}
+
+// ✅ GOOD: This handler checks for HTMX requests
+func DonateHandler(c buffalo.Context) error {
+    if c.Request().Header.Get("HX-Request") == "true" {
+        return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+    }
+    return c.Render(http.StatusOK, r.HTML("pages/donate_full.plush.html"))
+}
+```
+
+### 🔧 MANDATORY: All Page Handlers Must Follow This Pattern
+```go
+func PageHandler(c buffalo.Context) error {
+    // Check if this is an HTMX request
+    if c.Request().Header.Get("HX-Request") == "true" {
+        // Return just the content for HTMX
+        return c.Render(http.StatusOK, r.HTML("pages/page.plush.html"))
+    }
+    // Return full page for direct access
+    return c.Render(http.StatusOK, r.HTML("pages/page_full.plush.html"))
+}
+```
+
+**NEVER deviate from this pattern without explicit testing!**
+
 ## ✅ RECOMMENDED: Use `hx-boost` for Simple Navigation
 
 The **official HTMX documentation recommends `hx-boost`** as the simplest approach for basic navigation:

@@ -223,67 +223,35 @@ if (typeof window.DonationSystem === 'undefined') {
 
             if (!response.ok) {
                 throw new Error(result.error || 'Failed to initialize payment');
-            }
-
-            if (result.success && result.checkoutToken) {
-                // Load Helcim JS and show payment modal
-                this.loadHelcimJS(() => {
-                    this.showHelcimModal(result.checkoutToken, result.donationId);
-                });
+            }            if (result.success && result.checkoutToken) {
+                // Show official Helcim modal
+                this.showHelcimModal(result.checkoutToken, result.donationId);
             } else {
                 throw new Error('Invalid response from payment processor');
             }
 
         } catch (error) {
-            console.error('Payment initialization error:', error);
-            alert('Error initializing payment: ' + error.message);
+            console.error('Payment initialization error:', error);            alert('Error initializing payment: ' + error.message);
             this.isProcessing = false;
             this.updateProcessingState(false);
         }
-    }    loadHelcimJS(callback) {
-        // Check if Helcim JS is already loaded
-        if (window.HelcimPay) {
-            callback();
-            return;
-        }
-        
-        // Load Helcim JS dynamically
-        const script = document.createElement('script');
-        script.src = '/js/helcim-pay.min.js';  // Use local copy
-        script.onload = callback;
-        script.onerror = () => {
-            console.error('Failed to load Helcim JS');
-            alert('Error loading payment processor. Please try again.');
-            this.isProcessing = false;
-            this.updateProcessingState(false);
-        };
-        document.head.appendChild(script);
     }
 
     showHelcimModal(checkoutToken, donationId) {
         try {
-            console.log('Showing Helcim modal with token:', checkoutToken);
+            console.log('Showing official Helcim modal with token:', checkoutToken);
             
-            const helcim = new window.HelcimPay();
+            // Store donation ID and checkout token for completion callback
+            this.currentDonationId = donationId;
+            this.currentCheckoutToken = checkoutToken;
             
-            // Use callback-based API for local Helcim implementation
-            helcim.startPayment({
-                checkoutToken: checkoutToken,
-                amount: this.amount,
-                onSuccess: (response) => {
-                    console.log('Payment successful:', response);
-                    this.handlePaymentSuccess(response, donationId);
-                },
-                onError: (error) => {
-                    console.error('Payment error:', error);
-                    this.handlePaymentError(error);
-                },
-                onCancel: () => {
-                    console.log('Payment cancelled');
-                    this.handlePaymentCancelled();
-                }
-            });
-
+            // Set up event listener for Helcim modal responses
+            this.setupHelcimEventListener();
+            
+            // Show the official Helcim modal using the official API
+            // This function is provided by the HelcimPay.js library loaded in the template
+            appendHelcimPayIframe(checkoutToken);
+            
         } catch (error) {
             console.error('Error showing Helcim modal:', error);
             alert('Error loading payment form. Please try again.');
@@ -292,8 +260,74 @@ if (typeof window.DonationSystem === 'undefined') {
         }
     }
 
-    handlePaymentSuccess(response, donationId) {
+    setupHelcimEventListener() {
+        // Remove any existing listeners to prevent duplicates
+        if (this.helcimEventHandler) {
+            window.removeEventListener('message', this.helcimEventHandler);
+        }
+        
+        // Create a bound handler so we can remove it later
+        this.helcimEventHandler = (event) => {
+            const helcimPayJsIdentifierKey = 'helcim-pay-js-' + this.currentCheckoutToken;
+            
+            console.log('Received postMessage event:', event.data);
+            
+            if (event.data.eventName === helcimPayJsIdentifierKey) {
+                
+                if (event.data.eventStatus === 'SUCCESS') {
+                    console.log('Helcim payment success:', event.data.eventMessage);
+                    this.handlePaymentSuccess(event.data.eventMessage, this.currentDonationId);
+                }
+                
+                if (event.data.eventStatus === 'ABORTED') {
+                    console.error('Helcim payment aborted:', event.data.eventMessage);
+                    this.handlePaymentError(event.data.eventMessage);
+                }
+                
+                if (event.data.eventStatus === 'HIDE') {
+                    console.log('Helcim modal closed');
+                    this.handlePaymentCancelled();
+                }
+                
+                // Clean up the event listener after handling the event
+                this.cleanup();
+            }
+        };
+        
+        // Add the event listener
+        window.addEventListener('message', this.helcimEventHandler);
+    }
+
+    cleanup() {
+        // Remove event listener
+        if (this.helcimEventHandler) {
+            window.removeEventListener('message', this.helcimEventHandler);
+            this.helcimEventHandler = null;
+        }
+        
+        // Remove the iframe (this function is provided by HelcimPay.js)
+        if (typeof removeHelcimPayIframe === 'function') {
+            removeHelcimPayIframe();
+        }
+    }    handlePaymentSuccess(eventMessage, donationId) {
         console.log('Payment completed successfully');
+        
+        // Parse the Helcim response (it comes as a JSON.stringify'd string)
+        let transactionData;
+        try {
+            transactionData = typeof eventMessage === 'string' ? JSON.parse(eventMessage) : eventMessage;
+            console.log('Parsed transaction data:', transactionData);
+        } catch (parseError) {
+            console.error('Error parsing transaction response:', parseError);
+            transactionData = { transactionId: 'parse-error', status: 'APPROVED' };
+        }
+        
+        // Extract transaction details from the nested response structure
+        const transactionId = transactionData?.data?.data?.transactionId || 'unknown';
+        const status = transactionData?.data?.data?.status || 'APPROVED';
+        
+        // Clean up the modal and event listeners
+        this.cleanup();
         
         // Update our backend with the transaction details
         fetch(`/api/donations/${donationId}/complete`, {
@@ -302,8 +336,9 @@ if (typeof window.DonationSystem === 'undefined') {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                transactionId: response.transactionId,
-                status: 'APPROVED'
+                transactionId: transactionId,
+                status: status,
+                helcimResponse: transactionData
             })
         }).then(response => response.json())
         .then(result => {
@@ -316,17 +351,33 @@ if (typeof window.DonationSystem === 'undefined') {
             // Still show success since payment went through
             window.location.href = '/donate/success';
         });
-    }
-
-    handlePaymentError(error) {
-        console.error('Payment failed:', error);
-        alert('Payment failed: ' + (error.message || 'Unknown error'));
+    }    handlePaymentError(eventMessage) {
+        console.error('Payment failed:', eventMessage);
+        
+        // Clean up the modal and event listeners
+        this.cleanup();
+        
+        // Parse error message if it's a JSON string
+        let errorMessage = 'Payment was declined. Please try again with different payment details.';
+        try {
+            if (typeof eventMessage === 'string' && eventMessage.includes('HelcimPay.js transaction failed')) {
+                errorMessage = eventMessage;
+            }
+        } catch (e) {
+            // Use default message
+        }
+        
+        alert(errorMessage);
         this.isProcessing = false;
         this.updateProcessingState(false);
     }
 
     handlePaymentCancelled() {
         console.log('Payment was cancelled by user');
+        
+        // Clean up the modal and event listeners
+        this.cleanup();
+        
         this.isProcessing = false;
         this.updateProcessingState(false);
     }

@@ -2,17 +2,27 @@
 
 ## Current Status
 
-The AVR NPO website currently has a donation page with buttons but no actual payment processing. This document outlines the implementation plan for secure, PCI-compliant donation processing using Helcim.
+The AVR NPO website donation system has been **corrected** to use the official Helcim integration. 
+
+**🚨 MAJOR FIX COMPLETED:** Replaced incorrect custom modal implementation with official HelcimPay.js integration.
 
 ## Implementation Phases
 
-### Phase 1: Basic Helcim Integration ✅ (COMPLETED)
-- ✅ **HelcimPay.js Frontend Integration** - Secure card tokenization (Local file)
+### Phase 1: Basic Helcim Integration ✅ (COMPLETED - CORRECTED)
+- ✅ **Official HelcimPay.js Integration** - Using `https://secure.helcim.app/helcim-pay/services/start.js`
+- ✅ **Correct Modal Implementation** - Using `appendHelcimPayIframe(checkoutToken)` function
+- ✅ **Proper Event Handling** - Using postMessage events from Helcim iframe
 - ✅ **Backend API Endpoint** - Handle payment initialization 
 - ✅ **Basic Error Handling** - User-friendly error messages
 - ✅ **Donation Receipt System** - Email confirmations
 - ✅ **Development Mode Helpers** - Auto-fill test data, copy test card numbers
 - ✅ **Database Integration** - Full donation tracking and storage
+
+**What Was Fixed:**
+- **REMOVED:** Custom `/js/helcim-pay.min.js` file (was incorrect)
+- **ADDED:** Official HelcimPay.js library from Helcim CDN
+- **CORRECTED:** Payment modal to use official Helcim iframe
+- **FIXED:** Event handling to use official postMessage protocol
 
 ### Phase 2: Enhanced Features 🚧 (Next)
 - **Webhooks Integration** - Real-time payment status updates
@@ -30,16 +40,26 @@ The AVR NPO website currently has a donation page with buttons but no actual pay
 
 ### Current Focus: Phase 1 Implementation
 
-#### 1. Frontend Payment Flow
+#### 1. Frontend Payment Flow (CORRECTED)
 ```
 User visits /donate → 
 Selects amount → 
 Clicks "Donate Now" → 
-HelcimPay modal opens → 
-User enters card details → 
-Payment processed → 
-Success/failure feedback
+Backend calls Helcim API → 
+Frontend receives checkoutToken → 
+appendHelcimPayIframe(checkoutToken) displays official Helcim modal → 
+User enters card details in secure Helcim iframe → 
+Payment processed by Helcim → 
+postMessage event sent to parent window → 
+Frontend handles success/failure → 
+removeHelcimPayIframe() cleans up
 ```
+
+**Key Changes Made:**
+- Uses official Helcim iframe instead of custom modal
+- Secure payment collection handled entirely by Helcim
+- PCI compliant - no card data touches our servers
+- Official postMessage protocol for event handling
 
 #### 2. Backend API Structure
 - `POST /api/donations/initialize` - Create Helcim payment session

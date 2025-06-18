@@ -79,27 +79,85 @@ install-deps:
 	fi
 	@echo "✅ Dependency installation complete. Run 'make check-deps' to verify."
 
-# Start database and development server with full health checks
-dev: check-deps db-up
-	@echo "🔍 Waiting for database to be ready..."
-	@MAX_WAIT=30; \
-	WAIT_COUNT=0; \
-	while [ $$WAIT_COUNT -lt $$MAX_WAIT ]; do \
-		if podman-compose exec postgres pg_isready -U postgres > /dev/null 2>&1; then \
-			echo "✅ PostgreSQL is ready!"; \
-			break; \
+# Start database and development server with improved resilience
+dev: check-deps
+	@echo "🏃 Starting development environment..."
+	@echo "🔍 Checking database status..."
+	@# Check if database is already running and ready
+	@DB_READY=false; \
+	if command -v podman-compose >/dev/null 2>&1; then \
+		if podman-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
+			echo "✅ Database container is running (Podman)"; \
+			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+				echo "✅ PostgreSQL is ready and accepting connections"; \
+				DB_READY=true; \
+			else \
+				echo "⚠️  Database container is running but PostgreSQL is not ready"; \
+			fi; \
+		else \
+			echo "🔷 Database container not running, starting with Podman Compose..."; \
 		fi; \
-		echo "Waiting for PostgreSQL... ($$((WAIT_COUNT + 1))/$$MAX_WAIT)"; \
-		sleep 1; \
-		WAIT_COUNT=$$((WAIT_COUNT + 1)); \
-	done; \
-	if [ $$WAIT_COUNT -ge $$MAX_WAIT ]; then \
-		echo "❌ PostgreSQL failed to become ready within $$MAX_WAIT seconds"; \
-		echo "Container status:"; \
-		podman-compose ps; \
-		echo "Container logs:"; \
-		podman-compose logs postgres --tail 20; \
+	elif command -v docker-compose >/dev/null 2>&1; then \
+		if docker-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
+			echo "✅ Database container is running (Docker)"; \
+			if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+				echo "✅ PostgreSQL is ready and accepting connections"; \
+				DB_READY=true; \
+			else \
+				echo "⚠️  Database container is running but PostgreSQL is not ready"; \
+			fi; \
+		else \
+			echo "🐳 Database container not running, starting with Docker Compose..."; \
+		fi; \
+	else \
+		echo "❌ Neither podman-compose nor docker-compose found."; \
+		echo "Please install Podman (recommended) or Docker."; \
 		exit 1; \
+	fi; \
+	\
+	if [ "$$DB_READY" = "false" ]; then \
+		echo "🗄️  Ensuring database is running..."; \
+		if command -v podman-compose >/dev/null 2>&1; then \
+			podman-compose up -d postgres || (echo "❌ Failed to start database with Podman Compose" && exit 1); \
+		elif command -v docker-compose >/dev/null 2>&1; then \
+			docker-compose up -d postgres || (echo "❌ Failed to start database with Docker Compose" && exit 1); \
+		fi; \
+		\
+		echo "🔍 Waiting for database to be ready..."; \
+		MAX_WAIT=30; \
+		WAIT_COUNT=0; \
+		while [ $$WAIT_COUNT -lt $$MAX_WAIT ]; do \
+			if command -v podman-compose >/dev/null 2>&1; then \
+				if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+					echo "✅ PostgreSQL is ready!"; \
+					break; \
+				fi; \
+			elif command -v docker-compose >/dev/null 2>&1; then \
+				if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+					echo "✅ PostgreSQL is ready!"; \
+					break; \
+				fi; \
+			fi; \
+			echo "Waiting for PostgreSQL... ($$((WAIT_COUNT + 1))/$$MAX_WAIT)"; \
+			sleep 1; \
+			WAIT_COUNT=$$((WAIT_COUNT + 1)); \
+		done; \
+		\
+		if [ $$WAIT_COUNT -ge $$MAX_WAIT ]; then \
+			echo "❌ PostgreSQL failed to become ready within $$MAX_WAIT seconds"; \
+			echo "Database container status:"; \
+			if command -v podman-compose >/dev/null 2>&1; then \
+				podman-compose ps; \
+				echo "Container logs:"; \
+				podman-compose logs postgres --tail 20; \
+			elif command -v docker-compose >/dev/null 2>&1; then \
+				docker-compose ps; \
+				echo "Container logs:"; \
+				docker-compose logs postgres --tail 20; \
+			fi; \
+			echo "⚠️  Database startup failed, but continuing to try Buffalo..."; \
+			echo "💡 You may need to run 'make db-reset' if there are database issues."; \
+		fi; \
 	fi
 	@echo "🚀 Starting Buffalo development server..."
 	@echo "📱 Visit http://127.0.0.1:3000 to see your application"
@@ -159,7 +217,6 @@ db-up:
 			echo "✅ Database is already running (Podman)"; \
 			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
 				echo "✅ PostgreSQL is ready and accepting connections"; \
-				exit 0; \
 			else \
 				echo "🔄 Database container is running but PostgreSQL is not ready, restarting..."; \
 				podman-compose restart postgres; \
@@ -173,7 +230,6 @@ db-up:
 			echo "✅ Database is already running (Docker)"; \
 			if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
 				echo "✅ PostgreSQL is ready and accepting connections"; \
-				exit 0; \
 			else \
 				echo "🔄 Database container is running but PostgreSQL is not ready, restarting..."; \
 				docker-compose restart postgres; \

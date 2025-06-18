@@ -3,6 +3,23 @@
 ## 🚨 [SECURITY GUIDELINES - READ FIRST](./SECURITY-GUIDELINES.md)
 **CRITICAL: Security rules for handling sensitive data - MUST READ before any development**
 
+## 🚨 **HELCIM INTEGRATION FIXED - CRITICAL UPDATE**
+
+**⚠️ MAJOR CORRECTION:** The donation system was using an **incorrect custom modal implementation**. This has been **completely fixed** to use the official Helcim integration.
+
+**What Was Wrong:**
+- Custom `/js/helcim-pay.min.js` file (removed)
+- Manual payment form creation (incorrect for PCI compliance)
+- Custom modal styling and event handling
+
+**What's Now Correct:**
+- Official HelcimPay.js: `https://secure.helcim.app/helcim-pay/services/start.js`
+- Official `appendHelcimPayIframe(checkoutToken)` function
+- Official postMessage event handling
+- PCI compliant secure iframe payment collection
+
+**📖 See [Helcim API Reference](./helcim-api-reference.md) for complete correct implementation details.**
+
 ## 🧪 [Buffalo Test System - CRITICAL KNOWLEDGE](./buffalo-test-debugging-summary.md)
 **ESSENTIAL: Buffalo testing requirements and PostgreSQL troubleshooting - MUST UNDERSTAND before testing**
 
