@@ -16,7 +16,7 @@ The donation system uses real Helcim payment processing but operates in test mod
 1. Navigate to: `http://localhost:3000/donate`
 2. Enter any amount and donor information
 3. Click "Donate Now"
-4. Use test card: **4111 1111 1111 1111**, CVV: **123**, Expiry: **12/25**
+4. Use **official Helcim test card**: **4124 9399 9999 9990**, CVV: **100**, Expiry: **01/28**
 5. Verify success page appears
 6. Check admin dashboard: `http://localhost:3000/admin/donations`
 
@@ -39,19 +39,26 @@ The donation system uses real Helcim payment processing but operates in test mod
 - System works normally but no emails are sent
 - Buffalo logs will show: `email service not configured`
 
-## Test Card Numbers
+## Official Helcim Test Card Numbers
+
+**⚠️ IMPORTANT:** These are official Helcim test cards - only work with test accounts!
 
 ### Successful Payments
-- **Visa**: 4111 1111 1111 1111
-- **Mastercard**: 5555 5555 5555 4444
-- **American Express**: 3400 0000 0000 009
-- **CVV**: 123 (any 3-digit number)
-- **Expiry**: 12/25 (any future date)
+- **Visa**: `4124939999999990` or `4000000000000028`
+- **Mastercard**: `5413330089099130` or `5413330089020011`
+- **American Express**: `374245001751006`
+- **Discover**: `6011973700000005`
+- **CVV**: 100 (or 1000 for Amex)
+- **Expiry**: 01/28 (all test cards)
+
+### Test Account Required
+- Contact `tier2support@helcim.com` to request a Helcim test account
+- Test cards will be **declined** on production accounts
+- Real cards should **never** be used for testing
 
 ### Declined Payments (for testing error handling)
-- **Declined Card**: 4000 0000 0000 0002
-- **Insufficient Funds**: 4000 0000 0000 9995
-- **Invalid CVV**: Use any valid card with CVV 999
+- Use any test card with incorrect CVV, expired date, or insufficient amount
+- Test cards may have built-in decline scenarios in test environment
 
 ## Testing Scenarios
 
@@ -59,14 +66,14 @@ The donation system uses real Helcim payment processing but operates in test mod
 1. **Amount**: $25 (preset button)
 2. **Donor Info**: John Doe, john@example.com
 3. **Type**: One-time
-4. **Card**: 4111 1111 1111 1111
+4. **Card**: `4124939999999990`, CVV: 100, Exp: 01/28
 5. **Expected**: Success page, email receipt, "completed" status in admin
 
 ### Scenario 2: Failed Payment
 1. **Amount**: $50
 2. **Donor Info**: Jane Smith, jane@example.com  
 3. **Type**: One-time
-4. **Card**: 4000 0000 0000 0002 (declined card)
+4. **Card**: Use test card with invalid CVV or expired date
 5. **Expected**: Error message, stays on form, "failed" status in admin
 
 ### Scenario 3: Custom Amount

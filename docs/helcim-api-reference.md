@@ -382,9 +382,20 @@ func (w *WebhookHandler) HandleEvent(event WebhookEvent) error {
 ## Testing
 
 ### Test Credit Card Numbers
-Use Helcim's provided test card numbers for development:
-- Check Helcim developer documentation for current test card numbers
-- Test both successful and declined transaction scenarios
+**⚠️ IMPORTANT:** Official Helcim test cards - only work with test accounts!
+
+| Card Type | Number | Expiry | CVV | Limit |
+|-----------|--------|--------|-----|-------|
+| **Visa** | `4124939999999990` | 01/28 | 100 | $100 |
+| **Visa** | `4000000000000028` | 01/28 | 100 | $100 |
+| **Mastercard** | `5413330089099130` | 01/28 | 100 | $100 |
+| **Mastercard** | `5413330089020011` | 01/28 | 100 | $100 |
+| **American Express** | `374245001751006` | 01/28 | 1000 | $1000 |
+
+**Requirements:** 
+- Must have Helcim developer test account (contact tier2support@helcim.com)
+- Test cards will be declined on production accounts
+- All test cards use expiry 01/28 and CVV 100 (except Amex: 1000)
 
 ### API Testing Commands
 ```bash
