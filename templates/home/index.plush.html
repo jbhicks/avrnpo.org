@@ -1,8 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="auto">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Apply theme immediately to prevent FOUC -->
+  <script>
+    // Apply stored theme or default to dark immediately
+    const storedTheme = localStorage.getItem('picoPreferredColorScheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+  </script>
   
   <!-- Primary Meta Tags -->
   <title>American Veterans Rebuilding</title>
@@ -110,18 +117,6 @@
         align-items: center;
       }
     }
-    
-    /* Toast animation for development helpers */
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
   </style>
 </head>
 <body>
@@ -162,7 +157,13 @@
     <a href="/projects" role="button" class="secondary outline" hx-get="/projects" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Projects</a>
     <a href="/donate" role="button" class="secondary outline" hx-get="/donate" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Donate</a>
     <a href="/contact" role="button" class="secondary outline" hx-get="/contact" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Contact</a>
-    <a href="/auth/new" role="button" class="outline">Sign In</a>
+    <%= if (user_logged_in) { %>
+      <a href="/dashboard" role="button" class="outline" hx-get="/dashboard" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Dashboard</a>
+      <a href="/account" role="button" class="outline" hx-get="/account" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">Account</a>
+      <a href="/auth/logout" role="button" class="outline">Profile</a>
+    <% } else { %>
+      <a href="/auth/new" role="button" class="outline">Sign In</a>
+    <% } %>
   </div>
 </nav>
 

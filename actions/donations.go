@@ -16,7 +16,6 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
-	"github.com/gofrs/uuid"
 	"avrnpo.org/models"
 	"avrnpo.org/services"
 )
@@ -42,39 +41,25 @@ type HelcimPayResponse struct {
 
 // DonationRequest represents the donation form data
 type DonationRequest struct {
-	Amount        string `json:"amount" form:"amount"`
-	CustomAmount  string `json:"custom_amount" form:"custom_amount"`
-	DonationType  string `json:"donation_type" form:"donation_type"`
-	DonorName     string `json:"donor_name" form:"donor_name"`
-	DonorEmail    string `json:"donor_email" form:"donor_email"`
-	DonorPhone    string `json:"donor_phone" form:"donor_phone"`
-	AddressLine1  string `json:"address_line1" form:"address_line1"`
-	City          string `json:"city" form:"city"`
-	State         string `json:"state" form:"state"`
-	Zip           string `json:"zip" form:"zip"`
-	Comments      string `json:"comments" form:"comments"`
+	Amount       interface{} `json:"amount" form:"amount"`
+	CustomAmount string      `json:"custom_amount" form:"custom_amount"`
+	DonationType string      `json:"donation_type" form:"donation_type"`
+	DonorName    string      `json:"donor_name" form:"donor_name"`
+	DonorEmail   string      `json:"donor_email" form:"donor_email"`
+	DonorPhone   string      `json:"donor_phone" form:"donor_phone"`
+	AddressLine1 string      `json:"address_line1" form:"address_line1"`
+	City         string      `json:"city" form:"city"`
+	State        string      `json:"state" form:"state"`
+	Zip          string      `json:"zip" form:"zip"`
+	Comments     string      `json:"comments" form:"comments"`
 }
 
-// Donation model for database storage
-type Donation struct {
-	ID                  uuid.UUID `json:"id" db:"id"`
-	HelcimTransactionID *string   `json:"helcim_transaction_id" db:"helcim_transaction_id"`
-	CheckoutToken       string    `json:"checkout_token" db:"checkout_token"`
-	SecretToken         string    `json:"secret_token" db:"secret_token"`
-	Amount              float64   `json:"amount" db:"amount"`
-	Currency            string    `json:"currency" db:"currency"`
-	DonorName           string    `json:"donor_name" db:"donor_name"`
-	DonorEmail          string    `json:"donor_email" db:"donor_email"`
-	DonorPhone          string    `json:"donor_phone" db:"donor_phone"`
-	AddressLine1        string    `json:"address_line1" db:"address_line1"`
-	City                string    `json:"city" db:"city"`
-	State               string    `json:"state" db:"state"`
-	Zip                 string    `json:"zip" db:"zip"`
-	DonationType        string    `json:"donation_type" db:"donation_type"`
-	Status              string    `json:"status" db:"status"`
-	Comments            string    `json:"comments" db:"comments"`
-	CreatedAt           time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at" db:"updated_at"`
+// HelcimPayVerifyRequest represents a verify request to Helcim (unified approach)
+type HelcimPayVerifyRequest struct {
+	PaymentType     string                     `json:"paymentType"`
+	Amount          float64                    `json:"amount"`
+	Currency        string                     `json:"currency"`
+	CustomerRequest *services.CustomerRequest  `json:"customerRequest"`
 }
 
 // Webhook event structures
@@ -104,7 +89,7 @@ type HelcimWebhookCustomer struct {
 	Phone     string `json:"phone"`
 }
 
-// DonationInitializeHandler initializes a Helcim payment session
+// DonationInitializeHandler initializes a Helcim payment session (UNIFIED APPROACH)
 func DonationInitializeHandler(c buffalo.Context) error {
 	// Parse donation request
 	var req DonationRequest
@@ -113,67 +98,117 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			"error": "Invalid request data",
 		}))
 	}
+	
 	// Validate required fields
-	if req.DonorName == "" {
+	if strings.TrimSpace(req.DonorName) == "" {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-			"error": "Name is required",
+			"error": "donor name is required",
 		}))
 	}
 	
-	if req.DonorEmail == "" {
+	if strings.TrimSpace(req.DonorEmail) == "" {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-			"error": "Email address is required",
+			"error": "email address is required",
 		}))
 	}
 	
 	// Basic email validation
 	if !strings.Contains(req.DonorEmail, "@") || !strings.Contains(req.DonorEmail, ".") {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-			"error": "Please enter a valid email address",
+			"error": "valid email is required",
 		}))
 	}
-
+	
 	// Determine donation amount
 	var amount float64
 	var err error
-	if req.Amount == "custom" {
+	
+	// Convert amount to string if it's numeric
+	var amountStr string
+	switch v := req.Amount.(type) {
+	case string:
+		amountStr = v
+	case float64:
+		amountStr = fmt.Sprintf("%.2f", v)
+	case int:
+		amountStr = fmt.Sprintf("%d", v)
+	case nil:
+		amountStr = ""
+	default:
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "Invalid amount format",
+		}))
+	}
+	
+	// Check if amount is provided
+	if strings.TrimSpace(amountStr) == "" && strings.TrimSpace(req.CustomAmount) == "" {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "amount is required",
+		}))
+	}
+	
+	if amountStr == "custom" {
 		amount, err = strconv.ParseFloat(req.CustomAmount, 64)
 		if err != nil || amount <= 0 {
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-				"error": "Invalid custom amount",
+				"error": "amount must be greater than 0",
 			}))
 		}
 	} else {
-		amount, err = strconv.ParseFloat(req.Amount, 64)
+		amount, err = strconv.ParseFloat(amountStr, 64)
 		if err != nil || amount <= 0 {
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-				"error": "Invalid donation amount",
+				"error": "amount must be greater than 0",
 			}))
 		}
 	}
 
-	// Split donor name
-	firstName, lastName := splitName(req.DonorName)
-
-	// Create Helcim payment request
-	helcimReq := HelcimPayRequest{
-		PaymentType: "purchase",
-		Amount:      amount,
+	// UNIFIED APPROACH: Always use verify mode for payment collection
+	// This creates a consistent flow for both one-time and recurring donations
+	helcimReq := HelcimPayVerifyRequest{
+		PaymentType: "verify", // Always verify first, charge later via API
+		Amount:      0,        // Verify mode requires $0
 		Currency:    "USD",
-		Customer: struct {
-			FirstName string `json:"firstName"`
-			LastName  string `json:"lastName"`
-			Email     string `json:"email"`
-		}{
-			FirstName: firstName,
-			LastName:  lastName,
-			Email:     req.DonorEmail,
+		CustomerRequest: &services.CustomerRequest{
+			ContactName: req.DonorName,
+			Email:       req.DonorEmail,
+			BillingAddress: services.BillingAddress{
+				Name:       req.DonorName,
+				Street1:    req.AddressLine1,
+				City:       req.City,
+				Province:   req.State,
+				Country:    "US",
+				PostalCode: req.Zip,
+			},
 		},
-		CompanyName: "American Veterans Rebuilding",
+	}
+	
+	// Store donation details for later processing
+	donation := &models.Donation{
+		DonorName:    req.DonorName,
+		DonorEmail:   req.DonorEmail,
+		DonorPhone:   stringPointer(req.DonorPhone),
+		AddressLine1: stringPointer(req.AddressLine1),
+		City:         stringPointer(req.City),
+		State:        stringPointer(req.State),
+		Zip:          stringPointer(req.Zip),
+		Amount:       amount,
+		Currency:     "USD",
+		DonationType: req.DonationType, // "one-time" or "monthly"
+		Status:       "pending",
+		Comments:     stringPointer(req.Comments),
+	}
+	
+	// Save to database
+	tx := c.Value("tx").(*pop.Connection)
+	if err := tx.Create(donation); err != nil {
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Failed to create donation record",
+		}))
 	}
 
-	// Call Helcim API
-	helcimResponse, err := callHelcimAPI(helcimReq)
+	// Call Helcim API with verify request
+	helcimResponse, err := callHelcimVerifyAPI(helcimReq)
 	if err != nil {
 		// Log error for debugging
 		c.Logger().Errorf("Helcim API error: %v", err)
@@ -181,50 +216,25 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			"error": "Payment system unavailable. Please try again later.",
 		}))
 	}
-	// Save donation record to database
-	donation := &Donation{
-		ID:              uuid.Must(uuid.NewV4()),
-		CheckoutToken:   helcimResponse.CheckoutToken,
-		SecretToken:     helcimResponse.SecretToken,
-		Amount:          amount,
-		Currency:        "USD",
-		DonorName:       req.DonorName,
-		DonorEmail:      req.DonorEmail,
-		DonorPhone:      req.DonorPhone,
-		AddressLine1:    req.AddressLine1,
-		City:            req.City,
-		State:           req.State,
-		Zip:             req.Zip,
-		DonationType:    req.DonationType,
-		Status:          "pending",
-		Comments:        req.Comments,
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
-	}
 
-	// Get database connection
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
+	// Update donation record with Helcim tokens
+	donation.CheckoutToken = helcimResponse.CheckoutToken
+	donation.SecretToken = helcimResponse.SecretToken
+
+	if err := tx.Update(donation); err != nil {
+		c.Logger().Errorf("Database error updating donation: %v", err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Database connection error",
+			"error": "Failed to update donation record",
 		}))
 	}
 
-	// Save to database
-	if err := tx.Create(donation); err != nil {
-		c.Logger().Errorf("Database error saving donation: %v", err)
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Failed to save donation record",
-		}))
-	}
-
-	// Return success with checkout token
+	// Return success with checkout token and donation ID
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
-		"success":        true,
-		"checkoutToken":  helcimResponse.CheckoutToken,
-		"donationId":     donation.ID.String(),
-		"amount":         amount,
-		"donorName":      req.DonorName,
+		"success":       true,
+		"checkoutToken": helcimResponse.CheckoutToken,
+		"donationId":    donation.ID.String(),
+		"amount":        amount,
+		"donorName":     req.DonorName,
 	}))
 }
 
@@ -253,7 +263,7 @@ func DonationCompleteHandler(c buffalo.Context) error {
 	}
 
 	// Find donation record
-	donation := &Donation{}
+	donation := &models.Donation{}
 	if err := tx.Find(donation, donationID); err != nil {
 		return c.Render(http.StatusNotFound, r.JSON(map[string]string{
 			"error": "Donation not found",
@@ -314,7 +324,7 @@ func DonationStatusHandler(c buffalo.Context) error {
 	}
 
 	// Find donation record
-	donation := &Donation{}
+	donation := &models.Donation{}
 	if err := tx.Find(donation, donationID); err != nil {
 		return c.Render(http.StatusNotFound, r.JSON(map[string]string{
 			"error": "Donation not found",
@@ -515,6 +525,219 @@ func handlePaymentCancelled(tx *pop.Connection, event *HelcimWebhookEvent, c buf
 
 	c.Logger().Infof("Payment cancelled for donation ID: %s", donation.ID.String())
 	return nil
+}
+
+// callHelcimVerifyAPI calls the Helcim API with verify mode for unified payment collection
+func callHelcimVerifyAPI(req HelcimPayVerifyRequest) (*HelcimPayResponse, error) {
+	// Get API token from environment
+	apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
+	if apiToken == "" {
+		return nil, fmt.Errorf("HELCIM_PRIVATE_API_KEY not set")
+	}
+
+	// Marshal request
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling request: %v", err)
+	}
+
+	// Create HTTP request
+	httpReq, err := http.NewRequest("POST", "https://api.helcim.com/v2/helcim-pay/initialize", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %v", err)
+	}
+
+	// Set headers
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", apiToken)
+
+	// Make request
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response: %v", err)
+	}
+
+	// Check for HTTP errors
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Helcim API error %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse response
+	var helcimResp HelcimPayResponse
+	if err := json.Unmarshal(body, &helcimResp); err != nil {
+		return nil, fmt.Errorf("error parsing response: %v", err)
+	}
+
+	return &helcimResp, nil
+}
+
+// ProcessPaymentHandler handles payment processing after verification (UNIFIED APPROACH)
+func ProcessPaymentHandler(c buffalo.Context) error {
+	var req struct {
+		CustomerCode string  `json:"customerCode"`
+		CardToken    string  `json:"cardToken"`
+		DonationID   string  `json:"donationId"`
+		Amount       float64 `json:"amount"`
+	}
+	
+	if err := c.Bind(&req); err != nil {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "Invalid request data",
+		}))
+	}
+	
+	// Get donation record
+	tx := c.Value("tx").(*pop.Connection)
+	donation := &models.Donation{}
+	if err := tx.Find(donation, req.DonationID); err != nil {
+		return c.Render(http.StatusNotFound, r.JSON(map[string]string{
+			"error": "Donation not found",
+		}))
+	}
+	
+	if donation.DonationType == "monthly" {
+		// RECURRING DONATION: Create subscription
+		return handleRecurringPayment(c, req, donation)
+	} else {
+		// ONE-TIME DONATION: Process immediate payment
+		return handleOneTimePayment(c, req, donation)
+	}
+}
+
+// handleOneTimePayment processes a one-time donation using Payment API
+func handleOneTimePayment(c buffalo.Context, req struct {
+	CustomerCode string  `json:"customerCode"`
+	CardToken    string  `json:"cardToken"`
+	DonationID   string  `json:"donationId"`
+	Amount       float64 `json:"amount"`
+}, donation *models.Donation) error {
+	
+	// Create Helcim client
+	helcimClient := services.NewHelcimClient()
+	
+	// Use Payment API to charge the card token
+	paymentReq := services.PaymentAPIRequest{
+		Amount:       donation.Amount,
+		Currency:     "USD",
+		CustomerCode: req.CustomerCode,
+		CardData: services.CardData{
+			CardToken: req.CardToken,
+		},
+	}
+	
+	transaction, err := helcimClient.ProcessPayment(paymentReq)
+	if err != nil {
+		c.Logger().Errorf("Payment processing failed: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Payment processing failed",
+		}))
+	}
+	
+	// Update donation record
+	donation.TransactionID = &transaction.TransactionID
+	donation.CustomerID = &req.CustomerCode
+	donation.Status = "completed"
+	
+	tx := c.Value("tx").(*pop.Connection)
+	if err := tx.Update(donation); err != nil {
+		c.Logger().Errorf("Failed to update donation: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Failed to update donation",
+		}))
+	}
+	
+	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+		"success":       true,
+		"transactionId": transaction.TransactionID,
+		"type":          "one-time",
+	}))
+}
+
+// handleRecurringPayment creates a subscription using Recurring API
+func handleRecurringPayment(c buffalo.Context, req struct {
+	CustomerCode string  `json:"customerCode"`
+	CardToken    string  `json:"cardToken"`
+	DonationID   string  `json:"donationId"`
+	Amount       float64 `json:"amount"`
+}, donation *models.Donation) error {
+	
+	// Create Helcim client
+	helcimClient := services.NewHelcimClient()
+	
+	// Create or get payment plan
+	paymentPlanID, err := getOrCreateMonthlyDonationPlan(helcimClient, donation.Amount)
+	if err != nil {
+		c.Logger().Errorf("Failed to setup payment plan: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Failed to setup payment plan",
+		}))
+	}
+	
+	// Create subscription using Recurring API
+	subscription, err := helcimClient.CreateSubscription(services.SubscriptionRequest{
+		CustomerID:    req.CustomerCode,
+		PaymentPlanID: paymentPlanID,
+		Amount:        donation.Amount,
+		PaymentMethod: "cc",
+	})
+	if err != nil {
+		c.Logger().Errorf("Failed to create subscription: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Failed to create subscription",
+		}))
+	}
+	
+	// Update donation record
+	donation.SubscriptionID = &subscription.ID
+	donation.CustomerID = &req.CustomerCode  
+	donation.PaymentPlanID = &paymentPlanID
+	donation.Status = "active"
+	
+	tx := c.Value("tx").(*pop.Connection)
+	if err := tx.Update(donation); err != nil {
+		c.Logger().Errorf("Failed to update donation: %v", err)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+			"error": "Failed to update donation",
+		}))
+	}
+	
+	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+		"success":        true,
+		"subscriptionId": subscription.ID,
+		"nextBilling":    subscription.NextBillingDate,
+		"type":           "recurring",
+	}))
+}
+
+// getOrCreateMonthlyDonationPlan creates a payment plan for monthly donations
+func getOrCreateMonthlyDonationPlan(client *services.HelcimClient, amount float64) (string, error) {
+	// Create a standardized plan name based on amount
+	planName := fmt.Sprintf("Monthly Donation - $%.2f", amount)
+	
+	// For now, create a new plan each time
+	// TODO: In production, implement plan caching/reuse logic
+	plan, err := client.CreatePaymentPlan(amount, planName)
+	if err != nil {
+		return "", fmt.Errorf("failed to create payment plan: %w", err)
+	}
+	
+	return plan.ID, nil
+}
+
+// stringPointer is a helper function to convert string to string pointer
+func stringPointer(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 // Helper function to call Helcim API

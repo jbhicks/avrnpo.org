@@ -8,7 +8,7 @@
         <%= if (post.User.FirstName != "") { %>
         By <%= post.User.FirstName %> <%= post.User.LastName %> • 
         <% } %>
-        <%= post.CreatedAt.Format("January 2, 2006") %>
+        <%= dateFormat(post.CreatedAt, "January 2, 2006") %>
       </small>
     </hgroup>
   </header>

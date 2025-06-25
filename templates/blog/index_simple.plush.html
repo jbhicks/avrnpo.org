@@ -7,7 +7,7 @@
         <hgroup>
           <h2><a href="/blog/<%= posts[0].Slug %>" hx-get="/blog/<%= posts[0].Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true"><%= posts[0].Title %></a></h2>
           <small>
-            <%= posts[0].CreatedAt.Format("January 2, 2006") %>
+            <%= dateFormat(posts[0].CreatedAt, "January 2, 2006") %>
           </small>
         </hgroup>
       </header>
@@ -32,7 +32,7 @@
               <hgroup>
                 <h3><a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true"><%= post.Title %></a></h3>
                 <small>
-                  <%= post.CreatedAt.Format("January 2, 2006") %>
+                  <%= dateFormat(post.CreatedAt, "January 2, 2006") %>
                 </small>
               </hgroup>
             </header>

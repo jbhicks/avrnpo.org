@@ -95,7 +95,7 @@ func App() *buffalo.App {
 		app.Use(Authorize)
 
 		// Skip Authorize middleware for public routes following official buffalo-auth pattern
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, HelcimWebhookHandler)
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler)
 
 		// Public routes
 		app.GET("/", HomeHandler)
@@ -110,6 +110,7 @@ func App() *buffalo.App {
 
 		// Donation API routes (public)
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
+		app.POST("/api/donations/process-payment", ProcessPaymentHandler)
 		app.POST("/api/donations/{donationId}/complete", DonationCompleteHandler)
 		app.GET("/api/donations/{donationId}/status", DonationStatusHandler)
 		

@@ -1,0 +1,7 @@
+add_column("donations", "subscription_id", "string", {"null": true})
+add_column("donations", "customer_id", "string", {"null": true})
+add_column("donations", "payment_plan_id", "string", {"null": true})
+add_column("donations", "transaction_id", "string", {"null": true})
+add_index("donations", ["subscription_id"], {})
+add_index("donations", ["customer_id"], {})
+add_index("donations", ["transaction_id"], {})

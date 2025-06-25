@@ -2,7 +2,7 @@
 <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
   <!-- Admin Navigation -->
   <aside>
-    <%= partial("admin/_nav.plush.html") %>
+    <%= partial("admin/nav") %>
   </aside>
 
   <!-- New Post Form -->
@@ -26,10 +26,10 @@
         <% } %>
       </ul>
     </div>
-    <% } %>
-
-    <form action="/admin/posts" method="POST" hx-post="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" enctype="multipart/form-data">
-      <%= csrf() %>
+    <% } %>    <form action="/admin/posts" method="POST" hx-post="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" enctype="multipart/form-data">
+      <% if (authenticity_token) { %>
+        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+      <% } %>
       
       <!-- Basic Information -->
       <section style="margin-bottom: 2rem;">

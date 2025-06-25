@@ -34,24 +34,29 @@ func (as *ActionSuite) Test_DonateHandler_Pure_HTMX() {
 func (as *ActionSuite) Test_AllPageHandlers_Pure_HTMX() {
 	// Test that ALL page handlers return only content (pure HTMX approach)
 	
-	pages := map[string]string{
-		"/team":     "team",
-		"/projects": "projects", 
-		"/contact":  "contact",
-	}
+	// Test team page
+	res := as.HTML("/team").Get()
+	as.Equal(http.StatusOK, res.Code)
+	as.Contains(res.Body.String(), "team")
+	as.NotContains(res.Body.String(), "<!DOCTYPE")
+	as.NotContains(res.Body.String(), "<html>")
+	as.NotContains(res.Body.String(), "htmx-content")
 	
-	for route, expectedContent := range pages {
-		res := as.HTML(route).Get()
-		as.Equal(http.StatusOK, res.Code)
-		
-		// Should contain the expected content
-		as.Contains(res.Body.String(), expectedContent)
-		
-		// Should NOT contain full HTML structure
-		as.NotContains(res.Body.String(), "<!DOCTYPE")
-		as.NotContains(res.Body.String(), "<html>")
-		as.NotContains(res.Body.String(), "htmx-content")
-	}
+	// Test projects page
+	res = as.HTML("/projects").Get()
+	as.Equal(http.StatusOK, res.Code)
+	as.Contains(res.Body.String(), "projects")
+	as.NotContains(res.Body.String(), "<!DOCTYPE")
+	as.NotContains(res.Body.String(), "<html>")
+	as.NotContains(res.Body.String(), "htmx-content")
+	
+	// Test contact page
+	res = as.HTML("/contact").Get()
+	as.Equal(http.StatusOK, res.Code)
+	as.Contains(res.Body.String(), "contact")
+	as.NotContains(res.Body.String(), "<!DOCTYPE")
+	as.NotContains(res.Body.String(), "<html>")
+	as.NotContains(res.Body.String(), "htmx-content")
 }
 
 func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
@@ -61,7 +66,7 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "<!DOCTYPE")
-	as.Contains(res.Body.String(), "<html>")
+	as.Contains(res.Body.String(), "<html")  // Look for opening html tag, not exact match
 	as.Contains(res.Body.String(), "htmx-content")
 	as.Contains(res.Body.String(), "American Veterans Rebuilding")
 	
@@ -72,7 +77,7 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	as.Equal(http.StatusOK, res2.Code)
 	as.Contains(res2.Body.String(), "THE AVR MISSION")
 	as.NotContains(res2.Body.String(), "<!DOCTYPE")
-	as.NotContains(res2.Body.String(), "<html>")
+	as.NotContains(res2.Body.String(), "<html")  // Look for opening html tag
 }
 
 func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {

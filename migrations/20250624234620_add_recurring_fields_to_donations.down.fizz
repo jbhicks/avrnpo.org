@@ -1,0 +1,7 @@
+drop_index("donations", ["transaction_id"], {})
+drop_index("donations", ["customer_id"], {})
+drop_index("donations", ["subscription_id"], {})
+drop_column("donations", "transaction_id")
+drop_column("donations", "payment_plan_id")
+drop_column("donations", "customer_id")
+drop_column("donations", "subscription_id")

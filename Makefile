@@ -322,8 +322,8 @@ db-reset:
 	@echo "🎯 You can now run 'make dev' to start the development server"
 
 # Run tests with comprehensive setup
-test: check-deps db-up validate-templates
-	@echo "🧪 Running test suite with Buffalo..."
+test: check-deps db-up
+	@echo "🧪 Running test suite with Go test (Buffalo suite)..."
 	@if ! ./scripts/wait-for-postgres.sh; then \
 		echo "❌ Database is not ready. Cannot run tests."; \
 		exit 1; \
@@ -331,8 +331,8 @@ test: check-deps db-up validate-templates
 	@echo "🔄 Setting up test database..."
 	@GO_ENV=test soda create -a >/dev/null 2>&1 || true
 	@GO_ENV=test soda migrate up >/dev/null 2>&1 || true
-	@echo "🏃 Executing Buffalo tests..."
-	@if buffalo test; then \
+	@echo "🏃 Executing tests..."
+	@if GO_ENV=test go test ./actions -v -vet=printf; then \
 		echo "✅ All tests passed!"; \
 	else \
 		echo "❌ Some tests failed. Check the output above for details."; \
@@ -341,9 +341,9 @@ test: check-deps db-up validate-templates
 
 # Run Buffalo tests quickly (assumes database is already running)
 test-fast: check-deps
-	@echo "⚡ Running Buffalo tests (fast mode)..."
-	@echo "🏃 Executing Buffalo tests..."
-	@if buffalo test; then \
+	@echo "⚡ Running tests (fast mode)..."
+	@echo "🏃 Executing tests..."
+	@if GO_ENV=test go test ./actions -v -vet=printf; then \
 		echo "✅ All tests passed!"; \
 	else \
 		echo "❌ Some tests failed. Check the output above for details."; \

@@ -12,33 +12,9 @@ if (typeof window.DonationSystem === 'undefined') {
             this.isProcessing = false;
             
             this.init();
-        }
-
-    init() {
+        }    init() {
         this.bindEvents();
         console.log('Donation system initialized');
-        
-        // Auto-fill test data in development mode
-        if (this.isDevelopmentMode()) {
-            this.setupDevelopmentHelpers();
-        }
-    }
-
-    isDevelopmentMode() {
-        // Check if development notice is present
-        return document.getElementById('dev-notice') !== null;
-    }
-
-    setupDevelopmentHelpers() {
-        // Auto-select $25 amount for quick testing
-        const firstAmountBtn = document.querySelector('.amount-btn[data-amount="25"]');
-        if (firstAmountBtn) {
-            setTimeout(() => {
-                firstAmountBtn.click();
-            }, 100);
-        }
-        
-        console.log('Development helpers enabled - test data auto-fill available');
     }
 
     bindEvents() {
@@ -310,47 +286,65 @@ if (typeof window.DonationSystem === 'undefined') {
             removeHelcimPayIframe();
         }
     }    handlePaymentSuccess(eventMessage, donationId) {
-        console.log('Payment completed successfully');
+        console.log('Payment verification completed successfully');
         
-        // Parse the Helcim response (it comes as a JSON.stringify'd string)
+        // Parse Helcim response
         let transactionData;
         try {
             transactionData = typeof eventMessage === 'string' ? JSON.parse(eventMessage) : eventMessage;
             console.log('Parsed transaction data:', transactionData);
         } catch (parseError) {
             console.error('Error parsing transaction response:', parseError);
-            transactionData = { transactionId: 'parse-error', status: 'APPROVED' };
+            this.showError('Payment verification failed. Please try again.');
+            return;
         }
         
-        // Extract transaction details from the nested response structure
-        const transactionId = transactionData?.data?.data?.transactionId || 'unknown';
-        const status = transactionData?.data?.data?.status || 'APPROVED';
-        
-        // Clean up the modal and event listeners
+        // Clean up modal
         this.cleanup();
         
-        // Update our backend with the transaction details
-        fetch(`/api/donations/${donationId}/complete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                transactionId: transactionId,
-                status: status,
-                helcimResponse: transactionData
-            })
-        }).then(response => response.json())
-        .then(result => {
-            console.log('Payment completion recorded:', result);
-            // Redirect to success page
-            window.location.href = '/donate/success';
-        })
-        .catch(error => {
-            console.error('Error recording payment completion:', error);
-            // Still show success since payment went through
-            window.location.href = '/donate/success';
-        });
+        // UNIFIED APPROACH: Process payment regardless of type
+        this.processPayment(transactionData, donationId);
+    }
+
+    async processPayment(transactionData, donationId) {
+        try {
+            const response = await fetch('/api/donations/process-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    customerCode: transactionData.data?.data?.customerCode,
+                    cardToken: transactionData.data?.data?.cardToken,
+                    donationId: donationId,
+                    amount: this.currentAmount
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (result.type === 'recurring') {
+                    // Redirect to recurring success page
+                    window.location.href = `/donate/success/recurring?subscriptionId=${result.subscriptionId}`;
+                } else {
+                    // Redirect to one-time success page  
+                    window.location.href = `/donate/success?transactionId=${result.transactionId}`;
+                }
+            } else {
+                throw new Error(result.error || 'Payment processing failed');
+            }
+        } catch (error) {
+            console.error('Payment processing error:', error);
+            this.showError('Payment processing failed. Please contact support.');
+        }
+    }
+
+    showError(message) {
+        // Display user-friendly error message
+        alert(message); // TODO: Replace with better UI
+        // Optionally redirect back to donation form
+        window.location.href = '/donate';
     }    handlePaymentError(eventMessage) {
         console.error('Payment failed:', eventMessage);
         
@@ -397,90 +391,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Make DonationSystem available globally
 window.DonationSystem = DonationSystem;
-
-// Global helper functions for development mode
-window.copyTestCard = function(cardNumber) {
-    // Format the card number with spaces for display
-    const formatted = cardNumber.replace(/(.{4})/g, '$1 ').trim();
-    
-    // Copy unformatted number to clipboard
-    navigator.clipboard.writeText(cardNumber).then(() => {
-        showToast(`Copied: ${formatted}`, 'success');
-    }).catch(() => {
-        // Fallback for older browsers
-        alert(`Test card: ${formatted}\nCopy this number manually.`);
-    });
-};
-
-window.fillTestData = function() {
-    // Fill donor information with test data
-    const fields = {
-        'donor-name': 'John Test Donor',
-        'donor-email': 'test@example.com',
-        'donor-phone': '555-123-4567',
-        'address-line1': '123 Test Street',
-        'city': 'Test City',
-        'state': 'LA',
-        'zip': '70001'
-    };
-    
-    Object.entries(fields).forEach(([id, value]) => {
-        const field = document.getElementById(id);
-        if (field) {
-            field.value = value;
-            // Trigger input event to update any listeners
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-    });
-    
-    showToast('Test donor information filled', 'info');
-    console.log('Test donor data filled');
-};
-
-// Simple toast notification system
-function showToast(message, type = 'info') {
-    // Remove existing toasts
-    document.querySelectorAll('.toast').forEach(toast => toast.remove());
-    
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--pico-card-background-color);
-        border: 1px solid var(--pico-muted-border-color);
-        border-radius: var(--pico-border-radius);
-        padding: 0.75rem 1rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        z-index: 9999;
-        max-width: 300px;
-        font-size: 0.9rem;
-        animation: slideIn 0.3s ease-out;
-    `;
-    
-    // Type-specific styling
-    if (type === 'success') {
-        toast.style.borderColor = 'var(--pico-primary)';
-        toast.style.color = 'var(--pico-primary)';
-    } else if (type === 'error') {
-        toast.style.borderColor = 'var(--pico-contrast)';
-        toast.style.color = 'var(--pico-contrast)';
-    } else {
-        toast.style.borderColor = '#3b82f6';
-        toast.style.color = '#3b82f6';
-    }
-    
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    // Auto-remove after 3 seconds
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
-}
 
 } // Close the conditional check
 

@@ -68,8 +68,8 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	as.Equal(http.StatusOK, htmxRes.Code)
 	// The template doesn't seem to show the conditional content properly
 	// Just verify the basic template content is there
-	as.Contains(htmxRes.Body.String(), "Technology Stack")
-	as.Contains(htmxRes.Body.String(), "Welcome to Your Application")
+	as.Contains(htmxRes.Body.String(), "THE AVR MISSION")
+	as.Contains(htmxRes.Body.String(), "Technical Training")
 
 	// Test that the dashboard is accessible
 	res = as.HTML("/dashboard").Get()

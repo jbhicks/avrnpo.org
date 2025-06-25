@@ -39,12 +39,52 @@ This project is currently focused on improving the donation flow for the AVR NPO
 - Donation functionality directly impacts the organization's ability to help veterans
 - All changes should prioritize security, usability, and donor trust
 
-## General Guidelines
+## 🚨 CRITICAL: Buffalo Template Partial Naming Convention 🚨
 
-- Never attempt to read `pico.min.css` files - they are minified and will only cause failures
-- Trust that Pico.css is properly installed and working in the project
-- Focus on using semantic HTML with minimal CSS classes - Pico.css provides styling automatically
-- Use semantic HTML elements and follow modern web development practices with accessibility in mind
+**⚠️ THIS IS THE #1 SOURCE OF RECURRING TEMPLATE ERRORS - READ CAREFULLY**
+
+Buffalo automatically adds an underscore prefix to partial filenames. This causes double underscore issues if not handled correctly:
+
+**🚨 CRITICAL RULE: Never include underscores or extensions in partial() calls 🚨**
+
+**✅ CORRECT Pattern:**
+```html
+<!-- Call partial WITHOUT underscore or extension -->
+<%= partial("auth/new") %>
+<!-- Buffalo automatically looks for: templates/auth/_new.plush.html -->
+```
+
+**❌ WRONG Pattern (causes double underscore error):**
+```html
+<!-- DON'T include underscore - causes Buffalo to look for __new.plush.html -->
+<%= partial("auth/_new.plush.html") %>
+```
+
+**How Buffalo Partial Resolution Works:**
+1. You call: `partial("directory/filename")`
+2. Buffalo automatically looks for: `templates/directory/_filename.plush.html`
+3. If you include an underscore, Buffalo looks for: `templates/directory/__filename.plush.html` (FAILS)
+
+**File Naming Convention:**
+- Partial files: `_filename.plush.html` (single underscore prefix)
+- Partial calls: `partial("directory/filename")` (no underscore, no extension)
+
+**🚨 NEVER DO THESE:**
+- `partial("auth/_new.plush.html")` → looks for `__new.plush.html` (double underscore)
+- `partial("auth/_new")` → looks for `__new.plush.html` (double underscore)  
+- `partial("auth/new.plush.html")` → looks for `_new.plush.html.plush.html` (wrong extension)
+
+**✅ ALWAYS DO THIS:**
+- `partial("auth/new")` → correctly finds `_new.plush.html`
+- `partial("pages/contact")` → correctly finds `_contact.plush.html`
+- `partial("admin/nav")` → correctly finds `_nav.plush.html`
+
+**When You See "could not find template" Errors:**
+1. Check that partial file exists with single underscore: `_filename.plush.html`
+2. Check that partial call has NO underscore: `partial("directory/filename")`
+3. Check that partial call has NO extension: `partial("directory/filename")`
+
+This rule prevents the recurring double underscore template errors that keep appearing in tests and development.
 
 ### Pico.css Styling Guidelines
 

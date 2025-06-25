@@ -9,9 +9,9 @@
         <%= if (post.User.FirstName != "") { %>
         By <%= post.User.FirstName %> <%= post.User.LastName %> • 
         <% } %>
-        <%= post.CreatedAt.Format("January 2, 2006") %>
+        <%= dateFormat(post.CreatedAt, "January 2, 2006") %>
         <%= if (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %>
-        • Updated <%= post.UpdatedAt.Format("January 2, 2006") %>
+        • Updated <%= dateFormat(post.UpdatedAt, "January 2, 2006") %>
         <% } %>
       </small>
     </hgroup>
@@ -27,10 +27,10 @@
     <h3>Share This Story</h3>
     <p>Help us spread awareness about veteran support programs and success stories.</p>
     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-      <a href="https://www.facebook.com/sharer/sharer.php?u=<%= getCurrentURL(c) %>/blog/<%= post.Slug %>" target="_blank" role="button" class="secondary outline">
+      <a href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>" target="_blank" role="button" class="secondary outline">
         Share on Facebook
       </a>
-      <a href="https://twitter.com/intent/tweet?url=<%= getCurrentURL(c) %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo" target="_blank" role="button" class="secondary outline">
+      <a href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo" target="_blank" role="button" class="secondary outline">
         Share on X
       </a>
       <a href="/contact" role="button" class="secondary outline">

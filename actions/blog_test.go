@@ -102,7 +102,7 @@ func (as *ActionSuite) Test_AdminPostsIndex_WithAdmin() {
 	as.Equal(200, res.Code)
 
 	body := res.Body.String()
-	as.Contains(body, "Blog Posts")
+	as.Contains(body, "Manage Posts")
 }
 
 func (as *ActionSuite) Test_AdminPostsCreate() {
@@ -252,31 +252,31 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	res := as.HTML("/admin/posts").Get()
 	as.Equal(200, res.Code)
 	body := res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts index should have navigation header")
-	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
-	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts index should have navigation header")
+	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
+	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
 	// Test admin posts new page
 	res = as.HTML("/admin/posts/new").Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts new should have navigation header")
-	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
-	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts new should have navigation header")
+	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
+	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
 	// Test admin posts show page
 	res = as.HTML("/admin/posts/%d", post.ID).Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts show should have navigation header")
-	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
-	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts show should have navigation header")
+	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
+	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
 	// Test admin posts edit page
 	res = as.HTML("/admin/posts/%d/edit", post.ID).Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav">`, "Admin posts edit should have navigation header")
-	as.Contains(body, `<strong>My Go SaaS</strong>`, "Navigation should include site logo")
-	as.Contains(body, `Admin Dashboard`, "Navigation should have admin dashboard link")
+	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts edit should have navigation header")
+	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
+	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 }

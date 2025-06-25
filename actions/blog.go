@@ -22,15 +22,22 @@ func BlogIndex(c buffalo.Context) error {
 	}
 
 	c.Set("posts", posts)
+	
+	// Set base URL for social sharing
+	req := c.Request()
+	scheme := "http"
+	if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	c.Set("baseURL", scheme+"://"+req.Host)
 
 	// Check if this is an HTMX request for partial content
 	if c.Request().Header.Get("HX-Request") == "true" {
 		return c.Render(200, r.HTML("blog/_index_simple.plush.html"))
 	}
 
-	// Direct access - render universal layout with blog content
-	c.Set("blogContent", true)
-	return c.Render(200, r.HTML("home/index.plush.html"))
+	// Direct access - render full blog index page
+	return c.Render(200, r.HTML("blog/index_full.plush.html"))
 }
 
 // BlogShow displays a single post by slug
@@ -43,11 +50,19 @@ func BlogShow(c buffalo.Context) error {
 	slug := c.Param("slug")
 	post := &models.Post{}
 
-	// Find published post by slug
-	if err := tx.Where("slug = ? AND published = ?", slug, true).First(post); err != nil {
+	// Find published post by slug with user relationship
+	if err := tx.Eager("User").Where("slug = ? AND published = ?", slug, true).First(post); err != nil {
 		return c.Error(404, err)
 	}
 	c.Set("post", post)
+	
+	// Set base URL for social sharing
+	req := c.Request()
+	scheme := "http"
+	if req.TLS != nil || req.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	c.Set("baseURL", scheme+"://"+req.Host)
 
 	// Always return full page - hx-boost with hx-select will extract the content
 	return c.Render(200, r.HTML("blog/show_full.plush.html"))

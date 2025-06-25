@@ -28,6 +28,11 @@ type Donation struct {
 	DonationType         string    `json:"donation_type" db:"donation_type"`
 	Status               string    `json:"status" db:"status"`
 	Comments             *string   `json:"comments,omitempty" db:"comments"`
+	// Recurring payment fields
+	SubscriptionID       *string   `json:"subscription_id,omitempty" db:"subscription_id"`
+	CustomerID           *string   `json:"customer_id,omitempty" db:"customer_id"`
+	PaymentPlanID        *string   `json:"payment_plan_id,omitempty" db:"payment_plan_id"`
+	TransactionID        *string   `json:"transaction_id,omitempty" db:"transaction_id"`
 	CreatedAt            time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at" db:"updated_at"`
 }

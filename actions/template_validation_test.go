@@ -18,9 +18,8 @@ func Test_AdminTemplateStructure(t *testing.T) {
 
 	// Define required elements for admin templates
 	requiredElements := []string{
-		`<nav class="container-fluid dashboard-nav">`,
-		`<strong>My Go SaaS</strong>`,
-		`<main class="container">`,
+		`<%= partial("admin/nav") %>`,
+		`<main`,
 	}
 
 	// Track templates that should have navigation (exclude partials and special cases)
@@ -73,12 +72,12 @@ func Test_AdminTemplateStructure(t *testing.T) {
 					"Template %s is missing required element: %s", templatePath, element)
 			}
 
-			// Verify navigation comes before main content
-			navIndex := strings.Index(templateContent, `<nav class="container-fluid dashboard-nav">`)
-			mainIndex := strings.Index(templateContent, `<main class="container">`)
+			// Verify navigation partial comes before main content
+			navIndex := strings.Index(templateContent, `<%= partial("admin/nav") %>`)
+			mainIndex := strings.Index(templateContent, `<main`)
 
-			r.True(navIndex >= 0, "Template %s missing navigation", templatePath)
-			r.True(mainIndex >= 0, "Template %s missing main container", templatePath)
+			r.True(navIndex >= 0, "Template %s missing navigation partial", templatePath)
+			r.True(mainIndex >= 0, "Template %s missing main element", templatePath)
 			r.True(navIndex < mainIndex, "Template %s: navigation should come before main content", templatePath)
 		})
 	}

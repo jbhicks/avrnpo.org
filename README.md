@@ -26,7 +26,27 @@ American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghani
 - **Team Profiles** - Meet the combat veterans who founded and run AVR
 - **Project Showcase** - Housing and community development projects
 - **Contact Information** - Ways to reach out and get involved
-- **Donation System** - Secure donation processing for supporter contributions
+- **Donation System** - Secure donation processing for supporter contributions (one-time and recurring)
+
+## 🚨 Current Development Status
+
+### Donation System Enhancement (IN PROGRESS)
+The donation system is being enhanced to support true recurring monthly donations:
+
+**Current Status:**
+- ✅ One-time donations working perfectly with Helcim integration
+- ⚠️ Recurring donations UI exists but only processes one-time payments
+- 🔧 **Implementing unified payment architecture** for both donation types
+
+**Implementation Plan:**
+- **Unified Flow**: Use HelcimPay.js `verify` mode for ALL donations (cleaner architecture)
+- **Backend Processing**: Route to appropriate API based on donation type
+  - One-time → Payment API `purchase` with card token
+  - Recurring → Recurring API subscription with card token
+
+**Documentation:** See `/docs/helcim-recurring-implementation-plan.md` for complete technical details
+
+---
 
 ### Content Management
 - **Blog System** - News updates and success stories

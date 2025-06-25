@@ -13,10 +13,10 @@
   <% } else { %>
   <meta property="og:image" content="/images/logo.avif">
   <% } %>
-  <meta property="og:url" content="<%= getCurrentURL(c) %>/blog/<%= post.Slug %>">
+  <meta property="og:url" content="<%= baseURL %>/blog/<%= post.Slug %>">
   <meta property="og:type" content="article">
-  <meta property="article:published_time" content="<%= post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") %>">
-  <meta property="article:modified_time" content="<%= post.UpdatedAt.Format("2006-01-02T15:04:05Z07:00") %>">
+  <meta property="article:published_time" content="<%= dateFormat(post.CreatedAt, "2006-01-02T15:04:05Z07:00") %>">
+  <meta property="article:modified_time" content="<%= dateFormat(post.UpdatedAt, "2006-01-02T15:04:05Z07:00") %>">
   <meta name="twitter:card" content="summary_large_image">
   
   <!-- Pico.css -->
@@ -50,11 +50,11 @@
         "url": "/images/logo.avif"
       }
     },
-    "datePublished": "<%= post.CreatedAt.Format("2006-01-02T15:04:05Z07:00") %>",
-    "dateModified": "<%= post.UpdatedAt.Format("2006-01-02T15:04:05Z07:00") %>",
+    "datePublished": "<%= dateFormat(post.CreatedAt, "2006-01-02T15:04:05Z07:00") %>",
+    "dateModified": "<%= dateFormat(post.UpdatedAt, "2006-01-02T15:04:05Z07:00") %>",
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": "<%= getCurrentURL(c) %>/blog/<%= post.Slug %>"
+      "@id": "<%= baseURL %>/blog/<%= post.Slug %>"
     }
   }
   </script>
@@ -99,11 +99,31 @@
 
   <!-- Main Content -->
   <main class="container" id="htmx-content">
-    <%= partial("blog/show.plush.html") %>
+    <%= partial("blog/show") %>
   </main>
 
   <!-- Footer -->
-  <%= partial("home/_footer.plush.html") %>
+  <footer class="container">
+    <hr>
+    <div class="grid">
+      <div>
+        <small>
+          <strong>American Veterans Rebuilding</strong><br>
+          Rebuilding the American Veteran's Self, Family and Community
+        </small>
+      </div>
+      <div>
+        <small>
+          <a href="/">Home</a> • 
+          <a href="/blog">Updates</a> • 
+          <a href="/contact">Contact</a>
+        </small>
+      </div>
+    </div>
+    <small style="text-align: center; display: block; margin-top: 1rem;">
+      © 2025 American Veterans Rebuilding. All rights reserved.
+    </small>
+  </footer>
 
   <!-- Theme Toggle Script -->
   <script>

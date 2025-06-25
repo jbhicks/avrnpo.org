@@ -200,7 +200,7 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 	as.Equal(http.StatusOK, regularRes.Code)
 	as.Contains(regularRes.Body.String(), "Account Settings")
 	// Regular response SHOULD contain navigation (it's a full page)
-	as.Contains(regularRes.Body.String(), "Buffalo SaaS")
+	as.Contains(regularRes.Body.String(), "American Veterans Rebuilding")
 	as.Contains(regularRes.Body.String(), "<nav")
 }
 

@@ -105,7 +105,7 @@ func AdminDashboard(c buffalo.Context) error {
 
 	// Load authors for each post
 	for i := range posts {
-		if err := tx.Load(&posts[i], "Author"); err != nil {
+		if err := tx.Load(&posts[i], "User"); err != nil {
 			return errors.WithStack(err)
 		}
 	}
@@ -289,7 +289,7 @@ func AdminPostsIndex(c buffalo.Context) error {
 
 	// Load authors for each post
 	for i := range posts {
-		if err := tx.Load(&posts[i], "Author"); err != nil {
+		if err := tx.Load(&posts[i], "User"); err != nil {
 			return errors.WithStack(err)
 		}
 	}
@@ -335,13 +335,14 @@ func AdminPostsCreate(c buffalo.Context) error {
 		post.GenerateSlug()
 	}
 
-	// Handle published status based on form action
+	// Handle published status - use form data if provided, otherwise check action
 	action := c.Param("action")
 	if action == "publish" {
 		post.Published = true
-	} else {
+	} else if action == "draft" {
 		post.Published = false
 	}
+	// If no specific action, keep the Published value from the form
 
 	// Validate and save
 	verrs, err := tx.ValidateAndCreate(post)
@@ -381,7 +382,7 @@ func AdminPostsEdit(c buffalo.Context) error {
 	}
 
 	// Load the author
-	if err := tx.Load(post, "Author"); err != nil {
+	if err := tx.Load(post, "User"); err != nil {
 		return errors.WithStack(err)
 	}
 

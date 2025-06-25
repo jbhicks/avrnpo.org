@@ -9,7 +9,7 @@
   <meta property="og:title" content="Updates & Stories - American Veterans Rebuilding">
   <meta property="og:description" content="Stay informed about our veteran support programs, success stories, and community impact.">
   <meta property="og:image" content="/images/logo.avif">
-  <meta property="og:url" content="<%= getCurrentURL(c) %>/blog">
+  <meta property="og:url" content="<%= baseURL %>/blog">
   <meta name="twitter:card" content="summary_large_image">
   
   <!-- Pico.css -->
@@ -66,11 +66,11 @@
 
   <!-- Main Content -->
   <main class="container" id="htmx-content">
-    <%= partial("blog/index.plush.html") %>
+    <%= partial("blog/index") %>
   </main>
 
   <!-- Footer -->
-  <%= partial("home/_footer.plush.html") %>
+  <%= partial("home/footer") %>
 
   <!-- Theme Toggle Script -->
   <script>
