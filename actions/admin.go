@@ -142,9 +142,6 @@ func AdminUsers(c buffalo.Context) error {
 	c.Set("users", users)
 	c.Set("pagination", q.Paginator)
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("admin/users.plush.html"))
-	}
 	return c.Render(http.StatusOK, r.HTML("admin/users.plush.html"))
 }
 
@@ -165,10 +162,6 @@ func AdminUserShow(c buffalo.Context) error {
 		{"value": "admin", "label": "Administrator"},
 	}
 	c.Set("roleOptions", roleOptions)
-
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("admin/user_edit.plush.html"))
-	}
 	return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
 }
 
@@ -214,7 +207,7 @@ func AdminUserUpdate(c buffalo.Context) error {
 		c.Set("roleOptions", roleOptions)
 
 		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusOK, rHTMX.HTML("admin/user_edit.plush.html"))
+			return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
 		}
 		return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
 	}

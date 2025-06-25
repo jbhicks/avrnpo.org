@@ -51,7 +51,9 @@
     
     <!-- Donation Form -->
     <div class="donation-form">
-      <div class="donation-card">        <h3>Make a Donation</h3>
+      <div class="donation-card">
+        <form id="donation-form" novalidate>
+        <h3>Make a Donation</h3>
         
         <p class="donation-subtitle">
           Choose your donation amount or enter a custom amount. All donations are tax-deductible.
@@ -70,7 +72,7 @@
           
           <label for="custom-amount">
             Custom Amount
-            <input type="number" id="custom-amount" name="custom-amount" placeholder="Enter amount" min="1">
+            <input type="number" id="custom-amount" name="amount" placeholder="Enter amount" min="1" autocomplete="transaction-amount">
           </label>
         </div>
         
@@ -95,18 +97,18 @@
           <div class="grid">
             <label for="donor-name">
               Full Name *
-              <input type="text" id="donor-name" name="donor-name" required>
+              <input type="text" id="donor-name" name="donor-name" autocomplete="name" required>
             </label>
             
             <label for="donor-email">
               Email Address *
-              <input type="email" id="donor-email" name="donor-email" required>
+              <input type="email" id="donor-email" name="donor-email" autocomplete="email" required>
             </label>
           </div>
           
           <label for="donor-phone">
             Phone Number (optional)
-            <input type="tel" id="donor-phone" name="donor-phone">
+            <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel">
           </label>
           
           <details class="address-details">
@@ -114,23 +116,23 @@
             <div class="address-fields">
               <label for="address-line1">
                 Address Line 1
-                <input type="text" id="address-line1" name="address-line1">
+                <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1">
               </label>
               
               <div class="grid">
                 <label for="city">
                   City
-                  <input type="text" id="city" name="city">
+                  <input type="text" id="city" name="city" autocomplete="address-level2">
                 </label>
                 
                 <label for="state">
                   State
-                  <input type="text" id="state" name="state">
+                  <input type="text" id="state" name="state" autocomplete="address-level1">
                 </label>
                 
                 <label for="zip">
                   ZIP Code
-                  <input type="text" id="zip" name="zip">
+                  <input type="text" id="zip" name="zip" autocomplete="postal-code">
                 </label>
               </div>
             </div>
@@ -149,6 +151,7 @@
         <small class="donation-note">
           Your donation is secure and tax-deductible. You will receive a receipt for your records.
         </small>
+        </form>
       </div>
     </div>
     

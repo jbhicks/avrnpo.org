@@ -17,21 +17,13 @@ import (
 
 // AuthLanding shows a landing page to login
 func AuthLanding(c buffalo.Context) error {
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("auth/landing.plush.html"))
-	}
 	return c.Render(http.StatusOK, r.HTML("auth/landing.plush.html"))
 }
 
 // AuthNew loads the signin page
 func AuthNew(c buffalo.Context) error {
 	c.Set("user", models.User{})
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, rHTMX.HTML("auth/_new.plush.html"))
-	}
-	// For direct page loads, render home layout with auth content
-	c.Set("authContent", true)
-	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
+	return c.Render(http.StatusOK, r.HTML("auth/new.plush.html"))
 }
 
 // AuthCreate attempts to log the user in with an existing account.
@@ -65,9 +57,6 @@ func AuthCreate(c buffalo.Context) error {
 		c.Set("errors", verrs)
 		c.Set("user", &models.User{}) // Don't leak the submitted email
 
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusUnauthorized, rHTMX.HTML("auth/new.plush.html"))
-		}
 		return c.Render(http.StatusUnauthorized, r.HTML("auth/new.plush.html"))
 	}
 
@@ -126,12 +115,5 @@ func AuthDestroy(c buffalo.Context) error {
 	}
 
 	c.Flash().Add("success", "You have been logged out!")
-	if c.Request().Header.Get("HX-Request") == "true" {
-		// Instead of relying on HX-Refresh or HX-Redirect,
-		// render a small HTML snippet that forces a client-side redirect.
-		// We use the rHTMX engine which uses the htmx.plush.html layout (which is just <%= yield %>)
-		// so only the script will be sent.
-		return c.Render(http.StatusOK, rHTMX.HTML("auth/force_redirect.plush.html"))
-	}
 	return c.Redirect(http.StatusFound, "/")
 }

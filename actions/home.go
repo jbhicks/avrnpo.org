@@ -41,16 +41,8 @@ func HomeHandler(c buffalo.Context) error {
 	}
 	c.Set("recentPosts", posts)
 
-	htmxRequest := IsHTMX(c.Request())
-	c.LogField("is_htmx_request_in_handler_for_home", htmxRequest)
-
-	if htmxRequest {
-		// For HTMX requests, render only the content part
-		return c.Render(http.StatusOK, rHTMX.HTML("home/_index_content.plush.html"))
-	}
-
-	// For direct page loads, render the standalone index page without application layout
-	return c.Render(http.StatusOK, rNoLayout.HTML("home/index.plush.html"))
+	// Render the home page
+	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
 // DashboardHandler serves the protected dashboard for authenticated users

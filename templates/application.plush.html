@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -35,18 +34,14 @@
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- Pico.css - Minimal CSS Framework -->
-    <link rel="stylesheet" href="/css/pico.min.css">
+    <%= stylesheetTag("pico.min.css") %>
     
     <!-- Quill Rich Text Editor -->
-    <link rel="stylesheet" href="/css/quill.snow.css">
-    <link rel="stylesheet" href="/css/quill-custom.css">
+    <%= stylesheetTag("quill.snow.css") %>
+    <%= stylesheetTag("quill-custom.css") %>
     
     <!-- Custom styles using Pico.css variables -->
-    <%= if (GO_ENV == "development") { %>
-        <link rel="stylesheet" href="/css/custom.css?v=dev">
-    <% } else { %>
-        <link rel="stylesheet" href="/css/custom.css">
-    <% } %>
+    <%= stylesheetTag("custom.css") %>
     
     <!-- Structured Data for Organization -->
     <script type="application/ld+json">
@@ -70,27 +65,32 @@
     </script>
     
     <!-- Heroicons helper for SVG icons -->
-    <script src="/js/icons.js"></script>
+    <%= javascriptTag("icons.js") %>
     
     <!-- Quill Rich Text Editor -->
-    <script src="/js/quill.min.js"></script>
-    <script src="/js/quill-editor.js"></script>
+    <%= javascriptTag("quill.min.js") %>
+    <%= javascriptTag("quill-editor.js") %>
     
     <!-- Theme switching functionality -->
-    <script src="/js/theme.js"></script>
+    <%= javascriptTag("theme.js") %>
     
     <!-- HTMX Library -->
-    <script src="/js/htmx.min.js"></script>
+    <%= javascriptTag("htmx.min.js") %>
+    
+    <!-- Main Application JavaScript -->
+    <%= javascriptTag("application.js") %>
     
     <% if (authenticity_token) { %>
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="<%= authenticity_token %>" />
     <% } %>
   </head>
-  <body>
+  <body hx-boost="true">
     <% if (flash != nil && len(flash) > 0) { %>
       <%= partial("flash.html") %>
     <% } %>
-    <%= yield %>
+    
+    <%= partial("nav") %>
+    <%= partial("main") %>
   </body>
 </html>

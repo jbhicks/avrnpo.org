@@ -1,0 +1,44 @@
+<!-- Main Navigation Component -->
+<nav id="main-nav">
+  <div class="container">
+    <div class="nav-brand">
+      <a href="/" hx-boost="true">
+        <img src="/images/logo.avif" alt="AVR Logo" height="40">
+        <span>American Veterans Rebuilding</span>
+      </a>
+    </div>
+    
+    <div class="nav-links">
+      <a href="/team" hx-boost="true">Team</a>
+      <a href="/projects" hx-boost="true">Projects</a>
+      <a href="/blog" hx-boost="true">Blog</a>
+      <a href="/contact" hx-boost="true">Contact</a>
+      <a href="/donate" hx-boost="true" class="cta-button">Donate</a>
+      
+      <% if (current_user) { %>
+        <div class="user-menu">
+          <details class="dropdown">
+            <summary>
+              <%= current_user.Email %>
+            </summary>
+            <ul>
+              <li><a href="/dashboard" hx-boost="true">Dashboard</a></li>
+              <li><a href="/profile" hx-boost="true">Profile</a></li>
+              <li><a href="/account" hx-boost="true">Account</a></li>
+              <% if (current_user.Role == "admin") { %>
+                <li><a href="/admin" hx-boost="true">Admin</a></li>
+              <% } %>
+              <li><hr></li>
+              <li><a href="/signout" hx-boost="true">Sign Out</a></li>
+            </ul>
+          </details>
+        </div>
+      <% } else { %>
+        <div class="auth-links">
+          <a href="/auth/new" hx-boost="true">Sign In</a>
+          <a href="/users/new" hx-boost="true" class="secondary">Register</a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</nav>

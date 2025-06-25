@@ -32,12 +32,7 @@ func BlogIndex(c buffalo.Context) error {
 	c.Set("baseURL", scheme+"://"+req.Host)
 
 	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(200, r.HTML("blog/_index_simple.plush.html"))
-	}
-
-	// Direct access - render full blog index page
-	return c.Render(200, r.HTML("blog/index_full.plush.html"))
+	return c.Render(200, r.HTML("blog/index.plush.html"))
 }
 
 // BlogShow displays a single post by slug
@@ -64,6 +59,6 @@ func BlogShow(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	// Always return full page - hx-boost with hx-select will extract the content
-	return c.Render(200, r.HTML("blog/show_full.plush.html"))
+	// Always return full page - hx-boost will handle navigation
+	return c.Render(200, r.HTML("blog/show.plush.html"))
 }

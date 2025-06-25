@@ -106,6 +106,9 @@ func App() *buffalo.App {
 		app.GET("/projects", ProjectsHandler)
 		app.GET("/contact", ContactHandler)
 		app.GET("/donate", DonateHandler)
+		app.GET("/donations", func(c buffalo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/donate")
+		})
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
 
@@ -180,7 +183,10 @@ func App() *buffalo.App {
 			})
 		}
 
-		// Serve static files
+		// Serve assets from /assets/ path (Buffalo asset helpers)
+		app.ServeFiles("/assets/", http.FS(public.FS()))
+		
+		// Serve static files from root (backwards compatibility)
 		app.ServeFiles("/", http.FS(public.FS()))
 	})
 

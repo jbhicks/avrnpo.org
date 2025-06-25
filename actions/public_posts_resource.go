@@ -37,13 +37,8 @@ func (ppr PublicPostsResource) List(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("blog/_index_simple.plush.html"))
-	}
-
-	// Direct access - render full blog index page
-	return c.Render(http.StatusOK, r.HTML("blog/index_full.plush.html"))
+	// Render blog index page
+	return c.Render(http.StatusOK, r.HTML("blog/index.plush.html"))
 }
 
 // Show displays a single published post by slug (GET /blog/{slug})
@@ -70,8 +65,8 @@ func (ppr PublicPostsResource) Show(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	// Always return full page - hx-boost with hx-select will extract the content
-	return c.Render(http.StatusOK, r.HTML("blog/show_full.plush.html"))
+	// Always return full page - hx-boost will handle navigation
+	return c.Render(http.StatusOK, r.HTML("blog/show.plush.html"))
 }
 
 // Create, Update, Destroy methods not implemented for public resource

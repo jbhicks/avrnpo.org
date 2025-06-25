@@ -4,7 +4,6 @@ import (
 	"avrnpo.org/public"
 	"avrnpo.org/templates"
 	"html/template"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -14,48 +13,24 @@ import (
 )
 
 var r *render.Engine
-var rHTMX *render.Engine // New engine for HTMX requests
-var rNoLayout *render.Engine // Engine without any layout for standalone pages
 
 func init() {
-	// Common helpers for both render engines
+	// Common helpers
 	commonHelpers := render.Helpers{
 		forms.FormKey:    forms.Form,
 		forms.FormForKey: forms.FormFor,
 		"getCurrentURL":  getCurrentURL,
 		"stripTags":      stripTagsHelper,
 		"dateFormat":     dateFormatHelper,
-		// You can add other common helpers here
 	}
 
-	// Standard render engine
+	// Single render engine with proper asset handling
 	r = render.New(render.Options{
 		HTMLLayout:  "application.plush.html",
 		TemplatesFS: templates.FS(),
 		AssetsFS:    public.FS(),
 		Helpers:     commonHelpers,
 	})
-
-	// Render engine for HTMX requests
-	rHTMX = render.New(render.Options{
-		HTMLLayout:  "htmx.plush.html", // Use the minimal layout for HTMX
-		TemplatesFS: templates.FS(),
-		AssetsFS:    public.FS(),
-		Helpers:     commonHelpers, // Share the same helpers
-	})
-
-	// Render engine without any layout for standalone pages
-	rNoLayout = render.New(render.Options{
-		// No HTMLLayout - renders templates directly without wrapper
-		TemplatesFS: templates.FS(),
-		AssetsFS:    public.FS(),
-		Helpers:     commonHelpers,
-	})
-}
-
-// IsHTMX checks if the current request is an HTMX request.
-func IsHTMX(r *http.Request) bool {
-	return r.Header.Get("HX-Request") == "true"
 }
 
 // getCurrentURL returns the current request URL for use in templates

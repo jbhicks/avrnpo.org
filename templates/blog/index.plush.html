@@ -1,0 +1,27 @@
+<section class="container">
+  <header>
+    <h1>Blog</h1>
+    <p>Latest updates and insights from American Veterans Rebuilding</p>
+  </header>
+
+  <% if (posts && len(posts) > 0) { %>
+    <section class="posts-grid">
+      <% for (post) in posts { %>
+        <%= partial("blog/post_card", {"post": post}) %>
+      <% } %>
+    </section>
+  <% } else { %>
+    <section>
+      <p>No blog posts available at this time. Check back soon for updates!</p>
+    </section>
+  <% } %>
+</section>
+
+<style>
+  .posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--pico-spacing);
+    margin-top: var(--pico-spacing);
+  }
+</style>

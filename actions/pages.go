@@ -5,38 +5,32 @@ import (
         "github.com/gobuffalo/buffalo"
 )
 
-// TeamHandler shows the team page content
+// TeamHandler shows the team page
 func TeamHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_team"))
+	return c.Render(http.StatusOK, r.HTML("pages/team.plush.html"))
 }
 
-// ProjectsHandler shows the projects page content
+// ProjectsHandler shows the projects page
 func ProjectsHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_projects"))
+	return c.Render(http.StatusOK, r.HTML("pages/projects.plush.html"))
 }
 
-// ContactHandler shows the contact form content
+// ContactHandler shows the contact form
 func ContactHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_contact"))
+	return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 }
 
-// DonateHandler shows the donation page content
+// DonateHandler shows the donation page
 func DonateHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_donate_content"))
+	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }
 
-// DonationSuccessHandler shows the donation success page content
+// DonationSuccessHandler shows the donation success page
 func DonationSuccessHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_donation_success_content"))
+	return c.Render(http.StatusOK, r.HTML("pages/donation_success.plush.html"))
 }
 
-// DonationFailedHandler shows the donation failed page content
+// DonationFailedHandler shows the donation failed page
 func DonationFailedHandler(c buffalo.Context) error {
-	// Always return just content - let HTMX handle extraction
-	return c.Render(http.StatusOK, rHTMX.HTML("pages/_donation_failed.plush.html"))
+	return c.Render(http.StatusOK, r.HTML("pages/donation_failed.plush.html"))
 }
