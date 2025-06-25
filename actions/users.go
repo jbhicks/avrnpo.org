@@ -224,40 +224,16 @@ func AccountUpdate(c buffalo.Context) error {
 // in the session. If one is found it is set on the context.
 func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
-		if uid := c.Session().Get("current_user_id"); uid != nil {
-			// Debug logging for tests
-			if c.Value("test_mode") != nil {
-				logging.Debug("SetCurrentUser: Found session user ID", logging.Fields{
-					"session_user_id": uid,
-				})
-			}
-
+		sessionUID := c.Session().Get("current_user_id")
+		if sessionUID != nil {
 			u := &models.User{}
 			tx := c.Value("tx").(*pop.Connection)
-			err := tx.Find(u, uid)
+			err := tx.Find(u, sessionUID)
 			if err != nil {
 				// If user not found, clear the session and continue
-				// This handles cases where user was deleted but session still exists
-				if c.Value("test_mode") != nil {
-					logging.Debug("SetCurrentUser: User not found in DB", logging.Fields{
-						"session_user_id": uid,
-						"error":           err.Error(),
-					})
-				}
 				c.Session().Delete("current_user_id")
 			} else {
-				if c.Value("test_mode") != nil {
-					logging.Debug("SetCurrentUser: Found user in DB", logging.Fields{
-						"user_id": u.ID.String(),
-						"email":   u.Email,
-						"role":    u.Role,
-					})
-				}
 				c.Set("current_user", u)
-			}
-		} else {
-			if c.Value("test_mode") != nil {
-				logging.Debug("SetCurrentUser: No current_user_id in session", logging.Fields{})
 			}
 		}
 		return next(c)
@@ -269,15 +245,8 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		// Check if current_user was set by SetCurrentUser middleware
 		user, ok := c.Value("current_user").(*models.User)
+		
 		if !ok || user == nil {
-			if c.Value("test_mode") != nil {
-				if !ok {
-					logging.Debug("Authorize: current_user not found in context or wrong type", logging.Fields{})
-				} else {
-					logging.Debug("Authorize: current_user is nil", logging.Fields{})
-				}
-			}
-
 			c.Session().Set("redirectURL", c.Request().URL.String())
 
 			err := c.Session().Save()
@@ -289,13 +258,6 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 			return c.Redirect(http.StatusFound, "/auth/new")
 		}
 
-		if c.Value("test_mode") != nil {
-			logging.Debug("Authorize: User authorized", logging.Fields{
-				"user_id": user.ID.String(),
-				"email":   user.Email,
-				"role":    user.Role,
-			})
-		}
 		return next(c)
 	}
 }

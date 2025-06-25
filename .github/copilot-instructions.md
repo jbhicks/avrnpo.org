@@ -1,5 +1,16 @@
 # Copilot Instructions
 
+## 🚨 CRITICAL SECURITY RULES 🚨
+
+**NEVER EXPOSE SENSITIVE DATA IN DOCUMENTATION OR CODE**
+
+- **NEVER** include real API keys, tokens, passwords, or secrets in ANY documentation files (.md, .txt, etc.)
+- **NEVER** commit real credentials to version control
+- **ALWAYS** use placeholder values like `your_api_key_here` or `REPLACE_WITH_ACTUAL_KEY`
+- **ALWAYS** use environment variables for sensitive configuration
+- **NEVER** expose production credentials in test files or examples
+- **IMMEDIATELY** flag and remove any exposed credentials found in files
+
 ## 🚨 CRITICAL PROCESS MANAGEMENT RULES 🚨
 
 **NEVER KILL THE BUFFALO DEVELOPMENT SERVER PROCESS**

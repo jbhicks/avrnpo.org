@@ -1,0 +1,115 @@
+<!-- Create New User (HTMX Partial) -->
+<header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1>Create New User</h1>
+    <p>Add a new user account to the system</p>
+  </div>
+  <div>
+    <a href="/admin/users" role="button" class="outline"
+       hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">← Back to Users</a>
+  </div>
+</header>
+
+<%= if (errors) { %>
+<article style="background-color: var(--pico-form-element-invalid-border-color); color: white; margin-bottom: 2rem;">
+  <header><strong>Validation Errors</strong></header>
+  <ul style="margin: 0;">
+    <%= for (key, messages) in errors { %>
+      <%= for (message) in messages { %>
+      <li><%= message %></li>
+      <% } %>
+    <% } %>
+  </ul>
+</article>
+<% } %>
+
+<form action="/admin/users" method="POST" 
+      hx-post="/admin/users" hx-target="#main-content" hx-swap="innerHTML">
+  <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- User Information -->
+    <section>
+      <h3>User Information</h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label for="user-first-name">First Name *</label>
+          <input type="text" id="user-first-name" name="FirstName" value="<%= user.FirstName %>" required>
+        </div>
+        <div>
+          <label for="user-last-name">Last Name *</label>
+          <input type="text" id="user-last-name" name="LastName" value="<%= user.LastName %>" required>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label for="user-email">Email Address *</label>
+        <input type="email" id="user-email" name="Email" value="<%= user.Email %>" required>
+        <small>User's email address for login and communications</small>
+      </div>
+
+      <div style="margin-bottom: 1rem;">
+        <label for="user-role">Account Role *</label>
+        <select id="user-role" name="Role" required>
+          <%= for (option) in roleOptions { %>
+            <option value="<%= option["value"] %>" <%= if (user.Role == option["value"]) { %>selected<% } %>>
+              <%= option["label"] %>
+            </option>
+          <% } %>
+        </select>
+        <small>
+          <strong>User:</strong> Standard account with basic access<br>
+          <strong>Administrator:</strong> Full access to admin panel and user management
+        </small>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label for="user-password">Password *</label>
+          <input type="password" id="user-password" name="Password" required minlength="6">
+          <small>Minimum 6 characters</small>
+        </div>
+        <div>
+          <label for="user-password-confirmation">Confirm Password *</label>
+          <input type="password" id="user-password-confirmation" name="PasswordConfirmation" required minlength="6">
+          <small>Must match password</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guidelines -->
+    <aside style="background-color: var(--pico-card-background-color); padding: 1.5rem; border-radius: var(--pico-border-radius); height: fit-content;">
+      <h3 style="margin-top: 0;">User Creation Guidelines</h3>
+      
+      <h4>Password Requirements:</h4>
+      <ul style="font-size: 0.875rem;">
+        <li>Minimum 6 characters</li>
+        <li>Must be confirmed</li>
+        <li>User can change it later</li>
+      </ul>
+
+      <h4>Role Permissions:</h4>
+      <ul style="font-size: 0.875rem;">
+        <li><strong>User:</strong> Access to dashboard and profile</li>
+        <li><strong>Admin:</strong> Full system access including user management</li>
+      </ul>
+
+      <hr>
+      <small style="color: var(--pico-muted-color);">
+        <strong>Note:</strong> The new user will receive their login credentials and can change their password on first login.
+      </small>
+    </aside>
+  </div>
+
+  <!-- Form Actions -->
+  <section style="border-top: 1px solid var(--pico-muted-border-color); padding-top: 2rem;">
+    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+      <a href="/admin/users" role="button" class="secondary"
+         hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">
+        Cancel
+      </a>
+      <button type="submit" class="primary">Create User</button>
+    </div>
+  </section>
+</form>

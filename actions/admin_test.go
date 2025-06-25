@@ -18,14 +18,20 @@ func (as *ActionSuite) createAndLoginUser(email, role string) *models.User {
 		PasswordConfirmation: "password123",
 	}
 
+	// Create user and commit to ensure it's visible in other transactions
 	verrs, err := user.Create(as.DB)
 	as.NoError(err)
 	as.False(verrs.HasAny())
 
-	// Set user session directly following Buffalo patterns
-	as.Session.Set("current_user_id", user.ID)
+	// Reload user to ensure it's committed to DB
+	reloadedUser := &models.User{}
+	err = as.DB.Find(reloadedUser, user.ID)
+	as.NoError(err)
 
-	return user
+	// Set user session directly following Buffalo patterns
+	as.Session.Set("current_user_id", reloadedUser.ID)
+
+	return reloadedUser
 }
 
 func (as *ActionSuite) Test_AdminRoutes_RequireAuthentication() {
@@ -102,7 +108,7 @@ func (as *ActionSuite) Test_AdminDashboard_Success() {
 }
 
 func (as *ActionSuite) Test_AdminUsers_Success() {
-	// Create and login admin user
+	// Create and login admin user  
 	_ = as.createAndLoginUser("admin@example.com", "admin")
 
 	// Create additional test user

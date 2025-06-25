@@ -1,0 +1,35 @@
+<!-- New Post Form (HTMX Partial) -->
+<header style="margin-bottom: 2rem;">
+  <nav style="margin-bottom: 1rem;">
+    <a href="/admin/posts" hx-get="/admin/posts" hx-target="#main-content" hx-push-url="true">← Back to Posts</a>
+  </nav>
+  <h1>Create New Post</h1>
+  <p>Share veteran success stories, program updates, and community impact.</p>
+</header>
+
+<%= if (errors) { %>
+<div style="background-color: var(--pico-del-background-color); border: 1px solid var(--pico-del-color); border-radius: var(--pico-border-radius); padding: 1rem; margin-bottom: 2rem;">
+  <h4 style="margin-top: 0; color: var(--pico-del-color);">Please fix the following errors:</h4>
+  <ul style="margin-bottom: 0;">
+    <%= for (key, messages) in errors { %>
+      <%= for (message) in messages { %>
+      <li><%= message %></li>
+      <% } %>
+    <% } %>
+  </ul>
+</div>
+<% } %>
+
+<form hx-post="/admin/posts" hx-target="#main-content" hx-push-url="true" enctype="multipart/form-data">
+  <% if (authenticity_token) { %>
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <% } %>
+  
+  <%= partial("admin/posts/form") %>
+  
+  <!-- Form Actions -->
+  <div style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 2rem; border-top: 1px solid var(--pico-muted-border-color);">
+    <a href="/admin/posts" role="button" class="outline" hx-get="/admin/posts" hx-target="#main-content" hx-push-url="true">Cancel</a>
+    <button type="submit" class="primary">Create Post</button>
+  </div>
+</form>

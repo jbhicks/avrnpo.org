@@ -95,7 +95,8 @@ func App() *buffalo.App {
 		app.Use(Authorize)
 
 		// Skip Authorize middleware for public routes following official buffalo-auth pattern
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, BlogIndex, BlogShow, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler)
+		blogResource := PublicPostsResource{}
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler)
 
 		// Public routes
 		app.GET("/", HomeHandler)
@@ -117,9 +118,10 @@ func App() *buffalo.App {
 		// Webhook routes (public - external services)
 		app.POST("/api/webhooks/helcim", HelcimWebhookHandler)
 
-		// Blog routes
-		app.GET("/blog", BlogIndex)
-		app.GET("/blog/{slug}", BlogShow)
+		// Blog routes (using Resource pattern)
+		// Custom blog routes for SEO-friendly URLs
+		app.GET("/blog", blogResource.List)
+		app.GET("/blog/{slug}", blogResource.Show)
 
 		//Routes for Auth
 		app.GET("/auth/", AuthLanding)
@@ -145,20 +147,16 @@ func App() *buffalo.App {
 		adminGroup.Use(AdminRequired)
 		adminGroup.GET("/", AdminDashboard)
 		adminGroup.GET("/dashboard", AdminDashboard)
-		adminGroup.GET("/users", AdminUsers)
-		adminGroup.GET("/users/{user_id}", AdminUserShow)
-		adminGroup.POST("/users/{user_id}", AdminUserUpdate)
-		adminGroup.DELETE("/users/{user_id}", AdminUserDelete)
 
-		// Admin blog post routes
-		adminGroup.GET("/posts", AdminPostsIndex)
-		adminGroup.POST("/posts/bulk", AdminPostsBulk)
-		adminGroup.GET("/posts/new", AdminPostsNew)
-		adminGroup.POST("/posts", AdminPostsCreate)
-		adminGroup.GET("/posts/{post_id}", AdminPostsShow)
-		adminGroup.GET("/posts/{post_id}/edit", AdminPostsEdit)
-		adminGroup.POST("/posts/{post_id}", AdminPostsUpdate)
-		adminGroup.DELETE("/posts/{post_id}", AdminPostsDelete)
+		// Admin user management routes (using Resource pattern)
+		adminUsersResource := AdminUsersResource{}
+		adminGroup.Resource("/users", adminUsersResource)
+
+		// Admin blog post routes (using Resource pattern)
+		postsResource := PostsResource{}
+		adminGroup.Resource("/posts", postsResource)
+		// Add custom bulk action route
+		adminGroup.POST("/posts/bulk", postsResource.Bulk)
 
 		// Admin donation routes
 		adminGroup.GET("/donations", AdminDonationsIndex)

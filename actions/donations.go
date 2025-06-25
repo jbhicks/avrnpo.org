@@ -686,7 +686,7 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		CustomerID:    req.CustomerCode,
 		PaymentPlanID: paymentPlanID,
 		Amount:        donation.Amount,
-		PaymentMethod: "cc",
+		PaymentMethod: "card",
 	})
 	if err != nil {
 		c.Logger().Errorf("Failed to create subscription: %v", err)
@@ -695,10 +695,13 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		}))
 	}
 	
-	// Update donation record
-	donation.SubscriptionID = &subscription.ID
+	// Update donation record - convert int IDs to strings for storage
+	subscriptionIDStr := fmt.Sprintf("%d", subscription.ID)
+	paymentPlanIDStr := fmt.Sprintf("%d", paymentPlanID)
+	
+	donation.SubscriptionID = &subscriptionIDStr
 	donation.CustomerID = &req.CustomerCode  
-	donation.PaymentPlanID = &paymentPlanID
+	donation.PaymentPlanID = &paymentPlanIDStr
 	donation.Status = "active"
 	
 	tx := c.Value("tx").(*pop.Connection)
@@ -718,7 +721,7 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 }
 
 // getOrCreateMonthlyDonationPlan creates a payment plan for monthly donations
-func getOrCreateMonthlyDonationPlan(client *services.HelcimClient, amount float64) (string, error) {
+func getOrCreateMonthlyDonationPlan(client *services.HelcimClient, amount float64) (int, error) {
 	// Create a standardized plan name based on amount
 	planName := fmt.Sprintf("Monthly Donation - $%.2f", amount)
 	
@@ -726,7 +729,7 @@ func getOrCreateMonthlyDonationPlan(client *services.HelcimClient, amount float6
 	// TODO: In production, implement plan caching/reuse logic
 	plan, err := client.CreatePaymentPlan(amount, planName)
 	if err != nil {
-		return "", fmt.Errorf("failed to create payment plan: %w", err)
+		return 0, fmt.Errorf("failed to create payment plan: %w", err)
 	}
 	
 	return plan.ID, nil

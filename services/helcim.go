@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -38,11 +39,18 @@ type PaymentAPIResponse struct {
 
 // Recurring API structures
 type PaymentPlan struct {
-	ID        string  `json:"id"`
-	Name      string  `json:"planName"`
-	Amount    float64 `json:"amount"`
-	Frequency string  `json:"frequency"` // "monthly"
-	Currency  string  `json:"currency"`
+	ID                       int     `json:"id"`
+	Name                     string  `json:"name"`
+	Description              string  `json:"description"`
+	Type                     string  `json:"type"`
+	Currency                 string  `json:"currency"`
+	RecurringAmount          float64 `json:"recurringAmount"`
+	BillingPeriod            string  `json:"billingPeriod"`
+	BillingPeriodIncrements  int     `json:"billingPeriodIncrements"`
+	DateBilling              string  `json:"dateBilling"`
+	TermType                 string  `json:"termType"`
+	PaymentMethod            string  `json:"paymentMethod"`
+	Status                   string  `json:"status"`
 }
 
 type CustomerRequest struct {
@@ -62,18 +70,20 @@ type BillingAddress struct {
 
 type SubscriptionRequest struct {
 	CustomerID    string  `json:"customerId"`
-	PaymentPlanID string  `json:"paymentPlanId"`
+	PaymentPlanID int     `json:"paymentPlanId"`
 	Amount        float64 `json:"amount"`
-	PaymentMethod string  `json:"paymentMethod"` // "cc" for credit card
+	PaymentMethod string  `json:"paymentMethod"` // "card" for credit card
 }
 
 type SubscriptionResponse struct {
-	ID              string    `json:"id"`
+	ID              int       `json:"id"`
 	CustomerID      string    `json:"customerId"`
-	PaymentPlanID   string    `json:"paymentPlanId"`
+	PaymentPlanID   int       `json:"paymentPlanId"`
 	Amount          float64   `json:"amount"`
 	Status          string    `json:"status"`
+	ActivationDate  string    `json:"activationDate"`
 	NextBillingDate time.Time `json:"nextBillingDate"`
+	PaymentMethod   string    `json:"paymentMethod"`
 }
 
 // NewHelcimClient creates a new Helcim API client
@@ -126,14 +136,27 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*PaymentPlan, error) {
 	url := fmt.Sprintf("%s/payment-plans", h.BaseURL)
 	
-	plan := map[string]interface{}{
-		"planName":  planName,
-		"amount":    amount,
-		"frequency": "monthly",
-		"currency":  "USD",
+	// Create payment plan request according to Helcim API docs
+	request := map[string]interface{}{
+		"paymentPlans": []map[string]interface{}{
+			{
+				"name":                   planName,
+				"description":            fmt.Sprintf("Monthly donation plan for $%.2f", amount),
+				"type":                   "subscription", // Bill on sign-up
+				"currency":               "USD",
+				"recurringAmount":        amount,
+				"billingPeriod":          "monthly",
+				"billingPeriodIncrements": 1,
+				"dateBilling":            "Sign-up",
+				"termType":               "forever", // Indefinite billing
+				"paymentMethod":          "card",
+				"taxType":                "no_tax",
+				"status":                 "active",
+			},
+		},
 	}
 	
-	jsonData, err := json.Marshal(plan)
+	jsonData, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
@@ -153,22 +176,41 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 	defer resp.Body.Close()
 	
 	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 	
-	var result PaymentPlan
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	// Parse response - Helcim returns array of created payment plans
+	var responseData []PaymentPlan
+	if err := json.NewDecoder(resp.Body).Decode(&responseData); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 	
-	return &result, nil
+	if len(responseData) == 0 {
+		return nil, fmt.Errorf("no payment plan returned in response")
+	}
+	
+	return &responseData[0], nil
 }
 
 // CreateSubscription creates a new subscription using the Recurring API
 func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error) {
 	url := fmt.Sprintf("%s/subscriptions", h.BaseURL)
 	
-	jsonData, err := json.Marshal(req)
+	// Create subscription request according to Helcim API docs
+	request := map[string]interface{}{
+		"subscriptions": []map[string]interface{}{
+			{
+				"customerId":     req.CustomerID,
+				"paymentPlanId":  req.PaymentPlanID,
+				"amount":         req.Amount,
+				"paymentMethod":  req.PaymentMethod,
+				"activationDate": time.Now().Format("2006-01-02"), // Activate immediately
+			},
+		},
+	}
+	
+	jsonData, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
@@ -188,13 +230,19 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 	defer resp.Body.Close()
 	
 	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 	
-	var result SubscriptionResponse
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	// Parse response - Helcim returns array of created subscriptions
+	var responseData []SubscriptionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&responseData); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 	
-	return &result, nil
+	if len(responseData) == 0 {
+		return nil, fmt.Errorf("no subscription returned in response")
+	}
+	
+	return &responseData[0], nil
 }

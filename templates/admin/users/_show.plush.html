@@ -1,0 +1,94 @@
+<!-- User Details (HTMX Partial) -->
+<header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1><%= user.FirstName %> <%= user.LastName %></h1>
+    <p style="color: var(--pico-muted-color); margin: 0;">
+      <%= if (user.Role == "admin") { %>
+        <span style="color: var(--pico-primary); font-weight: bold;">Administrator</span>
+      <% } else { %>
+        <span style="color: var(--pico-secondary); font-weight: bold;">User</span>
+      <% } %>
+      •
+      Member since <%= dateFormat(user.CreatedAt, "Jan 2, 2006") %>
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="/admin/users" role="button" class="outline" 
+       hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">← Back to Users</a>
+    <a href="/admin/users/<%= user.ID %>/edit" role="button" class="secondary" 
+       hx-get="/admin/users/<%= user.ID %>/edit" hx-target="#main-content" hx-push-url="true">Edit User</a>
+  </div>
+</header>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+  <!-- User Information -->
+  <article>
+    <header>
+      <h3>User Information</h3>
+    </header>
+    
+    <div style="margin-bottom: 1rem;">
+      <strong>Full Name:</strong><br>
+      <%= user.FirstName %> <%= user.LastName %>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <strong>Email Address:</strong><br>
+      <a href="mailto:<%= user.Email %>"><%= user.Email %></a>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <strong>Account Type:</strong><br>
+      <%= if (user.Role == "admin") { %>
+        <span style="background-color: var(--pico-primary); color: white; padding: 0.25rem 0.5rem; border-radius: var(--pico-border-radius); font-size: 0.875rem; font-weight: bold;">Administrator</span>
+        <br><small>Full access to admin panel and user management</small>
+      <% } else { %>
+        <span style="background-color: var(--pico-muted-color); color: white; padding: 0.25rem 0.5rem; border-radius: var(--pico-border-radius); font-size: 0.875rem;">Regular User</span>
+        <br><small>Standard user account with limited privileges</small>
+      <% } %>
+    </div>
+  </article>
+
+  <!-- Account Details -->
+  <aside style="background-color: var(--pico-card-background-color); padding: 1.5rem; border-radius: var(--pico-border-radius); height: fit-content;">
+    <h3 style="margin-top: 0;">Account Details</h3>
+    
+    <div style="margin-bottom: 1rem;">
+      <strong>User ID:</strong><br>
+      <code><%= user.ID %></code>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <strong>Created:</strong><br>
+      <%= dateFormat(user.CreatedAt, "Jan 2, 2006 at 3:04 PM") %>
+    </div>
+
+    <div style="margin-bottom: 1rem;">
+      <strong>Last Updated:</strong><br>
+      <%= dateFormat(user.UpdatedAt, "Jan 2, 2006 at 3:04 PM") %>
+    </div>
+
+    <!-- Actions -->
+    <hr>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <a href="/admin/users/<%= user.ID %>/edit" role="button" class="secondary outline"
+         hx-get="/admin/users/<%= user.ID %>/edit" hx-target="#main-content" hx-push-url="true">
+        Edit User Details
+      </a>
+      
+      <%= if (user.ID.String() != current_user.ID.String()) { %>
+      <button type="button" class="outline" style="color: red; border-color: red;" 
+              hx-delete="/admin/users/<%= user.ID %>" 
+              hx-confirm="Are you sure you want to delete this user? This action cannot be undone."
+              hx-target="#main-content"
+              hx-push-url="/admin/users">
+        Delete User
+      </button>
+      <% } else { %>
+      <small style="color: var(--pico-muted-color); text-align: center; padding: 0.5rem;">
+        You cannot delete your own account
+      </small>
+      <% } %>
+    </div>
+  </aside>
+</div>

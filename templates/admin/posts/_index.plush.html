@@ -1,0 +1,123 @@
+<!-- Posts Management Content (HTMX Partial) -->
+<header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1>Manage Posts</h1>
+    <p>Create, edit, and manage blog posts for American Veterans Rebuilding.</p>
+  </div>
+  <a href="/admin/posts/new" role="button" hx-get="/admin/posts/new" hx-target="#main-content" hx-push-url="true">Create New Post</a>
+</header>
+
+<%= if (len(posts) > 0) { %>
+<!-- Search and Filter -->
+<div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+  <input type="search" name="search" placeholder="Search posts..." value="<%= search %>" 
+         hx-get="/admin/posts" hx-target="#main-content" hx-trigger="input changed delay:300ms, search">
+  
+  <select name="status" hx-get="/admin/posts" hx-target="#main-content" hx-trigger="change">
+    <option value="">All Posts</option>
+    <option value="published" <%= if (status == "published") { %>selected<% } %>>Published</option>
+    <option value="draft" <%= if (status == "draft") { %>selected<% } %>>Draft</option>
+  </select>
+</div>
+
+<!-- Posts Table -->
+<div class="posts-table">
+  <table>
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="select-all"></th>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= for (post) in posts { %>
+      <tr>
+        <td><input type="checkbox" name="post_ids" value="<%= post.ID %>"></td>
+        <td>
+          <strong><%= post.Title %></strong>
+          <%= if (post.Excerpt != "") { %>
+            <br><small style="color: var(--pico-muted-color);"><%= post.Excerpt %></small>
+          <% } %>
+        </td>
+        <td>
+          <%= if (post.User.Name != "") { %>
+            <%= post.User.Name %>
+          <% } else { %>
+            <%= post.User.Email %>
+          <% } %>
+        </td>
+        <td>
+          <%= if (post.Published) { %>
+            <span style="color: green;">✓ Published</span>
+          <% } else { %>
+            <span style="color: orange;">📝 Draft</span>
+          <% } %>
+        </td>
+        <td><%= dateFormat(post.CreatedAt, "2006-01-02") %></td>
+        <td>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/admin/posts/<%= post.ID %>" role="button" class="secondary outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;"
+               hx-get="/admin/posts/<%= post.ID %>" hx-target="#main-content" hx-push-url="true">View</a>
+            <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;"
+               hx-get="/admin/posts/<%= post.ID %>/edit" hx-target="#main-content" hx-push-url="true">Edit</a>
+            <button type="button" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem; color: red; border-color: red;"
+                    hx-delete="/admin/posts/<%= post.ID %>" hx-confirm="Are you sure you want to delete this post?"
+                    hx-target="#main-content" hx-swap="outerHTML">Delete</button>
+          </div>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Bulk Actions -->
+<div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+  <span>With selected posts:</span>
+  <button type="button" onclick="bulkAction('publish')" class="outline">Publish</button>
+  <button type="button" onclick="bulkAction('unpublish')" class="outline">Unpublish</button>
+  <button type="button" onclick="bulkAction('delete')" class="outline" style="color: red; border-color: red;">Delete</button>
+</div>
+
+<script>
+function bulkAction(action) {
+  const checkboxes = document.querySelectorAll('input[name="post_ids"]:checked');
+  if (checkboxes.length === 0) {
+    alert('Please select at least one post');
+    return;
+  }
+  
+  const postIds = Array.from(checkboxes).map(cb => cb.value);
+  const formData = new FormData();
+  formData.append('action', action);
+  postIds.forEach(id => formData.append('post_ids', id));
+  
+  if (action === 'delete' && !confirm('Are you sure you want to delete the selected posts?')) {
+    return;
+  }
+  
+  htmx.ajax('POST', '/admin/posts/bulk', {
+    values: Object.fromEntries(formData),
+    target: '#main-content'
+  });
+}
+
+// Select all functionality
+document.getElementById('select-all').addEventListener('change', function() {
+  const checkboxes = document.querySelectorAll('input[name="post_ids"]');
+  checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
+
+<% } else { %>
+<!-- No Posts -->
+<div style="text-align: center; padding: 3rem; color: var(--pico-muted-color);">
+  <h3>No Posts Found</h3>
+  <p>Get started by creating your first blog post.</p>
+  <a href="/admin/posts/new" role="button" hx-get="/admin/posts/new" hx-target="#main-content" hx-push-url="true">Create New Post</a>
+</div>
+<% } %>

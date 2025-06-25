@@ -415,6 +415,53 @@ curl -X POST "https://api.helcim.com/v2/helcim-pay/initialize" \
   }'
 ```
 
+## 📧 CRITICAL: Helcim Email Functionality (Updated June 24, 2025)
+
+### ❌ HELCIM DOES NOT PROVIDE EMAIL SERVICES
+
+**Key Discovery**: Helcim does **NOT** automatically send emails when payments are processed.
+
+#### What Helcim Provides:
+- ✅ **Payment Processing**: Credit card and ACH transaction processing
+- ✅ **Webhooks**: Real-time payment status notifications to your server
+- ✅ **Transaction Data**: Complete payment details via API responses
+- ❌ **NO Email Services**: No automatic receipt sending or email functionality
+
+#### What You Must Implement:
+- **Custom Email Service**: Your application must handle all email communications
+- **Receipt Generation**: Create and send donation receipts via your own SMTP service
+- **Email Templates**: Design and maintain your own email templates
+- **SMTP Configuration**: Set up email delivery through services like Gmail, SendGrid, etc.
+
+### ✅ AVR NPO Email Implementation
+
+The AVR donation system includes a complete email service implementation:
+
+#### Email Service Features:
+- **HTML & Text Receipts**: Professional donation receipts with AVR branding
+- **501(c)(3) Compliance**: Tax-deductible information and EIN details
+- **Automatic Sending**: Triggered by successful payment webhooks
+- **SMTP Integration**: Works with Gmail, SendGrid, Mailgun, etc.
+- **Error Handling**: Graceful fallback if email delivery fails
+
+#### Configuration Required:
+```bash
+# SMTP settings for email delivery
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=donations@avrnpo.org
+FROM_NAME=American Veterans Rebuilding
+```
+
+#### Email Flow:
+```
+Payment Success → Helcim Webhook → Your Server → Generate Receipt → Send Email
+```
+
+**Important**: Never rely on Helcim for email functionality. Always implement your own email service for donation receipts and donor communications.
+
 ## Environment Variables
 
 Required environment variables for Helcim integration:
@@ -439,3 +486,83 @@ HELCIM_WEBHOOK_URL=https://yourdomain.com/api/webhooks/helcim
 ---
 
 *This document should be updated as new Helcim features are implemented in the AVR donation system.*
+
+## 🚨 CRITICAL: Helcim Recurring API Integration (Updated June 24, 2025)
+
+**⚠️ IMPORTANT DISCOVERIES:** Through implementation and testing, we've learned critical details about Helcim's Recurring API that differ from initial assumptions.
+
+### ✅ VERIFIED: Official Helcim Recurring API Structure
+
+#### Payment Plans API (`POST /v2/payment-plans`)
+- **Request Format**: Must use `paymentPlans` array wrapper
+- **Required Fields**: `name`, `type`, `currency`, `recurringAmount`, `billingPeriod`
+- **Response Format**: Returns array of created payment plans
+- **ID Type**: Payment plan IDs are integers, not strings
+
+```json
+// CORRECT Payment Plan Request Structure
+{
+  "paymentPlans": [
+    {
+      "name": "Monthly Donation - $25.00",
+      "description": "Monthly donation plan for $25.00",
+      "type": "subscription",
+      "currency": "USD", 
+      "recurringAmount": 25.00,
+      "billingPeriod": "monthly",
+      "billingPeriodIncrements": 1,
+      "dateBilling": "Sign-up",
+      "termType": "forever",
+      "paymentMethod": "card",
+      "taxType": "no_tax",
+      "status": "active"
+    }
+  ]
+}
+```
+
+#### Subscriptions API (`POST /v2/subscriptions`)
+- **Request Format**: Must use `subscriptions` array wrapper
+- **Customer Linking**: Uses `customerId` from HelcimPay.js verify process
+- **Payment Plan Linking**: Uses integer `paymentPlanId` from payment plan creation
+- **Activation**: Uses `activationDate` field for immediate or scheduled activation
+
+```json
+// CORRECT Subscription Request Structure
+{
+  "subscriptions": [
+    {
+      "customerId": "customer_code_from_helcimpay",
+      "paymentPlanId": 12345,
+      "amount": 25.00,
+      "paymentMethod": "card",
+      "activationDate": "2025-06-24"
+    }
+  ]
+}
+```
+
+### 🔄 RECOMMENDED IMPLEMENTATION FLOW
+
+#### Step 1: HelcimPay.js Verify Mode
+- Use `paymentType: "verify"` to collect payment details
+- Creates customer in Helcim system with stored payment method
+- Returns `customerCode` for subscription creation
+
+#### Step 2: Payment Plan Creation
+- Create payment plan using official Payment Plans API
+- Store plan ID for subscription creation
+- Plans can be reused for same donation amounts
+
+#### Step 3: Subscription Creation
+- Link customer to payment plan via Subscriptions API
+- Set activation date for immediate or future billing
+- Store subscription ID for management
+
+### ❌ COMMON MISTAKES TO AVOID
+
+1. **Wrong Request Structure**: Don't send individual objects, use array wrappers
+2. **Incorrect Field Names**: Use `name` not `planName`, `customerId` not `customerCode`
+3. **Wrong Data Types**: Payment plan IDs are integers, not strings
+4. **Missing Customer Creation**: Must use HelcimPay.js verify mode first
+5. **Incorrect Payment Method**: Use "card" not "cc" for credit cards
