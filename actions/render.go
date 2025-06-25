@@ -13,6 +13,7 @@ import (
 )
 
 var r *render.Engine
+var rNoLayout *render.Engine
 
 func init() {
 	// Common helpers
@@ -24,9 +25,16 @@ func init() {
 		"dateFormat":     dateFormatHelper,
 	}
 
-	// Single render engine with proper asset handling
+	// Standard render engine with layout
 	r = render.New(render.Options{
 		HTMLLayout:  "application.plush.html",
+		TemplatesFS: templates.FS(),
+		AssetsFS:    public.FS(),
+		Helpers:     commonHelpers,
+	})
+
+	// No-layout render engine for standalone pages like home
+	rNoLayout = render.New(render.Options{
 		TemplatesFS: templates.FS(),
 		AssetsFS:    public.FS(),
 		Helpers:     commonHelpers,

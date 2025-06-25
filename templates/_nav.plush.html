@@ -1,44 +1,50 @@
-<!-- Main Navigation Component -->
-<nav id="main-nav">
-  <div class="container">
-    <div class="nav-brand">
-      <a href="/" hx-boost="true">
-        <img src="/images/logo.avif" alt="AVR Logo" height="40">
-        <span>American Veterans Rebuilding</span>
+<!-- AVR Header -->
+<header class="avr-header">
+  <div class="header-grid">
+    <div class="header-left">
+      <img src="/images/Armed-Services-Logos.avif" alt="American Veterans Rebuilding" class="armed-services-logo">
+    </div>
+    <div class="header-center">
+      <a href="/">
+        <img src="/images/logo.avif" alt="AVRNPO" class="main-logo">
+      </a>
+      <p class="tagline">Rebuilding the American Veteran's Self, Family and Community.</p>
+    </div>
+    <div class="header-right">
+      <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="social-icon">
+        <img src="/images/Facebook.svg" alt="Facebook">
+      </a>
+      <a href="https://x.com/avrnpo" target="_blank" class="social-icon">
+        <img src="/images/XIcon.png" alt="X">
+      </a>
+      <a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="social-icon">
+        <img src="/images/Discord.svg" alt="Discord">
+      </a>
+      <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="social-icon">
+        <img src="/images/Spotify.svg" alt="Spotify">
       </a>
     </div>
-    
-    <div class="nav-links">
-      <a href="/team" hx-boost="true">Team</a>
-      <a href="/projects" hx-boost="true">Projects</a>
-      <a href="/blog" hx-boost="true">Blog</a>
-      <a href="/contact" hx-boost="true">Contact</a>
-      <a href="/donate" hx-boost="true" class="cta-button">Donate</a>
-      
-      <% if (current_user) { %>
-        <div class="user-menu">
-          <details class="dropdown">
-            <summary>
-              <%= current_user.Email %>
-            </summary>
-            <ul>
-              <li><a href="/dashboard" hx-boost="true">Dashboard</a></li>
-              <li><a href="/profile" hx-boost="true">Profile</a></li>
-              <li><a href="/account" hx-boost="true">Account</a></li>
-              <% if (current_user.Role == "admin") { %>
-                <li><a href="/admin" hx-boost="true">Admin</a></li>
-              <% } %>
-              <li><hr></li>
-              <li><a href="/signout" hx-boost="true">Sign Out</a></li>
-            </ul>
-          </details>
-        </div>
-      <% } else { %>
-        <div class="auth-links">
-          <a href="/auth/new" hx-boost="true">Sign In</a>
-          <a href="/users/new" hx-boost="true" class="secondary">Register</a>
-        </div>
+  </div>
+</header>
+
+<!-- AVR Navigation -->
+<nav class="avr-navigation">
+  <div class="nav-links">
+    <a href="/" role="button" class="secondary outline">Mission</a>
+    <a href="/blog" role="button" class="secondary outline">Updates</a>
+    <a href="/team" role="button" class="secondary outline">Team</a>
+    <a href="/projects" role="button" class="secondary outline">Projects</a>
+    <a href="/donate" role="button" class="secondary outline">Donate</a>
+    <a href="/contact" role="button" class="secondary outline">Contact</a>
+    <% if (current_user) { %>
+      <a href="/dashboard" role="button" class="outline">Dashboard</a>
+      <a href="/account" role="button" class="outline">Account</a>
+      <% if (current_user.Role == "admin") { %>
+        <a href="/admin" role="button" class="outline">Admin</a>
       <% } %>
-    </div>
+      <a href="/signout" role="button" class="outline">Sign Out</a>
+    <% } else { %>
+      <a href="/auth/new" role="button" class="outline">Sign In</a>
+    <% } %>
   </div>
 </nav>

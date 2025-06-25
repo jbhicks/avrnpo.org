@@ -41,7 +41,7 @@ func HomeHandler(c buffalo.Context) error {
 	}
 	c.Set("recentPosts", posts)
 
-	// Render the home page
+	// Render the home page (using application layout for consistency)
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 
