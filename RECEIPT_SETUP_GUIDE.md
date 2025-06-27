@@ -139,6 +139,17 @@ This guide covers **Option 2** (balanced approach) as it provides good security 
      --role="roles/orgpolicy.policyAdmin"
    ```
 
+   **How to check if you're a Google Workspace Super Admin:**
+   1. **Go to Google Admin Console**: https://admin.google.com/
+   2. **If you can access it** → You have admin privileges
+   3. **Check your role**: Go to **Admin** → **Admin roles** → **Admin role assignments**
+   4. **Look for your email** in the "Super Admin" role
+   
+   **Alternative check**:
+   - **Try to access** https://admin.google.com/ac/users - if you can see user management, you're likely an admin
+   - **Ask your IT department** or whoever set up your Google Workspace domain
+   - **Check if you can manage users** - Super Admins can create/delete users and manage domain settings
+
 3. **If you don't have admin access**, ask your organization admin to either:
    - Run the command in Option A above to grant you `roles/orgpolicy.policyAdmin` role
    - Temporarily disable the policy for you
@@ -553,6 +564,12 @@ After testing, remove the temporary test endpoint and route before deploying to 
   ```
 - **Alternative**: Ask your Google Workspace Super Admin to grant you this role
 - **Quick fix**: Have an admin create the service account key for you instead
+
+**Not sure who your Google Workspace Super Admin is?**
+- **Check Google Admin Console**: Go to https://admin.google.com/ → **Admin** → **Admin roles**
+- **Look for "Super Admin" role** - these users can grant Organization Policy Administrator permissions
+- **Common Super Admins**: IT department, domain owner, or whoever set up your @avrnpo.org email domain
+- **Contact your IT support** if you're unsure about admin roles in your organization
 
 **"Permission denied" errors**:
 - Verify Service Account has domain-wide delegation
