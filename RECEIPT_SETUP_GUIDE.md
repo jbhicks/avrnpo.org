@@ -16,6 +16,23 @@ Google has **discontinued app passwords** for most use cases and now recommends 
 
 ### ⭐ **Recommended: Gmail API with Service Account (Most Secure)**
 
+⚠️ **IMPORTANT: Google Secure-by-Default Policies**
+
+**Organizations created after May 3, 2024** automatically have security policies that **block service account key creation**. This affects the traditional Gmail API setup method.
+
+**Key Security Constraints Applied:**
+- `constraints/iam.disableServiceAccountKeyCreation` - Blocks creating service account JSON keys
+- `constraints/iam.disableServiceAccountKeyUpload` - Blocks uploading external keys
+- `constraints/iam.automaticIamGrantsForDefaultServiceAccounts` - Removes excessive default permissions
+
+**Your Options:**
+1. **🔐 Most Secure**: Use workload identity federation (complex setup)
+2. **⚖️ Balanced**: Temporarily disable constraints to create keys, then re-enable
+3. **🤝 Organizational**: Have your admin create keys for you
+4. **🔄 Alternative**: Use OAuth2 with refresh tokens (simpler but requires user consent)
+
+This guide covers **Option 2** (balanced approach) as it provides good security while remaining practical for email services.
+
 #### Step 1: Create Google Cloud Project
 
 1. **Go to Google Cloud Console**: https://console.cloud.google.com/
@@ -44,12 +61,102 @@ Google has **discontinued app passwords** for most use cases and now recommends 
    - Service account ID: `avr-email-service` (auto-filled)
    - Description: `Service account for sending donation receipts`
 4. **Click "CREATE AND CONTINUE"**
-5. **Grant roles** (optional but recommended):
-   - Click "Select a role" → Search for "Project" → Select **"Project Editor"**
+5. **Grant minimal roles** (security best practice):
+   - Click "Select a role" → Search for "Service Account" → Select **"Service Account Token Creator"**
+   - Click "ADD ANOTHER ROLE"
+   - Search for "Gmail" → Select **"Gmail API User"** (if available, or skip this step)
+   - **❌ AVOID "Project Editor"** - This role is overly permissive and violates security best practices
 6. **Click "CONTINUE"**
 7. **Skip "Grant users access"** → **Click "DONE"**
 
+##### Understanding the Minimal Permissions Approach
+
+**Why we avoid "Project Editor":**
+- ✅ **"Service Account Token Creator"** - Allows the service account to generate its own access tokens for Gmail API
+- ❌ **"Project Editor"** - Grants broad permissions to create/delete/modify almost all Google Cloud resources
+- 🎯 **Security Principle**: Use minimal permissions needed for the specific task (sending emails)
+
+**What permissions we actually need:**
+1. **Gmail API access** - Enabled at the project level (Step 2)
+2. **Token generation** - "Service Account Token Creator" role
+3. **Domain authorization** - Domain-wide delegation (Step 5, if using organization email)
+
+**If you encounter permission errors later:**
+- The service account only needs to send emails via Gmail API
+- Domain-wide delegation provides the "send as organization user" permission
+- No additional Google Cloud resource permissions should be needed
+
 #### Step 4: Create Service Account Key
+
+⚠️ **CRITICAL: Handle Secure-by-Default Organization Policies**
+
+**If your Google Cloud organization was created after May 3, 2024**, it automatically enforces secure-by-default policies that **block service account key creation**. You'll need to handle this first.
+
+##### Check if Key Creation is Blocked
+
+1. **Attempt to create a key** (next steps). If you get an error like:
+   ```
+   Permission denied: Service account key creation is disabled by organization policy
+   ```
+   
+2. **Check your organization policies**:
+   ```bash
+   # Get your organization ID first
+   gcloud organizations list
+   
+   # Check for the blocking policy
+   gcloud resource-manager org-policies list --organization=YOUR_ORG_ID | grep -i serviceAccountKey
+   ```
+
+##### Option A: Use Workload Identity Federation (Most Secure - Recommended)
+
+**Best Practice**: Instead of creating service account keys, use workload identity federation. However, this is complex for Gmail API. Skip to Option B for simpler setup.
+
+##### Option B: Temporarily Disable the Policy (Less Secure)
+
+**⚠️ Security Trade-off**: This reduces security but allows traditional service account keys.
+
+1. **You must be an Organization Policy Administrator**. Check your permissions:
+   ```bash
+   gcloud organizations get-iam-policy YOUR_ORG_ID --flatten="bindings[].members" --filter="bindings.role:roles/orgpolicy.policyAdmin"
+   ```
+
+2. **If you don't have permissions**, ask your organization admin to either:
+   - Grant you `roles/orgpolicy.policyAdmin` role
+   - Temporarily disable the policy for you
+   - Create the service account key for you
+
+3. **Disable the service account key creation policy**:
+   ```bash
+   # Disable the constraint
+   gcloud org-policies delete iam.disableServiceAccountKeyCreation --organization=YOUR_ORG_ID
+   ```
+
+4. **Create the service account key** (follow steps below)
+
+5. **Re-enable the policy** (recommended after key creation):
+   ```bash
+   # Create a policy file to re-enable the constraint
+   cat > disable-sa-keys.yaml << EOF
+   name: organizations/YOUR_ORG_ID/policies/iam.disableServiceAccountKeyCreation
+   spec:
+     rules:
+     - enforce: true
+   EOF
+   
+   # Apply the policy
+   gcloud org-policies set-policy disable-sa-keys.yaml
+   ```
+
+##### Option C: Ask Organization Admin
+
+**Simplest approach**: Ask your Google Workspace or Cloud Organization administrator to:
+1. Temporarily disable `constraints/iam.disableServiceAccountKeyCreation`
+2. Create the service account and key for you
+3. Re-enable the policy
+4. Provide you with the JSON key file
+
+##### Now Create the Service Account Key
 
 1. **In the Credentials page**, find your service account under **"Service Accounts"**
 2. **Click on the service account email** (e.g., `avr-email-service@your-project.iam.gserviceaccount.com`)
@@ -68,6 +175,8 @@ Google has **discontinued app passwords** for most use cases and now recommends 
 #### Step 5: Configure Domain-Wide Delegation (for @avrnpo.org emails)
 
 ⚠️ **Required only if sending from your organization domain (e.g., noreply@avrnpo.org)**
+
+**Note**: The minimal roles we assigned above (`Service Account Token Creator`) are sufficient for Gmail API access. Domain-wide delegation provides the authorization to send emails on behalf of organization users.
 
 1. **Copy the Service Account's Client ID**:
    - In the service account details page, copy the **"Unique ID"** (it's a long number)
@@ -408,10 +517,23 @@ After testing, remove the temporary test endpoint and route before deploying to 
 
 ### Common Issues
 
+### Common Issues
+
+**"Service account key creation is disabled by organization policy"**:
+- Your organization has secure-by-default policies enabled (post-May 2024)
+- Follow the "Handle Secure-by-Default Organization Policies" section in Step 4
+- You need Organization Policy Administrator role to disable constraints
+- Alternative: Ask your admin to create the key for you
+
 **"Permission denied" errors**:
 - Verify Service Account has domain-wide delegation
 - Check that FROM_EMAIL domain matches delegation scope
 - Ensure Gmail API is enabled
+
+**"Insufficient roles" or "Access denied"**:
+- The minimal roles (Service Account Token Creator) should be sufficient
+- Avoid adding "Project Editor" - it's a security risk
+- Domain-wide delegation provides the email-sending authorization
 
 **"Authentication failed"**:
 - Verify JSON key file path and permissions
@@ -428,8 +550,23 @@ After testing, remove the temporary test endpoint and route before deploying to 
 
 1. **Check application logs** for detailed error messages
 2. **Review Google Cloud Console** for API usage and errors
-3. **Test with Gmail API Explorer**: https://developers.google.com/gmail/api/reference/rest/v1/users.messages/send
-4. **Contact Google Cloud Support** for API-specific issues
+3. **Check organization policies** if you encounter permission issues:
+   ```bash
+   gcloud resource-manager org-policies list --organization=YOUR_ORG_ID
+   ```
+4. **Test with Gmail API Explorer**: https://developers.google.com/gmail/api/reference/rest/v1/users.messages/send
+5. **Contact Google Cloud Support** for API-specific issues
+
+### Security Best Practices Compliance
+
+**Why this setup follows Google's 2025 security guidelines:**
+- ✅ **Minimal IAM roles** - Only Service Account Token Creator, not Project Editor
+- ✅ **Acknowledges secure-by-default policies** - Provides guidance for handling blocked key creation
+- ✅ **Domain-wide delegation** - Proper organization email authorization
+- ✅ **Environment variable configuration** - No credentials in code
+- ✅ **Key file security** - Proper file permissions and exclusion from version control
+
+**Organizations created before May 2024** may not have these constraints but should still follow these practices.
 
 ### Backup Options
 
