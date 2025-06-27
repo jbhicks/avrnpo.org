@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RECEIPT_SETUP_GUIDE.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="quick-receipt-setup-guide">Quick Receipt Setup Guide</h1>
+<h2 id="%E2%9C%85-what-we-have-already-built">✅ What We Have (Already Built)</h2>
+<p>The AVR NPO donation system has a <strong>complete receipt system</strong> ready to use:</p>
+<ul>
+<li>✅ Professional email templates with AVR branding</li>
+<li>✅ Tax-compliant donation receipts</li>
+<li>✅ Automatic sending after successful donations</li>
+<li>✅ Error handling that doesn't break donation flow</li>
+<li>✅ Both HTML and plain text versions</li>
+</ul>
+<h2 id="%F0%9F%9A%80-quick-setup-choose-your-method">🚀 Quick Setup (Choose Your Method)</h2>
+<p>Google has <strong>discontinued app passwords</strong> for most use cases and now recommends more secure authentication methods. Here are the current options:</p>
+<h3 id="%E2%AD%90-recommended-gmail-api-with-service-account-most-secure">⭐ <strong>Recommended: Gmail API with Service Account (Most Secure)</strong></h3>
+<h4 id="step-1-create-google-cloud-project">Step 1: Create Google Cloud Project</h4>
+<ol>
+<li><strong>Go to Google Cloud Console</strong>: https://console.cloud.google.com/</li>
+<li><strong>Click &quot;Select a project&quot;</strong> → <strong>&quot;New Project&quot;</strong></li>
+<li><strong>Enter project details</strong>:
+<ul>
+<li>Project name: <code>AVR NPO Email Service</code></li>
+<li>Organization: (select your organization if applicable)</li>
+<li>Location: (leave default or select appropriate)</li>
+</ul>
+</li>
+<li><strong>Click &quot;CREATE&quot;</strong></li>
+<li><strong>Wait for project creation</strong> (usually takes 30-60 seconds)</li>
+</ol>
+<h4 id="step-2-enable-gmail-api">Step 2: Enable Gmail API</h4>
+<ol>
+<li><strong>In your new project</strong>, go to <strong>&quot;APIs &amp; Services&quot;</strong> → <strong>&quot;Library&quot;</strong></li>
+<li><strong>Search for &quot;Gmail API&quot;</strong></li>
+<li><strong>Click on &quot;Gmail API&quot;</strong> from the results</li>
+<li><strong>Click &quot;ENABLE&quot;</strong> button</li>
+<li><strong>Wait for API to be enabled</strong> (should be immediate)</li>
+</ol>
+<h4 id="step-3-create-service-account">Step 3: Create Service Account</h4>
+<ol>
+<li><strong>Go to &quot;APIs &amp; Services&quot;</strong> → <strong>&quot;Credentials&quot;</strong></li>
+<li><strong>Click &quot;CREATE CREDENTIALS&quot;</strong> → <strong>&quot;Service account&quot;</strong></li>
+<li><strong>Fill in service account details</strong>:
+<ul>
+<li>Service account name: <code>avr-email-service</code></li>
+<li>Service account ID: <code>avr-email-service</code> (auto-filled)</li>
+<li>Description: <code>Service account for sending donation receipts</code></li>
+</ul>
+</li>
+<li><strong>Click &quot;CREATE AND CONTINUE&quot;</strong></li>
+<li><strong>Grant roles</strong> (optional but recommended):
+<ul>
+<li>Click &quot;Select a role&quot; → Search for &quot;Project&quot; → Select <strong>&quot;Project Editor&quot;</strong></li>
+</ul>
+</li>
+<li><strong>Click &quot;CONTINUE&quot;</strong></li>
+<li><strong>Skip &quot;Grant users access&quot;</strong> → <strong>Click &quot;DONE&quot;</strong></li>
+</ol>
+<h4 id="step-4-create-service-account-key">Step 4: Create Service Account Key</h4>
+<ol>
+<li><strong>In the Credentials page</strong>, find your service account under <strong>&quot;Service Accounts&quot;</strong></li>
+<li><strong>Click on the service account email</strong> (e.g., <code>avr-email-service@your-project.iam.gserviceaccount.com</code>)</li>
+<li><strong>Go to &quot;KEYS&quot; tab</strong></li>
+<li><strong>Click &quot;ADD KEY&quot;</strong> → <strong>&quot;Create new key&quot;</strong></li>
+<li><strong>Select &quot;JSON&quot;</strong> format</li>
+<li><strong>Click &quot;CREATE&quot;</strong></li>
+<li><strong>Save the downloaded JSON file</strong> securely:<pre class="hljs"><code><div><span class="hljs-comment"># Move to a secure location on your server</span>
+mkdir -p /etc/avr-secrets/
+mv ~/Downloads/your-project-xxxxx.json /etc/avr-secrets/gmail-service-account.json
+chmod 600 /etc/avr-secrets/gmail-service-account.json
+</div></code></pre>
+</li>
+</ol>
+<h4 id="step-5-configure-domain-wide-delegation-for-avrnpoorg-emails">Step 5: Configure Domain-Wide Delegation (for @avrnpo.org emails)</h4>
+<p>⚠️ <strong>Required only if sending from your organization domain (e.g., noreply@avrnpo.org)</strong></p>
+<ol>
+<li>
+<p><strong>Copy the Service Account's Client ID</strong>:</p>
+<ul>
+<li>In the service account details page, copy the <strong>&quot;Unique ID&quot;</strong> (it's a long number)</li>
+</ul>
+</li>
+<li>
+<p><strong>Go to Google Admin Console</strong>: https://admin.google.com/</p>
+</li>
+<li>
+<p><strong>Navigate to Security</strong> → <strong>Access and data control</strong> → <strong>API controls</strong></p>
+</li>
+<li>
+<p><strong>Click &quot;MANAGE DOMAIN WIDE DELEGATION&quot;</strong></p>
+</li>
+<li>
+<p><strong>Click &quot;Add new&quot;</strong></p>
+</li>
+<li>
+<p><strong>Fill in the form</strong>:</p>
+<ul>
+<li>Client ID: <code>paste the Unique ID from step 1</code></li>
+<li>OAuth scopes: <code>https://www.googleapis.com/auth/gmail.send</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Click &quot;Authorize&quot;</strong></p>
+</li>
+</ol>
+<h4 id="step-6-add-to-env-file">Step 6: Add to <code>.env</code> file</h4>
+<pre class="hljs"><code><div><span class="hljs-comment"># Gmail API Configuration (Recommended)</span>
+GOOGLE_SERVICE_ACCOUNT_FILE=/etc/avr-secrets/gmail-service-account.json
+FROM_EMAIL=noreply@avrnpo.org
+FROM_NAME=American Veterans Rebuilding
+
+<span class="hljs-comment"># Optional Tax Information</span>
+ORGANIZATION_EIN=your-ein-number
+ORGANIZATION_ADDRESS=Your full mailing address
+</div></code></pre>
+<h4 id="step-7-verify-setup">Step 7: Verify Setup</h4>
+<ol>
+<li>
+<p><strong>Check file permissions</strong>:</p>
+<pre class="hljs"><code><div>ls -la /etc/avr-secrets/gmail-service-account.json
+<span class="hljs-comment"># Should show: -rw------- (600 permissions)</span>
+</div></code></pre>
+</li>
+<li>
+<p><strong>Verify JSON file contents</strong>:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Should contain these fields:</span>
+jq -r <span class="hljs-string">'.type, .project_id, .client_email'</span> /etc/avr-secrets/gmail-service-account.json
+<span class="hljs-comment"># Output should be:</span>
+<span class="hljs-comment"># service_account</span>
+<span class="hljs-comment"># your-project-id</span>
+<span class="hljs-comment"># avr-email-service@your-project.iam.gserviceaccount.com</span>
+</div></code></pre>
+</li>
+</ol>
+<h3 id="%F0%9F%94%90-alternative-oauth2-with-refresh-tokens">🔐 <strong>Alternative: OAuth2 with Refresh Tokens</strong></h3>
+<h4 id="step-1-create-oauth2-client-credentials">Step 1: Create OAuth2 Client Credentials</h4>
+<ol>
+<li><strong>Go to Google Cloud Console</strong>: https://console.cloud.google.com/apis/credentials</li>
+<li><strong>Click &quot;CREATE CREDENTIALS&quot;</strong> → <strong>&quot;OAuth client ID&quot;</strong></li>
+<li><strong>Configure OAuth consent screen</strong> (if first time):
+<ul>
+<li>Click &quot;CONFIGURE CONSENT SCREEN&quot;</li>
+<li>Choose &quot;External&quot; (for testing) or &quot;Internal&quot; (for organization)</li>
+<li>Fill required fields:
+<ul>
+<li>App name: <code>AVR NPO Email Service</code></li>
+<li>User support email: <code>your-email@avrnpo.org</code></li>
+<li>Developer contact: <code>your-email@avrnpo.org</code></li>
+</ul>
+</li>
+<li>Click &quot;SAVE AND CONTINUE&quot; through all steps</li>
+</ul>
+</li>
+<li><strong>Create OAuth Client ID</strong>:
+<ul>
+<li>Application type: <strong>&quot;Desktop application&quot;</strong></li>
+<li>Name: <code>AVR Email Desktop Client</code></li>
+<li>Click &quot;CREATE&quot;</li>
+</ul>
+</li>
+<li><strong>Download the JSON file</strong> (client_secret_xxxxx.json)</li>
+</ol>
+<h4 id="step-2-generate-refresh-token">Step 2: Generate Refresh Token</h4>
+<ol>
+<li>
+<p><strong>Install Google OAuth2 CLI tool</strong>:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Option 1: Use Google's OAuth2 Playground</span>
+<span class="hljs-comment"># Go to: https://developers.google.com/oauthplayground/</span>
+
+<span class="hljs-comment"># Option 2: Use a simple Go script (recommended)</span>
+</div></code></pre>
+</li>
+<li>
+<p><strong>Create token generation script</strong> (<code>get_refresh_token.go</code>):</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> (
+    <span class="hljs-string">"context"</span>
+    <span class="hljs-string">"encoding/json"</span>
+    <span class="hljs-string">"fmt"</span>
+    <span class="hljs-string">"log"</span>
+    <span class="hljs-string">"os"</span>
+    
+    <span class="hljs-string">"golang.org/x/oauth2"</span>
+    <span class="hljs-string">"golang.org/x/oauth2/google"</span>
+)
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    <span class="hljs-comment">// Read client credentials</span>
+    credentialsFile := <span class="hljs-string">"client_secret.json"</span> <span class="hljs-comment">// Path to your downloaded file</span>
+    b, err := os.ReadFile(credentialsFile)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatalf(<span class="hljs-string">"Unable to read client secret file: %v"</span>, err)
+    }
+    
+    config, err := google.ConfigFromJSON(b, <span class="hljs-string">"https://www.googleapis.com/auth/gmail.send"</span>)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatalf(<span class="hljs-string">"Unable to parse client secret file to config: %v"</span>, err)
+    }
+    
+    <span class="hljs-comment">// Generate authorization URL</span>
+    authURL := config.AuthCodeURL(<span class="hljs-string">"state-token"</span>, oauth2.AccessTypeOffline)
+    fmt.Printf(<span class="hljs-string">"Go to the following link in your browser:\n%v\n"</span>, authURL)
+    fmt.Print(<span class="hljs-string">"Enter the authorization code: "</span>)
+    
+    <span class="hljs-keyword">var</span> authCode <span class="hljs-keyword">string</span>
+    <span class="hljs-keyword">if</span> _, err := fmt.Scan(&amp;authCode); err != <span class="hljs-literal">nil</span> {
+        log.Fatalf(<span class="hljs-string">"Unable to read authorization code: %v"</span>, err)
+    }
+    
+    <span class="hljs-comment">// Exchange code for token</span>
+    tok, err := config.Exchange(context.TODO(), authCode)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        log.Fatalf(<span class="hljs-string">"Unable to retrieve token from web: %v"</span>, err)
+    }
+    
+    fmt.Printf(<span class="hljs-string">"Refresh token: %s\n"</span>, tok.RefreshToken)
+}
+</div></code></pre>
+</li>
+<li>
+<p><strong>Run the script</strong>:</p>
+<pre class="hljs"><code><div>go mod init token-generator
+go get golang.org/x/oauth2/google
+go run get_refresh_token.go
+<span class="hljs-comment"># Follow the prompts to get your refresh token</span>
+</div></code></pre>
+</li>
+</ol>
+<h4 id="step-3-add-to-env-file">Step 3: Add to <code>.env</code> file</h4>
+<pre class="hljs"><code><div><span class="hljs-comment"># OAuth2 Configuration</span>
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REFRESH_TOKEN=your-refresh-token-from-step-2
+FROM_EMAIL=your-gmail@gmail.com
+FROM_NAME=American Veterans Rebuilding
+</div></code></pre>
+<h3 id="%F0%9F%93%A7-fallback-modern-smtp-with-app-specific-password">📧 <strong>Fallback: Modern SMTP with App-Specific Password</strong></h3>
+<p>⚠️ <strong>Only works if 2FA is enabled and organization allows app passwords</strong></p>
+<ol>
+<li><strong>Enable 2-Factor Authentication</strong> on Google Account</li>
+<li><strong>Generate App Password</strong>: https://myaccount.google.com/apppasswords</li>
+<li><strong>Add to <code>.env</code> file</strong>:<pre class="hljs"><code><div><span class="hljs-comment"># SMTP with App Password (Legacy)</span>
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-gmail@gmail.com
+SMTP_PASSWORD=your-16-char-app-password
+FROM_EMAIL=your-gmail@gmail.com
+FROM_NAME=American Veterans Rebuilding
+</div></code></pre>
+</li>
+</ol>
+<h3 id="step-2-update-email-service-implementation">Step 2: Update Email Service Implementation</h3>
+<p>Our current email service supports SMTP only. For Gmail API, we need to implement Gmail API support:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Install Gmail API dependencies</span>
+go get google.golang.org/api/gmail/v1
+go get golang.org/x/oauth2/google
+go get google.golang.org/api/option
+</div></code></pre>
+<h3 id="step-3-test-the-receipt-system">Step 3: Test the Receipt System</h3>
+<ol>
+<li><strong>Restart Buffalo</strong>: <code>make dev</code></li>
+<li><strong>Make a test donation</strong> through the website</li>
+<li><strong>Check logs</strong> for receipt status:<pre class="hljs"><code><div>tail -f buffalo.log | grep receipt
+</div></code></pre>
+</li>
+<li><strong>Verify email received</strong> in donor's inbox</li>
+</ol>
+<h2 id="%F0%9F%94%84-implementation-options">🔄 Implementation Options</h2>
+<h3 id="option-a-service-account-production-ready">Option A: Service Account (Production Ready)</h3>
+<p><strong>Best for:</strong> Automated server-to-server email sending</p>
+<ul>
+<li>✅ No user interaction required</li>
+<li>✅ Perfect for background receipt sending</li>
+<li>✅ Scales well for production</li>
+<li>⚠️ Requires Google Workspace admin setup for domain emails</li>
+</ul>
+<h3 id="option-b-oauth2-user-consent">Option B: OAuth2 (User Consent)</h3>
+<p><strong>Best for:</strong> Development and testing</p>
+<ul>
+<li>✅ Works with personal Gmail accounts</li>
+<li>✅ Secure token-based authentication</li>
+<li>⚠️ Requires initial user consent flow</li>
+<li>⚠️ Tokens need periodic refresh</li>
+</ul>
+<h3 id="option-c-external-email-service-simplest">Option C: External Email Service (Simplest)</h3>
+<p><strong>Best for:</strong> Quick setup without Google complexity</p>
+<ul>
+<li>✅ SendGrid, Mailgun, Amazon SES</li>
+<li>✅ Simple API key authentication</li>
+<li>✅ Built for transactional emails</li>
+<li>💰 Usually requires paid plan for production volume</li>
+</ul>
+<h2 id="%F0%9F%93%A7-what-the-receipt-looks-like">📧 What the Receipt Looks Like</h2>
+<p><strong>Email Subject:</strong> &quot;Donation Receipt - American Veterans Rebuilding&quot;</p>
+<p><strong>Content Includes:</strong></p>
+<ul>
+<li>AVR logo and branding</li>
+<li>Donor name and donation amount</li>
+<li>Transaction ID and date</li>
+<li>Tax-deductible language</li>
+<li>Organization mission statement</li>
+<li>Professional formatting</li>
+</ul>
+<h2 id="%F0%9F%94%8D-troubleshooting">🔍 Troubleshooting</h2>
+<h3 id="check-receipt-status-in-logs">Check Receipt Status in Logs</h3>
+<pre class="hljs"><code><div><span class="hljs-comment"># Success message:</span>
+grep <span class="hljs-string">"Donation receipt sent"</span> buffalo.log
+
+<span class="hljs-comment"># Error message:</span>
+grep <span class="hljs-string">"Failed to send donation receipt"</span> buffalo.log
+</div></code></pre>
+<h3 id="common-issues">Common Issues</h3>
+<ol>
+<li><strong>&quot;email service not configured&quot;</strong> - Add SMTP environment variables</li>
+<li><strong>Authentication failed</strong> - Check SMTP username/password</li>
+<li><strong>Connection timeout</strong> - Verify SMTP host and port</li>
+</ol>
+<h2 id="%F0%9F%9A%A8-important-notes">🚨 Important Notes</h2>
+<ul>
+<li><strong>Google has changed authentication requirements</strong> - App passwords are being deprecated</li>
+<li><strong>Modern OAuth2 or Service Accounts required</strong> - See <code>GMAIL_IMPLEMENTATION_GUIDE.md</code> for details</li>
+<li><strong>Receipts are sent automatically</strong> - no manual intervention needed</li>
+<li><strong>Donations work even if email fails</strong> - robust error handling</li>
+<li><strong>Logs track all receipt attempts</strong> - easy debugging</li>
+<li><strong>Professional templates included</strong> - tax-compliant formatting</li>
+</ul>
+<h2 id="%E2%9C%85-why-this-is-better-than-helcims-built-in-receipts">✅ Why This Is Better Than Helcim's Built-in Receipts</h2>
+<ol>
+<li><strong>Custom Branding</strong> - Full AVR branding and messaging</li>
+<li><strong>Tax Compliance</strong> - Proper 501(c)(3) receipt language</li>
+<li><strong>Modern Security</strong> - OAuth2 and Service Account authentication</li>
+<li><strong>Reliable Delivery</strong> - Not dependent on Helcim's email system</li>
+<li><strong>Complete Control</strong> - Can customize templates and content</li>
+<li><strong>Multiple Providers</strong> - Gmail API, SMTP, or external services</li>
+<li><strong>Redundant Sending</strong> - Sent via both completion handler and webhooks</li>
+</ol>
+<h2 id="%F0%9F%A7%AA-testing-your-setup">🧪 Testing Your Setup</h2>
+<h3 id="test-email-sending">Test Email Sending</h3>
+<ol>
+<li>
+<p><strong>Add test endpoint</strong> (temporary):</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// In actions/donations.go</span>
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-params">(app *App)</span> <span class="hljs-title">TestEmail</span><span class="hljs-params">(c buffalo.Context)</span> <span class="hljs-title">error</span></span> {
+    emailService := services.NewEmailService()
+    
+    err := emailService.SendDonationReceipt(
+        <span class="hljs-string">"test@example.com"</span>,
+        <span class="hljs-string">"Test Donor"</span>,
+        <span class="hljs-number">100.00</span>,
+        <span class="hljs-string">"TEST123"</span>,
+        time.Now(),
+    )
+    
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> c.Render(<span class="hljs-number">200</span>, r.String(<span class="hljs-string">"Email failed: "</span> + err.Error()))
+    }
+    
+    <span class="hljs-keyword">return</span> c.Render(<span class="hljs-number">200</span>, r.String(<span class="hljs-string">"Email sent successfully!"</span>))
+}
+</div></code></pre>
+</li>
+<li>
+<p><strong>Add route</strong> (temporary):</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// In actions/app.go</span>
+app.GET(<span class="hljs-string">"/test-email"</span>, TestEmail)
+</div></code></pre>
+</li>
+<li>
+<p><strong>Test the endpoint</strong>:</p>
+<pre class="hljs"><code><div>curl http://localhost:3000/<span class="hljs-built_in">test</span>-email
+</div></code></pre>
+</li>
+</ol>
+<h3 id="verify-receipt-content">Verify Receipt Content</h3>
+<ol>
+<li>
+<p><strong>Check email formatting</strong>:</p>
+<ul>
+<li>Subject line appears correctly</li>
+<li>Tax information is present</li>
+<li>AVR branding displays properly</li>
+<li>All donation details are accurate</li>
+</ul>
+</li>
+<li>
+<p><strong>Test with different amounts</strong>:</p>
+<ul>
+<li>Small donations ($5-50)</li>
+<li>Medium donations ($100-500)</li>
+<li>Large donations ($1000+)</li>
+</ul>
+</li>
+</ol>
+<h3 id="remove-test-code">Remove Test Code</h3>
+<p>After testing, remove the temporary test endpoint and route before deploying to production.</p>
+<h2 id="%F0%9F%9A%80-production-deployment-checklist">🚀 Production Deployment Checklist</h2>
+<h3 id="security-verification">Security Verification</h3>
+<ul>
+<li><input type="checkbox" id="checkbox0"><label for="checkbox0"></label><strong>Service Account key is NOT in version control</strong></li>
+<li><input type="checkbox" id="checkbox1"><label for="checkbox1"></label><strong>Environment variables are properly set on production server</strong></li>
+<li><input type="checkbox" id="checkbox2"><label for="checkbox2"></label><strong>JSON key file has restricted permissions</strong> (600)</li>
+<li><input type="checkbox" id="checkbox3"><label for="checkbox3"></label><strong>FROM_EMAIL domain matches Service Account delegation</strong></li>
+<li><input type="checkbox" id="checkbox4"><label for="checkbox4"></label><strong>All test endpoints removed from production code</strong></li>
+</ul>
+<h3 id="email-configuration">Email Configuration</h3>
+<ul>
+<li><input type="checkbox" id="checkbox5"><label for="checkbox5"></label><strong>Gmail API enabled for production project</strong></li>
+<li><input type="checkbox" id="checkbox6"><label for="checkbox6"></label><strong>Service Account has domain-wide delegation</strong></li>
+<li><input type="checkbox" id="checkbox7"><label for="checkbox7"></label><strong>FROM_EMAIL is verified and authorized</strong></li>
+<li><input type="checkbox" id="checkbox8"><label for="checkbox8"></label><strong>Email templates tested with real donation amounts</strong></li>
+<li><input type="checkbox" id="checkbox9"><label for="checkbox9"></label><strong>Tax compliance information is accurate</strong></li>
+</ul>
+<h3 id="monitoring-setup">Monitoring Setup</h3>
+<ul>
+<li><input type="checkbox" id="checkbox10"><label for="checkbox10"></label><strong>Email delivery logs are configured</strong></li>
+<li><input type="checkbox" id="checkbox11"><label for="checkbox11"></label><strong>Error alerting is in place for failed emails</strong></li>
+<li><input type="checkbox" id="checkbox12"><label for="checkbox12"></label><strong>Backup email method configured (if needed)</strong></li>
+<li><input type="checkbox" id="checkbox13"><label for="checkbox13"></label><strong>Receipt delivery tracking implemented</strong></li>
+</ul>
+<h3 id="final-production-test">Final Production Test</h3>
+<ol>
+<li><strong>Make a small test donation</strong> ($1-5)</li>
+<li><strong>Verify receipt email arrives</strong></li>
+<li><strong>Check all email content for accuracy</strong></li>
+<li><strong>Confirm email appears professional and branded</strong></li>
+<li><strong>Test from multiple email providers</strong> (Gmail, Outlook, etc.)</li>
+</ol>
+<h2 id="%F0%9F%93%9E-support-and-troubleshooting">📞 Support and Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<p><strong>&quot;Permission denied&quot; errors</strong>:</p>
+<ul>
+<li>Verify Service Account has domain-wide delegation</li>
+<li>Check that FROM_EMAIL domain matches delegation scope</li>
+<li>Ensure Gmail API is enabled</li>
+</ul>
+<p><strong>&quot;Authentication failed&quot;</strong>:</p>
+<ul>
+<li>Verify JSON key file path and permissions</li>
+<li>Check environment variables are loaded correctly</li>
+<li>Confirm Service Account email is correct</li>
+</ul>
+<p><strong>Emails not delivering</strong>:</p>
+<ul>
+<li>Check spam folders</li>
+<li>Verify FROM_EMAIL is not blacklisted</li>
+<li>Review Gmail API quotas and limits</li>
+<li>Check email content for spam triggers</li>
+</ul>
+<h3 id="getting-help">Getting Help</h3>
+<ol>
+<li><strong>Check application logs</strong> for detailed error messages</li>
+<li><strong>Review Google Cloud Console</strong> for API usage and errors</li>
+<li><strong>Test with Gmail API Explorer</strong>: https://developers.google.com/gmail/api/reference/rest/v1/users.messages/send</li>
+<li><strong>Contact Google Cloud Support</strong> for API-specific issues</li>
+</ol>
+<h3 id="backup-options">Backup Options</h3>
+<p>If Gmail API fails, the system automatically falls back to SMTP if configured:</p>
+<pre class="hljs"><code><div><span class="hljs-comment"># Backup SMTP configuration</span>
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-gmail@gmail.com
+SMTP_PASSWORD=your-app-password  <span class="hljs-comment"># Only if still supported</span>
+</div></code></pre>
+<p><strong>Note</strong>: SMTP with app passwords is deprecated and may stop working at any time. Gmail API is the recommended solution.</p>
+<h2 id="%F0%9F%9A%80-quick-start-for-production">🚀 Quick Start for Production</h2>
+<ol>
+<li><strong>Follow modern Gmail setup</strong>: Read <code>GMAIL_IMPLEMENTATION_GUIDE.md</code></li>
+<li><strong>Update dependencies</strong>: <code>go get</code> the required OAuth2 and Gmail API packages</li>
+<li><strong>Replace email service</strong>: Use the new <code>email_v2.go</code> implementation</li>
+<li><strong>Configure authentication</strong>: Service Account (recommended) or OAuth2</li>
+<li><strong>Test thoroughly</strong>: Verify receipt delivery and error handling</li>
+</ol>
+<p><strong>The receipt system is production-ready with modern authentication!</strong></p>
+
+</body>
+</html>

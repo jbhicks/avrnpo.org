@@ -177,7 +177,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 				Street1:    req.AddressLine1,
 				City:       req.City,
 				Province:   req.State,
-				Country:    "US",
+				Country:    "USA",
 				PostalCode: req.Zip,
 			},
 		},

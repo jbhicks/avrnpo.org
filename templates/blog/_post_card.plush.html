@@ -5,7 +5,7 @@
     <% } %>
     <hgroup>
       <h3><a href="/blog/<%= post.Slug %>" hx-get="/blog/<%= post.Slug %>" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true"><%= post.Title %></a></h3>      <small>
-        <%= if (post.User.FirstName != "") { %>
+        <%= if (post.User && post.User.FirstName != "") { %>
         By <%= post.User.FirstName %> <%= post.User.LastName %> • 
         <% } %>
         <%= dateFormat(post.CreatedAt, "January 2, 2006") %>

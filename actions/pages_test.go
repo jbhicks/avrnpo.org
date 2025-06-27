@@ -23,65 +23,64 @@ func (as *ActionSuite) Test_DonateHandler_Pure_HTMX() {
 	as.Contains(res.Body.String(), "data-amount=\"50\"")
 	as.Contains(res.Body.String(), "data-amount=\"100\"")
 	
-	// Should NEVER contain full HTML structure (pure content only)
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
-	as.NotContains(res.Body.String(), "<html>")
-	as.NotContains(res.Body.String(), "<head>")
-	as.NotContains(res.Body.String(), "htmx-content")
+	// Now returns full HTML structure (single-template architecture)
+	as.Contains(res.Body.String(), "<!DOCTYPE") // Full HTML document
+	as.Contains(res.Body.String(), "<html")     // HTML tag present
+	as.Contains(res.Body.String(), "<head>")    // Head section present
+	as.Contains(res.Body.String(), "Make a Donation") // Main donate content
 	as.NotContains(res.Body.String(), "<script src=\"/js/")
 }
 
-func (as *ActionSuite) Test_AllPageHandlers_Pure_HTMX() {
-	// Test that ALL page handlers return only content (pure HTMX approach)
+func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
+	// Test that ALL page handlers return full HTML pages (single-template architecture)
 	
 	// Test team page
 	res := as.HTML("/team").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "team")
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
-	as.NotContains(res.Body.String(), "<html>")
-	as.NotContains(res.Body.String(), "htmx-content")
+	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<html lang=\"en\">")
 	
 	// Test projects page
 	res = as.HTML("/projects").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "projects")
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
-	as.NotContains(res.Body.String(), "<html>")
+	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<html lang=\"en\">")
 	as.NotContains(res.Body.String(), "htmx-content")
 	
 	// Test contact page
 	res = as.HTML("/contact").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "contact")
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
-	as.NotContains(res.Body.String(), "<html>")
+	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<html lang=\"en\">")
 	as.NotContains(res.Body.String(), "htmx-content")
 }
 
 func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
-	// Home handler is the ONLY one that supports both direct and HTMX access
+	// Home handler now returns full page for both direct and HTMX access (single-template architecture)
 	
 	// Test direct access - should return full page
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "<!DOCTYPE")
-	as.Contains(res.Body.String(), "<html")  // Look for opening html tag, not exact match
-	as.Contains(res.Body.String(), "htmx-content")
+	as.Contains(res.Body.String(), "<html")  
+	as.Contains(res.Body.String(), "THE AVR MISSION") // Actual home content
 	as.Contains(res.Body.String(), "American Veterans Rebuilding")
 	
-	// Test HTMX access - should return just content
+	// Test HTMX access - now also returns full page (progressive enhancement)
 	req := as.HTML("/")
 	req.Headers["HX-Request"] = "true"
 	res2 := req.Get()
 	as.Equal(http.StatusOK, res2.Code)
 	as.Contains(res2.Body.String(), "THE AVR MISSION")
-	as.NotContains(res2.Body.String(), "<!DOCTYPE")
-	as.NotContains(res2.Body.String(), "<html")  // Look for opening html tag
+	as.Contains(res2.Body.String(), "<!DOCTYPE") // Now also returns full page
+	as.Contains(res2.Body.String(), "<html")     // Single-template architecture
 }
 
 func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
-	// Test that HX-Request header doesn't matter for page handlers (pure HTMX)
+	// Test that HX-Request header doesn't matter for page handlers (single-template)
 	
 	// Test with HX-Request header
 	req := as.HTML("/donate")
@@ -97,8 +96,8 @@ func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
 	
 	// Should return identical content regardless of header
 	as.Equal(body1, body2)
-	as.NotContains(body1, "<!DOCTYPE")
-	as.NotContains(body2, "<!DOCTYPE")
+	as.Contains(body1, "<!DOCTYPE html>")
+	as.Contains(body2, "<!DOCTYPE html>")
 }
 
 func (as *ActionSuite) Test_Donation_Amount_Button_Classes() {
@@ -121,16 +120,13 @@ func (as *ActionSuite) Test_Donation_Amount_Button_Classes() {
 }
 
 func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
-	// Test that main page loads JavaScript properly for HTMX reinitialization
+	// Test that main page loads JavaScript properly for progressive enhancement
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
 	
-	// Check for JavaScript includes in main page
-	as.Contains(res.Body.String(), "/js/htmx.min.js")
-	as.Contains(res.Body.String(), "/js/donation.js")
-	as.Contains(res.Body.String(), "/js/theme.js")
-	
-	// Check for HTMX event handling script
-	as.Contains(res.Body.String(), "htmx:afterSwap")
-	as.Contains(res.Body.String(), "DonationSystem")
+	// Check for JavaScript includes in main page (updated paths)
+	as.Contains(res.Body.String(), "/assets/htmx.min.js")
+	as.Contains(res.Body.String(), "/assets/donation.js")
+	as.Contains(res.Body.String(), "/assets/theme.js")
+	as.Contains(res.Body.String(), "/assets/application.js")
 }

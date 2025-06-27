@@ -4,10 +4,13 @@
     <p>Latest updates and insights from American Veterans Rebuilding</p>
   </header>
 
-  <% if (posts && len(posts) > 0) { %>
+  <% if (len(posts) > 0) { %>
     <section class="posts-grid">
       <% for (post) in posts { %>
-        <%= partial("blog/post_card", {"post": post}) %>
+        <article>
+          <h3><%= post.Title %></h3>
+          <p><%= post.Content %></p>
+        </article>
       <% } %>
     </section>
   <% } else { %>

@@ -19,12 +19,11 @@ func HomeHandler(c buffalo.Context) error {
 	userID := c.Session().Get("current_user_id")
 	if userID != nil {
 		c.Set("user_logged_in", true)
-		if user := c.Value("current_user"); user != nil {
-			c.Set("current_user", user)
-		}
+		// current_user is already set by SetCurrentUser middleware
+		// Don't override it here
 	} else {
 		c.Set("user_logged_in", false)
-		c.Set("current_user", nil)
+		// current_user should already be nil from middleware
 	}
 
 	// Fetch recent published blog posts for homepage
@@ -57,11 +56,6 @@ func DashboardHandler(c buffalo.Context) error {
 	// You can pass additional data to the template if needed
 	c.Set("user", currentUser) // This is the same as current_user, but explicit for template
 
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
-	}
-
-	// Direct access - render full page with navigation
-	return c.Render(http.StatusOK, r.HTML("home/dashboard_full.plush.html"))
+	// Since we're using single-template architecture, just render the dashboard template
+	return c.Render(http.StatusOK, r.HTML("home/dashboard.plush.html"))
 }

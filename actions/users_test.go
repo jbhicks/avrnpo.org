@@ -183,16 +183,16 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 	loginRes := as.HTML("/auth").Post(loginData)
 	as.Equal(http.StatusFound, loginRes.Code)
 
-	// Test HTMX request (should return partial content)
+	// Test HTMX request (now returns full page with progressive enhancement)
 	req := as.HTML("/account")
 	req.Headers["HX-Request"] = "true"
 	htmxRes := req.Get()
 
 	as.Equal(http.StatusOK, htmxRes.Code)
 	as.Contains(htmxRes.Body.String(), "Account Settings")
-	// HTMX response should NOT contain navigation (it's a partial)
-	as.NotContains(htmxRes.Body.String(), "Buffalo SaaS")
-	as.NotContains(htmxRes.Body.String(), "<nav")
+	// HTMX response now returns full page (single-template architecture)
+	as.Contains(htmxRes.Body.String(), "American Veterans Rebuilding")
+	as.Contains(htmxRes.Body.String(), "<nav")
 
 	// Test regular request (should return full page)
 	regularRes := as.HTML("/account").Get()

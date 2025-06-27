@@ -110,19 +110,71 @@ This rule prevents the recurring double underscore template errors that keep app
 ## Buffalo Development Environment Guidelines
 
 ### Buffalo Development Server
-- **Buffalo runs on port 3000** and automatically reloads on file changes
-- **🚨 NEVER KILL THE BUFFALO PROCESS 🚨** when testing changes - it has hot reload built-in
-- **🚨 DO NOT RUN `kill -9`, `pkill buffalo`, or similar commands 🚨** - Buffalo should stay running
-- **🚨 DO NOT RESTART Buffalo unless explicitly asked by the user 🚨**
-- **Check for existing Buffalo instances** before starting a new one:
-  - Use `ps aux | grep buffalo` or `lsof -i :3000` to check for running instances
-  - Buffalo dev server should be left running in a background terminal
-  - Changes to Go files, templates, and assets will auto-reload automatically
-- **Buffalo automatically handles**:
-  - Go code changes (recompiles and restarts the process)
-  - Template changes (reloads templates)
-  - Static asset changes (updates assets)
-  - Database schema changes (when migrations are run)
+
+**🚨 CRITICAL: NEVER KILL BUFFALO UNLESS ABSOLUTELY NECESSARY 🚨**
+
+**Buffalo runs on port 3000** and has intelligent auto-reload for ALL file changes:
+- **Go code changes** → Automatic recompilation and server restart
+- **Template changes** → Automatic template reload
+- **Static asset changes** → Automatic asset pipeline refresh
+- **CSS/JS changes** → Hot reload without server restart
+
+**✅ When Buffalo Auto-Reload Works:**
+- Editing Go files in `/actions/`, `/models/`, `/grifts/`
+- Editing templates in `/templates/` (`.plush.html` files)
+- Editing CSS in `/public/assets/css/`
+- Editing JavaScript in `/public/assets/js/`
+- Running database migrations (`soda migrate up`)
+- Making configuration changes
+
+**🚨 ONLY restart Buffalo when:**
+- **Compilation errors prevent auto-reload** (syntax errors in Go code)
+- **User explicitly requests restart** ("please restart the server")
+- **Adding new routes or middleware** that requires full restart
+- **Environment variable changes** (rare in development)
+- **You're debugging why auto-reload isn't working**
+
+**❌ NEVER restart Buffalo for:**
+- Template changes (they auto-reload)
+- CSS/JavaScript changes (they auto-reload)
+- Regular Go code edits (they auto-recompile)
+- Database migrations (they work while Buffalo runs)
+- Testing changes (tests run independently)
+- "Just to be safe" - trust Buffalo's auto-reload
+
+**✅ How to Check Buffalo Status:**
+```bash
+# Check if Buffalo is running
+ps aux | grep buffalo
+lsof -i :3000
+
+# Check Buffalo logs for errors
+tail -f buffalo.log
+
+# Check if auto-reload is working
+# (Make a small change to a template and refresh browser)
+```
+
+**🚨 DO NOT run these commands unless explicitly needed:**
+```bash
+# ❌ DON'T kill Buffalo automatically
+kill -9 $(pidof buffalo)
+pkill buffalo
+kill $(lsof -t -i:3000)
+
+# ❌ DON'T restart unnecessarily  
+buffalo dev     # Only if Buffalo stopped
+make dev        # Only for initial startup
+```
+
+**✅ Proper Buffalo Development Workflow:**
+1. **Start once**: `make dev` - starts PostgreSQL + Buffalo
+2. **Leave running**: Buffalo handles all reloading automatically
+3. **Edit files**: Make changes, Buffalo auto-reloads, browser refresh
+4. **Run tests**: `make test-fast` (doesn't affect running Buffalo)
+5. **Only restart if**: Compilation errors or explicit request
+
+**🎯 Trust Buffalo's Auto-Reload - It's Designed to Stay Running Throughout Development**
 
 ### Development Workflow
 1. **Start once**: Use `make dev` to start PostgreSQL + Buffalo
@@ -187,31 +239,106 @@ rm -f db/schema.sql migrations/schema.sql
 
 ### Buffalo Testing Guidelines
 
-**🚨 CRITICAL: ALWAYS USE BUFFALO TESTING COMMANDS 🚨**
+**🚨 CRITICAL: PROPER BUFFALO TESTING WORKFLOW 🚨**
 
-- **NEVER use `go test` directly** - Buffalo has its own testing workflow
-- **ALWAYS use `buffalo test`** to run tests in Buffalo applications
-- **Read `/docs/` folder** for Buffalo-specific testing patterns and best practices
-- **Follow Buffalo suite patterns** as documented in `/docs/buffalo/auth-and-testing-patterns.md`
+**NEVER use `go test` directly** - Buffalo applications require special testing setup and database configuration.
 
-**Proper Buffalo Testing Commands:**
-- `buffalo test` - Run all tests directly
-- `make test` - Run comprehensive test suite with database setup (recommended)
-- `make test-fast` - Run tests quickly (assumes database is already running)
-- `buffalo test --timeout=60s` - Run tests with timeout
-- `buffalo test -v` - Run tests with verbose output
+**✅ ALWAYS use these Makefile commands for testing:**
+
+**Primary Testing Commands:**
+- **`make test`** - 🎯 **RECOMMENDED** - Comprehensive test suite with full database setup
+  - Automatically starts PostgreSQL if needed
+  - Sets up test database with migrations
+  - Runs complete test suite with proper environment
+  - Best for CI/CD and thorough testing
+
+- **`make test-fast`** - ⚡ Quick testing (assumes database already running)
+  - Skips database startup and setup
+  - Assumes PostgreSQL is already running and test DB is ready
+  - Use when actively developing and Buffalo is already running
+
+- **`make test-resilient`** - 🛡️ Automatic database management
+  - Intelligently starts database if not running
+  - Handles database setup automatically
+  - Good for unreliable development environments
+
+**Testing Command Decision Tree:**
+
+**🎯 When actively developing and Buffalo is running:**
+- Use `make test-fast` - Quick tests, assumes everything is set up
+
+**🎯 When starting fresh or unsure about database state:**
+- Use `make test` - Full setup, guarantees clean environment
+
+**🎯 When working in unreliable environments (containers, CI/CD):**
+- Use `make test-resilient` - Handles database startup automatically
+
+**🎯 When debugging test failures:**
+- Use `make test` with verbose output - Shows full Buffalo logs
+
+**🚨 Common Testing Mistakes to Avoid:**
+```bash
+# ❌ WRONG - Missing Buffalo environment
+go test ./actions
+
+# ❌ WRONG - Not available in Buffalo v0.18.14+
+buffalo test
+
+# ❌ WRONG - Missing database setup
+GO_ENV=test go test ./actions
+
+# ✅ CORRECT - Use Makefile commands
+make test-fast     # During active development
+make test          # For comprehensive testing
+```
+
+**🚨 CRITICAL: Buffalo Test Database Requirements 🚨**
+
+Buffalo tests require special setup that `go test` alone cannot provide:
+- **PostgreSQL connection** - Test database must be running and configured
+- **Environment variables** - `GO_ENV=test` must be set properly
+- **Database migrations** - Test database needs proper schema
+- **Transaction isolation** - Buffalo ActionSuite handles test data cleanup
+- **Session management** - Buffalo provides test session handling
 
 **Buffalo Testing Best Practices:**
-- Always consult `/docs/buffalo/auth-and-testing-patterns.md` for authentication testing patterns
-- Use Buffalo's ActionSuite for HTTP endpoint testing
-- Follow Buffalo's middleware testing patterns
-- Use Buffalo's database transaction handling for test isolation
-- Leverage Buffalo's built-in test helpers and fixtures
+- **Use ActionSuite** - All HTTP tests should extend `ActionSuite` for proper setup
+- **Database transactions** - Buffalo automatically wraps tests in transactions
+- **Unique test data** - Use timestamps in test emails/data to avoid conflicts
+- **Authentication testing** - Create users via signup endpoints, then login
+- **Template testing** - Test full HTML output, not partial content
+- **Progressive enhancement** - Test both regular and HTMX requests
 
-**Documentation Requirements:**
-- Always check `/docs/` folder before implementing tests
-- Follow patterns documented in Buffalo testing guides
-- Reference `/docs/buffalo/development-workflow.md` for testing workflow
+**Common Buffalo Testing Patterns:**
+```go
+// ✅ Correct ActionSuite pattern
+func (as *ActionSuite) Test_Something() {
+    res := as.HTML("/some/path").Get()
+    as.Equal(http.StatusOK, res.Code)
+}
+
+// ✅ User creation with unique emails
+timestamp := time.Now().UnixNano()
+user := &models.User{
+    Email: fmt.Sprintf("test-%d@example.com", timestamp),
+    // ... other fields
+}
+
+// ✅ Single-template architecture expectations
+as.Contains(res.Body.String(), "American Veterans Rebuilding") // Full page
+as.Contains(res.Body.String(), "<nav") // Navigation included
+```
+
+**Buffalo Test Debugging:**
+- **Check test logs** - `make test` shows detailed Buffalo logs
+- **Verify database** - Tests create/destroy test database automatically
+- **Session debugging** - Add debug output to understand session state
+- **Template debugging** - Print response body to debug template rendering
+
+**Documentation and Learning:**
+- Read `/docs/buffalo/auth-and-testing-patterns.md` for authentication patterns
+- Follow patterns in existing test files for consistency
+- Buffalo ActionSuite provides testing framework - don't reinvent it
 
 ### Dependency and Technology Guidelines
 

@@ -2,15 +2,17 @@ package actions
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func (as *ActionSuite) Test_DonateHandler() {
 	res := as.HTML("/donate").Get()
 	as.Equal(http.StatusOK, res.Code)
 	
-	// Check for donation form structure
+	// Check for donation form content
 	as.Contains(res.Body.String(), "donation-form")
 	as.Contains(res.Body.String(), "Make a Donation")
 	as.Contains(res.Body.String(), "donation-amounts")
@@ -30,23 +32,24 @@ func (as *ActionSuite) Test_DonateHandler() {
 	as.Contains(res.Body.String(), "Make a Donation")
 	as.Contains(res.Body.String(), "donation-form")
 	
-	// Pure HTMX approach - only returns content, no full HTML structure
-	as.NotContains(res.Body.String(), "/js/donation.js")
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
-	as.NotContains(res.Body.String(), "<html>")
+	// Single-template architecture - returns full HTML structure
+	as.Contains(res.Body.String(), "/assets/donation.js")
+	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<html lang=\"en\">")
 }
 
 func (as *ActionSuite) Test_DonateHandler_HTMX_Content() {
 	// Test HTMX content loading for donate page
+	// In single-template architecture, HTMX requests also get full pages
 	req := as.HTML("/donate")
 	req.Headers["HX-Request"] = "true"
 	res := req.Get()
 
 	as.Equal(http.StatusOK, res.Code)
-	// Should contain donation form but not full layout
+	// Should contain donation form with full layout
 	as.Contains(res.Body.String(), "donation-form")
-	as.NotContains(res.Body.String(), "<html>")
-	as.NotContains(res.Body.String(), "<!DOCTYPE")
+	as.Contains(res.Body.String(), "<html lang=\"en\">")
+	as.Contains(res.Body.String(), "<!DOCTYPE html>")
 }
 
 func (as *ActionSuite) Test_DonationSuccessHandler() {
@@ -55,7 +58,7 @@ func (as *ActionSuite) Test_DonationSuccessHandler() {
 	
 	// Check for success message elements (updated to match current content)
 	as.Contains(res.Body.String(), "Thank You for Your Donation")
-	as.Contains(res.Body.String(), "successfully processed")
+	as.Contains(res.Body.String(), "What Happens Next") // Updated success content
 	as.Contains(res.Body.String(), "receipt")
 }
 
@@ -79,17 +82,23 @@ func (as *ActionSuite) Test_DonationInitializeHandler_ValidationOnly() {
 		"donor_name":    "John Doe",
 		"donor_email":   "john@example.com",
 		"donor_phone":   "555-123-4567",
+		"address_line1": "123 Main Street",
+		"city":          "Anytown",
+		"state":         "CA",
+		"zip":           "90210",
+		"country":       "USA",
 	}
 
 	res := as.JSON("/api/donations/initialize").Post(donationRequest)
-	// In test environment, expect 500 due to missing Helcim API credentials (this is expected)
-	as.Equal(http.StatusInternalServerError, res.Code)
+	// With proper API key, expect 200 success with checkout tokens
+	as.Equal(http.StatusOK, res.Code)
 	
-	// Parse response to ensure it's a proper error response
+	// Parse response to ensure it contains checkout tokens
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(res.Body.String()), &response)
 	as.NoError(err)
-	as.Contains(response["error"].(string), "Payment system unavailable")
+	as.Contains(response, "checkoutToken")
+	as.Contains(response, "secretToken")
 }
 
 func (as *ActionSuite) Test_DonationInitializeHandler_ValidationErrors() {
@@ -157,13 +166,18 @@ func (as *ActionSuite) Test_DonationInitializeHandler_RateLimiting() {
 		"donation_type": "one-time",
 		"donor_name":    "Rate Test User",
 		"donor_email":   "ratetest@example.com",
+		"address_line1": "123 Main Street",
+		"city":          "Test City",
+		"state":         "CA",
+		"zip":           "90210",
+		"country":       "USA",
 	}
 
 	// Make multiple rapid requests - should not crash
 	for i := 0; i < 3; i++ {
 		res := as.JSON("/api/donations/initialize").Post(donationRequest)
-		// Should return 500 (API unavailable) but not crash or return other error codes
-		as.Equal(http.StatusInternalServerError, res.Code)
+		// Should return 200 success and not crash or return error codes
+		as.Equal(http.StatusOK, res.Code)
 	}
 }
 
@@ -175,17 +189,22 @@ func (as *ActionSuite) Test_DonationAPI_CSRF_Handling() {
 		"donation_type": "one-time",
 		"donor_name":    "CSRF Test User",
 		"donor_email":   "csrf@example.com",
+		"address_line1": "123 CSRF Street",
+		"city":          "Test City",
+		"state":         "CA",
+		"zip":           "90210",
+		"country":       "USA",
 	}
 
-	// Request without CSRF token should not fail due to CSRF (but will fail due to API unavailable in tests)
+	// Request without CSRF token should not fail due to CSRF (API is working now)
 	res := as.JSON("/api/donations/initialize").Post(donationRequest)
-	as.Equal(http.StatusInternalServerError, res.Code) // Expected in test environment
+	as.Equal(http.StatusOK, res.Code) // Expected success with working API
 	
-	// Verify it's an API error, not a CSRF error
+	// Verify it's a successful response with checkout tokens
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(res.Body.String()), &response)
 	as.NoError(err)
-	as.Contains(response["error"].(string), "Payment system unavailable")
+	as.Contains(response, "checkoutToken")
 }
 
 // Test proper error handling for validation errors
@@ -226,8 +245,119 @@ func (as *ActionSuite) Test_DonationEndpoints_PublicAccess() {
 		"donation_type": "one-time", 
 		"donor_name":    "Public User",
 		"donor_email":   "public@example.com",
+		"address_line1": "123 Public Street",
+		"city":          "Test City",
+		"state":         "CA",
+		"zip":           "90210",
+		"country":       "USA",
 	}
 	jsonRes := as.JSON("/api/donations/initialize").Post(donationRequest)
-	// Should return API unavailable error, not auth error
-	as.Equal(http.StatusInternalServerError, jsonRes.Code)
+	// Should return success now that API is working, not auth error
+	as.Equal(http.StatusOK, jsonRes.Code)
+}
+
+func (as *ActionSuite) Test_RecurringDonation_FullFlow() {
+	// Test the complete recurring donation flow
+	// Note: This test will fail with 500 error because HELCIM_PRIVATE_API_KEY is not set in test environment
+	// This is expected behavior for security reasons
+	timestamp := time.Now().UnixNano()
+	
+	donationData := map[string]interface{}{
+		"amount":         "25.00",
+		"donation_type":  "monthly",
+		"donor_name":     "Test Donor",
+		"donor_email":    fmt.Sprintf("test-donor-%d@example.com", timestamp),
+		"donor_phone":    "555-123-4567",
+		"address_line1":  "123 Test Street",
+		"city":           "Test City",
+		"state":          "CA",
+		"zip":            "90210",
+		"country":        "USA",
+		"comments":       "Test recurring donation",
+	}
+
+	// Test the donation initialize endpoint - expecting 200 success with working API
+	res := as.JSON("/api/donations/initialize").Post(donationData)
+	// With working HELCIM_PRIVATE_API_KEY, we expect 200 success
+	as.Equal(http.StatusOK, res.Code)
+	
+	// Verify the success response structure
+	var response map[string]interface{}
+	err := json.Unmarshal(res.Body.Bytes(), &response)
+	as.NoError(err)
+	as.Contains(response, "checkoutToken")
+	as.Contains(response, "secretToken")
+}
+
+func (as *ActionSuite) Test_RecurringDonation_PaymentPlanCreation() {
+	// Test that payment plan creation logic is properly structured
+	// With working API key, this should succeed
+	
+	timestamp := time.Now().UnixNano()
+	
+	donationData := map[string]interface{}{
+		"amount":        "50.00",
+		"donation_type": "monthly",
+		"donor_name":    "Plan Test Donor",
+		"donor_email":   fmt.Sprintf("plan-test-%d@example.com", timestamp),
+		"donor_phone":   "555-987-6543",
+		"address_line1": "456 Plan Avenue",
+		"city":          "Plan City", 
+		"state":         "CA",
+		"zip":           "90210",
+		"country":       "USA",
+	}
+
+	// Initialize donation - expecting 200 success with working API key
+	res := as.JSON("/api/donations/initialize").Post(donationData)
+	as.Equal(http.StatusOK, res.Code)
+
+	// Verify the response contains expected tokens
+	var response map[string]interface{}
+	err := json.Unmarshal(res.Body.Bytes(), &response)
+	as.NoError(err)
+	as.Contains(response, "checkoutToken")
+	as.Contains(response, "secretToken")
+}
+
+func (as *ActionSuite) Test_RecurringDonation_ErrorHandling() {
+	// Test error handling for recurring donations
+	timestamp := time.Now().UnixNano()
+	
+	// Test with invalid amount
+	invalidData := map[string]interface{}{
+		"amount":        "0", // Invalid amount
+		"donation_type": "monthly",
+		"donor_name":    "Error Test",
+		"donor_email":   fmt.Sprintf("error-test-%d@example.com", timestamp),
+	}
+
+	res := as.JSON("/api/donations/initialize").Post(invalidData)
+	// Should handle validation errors gracefully
+	as.True(res.Code == http.StatusBadRequest || res.Code == http.StatusUnprocessableEntity)
+	
+	// Test missing required fields
+	incompleteData := map[string]interface{}{
+		"amount":        "25.00",
+		"donation_type": "monthly",
+		// Missing donor information
+	}
+
+	res2 := as.JSON("/api/donations/initialize").Post(incompleteData)
+	as.True(res2.Code == http.StatusBadRequest || res2.Code == http.StatusUnprocessableEntity)
+}
+
+func (as *ActionSuite) Test_DonationPage_RecurringOptions() {
+	// Test that the donation page displays recurring donation options
+	res := as.HTML("/donate").Get()
+	as.Equal(http.StatusOK, res.Code)
+	
+	// Check for recurring donation UI elements
+	as.Contains(res.Body.String(), "frequency")
+	as.Contains(res.Body.String(), "One-time")
+	as.Contains(res.Body.String(), "Monthly recurring")
+	
+	// Check for recurring-specific JavaScript
+	as.Contains(res.Body.String(), "name=\"frequency\"")
+	as.Contains(res.Body.String(), "/assets/donation.js")
 }
