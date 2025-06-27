@@ -104,7 +104,7 @@ This guide covers **Option 2** (balanced approach) as it provides good security 
    # Get your organization ID first
    gcloud organizations list
    
-   # Check for the blocking policy
+   # Check for the blocking policy (replace YOUR_ORG_ID with your actual organization ID)
    gcloud resource-manager org-policies list --organization=YOUR_ORG_ID | grep -i serviceAccountKey
    ```
 
@@ -121,14 +121,32 @@ This guide covers **Option 2** (balanced approach) as it provides good security 
    gcloud organizations get-iam-policy YOUR_ORG_ID --flatten="bindings[].members" --filter="bindings.role:roles/orgpolicy.policyAdmin"
    ```
 
-2. **If you don't have permissions**, ask your organization admin to either:
-   - Grant you `roles/orgpolicy.policyAdmin` role
+2. **EXACT FIX for michael@avrnpo.org**: You're getting `PERMISSION_DENIED` because you need the `Organization Policy Administrator` role. Here's how to fix it:
+
+   **Option A: Have an existing admin grant you permissions**:
+   ```bash
+   # An existing organization admin needs to run this command:
+   gcloud organizations add-iam-policy-binding YOUR_ORG_ID \
+     --member="user:michael@avrnpo.org" \
+     --role="roles/orgpolicy.policyAdmin"
+   ```
+
+   **Option B: If you're the domain admin, grant yourself permissions**:
+   ```bash
+   # Log in as a Google Workspace Super Admin, then run:
+   gcloud organizations add-iam-policy-binding YOUR_ORG_ID \
+     --member="user:michael@avrnpo.org" \
+     --role="roles/orgpolicy.policyAdmin"
+   ```
+
+3. **If you don't have admin access**, ask your organization admin to either:
+   - Run the command in Option A above to grant you `roles/orgpolicy.policyAdmin` role
    - Temporarily disable the policy for you
    - Create the service account key for you
 
 3. **Disable the service account key creation policy**:
    ```bash
-   # Disable the constraint
+   # Disable the constraint (replace YOUR_ORG_ID with your actual organization ID)
    gcloud org-policies delete iam.disableServiceAccountKeyCreation --organization=YOUR_ORG_ID
    ```
 
@@ -524,6 +542,17 @@ After testing, remove the temporary test endpoint and route before deploying to 
 - Follow the "Handle Secure-by-Default Organization Policies" section in Step 4
 - You need Organization Policy Administrator role to disable constraints
 - Alternative: Ask your admin to create the key for you
+
+**EXACT ERROR: "PERMISSION_DENIED: Permission 'orgpolicy.policies.delete' denied"**:
+- **Problem**: Your account (`michael@avrnpo.org`) lacks Organization Policy Administrator role
+- **Solution**: Have an existing admin run:
+  ```bash
+  gcloud organizations add-iam-policy-binding YOUR_ORG_ID \
+    --member="user:michael@avrnpo.org" \
+    --role="roles/orgpolicy.policyAdmin"
+  ```
+- **Alternative**: Ask your Google Workspace Super Admin to grant you this role
+- **Quick fix**: Have an admin create the service account key for you instead
 
 **"Permission denied" errors**:
 - Verify Service Account has domain-wide delegation
