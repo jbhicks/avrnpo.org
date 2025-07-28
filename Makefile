@@ -6,6 +6,11 @@
 help:
 	@echo "🚀 My Go SaaS Template - Development Commands"
 	@echo ""
+	@echo "Recommended: Run './dev.sh' for full dev workflow (server + log monitoring in tmux)"
+	@echo "Requires: tmux, multitail installed"
+	@echo ""
+
+	@echo ""
 	@echo "Quick Start:"
 	@echo "  setup      - 🔧 Initial setup: start database, run migrations, install deps"
 	@echo "  dev        - 🏃 Start database and run Buffalo development server"

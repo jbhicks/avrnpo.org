@@ -1,10 +1,10 @@
 # AGENTS.md - Development Guide for Agentic Coding Agents
 
 ## Build/Test Commands
-- `make dev` - Start database and Buffalo development server
+- NEVER run `make dev`, `buffalo dev`, `./bin/app`, or any other operation that will block or run a long-lived process. These commands are for manual use only and should not be executed by agents. Agents should only run build, test, or migration commands that complete and return control. Starting the server (development or production) must always be done manually by a developer.
+- Agents **should** test direct asset links (e.g., `/css/custom.css`, `/js/application.js`, `/images/logo.avif`, `/favicon.svg`) using HTTP requests to verify asset serving, as long as the server is already running.
 - `make test` - Run all tests with database setup (recommended)
 - `make test-fast` - Run tests without database setup
-- `buffalo test` - Run Buffalo test suite (NEVER use `go test` directly)
 - `soda migrate up` - Run database migrations (NOT `buffalo pop migrate`)
 - `make db-reset` - Reset database (drop, create, migrate)
 

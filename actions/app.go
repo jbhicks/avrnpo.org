@@ -1,22 +1,22 @@
 package actions
 
 import (
+	"io"
+	"io/fs"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
+	avrnpo "avrnpo.org"
 	"avrnpo.org/locales"
 	"avrnpo.org/models"
-	"avrnpo.org/pkg/logging"
-	"avrnpo.org/public"
-
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
-	"github.com/gobuffalo/middleware/csrf"
+	"github.com/gobuffalo/logger"
 	"github.com/gobuffalo/middleware/forcessl"
 	"github.com/gobuffalo/middleware/i18n"
-	"github.com/gobuffalo/middleware/paramlogger"
 	"github.com/unrolled/secure"
 )
 
@@ -58,136 +58,97 @@ func isStaticAsset(path string) bool {
 // declared after it to never be called.
 func App() *buffalo.App {
 	appOnce.Do(func() {
-		// Initialize logging service
-		if err := logging.Init(nil); err != nil {
-			// Fallback to standard library logging if our logger fails
-			println("Warning: Failed to initialize logging service:", err.Error())
+
+		// Set Buffalo to use our logrus-based logger for all request logs
+		// Use Buffalo's built-in logger with multi-writer (terminal + file)
+		logFile, err := os.OpenFile("logs/application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			println("Warning: Failed to open log file:", err.Error())
+		}
+		multiWriter := io.MultiWriter(os.Stdout, logFile)
+		buffaloLogger := logger.NewLogger("debug")
+		if outableLogger, ok := buffaloLogger.(logger.Outable); ok {
+			outableLogger.SetOutput(multiWriter)
 		}
 
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
 			SessionName: "_avrnpo.org_session",
 		})
+		app.Logger = buffaloLogger
 
-		// Automatically redirect to SSL
-		app.Use(forceSSL())
-
-		// Log request parameters (filters apply).
-		app.Use(paramlogger.ParameterLogger)
-
-		// Protect against CSRF attacks. https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
-		// Remove to disable this.
-		if ENV == "production" {
-			app.Use(csrf.New)
-		}
-
-		// Wraps each request in a transaction.
-		//   c.Value("tx").(*pop.Connection)
-		// Remove to disable this.
+		// Inject DB transaction middleware for all requests
 		app.Use(popmw.Transaction(models.DB))
-		// Setup and use translations:
-		app.Use(translations())
 
-		// NOTE: this block should go before any resources
-		// that need to be protected by buffalo-auth!
-		//AuthMiddlewares
-		app.Use(SetCurrentUser)
-		app.Use(Authorize)
-
-		// Skip Authorize middleware for public routes following official buffalo-auth pattern
 		blogResource := PublicPostsResource{}
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler)
 
-		// Public routes
+		// Main route declarations
 		app.GET("/", HomeHandler)
-
-		// Static pages
+		app.GET("/donate", DonateHandler)
+		app.GET("/donate/success", DonationSuccessHandler)
+		app.GET("/donate/failed", DonationFailedHandler)
 		app.GET("/team", TeamHandler)
 		app.GET("/projects", ProjectsHandler)
 		app.GET("/contact", ContactHandler)
-		app.GET("/donate", DonateHandler)
-		app.GET("/donations", func(c buffalo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/donate")
-		})
-		app.GET("/donate/success", DonationSuccessHandler)
-		app.GET("/donate/failed", DonationFailedHandler)
-
-		// Donation API routes (public)
-		app.POST("/api/donations/initialize", DonationInitializeHandler)
-		app.POST("/api/donations/process-payment", ProcessPaymentHandler)
-		app.POST("/api/donations/{donationId}/complete", DonationCompleteHandler)
-		app.GET("/api/donations/{donationId}/status", DonationStatusHandler)
-		
-		// Webhook routes (public - external services)
-		app.POST("/api/webhooks/helcim", HelcimWebhookHandler)
-
-		// Blog routes (using Resource pattern)
-		// Custom blog routes for SEO-friendly URLs
 		app.GET("/blog", blogResource.List)
 		app.GET("/blog/{slug}", blogResource.Show)
-
-		//Routes for Auth
-		app.GET("/auth/", AuthLanding)
-		app.GET("/auth/new", AuthNew)
-		app.POST("/auth/", AuthCreate)
-		app.DELETE("/auth/", AuthDestroy)
-		app.GET("/signout", AuthDestroy)  // Add GET route for signout links
-		app.POST("/signout", AuthDestroy) // Add POST route for HTMX signout
-
-		//Routes for User registration
 		app.GET("/users/new", UsersNew)
-		app.POST("/users/", UsersCreate)
-
-		// Protected routes - these will use the global Authorize middleware
-		app.GET("/dashboard", DashboardHandler)
+		app.POST("/users", UsersCreate)
+		app.GET("/auth/new", AuthNew)
+		app.POST("/auth", AuthCreate)
+		app.GET("/account", SetCurrentUser(Authorize(AccountSettings)))
+		app.POST("/account", SetCurrentUser(Authorize(AccountUpdate)))
 		app.GET("/profile", ProfileSettings)
 		app.POST("/profile", ProfileUpdate)
-		app.GET("/account", AccountSettings)
-		app.POST("/account", AccountUpdate)
 
-		// Admin-only routes
+		// Admin group with required middleware
 		adminGroup := app.Group("/admin")
+		adminGroup.Use(SetCurrentUser)
 		adminGroup.Use(AdminRequired)
-		adminGroup.GET("/", AdminDashboard)
 		adminGroup.GET("/dashboard", AdminDashboard)
-
-		// Admin user management routes (using Resource pattern)
+		postsResource := PostsResource{}
+		adminGroup.Resource("/posts", postsResource)
 		adminUsersResource := AdminUsersResource{}
 		adminGroup.Resource("/users", adminUsersResource)
 
-		// Admin blog post routes (using Resource pattern)
-		postsResource := PostsResource{}
-		adminGroup.Resource("/posts", postsResource)
-		// Add custom bulk action route
-		adminGroup.POST("/posts/bulk", postsResource.Bulk)
+		// Donation API endpoints
+		app.POST("/api/donations/initialize", DonationInitializeHandler)
+		app.POST("/api/donations/{donationId}/complete", DonationCompleteHandler)
+		app.GET("/api/donations/{donationId}/status", DonationStatusHandler)
+		app.POST("/api/donations/process", ProcessPaymentHandler)
+		app.POST("/api/donations/webhook", HelcimWebhookHandler)
 
-		// Admin donation routes
-		adminGroup.GET("/donations", AdminDonationsIndex)
-		adminGroup.GET("/donations/{donation_id}", AdminDonationShow)
-
-		// Add no-cache headers for static files in development
-		if ENV == "development" {
-			app.Use(func(next buffalo.Handler) buffalo.Handler {
-				return func(c buffalo.Context) error {
-					// Add no-cache headers for CSS, JS, and other static assets
-					if req := c.Request(); req != nil {
-						path := req.URL.Path
-						if isStaticAsset(path) {
-							c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-							c.Response().Header().Set("Pragma", "no-cache")
-							c.Response().Header().Set("Expires", "0")
-						}
-					}
-					return next(c)
+		// Add more as needed for your app
+		// Debug route: list embedded files
+		var debugFilesHandler buffalo.Handler
+		debugFilesHandler = func(c buffalo.Context) error {
+			var out string
+			err := fs.WalkDir(avrnpo.FS(), ".", func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return err
 				}
+				out += path + "\n"
+				return nil
 			})
+			if err != nil {
+				return c.Render(500, r.String(err.Error()))
+			}
+			return c.Render(200, r.String(out))
 		}
 
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
+		app.GET("/debug/files", debugFilesHandler)
+
 		// Serve assets from /assets/ path (Buffalo asset helpers)
-		app.ServeFiles("/assets/", http.FS(public.FS()))
-		
-		// Serve static files from root (backwards compatibility)
-		app.ServeFiles("/", http.FS(public.FS()))
+		app.ServeFiles("/assets/", http.FS(avrnpo.FS()))
+
+		// Serve static files from /css, /js, /images for legacy asset structure
+		app.ServeFiles("/css/", http.FS(avrnpo.FS()))
+		app.ServeFiles("/js/", http.FS(avrnpo.FS()))
+		app.ServeFiles("/images/", http.FS(avrnpo.FS()))
+
+		// Serve static files from root (embed setup)
+		// app.ServeFiles("/", http.FS(avrnpo.FS()))
 	})
 
 	return app

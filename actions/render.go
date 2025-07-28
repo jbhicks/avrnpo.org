@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"avrnpo.org/public"
+	avrnpo "avrnpo.org"
 	"avrnpo.org/templates"
 	"html/template"
 	"regexp"
@@ -29,14 +29,14 @@ func init() {
 	r = render.New(render.Options{
 		HTMLLayout:  "application.plush.html",
 		TemplatesFS: templates.FS(),
-		AssetsFS:    public.FS(),
+		AssetsFS:    avrnpo.FS(),
 		Helpers:     commonHelpers,
 	})
 
 	// No-layout render engine for standalone pages like home
 	rNoLayout = render.New(render.Options{
 		TemplatesFS: templates.FS(),
-		AssetsFS:    public.FS(),
+		AssetsFS:    avrnpo.FS(),
 		Helpers:     commonHelpers,
 	})
 }
