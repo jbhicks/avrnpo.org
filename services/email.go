@@ -42,6 +42,11 @@ type DonationReceiptData struct {
 	OrganizationEIN     string
 	OrganizationName    string
 	OrganizationAddress string
+	DonorAddressLine1   string
+	DonorAddressLine2   string
+	DonorCity           string
+	DonorState          string
+	DonorZip            string
 }
 
 // SendDonationReceipt sends a donation receipt email to the donor
@@ -103,6 +108,13 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
             <h2>Dear {{.DonorName}},</h2>
             <p>
                 Thank you for your generous donation to {{.OrganizationName}}. 
+            </p>
+            <div class="donor-address">
+                <strong>Donor Address:</strong><br>
+                {{.DonorAddressLine1}}
+                {{if .DonorAddressLine2}}, {{.DonorAddressLine2}}{{end}}<br>
+                {{.DonorCity}}, {{.DonorState}} {{.DonorZip}}
+            </div>
                 Your support helps us continue our mission of supporting combat veterans 
                 through housing projects, skills training, and community building programs.
             </p>
@@ -185,6 +197,11 @@ Date: %s
 Donation Type: %s
 Amount: $%.2f
 
+Donor Address:
+%s
+%s
+%s, %s %s
+
 TAX INFORMATION
 %s is a registered 501(c)(3) non-profit organization. 
 Your donation is tax-deductible to the full extent allowed by law. 
@@ -214,6 +231,11 @@ This is an automated receipt. Please save this for your tax records.
 		data.DonationDate.Format("January 2, 2006"),
 		data.DonationType,
 		data.DonationAmount,
+		data.DonorAddressLine1,
+		data.DonorAddressLine2,
+		data.DonorCity,
+		data.DonorState,
+		data.DonorZip,
 		data.OrganizationName,
 		func() string {
 			if data.OrganizationEIN != "" {

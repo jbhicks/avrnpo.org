@@ -11,6 +11,18 @@ db/schema.sql
 migrations/schema.sql
 *.sql
 
+# Home Assistant installation files (accidentally installed)
+logs/.storage/
+logs/automations.yaml
+logs/blueprints/
+logs/configuration.yaml
+logs/home-assistant.log*
+logs/home-assistant_v2.db*
+logs/scenes.yaml
+logs/scripts.yaml
+add_nvidia_fbdev_param.sh
+remove_home_assistant.sh
+
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #

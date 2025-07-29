@@ -70,7 +70,11 @@
     <ul>
       <li><strong>Email:</strong> <a href="mailto:info@avrnpo.org">info@avrnpo.org</a></li>
       <li><strong>Phone:</strong> Available upon request</li>
-      <li><strong>Address:</strong> Louisiana, United States</li>
+      <li><strong>Address:</strong>
+  <%= donation.AddressLine1 %>
+  <% if (donation.AddressLine2) { %>, <%= donation.AddressLine2 %><% } %>
+  , <%= donation.City %>, <%= donation.State %> <%= donation.Zip %>
+</li>
     </ul>
   </div>
 </section>
