@@ -28,6 +28,26 @@ func stringOrEmpty(s *string) string {
 	return *s
 }
 
+// isAPIRequest determines if the request is an API request or form submission
+func isAPIRequest(c buffalo.Context) bool {
+	// Check Accept header for JSON preference
+	accept := c.Request().Header.Get("Accept")
+	contentType := c.Request().Header.Get("Content-Type")
+
+	// If Accept header explicitly asks for JSON, it's an API request
+	if strings.Contains(accept, "application/json") && !strings.Contains(accept, "text/html") {
+		return true
+	}
+
+	// If Content-Type is JSON, it's an API request
+	if strings.Contains(contentType, "application/json") {
+		return true
+	}
+
+	// Otherwise, assume it's a form submission
+	return false
+}
+
 // HelcimPayRequest represents the request to initialize a Helcim payment
 type HelcimPayRequest struct {
 	PaymentType string  `json:"paymentType"`
@@ -105,9 +125,15 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	// Parse donation request
 	var req DonationRequest
 	if err := c.Bind(&req); err != nil {
-		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-			"error": "Invalid request data",
-		}))
+		// Check if this is an API request or form submission
+		if isAPIRequest(c) {
+			return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+				"error": "Invalid request data",
+			}))
+		}
+		// For form submissions, redirect back with error
+		c.Flash().Add("error", "Invalid form data submitted")
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Use Buffalo's validate.Errors for field-specific error collection
@@ -169,6 +195,15 @@ func DonationInitializeHandler(c buffalo.Context) error {
 
 	// If there are any errors, render the form with errors and user input
 	if errors.HasAny() {
+		// Check if this is an API request or form submission
+		if isAPIRequest(c) {
+			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+				"error":  "Validation failed",
+				"errors": errors,
+			}))
+		}
+
+		// For form submissions, render the template with errors
 		c.Set("errors", errors)
 		c.Set("hasAnyErrors", errors.HasAny())
 		c.Set("hasCommentsError", errors.Get("comments") != nil)
@@ -194,7 +229,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		c.Set("city", req.City)
 		c.Set("state", req.State)
 		c.Set("zip", req.Zip)
-		return c.Render(http.StatusOK, r.HTML("pages/donate.html"))
+		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
 
 	// UNIFIED APPROACH: Always use verify mode for payment collection
@@ -239,9 +274,13 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	// Save to database
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Create(donation); err != nil {
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Failed to create donation record",
-		}))
+		if isAPIRequest(c) {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+				"error": "Failed to create donation record",
+			}))
+		}
+		c.Flash().Add("error", "System error occurred. Please try again.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Call Helcim API with verify request
@@ -249,9 +288,13 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	if err != nil {
 		// Log error for debugging
 		c.Logger().Errorf("Helcim API error: %v", err)
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Payment system unavailable. Please try again later.",
-		}))
+		if isAPIRequest(c) {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+				"error": "Payment system unavailable. Please try again later.",
+			}))
+		}
+		c.Flash().Add("error", "Payment system unavailable. Please try again later.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Update donation record with Helcim tokens
@@ -260,19 +303,33 @@ func DonationInitializeHandler(c buffalo.Context) error {
 
 	if err := tx.Update(donation); err != nil {
 		c.Logger().Errorf("Database error updating donation: %v", err)
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Failed to update donation record",
-		}))
+		if isAPIRequest(c) {
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+				"error": "Failed to update donation record",
+			}))
+		}
+		c.Flash().Add("error", "System error occurred. Please try again.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Return success with checkout token and donation ID
-	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
-		"success":       true,
-		"checkoutToken": helcimResponse.CheckoutToken,
-		"donationId":    donation.ID.String(),
-		"amount":        amount,
-		"donorName":     req.DonorName,
-	}))
+	if isAPIRequest(c) {
+		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+			"success":       true,
+			"checkoutToken": helcimResponse.CheckoutToken,
+			"donationId":    donation.ID.String(),
+			"amount":        amount,
+			"donorName":     req.DonorName,
+		}))
+	}
+
+	// For form submissions, redirect to payment processing page
+	// Store checkout data in session for the payment page
+	c.Session().Set("donation_id", donation.ID.String())
+	c.Session().Set("checkout_token", helcimResponse.CheckoutToken)
+	c.Session().Set("amount", amount)
+	c.Session().Set("donor_name", donorName)
+	return c.Redirect(http.StatusSeeOther, "/donate/payment")
 }
 
 // DonationCompleteHandler handles successful donation completion

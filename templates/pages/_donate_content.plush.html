@@ -112,7 +112,7 @@ textarea:invalid:not(:user-invalid) {
     <!-- Donation Form -->
     <div class="donation-form">
       <div class="donation-card">
-<form id="donation-form" method="post" novalidate>
+<form id="donation-form" method="post" action="/api/donations/initialize" novalidate>
         <h3>Make a Donation</h3>
         
 <%  hasAnyErrors = errors && errors.Count() > 0

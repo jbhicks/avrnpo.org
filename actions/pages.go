@@ -50,6 +50,29 @@ func DonateHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }
 
+// DonatePaymentHandler shows the payment processing page after form submission
+func DonatePaymentHandler(c buffalo.Context) error {
+	// Get session data from the donation initialization
+	donationID := c.Session().Get("donation_id")
+	checkoutToken := c.Session().Get("checkout_token")
+	amount := c.Session().Get("amount")
+	donorName := c.Session().Get("donor_name")
+
+	// If no session data, redirect back to donate page
+	if donationID == nil || checkoutToken == nil {
+		c.Flash().Add("error", "Session expired. Please start your donation again.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
+	}
+
+	// Set template variables for payment processing
+	c.Set("donationId", donationID)
+	c.Set("checkoutToken", checkoutToken)
+	c.Set("amount", amount)
+	c.Set("donorName", donorName)
+
+	return c.Render(http.StatusOK, r.HTML("pages/donate_payment.plush.html"))
+}
+
 // DonationSuccessHandler shows the donation success page
 func DonationSuccessHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("pages/donation_success.plush.html"))

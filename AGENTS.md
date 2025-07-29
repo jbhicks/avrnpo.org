@@ -22,6 +22,16 @@
 - **Partial files**: Named `_filename.plush.html` with single underscore prefix
 - **HTMX patterns**: Use `hx-boost="true"` for navigation, return full pages
 - **Template structure**: Include complete HTML (nav, main, footer) for HTMX compatibility
+- **Form Layout with Pico CSS**: 
+  - NEVER put form labels/inputs/errors directly in grid - this breaks layout completely
+  - ALWAYS wrap related form fields in div containers within grids: `<div class="grid"><div><label><input><error></div></div>`
+  - Use selective grids: group related fields (First/Last Name, City/State/ZIP) but keep others full-width
+  - Template error handling: Use `<%= err %>` not `<%= err.Message %>` in error loops
+- **Form Validation**:
+  - ALWAYS use Buffalo's server-side validation instead of client-side alerts
+  - Forms must have proper `action` attribute pointing to correct handler endpoint
+  - Use `novalidate` attribute to disable browser validation and rely on server validation
+  - Handler functions should detect API vs form requests and respond appropriately (JSON vs template rendering)
 
 ### Database & Migrations
 - Use `.fizz` migrations only (NOT .sql files)

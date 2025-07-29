@@ -1,0 +1,31 @@
+<%= partial("main") %>
+
+<section>
+  <h1>Processing Your Donation</h1>
+  <p>Thank you for your generous donation to American Veterans Rebuilding!</p>
+  
+  <div class="payment-details">
+    <p><strong>Donation Amount:</strong> $<%= amount %></p>
+    <p><strong>Donor:</strong> <%= donorName %></p>
+  </div>
+  
+  <div id="helcim-pay-container">
+    <!-- Helcim Pay will inject the payment form here -->
+  </div>
+  
+  <script src="https://pay.helcim.com/helcim-pay.js"></script>
+  <script>
+    // Initialize Helcim Pay with the checkout token
+    HelcimPay.initialize({
+      token: '<%= checkoutToken %>',
+      onPaymentSuccess: function(response) {
+        // Redirect to success page
+        window.location.href = '/donate/success?transactionId=' + response.transactionId;
+      },
+      onPaymentFailure: function(error) {
+        // Redirect to failure page
+        window.location.href = '/donate/failed?error=' + encodeURIComponent(error.message);
+      }
+    });
+  </script>
+</section>

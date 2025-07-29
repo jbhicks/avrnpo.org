@@ -80,11 +80,15 @@ func App() *buffalo.App {
 		// Inject DB transaction middleware for all requests
 		app.Use(popmw.Transaction(models.DB))
 
+		// Inject i18n translations middleware for all requests
+		app.Use(translations())
+
 		blogResource := PublicPostsResource{}
 
 		// Main route declarations
 		app.GET("/", HomeHandler)
 		app.GET("/donate", DonateHandler)
+		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
 		app.GET("/team", TeamHandler)
@@ -96,6 +100,9 @@ func App() *buffalo.App {
 		app.POST("/users", UsersCreate)
 		app.GET("/auth/new", AuthNew)
 		app.POST("/auth", AuthCreate)
+		app.GET("/auth/", func(c buffalo.Context) error {
+			return c.Redirect(http.StatusFound, "/auth/new")
+		})
 		app.GET("/account", SetCurrentUser(Authorize(AccountSettings)))
 		app.POST("/account", SetCurrentUser(Authorize(AccountUpdate)))
 		app.GET("/profile", ProfileSettings)
@@ -110,6 +117,11 @@ func App() *buffalo.App {
 		adminGroup.Resource("/posts", postsResource)
 		adminUsersResource := AdminUsersResource{}
 		adminGroup.Resource("/users", adminUsersResource)
+
+		// Add /admin root route to redirect to dashboard
+		app.GET("/admin", func(c buffalo.Context) error {
+			return c.Redirect(http.StatusFound, "/admin/dashboard")
+		})
 
 		// Donation API endpoints
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
@@ -136,7 +148,7 @@ func App() *buffalo.App {
 			return c.Render(200, r.String(out))
 		}
 
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Serve assets from /assets/ path (Buffalo asset helpers)
