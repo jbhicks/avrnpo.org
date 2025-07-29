@@ -1,3 +1,63 @@
+<style>
+/* Only show valid/invalid state after user interaction */
+input:valid:not(:user-valid),
+textarea:valid:not(:user-valid) {
+  box-shadow: none !important;
+}
+input:invalid:not(:user-invalid),
+textarea:invalid:not(:user-invalid) {
+  box-shadow: none !important;
+}
+
+/* Amount button active state styling */
+.amount-btn.active {
+  background-color: var(--pico-primary);
+  border-color: var(--pico-primary);
+  color: var(--pico-primary-inverse);
+}
+
+.amount-btn:hover {
+  background-color: var(--pico-primary-hover);
+  border-color: var(--pico-primary-hover);
+  color: var(--pico-primary-inverse);
+}
+
+.amount-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.amount-btn {
+  flex: 0 1 calc(33.333% - 0.5rem);
+  min-width: 100px;
+  max-width: 120px;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .amount-grid {
+    gap: 0.5rem;
+  }
+  
+  .amount-btn {
+    flex: 0 1 calc(50% - 0.25rem);
+    min-width: 90px;
+    max-width: 110px;
+  }
+}
+
+@media (max-width: 480px) {
+  .amount-btn {
+    flex: 0 1 calc(50% - 0.25rem);
+    min-width: 80px;
+    max-width: 100px;
+  }
+}
+</style>
+
 <!-- Donate Page -->
 <section class="donate-intro">
   <h1>Support Our Mission</h1>
@@ -52,30 +112,157 @@
     <!-- Donation Form -->
     <div class="donation-form">
       <div class="donation-card">
-        <form id="donation-form" novalidate>
+<form id="donation-form" method="post" novalidate>
         <h3>Make a Donation</h3>
         
-        <p class="donation-subtitle">
-          Choose your donation amount or enter a custom amount. All donations are tax-deductible.
-        </p>
+<%  hasAnyErrors = errors && errors.Count() > 0
+  hasCommentsError = errors && errors.Get("comments")
+  hasAmountError = errors && errors.Get("amount")
+  hasDonorEmailError = errors && errors.Get("donor-email")
+  hasDonorPhoneError = errors && errors.Get("donor-phone")
+  hasAddressLine1Error = errors && errors.Get("address-line1")
+  hasCityError = errors && errors.Get("city")
+  hasStateError = errors && errors.Get("state")
+  hasZipError = errors && errors.Get("zip")
+  customAmount = customAmount || ""
+%>
+
+<%= if (hasAnyErrors) { %>
+  <div class="error-summary" style="color:var(--pico-danger);margin-bottom:1em;">
+    <strong>Please correct the errors below:</strong>
+    <ul>
+<%= for (err) in errors.Errors { %>
+<li><%= err.Message %></li>
+<% } %>
+    </ul>
+  </div>
+<% } %>
+
+<p class="donation-subtitle">
+  Choose your donation amount or enter a custom amount. All donations are tax-deductible.
+</p>
         
         <div class="donation-amounts">
-          <h4>Select Amount</h4>
-          <div class="amount-grid">
-            <button type="button" role="button" class="outline amount-btn" data-amount="25">$25</button>
-            <button type="button" role="button" class="outline amount-btn" data-amount="50">$50</button>
-            <button type="button" role="button" class="outline amount-btn" data-amount="100">$100</button>
-            <button type="button" role="button" class="outline amount-btn" data-amount="250">$250</button>
-            <button type="button" role="button" class="outline amount-btn" data-amount="500">$500</button>
-            <button type="button" role="button" class="outline amount-btn" data-amount="1000">$1000</button>
-          </div>
-          
-          <label for="custom-amount">
-            Custom Amount
-            <input type="number" id="custom-amount" name="amount" placeholder="Enter amount" min="1" autocomplete="transaction-amount">
-          </label>
-        </div>
-        
+           <h4>Select Amount</h4>
+            <div class="amount-grid">
+              <%= for (preset) in presetAmounts { %>
+                <button type="button" role="button" class="outline amount-btn" data-amount="<%= preset %>">$<%= preset %></button>
+              <% } %>
+            </div>
+            
+            <div class="custom-amount-group" style="margin-top:1em;">
+              <label for="custom-amount">Or enter a custom amount</label>
+              <input type="number" id="custom-amount" name="custom_amount" placeholder="Enter custom amount" min="1" step="any" autocomplete="transaction-amount" value="<%= customAmount %>" <% if (hasAmountError) { %>class="invalid"<% } %>>
+              <% if (hasAmountError) { %>
+                <small class="error"><%= errors.Get("amount") %></small>
+              <% } %>
+            </div>
+            
+            <!-- Hidden input to store the selected amount for form submission -->
+            <input type="hidden" id="amount-input" name="amount" value="<%= amount %>">
+            
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const amountButtons = document.querySelectorAll('.amount-btn');
+              const customInput = document.getElementById('custom-amount');
+              const amountInput = document.getElementById('amount-input');
+              const donateButton = document.querySelector('.donation-submit');
+              
+              function updateDonateButton(amount) {
+                if (amount && !isNaN(parseFloat(amount))) {
+                  const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                  });
+                  donateButton.textContent = `Donate ${formattedAmount} Now`;
+                } else {
+                  donateButton.textContent = 'Donate Now';
+                }
+              }
+              
+              function clearAllSelections() {
+                amountButtons.forEach(btn => btn.classList.remove('active'));
+                customInput.value = '';
+                customInput.name = 'custom_amount';
+                amountInput.value = '';
+              }
+              
+              // Handle preset amount button clicks
+              amountButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                  // Clear all selections first
+                  clearAllSelections();
+                  
+                  // Set active state on clicked button
+                  this.classList.add('active');
+                  
+                  // Set the amount value
+                  const amount = this.dataset.amount;
+                  amountInput.value = amount;
+                  
+                  // Update button text
+                  updateDonateButton(amount);
+                });
+              });
+              
+              // Handle custom amount input
+              if (customInput) {
+                customInput.addEventListener('input', function() {
+                  if (this.value.trim() !== '') {
+                    // Clear preset button selections
+                    amountButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Set form values for custom amount
+                    this.name = 'amount';
+                    amountInput.value = this.value;
+                    
+                    // Update button text
+                    updateDonateButton(this.value);
+                  } else {
+                    // If custom input is cleared, revert
+                    this.name = 'custom_amount';
+                    amountInput.value = '';
+                    updateDonateButton('');
+                  }
+                });
+              }
+              
+              // Initialize button text and selection state on page load
+              const currentAmount = amountInput.value || customInput.value;
+              if (currentAmount) {
+                // Check if it's a preset amount
+                let foundPreset = false;
+                amountButtons.forEach(button => {
+                  if (button.dataset.amount === currentAmount) {
+                    button.classList.add('active');
+                    foundPreset = true;
+                  }
+                });
+                
+                // If not a preset, it must be custom
+                if (!foundPreset && customInput) {
+                  customInput.value = currentAmount;
+                  customInput.name = 'amount';
+                }
+                
+                updateDonateButton(currentAmount);
+              }
+            });
+            </script>
+           </div>
+           
+<label for="comments">Comments (optional)
+</label>
+<%= if (hasCommentsError) { %>
+  <textarea id="comments" name="comments" rows="3" placeholder="Any special message or dedication..." class="invalid"><%= comments %></textarea>
+  <small class="error"><%= errors.Get("comments") %></small>
+<% } else { %>
+  <textarea id="comments" name="comments" rows="3" placeholder="Any special message or dedication..."><%= comments %></textarea>
+<% } %>
+
+</div>
         <div class="donation-frequency">
           <fieldset>
             <legend>Donation Frequency</legend>
@@ -90,62 +277,89 @@
           </fieldset>
         </div>
         
-        <div class="donor-info">
-          <h4>Donor Information</h4>
-          <p><small>Required for payment processing and tax receipt</small></p>
-          
-          <div class="grid">
-            <label for="donor-name">
-              Full Name *
-              <input type="text" id="donor-name" name="donor-name" autocomplete="name" required>
-            </label>
-            
-            <label for="donor-email">
-              Email Address *
-              <input type="email" id="donor-email" name="donor-email" autocomplete="email" required>
-            </label>
-          </div>
-          
-          <label for="donor-phone">
-            Phone Number (optional)
-            <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel">
-          </label>
-          
-          <details class="address-details">
-            <summary>Billing Address (optional)</summary>
-            <div class="address-fields">
-              <label for="address-line1">
-                Address Line 1
-                <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1">
-              </label>
-              
-              <div class="grid">
-                <label for="city">
-                  City
-                  <input type="text" id="city" name="city" autocomplete="address-level2">
-                </label>
-                
-                <label for="state">
-                  State
-                  <input type="text" id="state" name="state" autocomplete="address-level1">
-                </label>
-                
-                <label for="zip">
-                  ZIP Code
-                  <input type="text" id="zip" name="zip" autocomplete="postal-code">
-                </label>
-              </div>
-            </div>
-          </details>
-          
-          <label for="comments">
-            Comments (optional)
-            <textarea id="comments" name="comments" rows="3" placeholder="Any special message or dedication..."></textarea>
-          </label>
-        </div>
-        
-        <button role="button" class="contrast donation-submit" disabled>
-          Select Amount
+<div class="donor-info">
+  <h4>Donor Information</h4>
+  <p><small>Required for payment processing and tax receipt</small></p>
+  <div class="grid">
+    <% if (hasFirstNameError) { %>
+      <label for="first-name">First Name *</label>
+      <input type="text" id="first-name" name="first-name" autocomplete="given-name" required aria-required="true" class="invalid" value="<%= firstName %>">
+      <small class="error"><%= errors.Get("first-name") %></small>
+    <% } else { %>
+      <label for="first-name">First Name *</label>
+      <input type="text" id="first-name" name="first-name" autocomplete="given-name" required aria-required="true" value="<%= firstName %>">
+    <% } %>
+
+    <% if (hasLastNameError) { %>
+      <label for="last-name">Last Name *</label>
+      <input type="text" id="last-name" name="last-name" autocomplete="family-name" required aria-required="true" class="invalid" value="<%= lastName %>">
+      <small class="error"><%= errors.Get("last-name") %></small>
+    <% } else { %>
+      <label for="last-name">Last Name *</label>
+      <input type="text" id="last-name" name="last-name" autocomplete="family-name" required aria-required="true" value="<%= lastName %>">
+    <% } %>
+
+    <% if (hasDonorEmailError) { %>
+      <label for="donor-email">Email Address *</label>
+      <input type="email" id="donor-email" name="donor-email" autocomplete="email" required aria-required="true" class="invalid" value="<%= donorEmail %>">
+      <small class="error"><%= errors.Get("donor-email") %></small>
+    <% } else { %>
+      <label for="donor-email">Email Address *</label>
+      <input type="email" id="donor-email" name="donor-email" autocomplete="email" required aria-required="true" value="<%= donorEmail %>">
+    <% } %>
+
+    <% if (hasDonorPhoneError) { %>
+      <label for="donor-phone">Phone Number (optional)</label>
+      <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel" class="invalid" value="<%= donorPhone %>">
+      <small class="error"><%= errors.Get("donor-phone") %></small>
+    <% } else { %>
+      <label for="donor-phone">Phone Number (optional)</label>
+      <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel" value="<%= donorPhone %>">
+    <% } %>
+
+    <% if (hasAddressLine1Error) { %>
+      <label for="address-line1">Address Line 1 *</label>
+      <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1" required aria-required="true" class="invalid" value="<%= addressLine1 %>">
+      <small class="error"><%= errors.Get("address-line1") %></small>
+    <% } else { %>
+      <label for="address-line1">Address Line 1 *</label>
+      <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1" required aria-required="true" value="<%= addressLine1 %>">
+    <% } %>
+
+    <label for="address-line2">Address Line 2 (optional)</label>
+    <input type="text" id="address-line2" name="address-line2" autocomplete="address-line2" value="<%= addressLine2 %>">
+
+    <% if (hasCityError) { %>
+      <label for="city">City *</label>
+      <input type="text" id="city" name="city" autocomplete="address-level2" required aria-required="true" class="invalid" value="<%= city %>">
+      <small class="error"><%= errors.Get("city") %></small>
+    <% } else { %>
+      <label for="city">City *</label>
+      <input type="text" id="city" name="city" autocomplete="address-level2" required aria-required="true" value="<%= city %>">
+    <% } %>
+
+    <% if (hasStateError) { %>
+      <label for="state">State *</label>
+      <input type="text" id="state" name="state" autocomplete="address-level1" required aria-required="true" class="invalid" value="<%= state %>">
+      <small class="error"><%= errors.Get("state") %></small>
+    <% } else { %>
+      <label for="state">State *</label>
+      <input type="text" id="state" name="state" autocomplete="address-level1" required aria-required="true" value="<%= state %>">
+    <% } %>
+
+    <% if (hasZipError) { %>
+      <label for="zip">ZIP Code *</label>
+      <input type="text" id="zip" name="zip" autocomplete="postal-code" required aria-required="true" class="invalid" value="<%= zip %>">
+      <small class="error"><%= errors.Get("zip") %></small>
+    <% } else { %>
+      <label for="zip">ZIP Code *</label>
+      <input type="text" id="zip" name="zip" autocomplete="postal-code" required aria-required="true" value="<%= zip %>">
+    <% } %>
+  </div>
+</div>
+
+        <button role="button" class="contrast donation-submit">
+          Donate Now
         </button>
         
         <small class="donation-note">
@@ -157,7 +371,6 @@
     
   </div>
 </section>
-
 <!-- Tax Information -->
 <section class="tax-info">
   <h2>Tax Deductible Information</h2>
