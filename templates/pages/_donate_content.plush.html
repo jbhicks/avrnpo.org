@@ -118,6 +118,8 @@ textarea:invalid:not(:user-invalid) {
 <%  hasAnyErrors = errors && errors.Count() > 0
   hasCommentsError = errors && errors.Get("comments")
   hasAmountError = errors && errors.Get("amount")
+  hasFirstNameError = errors && errors.Get("first-name")
+  hasLastNameError = errors && errors.Get("last-name")
   hasDonorEmailError = errors && errors.Get("donor-email")
   hasDonorPhoneError = errors && errors.Get("donor-phone")
   hasAddressLine1Error = errors && errors.Get("address-line1")
@@ -132,7 +134,7 @@ textarea:invalid:not(:user-invalid) {
     <strong>Please correct the errors below:</strong>
     <ul>
 <%= for (err) in errors.Errors { %>
-<li><%= err.Message %></li>
+<li><%= err %></li>
 <% } %>
     </ul>
   </div>
@@ -280,81 +282,70 @@ textarea:invalid:not(:user-invalid) {
 <div class="donor-info">
   <h4>Donor Information</h4>
   <p><small>Required for payment processing and tax receipt</small></p>
+  
   <div class="grid">
-    <% if (hasFirstNameError) { %>
+    <div>
       <label for="first-name">First Name *</label>
-      <input type="text" id="first-name" name="first-name" autocomplete="given-name" required aria-required="true" class="invalid" value="<%= firstName %>">
-      <small class="error"><%= errors.Get("first-name") %></small>
-    <% } else { %>
-      <label for="first-name">First Name *</label>
-      <input type="text" id="first-name" name="first-name" autocomplete="given-name" required aria-required="true" value="<%= firstName %>">
-    <% } %>
+      <input type="text" id="first-name" name="first-name" autocomplete="given-name" required aria-required="true" value="<%= firstName %>" <% if (hasFirstNameError) { %>class="invalid"<% } %>>
+      <% if (hasFirstNameError) { %>
+        <small class="error"><%= errors.Get("first-name") %></small>
+      <% } %>
+    </div>
 
-    <% if (hasLastNameError) { %>
+    <div>
       <label for="last-name">Last Name *</label>
-      <input type="text" id="last-name" name="last-name" autocomplete="family-name" required aria-required="true" class="invalid" value="<%= lastName %>">
-      <small class="error"><%= errors.Get("last-name") %></small>
-    <% } else { %>
-      <label for="last-name">Last Name *</label>
-      <input type="text" id="last-name" name="last-name" autocomplete="family-name" required aria-required="true" value="<%= lastName %>">
-    <% } %>
+      <input type="text" id="last-name" name="last-name" autocomplete="family-name" required aria-required="true" value="<%= lastName %>" <% if (hasLastNameError) { %>class="invalid"<% } %>>
+      <% if (hasLastNameError) { %>
+        <small class="error"><%= errors.Get("last-name") %></small>
+      <% } %>
+    </div>
+  </div>
 
-    <% if (hasDonorEmailError) { %>
-      <label for="donor-email">Email Address *</label>
-      <input type="email" id="donor-email" name="donor-email" autocomplete="email" required aria-required="true" class="invalid" value="<%= donorEmail %>">
-      <small class="error"><%= errors.Get("donor-email") %></small>
-    <% } else { %>
-      <label for="donor-email">Email Address *</label>
-      <input type="email" id="donor-email" name="donor-email" autocomplete="email" required aria-required="true" value="<%= donorEmail %>">
-    <% } %>
+  <label for="donor-email">Email Address *</label>
+  <input type="email" id="donor-email" name="donor-email" autocomplete="email" required aria-required="true" value="<%= donorEmail %>" <% if (hasDonorEmailError) { %>class="invalid"<% } %>>
+  <% if (hasDonorEmailError) { %>
+    <small class="error"><%= errors.Get("donor-email") %></small>
+  <% } %>
 
-    <% if (hasDonorPhoneError) { %>
-      <label for="donor-phone">Phone Number (optional)</label>
-      <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel" class="invalid" value="<%= donorPhone %>">
-      <small class="error"><%= errors.Get("donor-phone") %></small>
-    <% } else { %>
-      <label for="donor-phone">Phone Number (optional)</label>
-      <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel" value="<%= donorPhone %>">
-    <% } %>
+  <label for="donor-phone">Phone Number (optional)</label>
+  <input type="tel" id="donor-phone" name="donor-phone" autocomplete="tel" value="<%= donorPhone %>" <% if (hasDonorPhoneError) { %>class="invalid"<% } %>>
+  <% if (hasDonorPhoneError) { %>
+    <small class="error"><%= errors.Get("donor-phone") %></small>
+  <% } %>
 
-    <% if (hasAddressLine1Error) { %>
-      <label for="address-line1">Address Line 1 *</label>
-      <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1" required aria-required="true" class="invalid" value="<%= addressLine1 %>">
-      <small class="error"><%= errors.Get("address-line1") %></small>
-    <% } else { %>
-      <label for="address-line1">Address Line 1 *</label>
-      <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1" required aria-required="true" value="<%= addressLine1 %>">
-    <% } %>
+  <label for="address-line1">Address Line 1 *</label>
+  <input type="text" id="address-line1" name="address-line1" autocomplete="address-line1" required aria-required="true" value="<%= addressLine1 %>" <% if (hasAddressLine1Error) { %>class="invalid"<% } %>>
+  <% if (hasAddressLine1Error) { %>
+    <small class="error"><%= errors.Get("address-line1") %></small>
+  <% } %>
 
-    <label for="address-line2">Address Line 2 (optional)</label>
-    <input type="text" id="address-line2" name="address-line2" autocomplete="address-line2" value="<%= addressLine2 %>">
+  <label for="address-line2">Address Line 2 (optional)</label>
+  <input type="text" id="address-line2" name="address-line2" autocomplete="address-line2" value="<%= addressLine2 %>">
 
-    <% if (hasCityError) { %>
+  <div class="grid">
+    <div>
       <label for="city">City *</label>
-      <input type="text" id="city" name="city" autocomplete="address-level2" required aria-required="true" class="invalid" value="<%= city %>">
-      <small class="error"><%= errors.Get("city") %></small>
-    <% } else { %>
-      <label for="city">City *</label>
-      <input type="text" id="city" name="city" autocomplete="address-level2" required aria-required="true" value="<%= city %>">
-    <% } %>
+      <input type="text" id="city" name="city" autocomplete="address-level2" required aria-required="true" value="<%= city %>" <% if (hasCityError) { %>class="invalid"<% } %>>
+      <% if (hasCityError) { %>
+        <small class="error"><%= errors.Get("city") %></small>
+      <% } %>
+    </div>
 
-    <% if (hasStateError) { %>
+    <div>
       <label for="state">State *</label>
-      <input type="text" id="state" name="state" autocomplete="address-level1" required aria-required="true" class="invalid" value="<%= state %>">
-      <small class="error"><%= errors.Get("state") %></small>
-    <% } else { %>
-      <label for="state">State *</label>
-      <input type="text" id="state" name="state" autocomplete="address-level1" required aria-required="true" value="<%= state %>">
-    <% } %>
+      <input type="text" id="state" name="state" autocomplete="address-level1" required aria-required="true" value="<%= state %>" <% if (hasStateError) { %>class="invalid"<% } %>>
+      <% if (hasStateError) { %>
+        <small class="error"><%= errors.Get("state") %></small>
+      <% } %>
+    </div>
 
-    <% if (hasZipError) { %>
+    <div>
       <label for="zip">ZIP Code *</label>
-      <input type="text" id="zip" name="zip" autocomplete="postal-code" required aria-required="true" class="invalid" value="<%= zip %>">
-      <small class="error"><%= errors.Get("zip") %></small>
-    <% } else { %>
-      <label for="zip">ZIP Code *</label>
-      <input type="text" id="zip" name="zip" autocomplete="postal-code" required aria-required="true" value="<%= zip %>">
-    <% } %>
+      <input type="text" id="zip" name="zip" autocomplete="postal-code" required aria-required="true" value="<%= zip %>" <% if (hasZipError) { %>class="invalid"<% } %>>
+      <% if (hasZipError) { %>
+        <small class="error"><%= errors.Get("zip") %></small>
+      <% } %>
+    </div>
   </div>
 </div>
 
