@@ -151,13 +151,20 @@ func App() *buffalo.App {
 		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
-		// Serve assets from /assets/ path (Buffalo asset helpers)
-		app.ServeFiles("/assets/", http.FS(avrnpo.FS()))
-
-		// Serve static files from /css, /js, /images for legacy asset structure
-		app.ServeFiles("/css/", http.FS(avrnpo.FS()))
-		app.ServeFiles("/js/", http.FS(avrnpo.FS()))
-		app.ServeFiles("/images/", http.FS(avrnpo.FS()))
+		// Serve assets - use filesystem in development, embedded in production
+		if ENV == "development" {
+			// In development, serve assets directly from filesystem for hot reloading
+			app.ServeFiles("/assets/", http.Dir("public/assets"))
+			app.ServeFiles("/css/", http.Dir("public/assets/css"))
+			app.ServeFiles("/js/", http.Dir("public/assets/js"))
+			app.ServeFiles("/images/", http.Dir("public/assets/images"))
+		} else {
+			// In production, use embedded assets
+			app.ServeFiles("/assets/", http.FS(avrnpo.FS()))
+			app.ServeFiles("/css/", http.FS(avrnpo.FS()))
+			app.ServeFiles("/js/", http.FS(avrnpo.FS()))
+			app.ServeFiles("/images/", http.FS(avrnpo.FS()))
+		}
 
 		// Serve static files from root (embed setup)
 		// app.ServeFiles("/", http.FS(avrnpo.FS()))

@@ -1,0 +1,318 @@
+/* Custom styles for AVR website */
+/* Overrides and extensions to Pico.css */
+
+:root {
+  /* AVR Brand Colors */
+  --avr-primary: #1e3a8a;
+  --avr-secondary: #dc2626;
+  --avr-accent: #f59e0b;
+  --avr-success: #16a34a;
+  --avr-warning: #f59e0b;
+  --avr-danger: #dc2626;
+  
+  /* Custom spacing */
+  --avr-header-height: 80px;
+  --avr-nav-height: 60px;
+}
+
+/* AVR Header Enhancements */
+.avr-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--pico-card-background-color);
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  backdrop-filter: blur(10px);
+}
+
+.header-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-right {
+  justify-content: flex-end;
+}
+
+.header-center {
+  text-align: center;
+}
+
+/* Logo styling */
+.logo img {
+  height: 50px;
+  width: auto;
+}
+
+/* Theme toggle button */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: var(--pico-border-radius);
+  color: var(--pico-primary);
+  transition: background-color 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--pico-secondary-hover);
+}
+
+/* Navigation enhancements */
+nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+nav a {
+  text-decoration: none;
+  color: var(--pico-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--pico-border-radius);
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  background-color: var(--pico-secondary-hover);
+  color: var(--pico-primary-inverse);
+}
+
+/* Button enhancements */
+.btn-primary {
+  background-color: var(--avr-primary);
+  border-color: var(--avr-primary);
+}
+
+.btn-secondary {
+  background-color: var(--avr-secondary);
+  border-color: var(--avr-secondary);
+}
+
+.btn-success {
+  background-color: var(--avr-success);
+  border-color: var(--avr-success);
+}
+
+/* Donation form styling */
+.donation-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.amount-presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.amount-preset {
+  padding: 0.75rem;
+  border: 2px solid var(--pico-muted-border-color);
+  background: var(--pico-card-background-color);
+  border-radius: var(--pico-border-radius);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.amount-preset:hover {
+  border-color: var(--pico-primary);
+  background-color: var(--pico-secondary-hover);
+}
+
+.amount-preset.selected {
+  border-color: var(--avr-primary);
+  background-color: var(--avr-primary);
+  color: white;
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--pico-primary);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Form validation styles */
+.form-errors {
+  background-color: var(--avr-danger);
+  color: white;
+  padding: 1rem;
+  border-radius: var(--pico-border-radius);
+  margin-bottom: 1rem;
+}
+
+.form-errors ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+/* Social icons */
+.social-links {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--pico-secondary);
+  border-radius: 50%;
+  color: var(--pico-secondary-inverse);
+  transition: all 0.2s ease;
+}
+
+.social-links a:hover {
+  background-color: var(--avr-primary);
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .header-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .header-left,
+  .header-right {
+    justify-content: center;
+  }
+  
+  .amount-presets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  nav ul {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Admin panel styling */
+.admin-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-nav {
+  background-color: var(--pico-card-background-color);
+  border-radius: var(--pico-border-radius);
+  padding: 1rem;
+  margin-bottom: 2rem;
+}
+
+.admin-nav ul {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-nav a {
+  padding: 0.5rem 1rem;
+  border-radius: var(--pico-border-radius);
+  text-decoration: none;
+  color: var(--pico-primary);
+  transition: background-color 0.2s ease;
+}
+
+.admin-nav a:hover,
+.admin-nav a.active {
+  background-color: var(--avr-primary);
+  color: white;
+}
+
+/* Data tables */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+.data-table th {
+  background-color: var(--pico-secondary);
+  color: var(--pico-secondary-inverse);
+  font-weight: 600;
+}
+
+.data-table tr:hover {
+  background-color: var(--pico-secondary-hover);
+}
+
+/* Flash messages */
+.flash-message {
+  padding: 1rem;
+  border-radius: var(--pico-border-radius);
+  margin-bottom: 1rem;
+}
+
+.flash-success {
+  background-color: var(--avr-success);
+  color: white;
+}
+
+.flash-error {
+  background-color: var(--avr-danger);
+  color: white;
+}
+
+.flash-warning {
+  background-color: var(--avr-warning);
+  color: white;
+}
+
+.flash-info {
+  background-color: var(--pico-primary);
+  color: white;
+}
