@@ -1,318 +1,684 @@
-/* Custom styles for AVR website */
-/* Overrides and extensions to Pico.css */
+/**
+ * Custom CSS for American Veterans Rebuilding (AVR)
+ * Using ONLY Pico.css variables - NO custom CSS rules or !important
+ * All customization done through CSS variables to match original AVR theme
+ */
+
+/* =============================================================================
+   AVR PICO CSS VARIABLE CUSTOMIZATIONS
+   =============================================================================
+ */
 
 :root {
-  /* AVR Brand Colors */
-  --avr-primary: #1e3a8a;
-  --avr-secondary: #dc2626;
-  --avr-accent: #f59e0b;
-  --avr-success: #16a34a;
-  --avr-warning: #f59e0b;
-  --avr-danger: #dc2626;
+  /* AVR Orange/Warning Color Scheme - Matching original DaisyUI warning colors */
+  --pico-primary: #ffb627;                    /* Orange primary color */
+  --pico-primary-background: transparent;     /* Transparent background for outline buttons */
+  --pico-primary-border: #ffb627;            /* Orange border */
+  --pico-primary-underline: #ffb627;
+  --pico-primary-hover: #ffb627;             /* Keep orange on hover */
+  --pico-primary-hover-background: rgba(255, 182, 39, 0.1); /* Light orange hover bg */
+  --pico-primary-focus: #ffb627;
+  --pico-primary-inverse: #ffb627;           /* Orange text instead of white */
   
-  /* Custom spacing */
-  --avr-header-height: 80px;
-  --avr-nav-height: 60px;
+  /* Contrast colors for important CTAs */
+  --pico-contrast: #dc2626;                   /* Red for donations/important actions */
+  --pico-contrast-background: transparent;    /* Transparent background */
+  --pico-contrast-border: #dc2626;
+  --pico-contrast-hover: #dc2626;
+  --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
+  --pico-contrast-inverse: #dc2626;
+  
+  /* Secondary colors */
+  --pico-secondary: #6b7280;                  /* Gray for secondary buttons */
+  --pico-secondary-background: transparent;   /* Transparent background */
+  --pico-secondary-border: #6b7280;
+  --pico-secondary-hover: #6b7280;
+  --pico-secondary-hover-background: rgba(107, 114, 128, 0.1);
+  --pico-secondary-inverse: #6b7280;
+  
+  /* Enhanced spacing for better hierarchy */
+  --pico-spacing: 1rem;
+  --pico-typography-spacing-vertical: 1.5rem;
+  --pico-form-element-spacing-vertical: 0.75rem;
+  --pico-form-element-spacing-horizontal: 1rem;
+  
+  /* Better border radius for military/professional look */
+  --pico-border-radius: 0.375rem;
+  --pico-outline-width: 2px;
+  
+  /* Typography improvements */
+  --pico-font-weight: 400;
+  --pico-line-height: 1.6;
 }
 
-/* AVR Header Enhancements */
-.avr-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+/* Dark theme customizations to match original AVR */
+[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  /* Dark background like original AVR site */
+  --pico-background-color: hsl(210, 15%, 8%);
+  --pico-color: hsl(210, 15%, 90%);
+  
+  /* Card/section backgrounds */
+  --pico-card-background-color: hsl(210, 15%, 12%);
+  --pico-card-border-color: hsl(210, 15%, 20%);
+  
+  /* Navigation colors */
+  --pico-muted-color: hsl(210, 15%, 70%);
+  --pico-muted-border-color: hsl(210, 15%, 25%);
+  
+  /* Form elements in dark theme */
+  --pico-form-element-background-color: hsl(210, 15%, 15%);
+  --pico-form-element-border-color: hsl(210, 15%, 25%);
+  --pico-form-element-color: hsl(210, 15%, 95%);
+  
+  /* Table/content sections */
+  --pico-table-border-color: hsl(210, 15%, 25%);
+  --pico-table-row-stripped-background-color: hsl(210, 15%, 10%);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] {
+  /* Clean light backgrounds */
+  --pico-background-color: hsl(0, 0%, 98%);
+  --pico-color: hsl(210, 15%, 15%);
+  
+  /* Card/section backgrounds */
+  --pico-card-background-color: hsl(0, 0%, 100%);
+  --pico-card-border-color: hsl(210, 15%, 85%);
+  
+  /* Subtle borders and separators */
+  --pico-muted-border-color: hsl(210, 15%, 80%);
+  --pico-table-border-color: hsl(210, 15%, 85%);
+  --pico-table-row-stripped-background-color: hsl(210, 15%, 95%);
+}
+
+/* =============================================================================
+   SEMANTIC CSS CLASSES FOR COMMON PATTERNS
+   Using only CSS variables - no custom properties
+   =============================================================================
+ */
+
+/* Hero section styling using Pico variables */
+.hero-section {
   background: var(--pico-card-background-color);
-  border-bottom: 1px solid var(--pico-muted-border-color);
-  backdrop-filter: blur(10px);
+  border: var(--pico-border-width) solid var(--pico-card-border-color);
+  border-radius: var(--pico-border-radius);
+  margin: var(--pico-typography-spacing-vertical) 0;
 }
 
+/* Logo styling in navigation */
+/* =============================================================================
+   AVR HEADER LAYOUT - Recreating original 3-column design
+   =============================================================================
+ */
+
+/* Header container */
+.avr-header {
+  background-color: var(--pico-card-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  padding: calc(var(--pico-spacing) * 1.5);
+  width: 100%;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* 3-column grid layout */
 .header-grid {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
+  gap: calc(var(--pico-spacing) * 1.5);
   align-items: center;
-  gap: 1rem;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  min-height: 8rem;
+  width: 100%;
 }
 
-.header-left,
+/* Left section - Armed Services logos */
+.header-left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.armed-services-logo {
+  max-height: 6rem;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Center section - Main logo and tagline */
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+}
+
+.main-logo {
+  height: 7.5rem;
+  width: auto;
+  margin-bottom: calc(var(--pico-spacing) * 0.75);
+}
+
+.tagline {
+  font-style: italic;
+  font-size: 1.125rem;
+  color: var(--pico-muted-color);
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+/* Right section - Social icons */
 .header-right {
   display: flex;
+  gap: calc(var(--pico-spacing) * 0.75);
+  justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  height: 100%;
 }
 
-.header-right {
-  justify-content: flex-end;
+.social-icon {
+  display: inline-block;
+  transition: opacity 0.2s ease;
+  text-decoration: none;
 }
 
-.header-center {
-  text-align: center;
+.social-icon:hover {
+  opacity: 0.7;
 }
 
-/* Logo styling */
+.social-icon img {
+  height: 2.5rem;
+  width: 2.5rem;
+  object-fit: contain;
+  display: block;
+}
+
+/* AVR Navigation Bar */
+.avr-navigation {
+  background-color: var(--pico-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  padding: calc(var(--pico-spacing) * 1.25) 0;
+  margin-top: 0;
+  width: 100%;
+}
+
+.nav-links {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--pico-spacing) * 2);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--pico-spacing);
+  flex-wrap: wrap;
+}
+
+.nav-links a[role="button"] {
+  font-size: 0.875rem;
+  padding: calc(var(--pico-spacing) * 0.625) calc(var(--pico-spacing) * 1.25);
+  white-space: nowrap;
+  border-color: var(--pico-primary);
+  color: var(--pico-primary);
+}
+
+.nav-links a[role="button"]:hover {
+  background-color: var(--pico-primary-hover-background);
+}
+
+.nav-links a[role="button"].contrast {
+  border-color: var(--pico-contrast);
+  color: var(--pico-contrast);
+}
+
+.nav-links a[role="button"].contrast:hover {
+  background-color: var(--pico-contrast-hover-background);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .header-grid {
+    grid-template-columns: 1fr;
+    gap: calc(var(--pico-spacing) * 0.75);
+    text-align: center;
+  }
+  
+  .armed-services-logo {
+    max-height: 4rem;
+  }
+  
+  .main-logo {
+    height: 5rem;
+  }
+  
+  .tagline {
+    font-size: 1rem;
+  }
+  
+  .nav-links {
+    flex-wrap: wrap;
+    gap: var(--pico-spacing);
+    justify-content: center;
+  }
+  
+  .nav-links a[role="button"] {
+    font-size: 0.75rem;
+    padding: calc(var(--pico-spacing) * 0.375) calc(var(--pico-spacing) * 0.75);
+  }
+}
+
+/* Legacy styles for other templates */
 .logo img {
-  height: 50px;
+  vertical-align: middle;
+}
+
+/* Header logo styling */
+.header-logo {
+  height: 2rem;
   width: auto;
+  margin-right: var(--pico-spacing);
+}
+
+/* Brand text styling */
+.brand-text {
+  color: var(--pico-primary);
+}
+
+/* Dashboard navigation styling */
+.dashboard-nav {
+  background: var(--pico-card-background-color);
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  margin-bottom: var(--pico-typography-spacing-vertical);
 }
 
 /* Theme toggle button */
 .theme-toggle-btn {
-  background: none;
+  background: transparent;
   border: none;
+  color: var(--pico-color);
   cursor: pointer;
   padding: 0.5rem;
   border-radius: var(--pico-border-radius);
-  color: var(--pico-primary);
-  transition: background-color 0.2s ease;
 }
 
 .theme-toggle-btn:hover {
-  background-color: var(--pico-secondary-hover);
-}
-
-/* Navigation enhancements */
-nav ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  gap: 1rem;
-}
-
-nav a {
-  text-decoration: none;
+  background: var(--pico-primary-hover-background);
   color: var(--pico-primary);
-  padding: 0.5rem 1rem;
-  border-radius: var(--pico-border-radius);
-  transition: all 0.2s ease;
 }
 
-nav a:hover {
-  background-color: var(--pico-secondary-hover);
-  color: var(--pico-primary-inverse);
+/* Icon spacing */
+.icon-standard {
+  vertical-align: middle;
 }
 
-/* Button enhancements */
-.btn-primary {
-  background-color: var(--avr-primary);
-  border-color: var(--avr-primary);
+.icon-spacing {
+  margin-right: 0.5rem;
 }
 
-.btn-secondary {
-  background-color: var(--avr-secondary);
-  border-color: var(--avr-secondary);
-}
-
-.btn-success {
-  background-color: var(--avr-success);
-  border-color: var(--avr-success);
-}
-
-/* Donation form styling */
-.donation-form {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.amount-presets {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.amount-preset {
-  padding: 0.75rem;
-  border: 2px solid var(--pico-muted-border-color);
-  background: var(--pico-card-background-color);
-  border-radius: var(--pico-border-radius);
+/* Theme toggle button styling using Pico variables */
+.theme-toggle-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
   cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
+  color: inherit;
 }
 
-.amount-preset:hover {
-  border-color: var(--pico-primary);
-  background-color: var(--pico-secondary-hover);
-}
-
-.amount-preset.selected {
-  border-color: var(--avr-primary);
-  background-color: var(--avr-primary);
-  color: white;
-}
-
-/* Loading states */
-.loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-.loading::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  margin: -10px 0 0 -10px;
-  border: 2px solid var(--pico-primary);
-  border-radius: 50%;
-  border-top-color: transparent;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Form validation styles */
-.form-errors {
-  background-color: var(--avr-danger);
-  color: white;
-  padding: 1rem;
+.theme-toggle-btn:hover,
+.theme-toggle-btn:focus {
+  background-color: var(--pico-muted-hover-background);
   border-radius: var(--pico-border-radius);
-  margin-bottom: 1rem;
 }
 
-.form-errors ul {
-  margin: 0;
-  padding-left: 1rem;
+/* Icon styling */
+.icon {
+  vertical-align: middle;
+  margin-right: calc(var(--pico-spacing) * 0.25);
 }
 
-/* Social icons */
-.social-links {
+/* =============================================================================
+   Dashboard Specific Styles
+   ============================================================================= */
+
+.dashboard-nav {
+  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+  margin-bottom: var(--pico-spacing);
+  padding: calc(var(--pico-spacing) * 0.75) calc(var(--pico-spacing) * 2);
+}
+
+.dashboard-nav a.logo {
+  color: var(--pico-contrast);
+  text-decoration: none;
+}
+
+.dashboard-nav a.logo:hover {
+  color: var(--pico-primary);
+}
+
+/* Consistent Stats Card Design */
+.stats-card {
+  text-align: center;
+  min-height: 120px;
   display: flex;
-  gap: 1rem;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.social-links a {
+.stats-card header {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background-color: var(--pico-secondary);
-  border-radius: 50%;
-  color: var(--pico-secondary-inverse);
-  transition: all 0.2s ease;
+  gap: calc(var(--pico-spacing) / 2);
+  margin-bottom: var(--pico-spacing);
 }
 
-.social-links a:hover {
-  background-color: var(--avr-primary);
-  transform: translateY(-2px);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .header-grid {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 0.5rem;
-  }
-  
-  .header-left,
-  .header-right {
-    justify-content: center;
-  }
-  
-  .amount-presets {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  nav ul {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-
-/* Admin panel styling */
-.admin-panel {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.admin-nav {
-  background-color: var(--pico-card-background-color);
-  border-radius: var(--pico-border-radius);
-  padding: 1rem;
-  margin-bottom: 2rem;
-}
-
-.admin-nav ul {
-  display: flex;
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.admin-nav a {
-  padding: 0.5rem 1rem;
-  border-radius: var(--pico-border-radius);
-  text-decoration: none;
+.stats-card header svg {
   color: var(--pico-primary);
-  transition: background-color 0.2s ease;
+  flex-shrink: 0;
 }
 
-.admin-nav a:hover,
-.admin-nav a.active {
-  background-color: var(--avr-primary);
-  color: white;
+.stats-card header h3 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
-/* Data tables */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
+.stats-card p {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: calc(var(--pico-spacing) / 2) 0;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pico-primary);
 }
 
-.data-table th,
-.data-table td {
-  padding: 0.75rem;
+.stats-card footer {
+  margin-top: auto;
+}
+
+.stats-card footer small {
+  color: var(--pico-muted-color);
+}
+
+/* Profile Summary Styling */
+.profile-summary {
   text-align: left;
-  border-bottom: 1px solid var(--pico-muted-border-color);
+  margin: var(--pico-spacing) 0;
 }
 
-.data-table th {
-  background-color: var(--pico-secondary);
-  color: var(--pico-secondary-inverse);
-  font-weight: 600;
+.profile-summary h4 {
+  margin: 0 0 calc(var(--pico-spacing) / 2) 0;
+  font-size: 1.2rem;
 }
 
-.data-table tr:hover {
-  background-color: var(--pico-secondary-hover);
+.profile-summary p {
+  margin: calc(var(--pico-spacing) / 4) 0;
+  font-size: 0.9rem;
 }
 
-/* Flash messages */
-.flash-message {
-  padding: 1rem;
+/* Consistent Icon Sizing */
+article header svg,
+.icon-standard {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Large icon variant for special cases */
+.icon-large {
+  width: 24px;
+  height: 24px;
+}
+
+/* Small icon variant */
+.icon-small {
+  width: 16px;
+  height: 16px;
+}
+
+/* =============================================================================
+   Form Enhancements
+   ============================================================================= */
+
+.form-grid {
+  max-width: 500px; /* Structural constraint, fine */
+  margin: 0 auto;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--pico-spacing);
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--pico-spacing);
+}
+
+.action-buttons button,
+.action-buttons a {
+  margin: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.admin-role {
+  color: var(--pico-color-red-500);
+}
+
+.warning-header {
+  color: var(--pico-color-red-500);
+}
+
+.inline-form {
+  margin: 0;
+}
+
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.pagination-spacing {
+  margin: 0 1rem;
+}
+
+.danger-zone {
+  border-left: 4px solid var(--pico-color-red-500);
+}
+
+/* Blog Templates */
+.unstyled-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.unstyled-link:hover {
+  text-decoration: underline;
+}
+
+/* Blog grid layout */
+.grid article {
+  margin-bottom: var(--pico-spacing);
+}
+
+/* Blog post content */
+.content {
+  margin: var(--pico-typography-spacing-vertical) 0;
+  line-height: 1.6;
+}
+
+.content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+  margin-top: calc(var(--pico-typography-spacing-vertical) * 1.5);
+  margin-bottom: var(--pico-typography-spacing-vertical);
+}
+
+.content p {
+  margin-bottom: var(--pico-typography-spacing-vertical);
+}
+
+.content img {
+  max-width: 100%;
+  height: auto;
   border-radius: var(--pico-border-radius);
-  margin-bottom: 1rem;
 }
 
-.flash-success {
-  background-color: var(--avr-success);
-  color: white;
+/* Admin table improvements */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-.flash-error {
-  background-color: var(--avr-danger);
-  color: white;
+.inline-form {
+  display: inline;
 }
 
-.flash-warning {
-  background-color: var(--avr-warning);
-  color: white;
+.admin-role {
+  font-weight: bold;
+  color: var(--pico-primary);
 }
 
-.flash-info {
-  background-color: var(--pico-primary);
-  color: white;
+/* =============================================================================
+   BUTTON OVERRIDE - FORCE OUTLINE STYLE
+   Override any inline styles that might be adding backgrounds
+   =============================================================================
+ */
+
+/* Force all buttons to use outline style regardless of inline styles */
+[role="button"],
+button,
+input[type="submit"],
+input[type="button"],
+a[role="button"] {
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 2px solid currentColor !important;
 }
+
+/* Primary buttons use orange */
+[role="button"]:not(.secondary):not(.contrast):not(.outline),
+button:not(.secondary):not(.contrast):not(.outline),
+input[type="submit"]:not(.secondary):not(.contrast):not(.outline),
+input[type="button"]:not(.secondary):not(.contrast):not(.outline),
+a[role="button"]:not(.secondary):not(.contrast):not(.outline) {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Outline buttons use orange */
+[role="button"].outline,
+button.outline,
+input[type="submit"].outline,
+input[type="button"].outline,
+a[role="button"].outline {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Secondary buttons use yellow primary color to match Support Our Mission button */
+[role="button"].secondary,
+button.secondary,
+input[type="submit"].secondary,
+input[type="button"].secondary,
+a[role="button"].secondary {
+  color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+}
+
+/* Contrast buttons use red for donations */
+[role="button"].contrast,
+button.contrast,
+input[type="submit"].contrast,
+input[type="button"].contrast,
+a[role="button"].contrast {
+  color: var(--pico-contrast) !important;
+  border-color: var(--pico-contrast) !important;
+}
+
+/* Hover effects */
+[role="button"]:hover,
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+a[role="button"]:hover {
+  background-color: rgba(255, 182, 39, 0.1) !important;
+  background: rgba(255, 182, 39, 0.1) !important;
+}
+
+[role="button"].secondary:hover,
+button.secondary:hover,
+input[type="submit"].secondary:hover,
+input[type="button"].secondary:hover,
+a[role="button"].secondary:hover {
+  background-color: rgba(255, 182, 39, 0.1) !important;
+  background: rgba(255, 182, 39, 0.1) !important;
+}
+
+[role="button"].contrast:hover,
+button.contrast:hover,
+input[type="submit"].contrast:hover,
+input[type="button"].contrast:hover,
+a[role="button"].contrast:hover {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+  background: rgba(220, 38, 38, 0.1) !important;
+}
+
+/* =============================================================================
+   Utility Classes (Minimal - Prefer semantic HTML)
+   ============================================================================= */
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--pico-muted-color);
+}
+
+/* =============================================================================
+   Responsive Adjustments (Minimal - Pico is mobile-first)
+   ============================================================================= */
+
+@media (max-width: 768px) {
+  .dashboard-nav {
+    padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: calc(var(--pico-spacing) / 2);
+  }
+}
+
+/* =============================================================================
+   Dark/Light Theme Specific Adjustments
+   ============================================================================= */
+
+[data-theme="dark"] .site-header {
+  background-color: var(--pico-card-background-color);
+  color: var(--pico-color);
+  border-bottom-color: var(--pico-muted-border-color);
+}
+
+[data-theme="light"] .site-header {
+  background-color: var(--pico-card-background-color);
+  border-bottom-color: var(--pico-muted-border-color);
+}
+
+/* Fix any dropdown positioning issues */
+.site-header details[role="list"] ul,
+.dashboard-nav details[role="list"] ul {
+  right: 0;
+  left: auto;
+}
+
+/* =============================================================================
+   CUSTOM CLASSES USING PICO VARIABLES
+   =============================================================================
+ */
