@@ -10,55 +10,63 @@
                                  hx-swap="innerHTML">Sign in instead</a></p>
   </hgroup>
     
-    <%= formFor(user, {action: usersPath(), method: "POST"}) { %>
+    <%= formFor(user, {action: usersPath(), method: "POST", autocomplete: "on"}) { %>
       <fieldset>
         <label>
           First Name
-          <%= f.InputTag("FirstName", {
-            type: "text",
-            required: true,
-            placeholder: "Enter your first name"
-          }) %>
+          <input type="text" 
+                 id="first_name" 
+                 name="first_name" 
+                 autocomplete="given-name" 
+                 required 
+                 placeholder="Enter your first name"
+                 value="<%= user.FirstName %>">
         </label>
         
         <label>
           Last Name
-          <%= f.InputTag("LastName", {
-            type: "text",
-            required: true,
-            placeholder: "Enter your last name"
-          }) %>
+          <input type="text" 
+                 id="last_name" 
+                 name="last_name" 
+                 autocomplete="family-name" 
+                 required 
+                 placeholder="Enter your last name"
+                 value="<%= user.LastName %>">
         </label>
         
         <label>
           Email
-          <%= f.InputTag("Email", {
-            type: "email",
-            required: true,
-            placeholder: "Enter your email"
-          }) %>
+          <input type="email" 
+                 id="email" 
+                 name="email" 
+                 autocomplete="email" 
+                 required 
+                 placeholder="Enter your email"
+                 value="<%= user.Email %>">
         </label>
         
         <label>
           Password
-          <%= f.InputTag("Password", {
-            type: "password",
-            required: true,
-            placeholder: "Enter your password"
-          }) %>
+          <input type="password" 
+                 id="password" 
+                 name="password" 
+                 autocomplete="new-password" 
+                 required 
+                 placeholder="Enter your password">
         </label>
         
         <label>
           Confirm Password
-          <%= f.InputTag("PasswordConfirmation", {
-            type: "password",
-            required: true,
-            placeholder: "Confirm your password"
-          }) %>
+          <input type="password" 
+                 id="password_confirmation" 
+                 name="password_confirmation" 
+                 autocomplete="new-password" 
+                 required 
+                 placeholder="Confirm your password">
         </label>
         
         <label>
-          <input type="checkbox" name="accept-terms" required />
+          <input type="checkbox" name="accept_terms" required />
           I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
         </label>
       </fieldset>

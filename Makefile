@@ -348,7 +348,7 @@ test: check-deps db-up
 test-fast: check-deps
 	@echo "⚡ Running tests (fast mode)..."
 	@echo "🏃 Executing tests..."
-	@if GO_ENV=test go test ./actions -v -vet=printf; then \
+	@if HELCIM_PRIVATE_API_KEY=test_key_for_testing GO_ENV=test go test ./actions -v -vet=printf; then \
 		echo "✅ All tests passed!"; \
 	else \
 		echo "❌ Some tests failed. Check the output above for details."; \

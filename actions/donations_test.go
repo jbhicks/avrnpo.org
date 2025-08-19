@@ -4,8 +4,184 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
+
+	"avrnpo.org/models"
 )
+
+// Test actual form submission (not just JSON API)
+func (as *ActionSuite) Test_DonationForm_Submission() {
+	// Test actual form submission that mimics user workflow
+	timestamp := time.Now().UnixNano()
+	
+	formData := url.Values{
+		"amount":        {"25"},
+		"first_name":    {"Test"},
+		"last_name":     {"User"},
+		"donor_email":   {fmt.Sprintf("test-%d@example.com", timestamp)},
+		"donor_phone":   {"555-123-4567"},
+		"address_line1": {"123 Test St"},
+		"city":          {"Test City"},
+		"state":         {"CA"},
+		"zip":           {"90210"},
+		"donation_type": {"one-time"},
+	}
+
+	req := as.HTML("/api/donations/initialize")
+	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	res := req.Post(strings.NewReader(formData.Encode()))
+
+	// Should successfully create donation and redirect to payment
+	as.True(res.Code == http.StatusSeeOther || res.Code == http.StatusOK,
+		"Expected redirect or success, got %d", res.Code)
+}
+
+// Test database donation creation with actual constraints
+func (as *ActionSuite) Test_DonationModel_DatabaseConstraints() {
+	timestamp := time.Now().UnixNano()
+	
+	// Test creating donation with nullable fields
+	donation := &models.Donation{
+		DonorName:     "Test Donor",
+		DonorEmail:    fmt.Sprintf("test-%d@example.com", timestamp),
+		Amount:        25.00,
+		Currency:      "USD",
+		DonationType:  "one-time",
+		Status:        "pending",
+		// CheckoutToken and SecretToken intentionally left empty
+		// AddressLine2 intentionally left nil
+	}
+
+	tx := as.DB
+	err := tx.Create(donation)
+	as.NoError(err, "Should be able to create donation with nullable fields")
+	as.NotEqual("", donation.ID.String(), "Donation should have generated ID")
+}
+
+// Test donation model validation rules
+func (as *ActionSuite) Test_DonationModel_Validation() {
+	// Test that validation allows empty tokens (populated after creation)
+	donation := &models.Donation{
+		CheckoutToken: "", // Should be allowed
+		SecretToken:   "", // Should be allowed
+		DonorName:     "Test User",
+		DonorEmail:    "test@example.com",
+		Currency:      "USD",
+		DonationType:  "one-time",
+		Status:        "pending",
+		Amount:        25.00,
+	}
+
+	tx := as.DB
+	verrs, err := donation.Validate(tx)
+	as.NoError(err)
+	as.False(verrs.HasAny(), "Should not have validation errors for empty tokens: %v", verrs)
+}
+
+// Test missing required fields validation
+func (as *ActionSuite) Test_DonationModel_RequiredFields() {
+	// Test missing donor name
+	donation := &models.Donation{
+		DonorEmail:   "test@example.com",
+		Currency:     "USD",
+		DonationType: "one-time",
+		Status:       "pending",
+		Amount:       25.00,
+		// DonorName missing
+	}
+
+	tx := as.DB
+	verrs, err := donation.Validate(tx)
+	as.NoError(err)
+	as.True(verrs.HasAny(), "Should have validation errors for missing donor name")
+	as.Contains(verrs.Error(), "DonorName")
+}
+
+// Test database transaction rollback scenarios
+func (as *ActionSuite) Test_DonationCreation_TransactionIntegrity() {
+	timestamp := time.Now().UnixNano()
+	
+	// Create a donation that should succeed
+	donation := &models.Donation{
+		DonorName:    "Transaction Test",
+		DonorEmail:   fmt.Sprintf("txn-test-%d@example.com", timestamp),
+		Amount:       50.00,
+		Currency:     "USD",
+		DonationType: "one-time",
+		Status:       "pending",
+	}
+
+	err := as.DB.Create(donation)
+	as.NoError(err, "Donation creation should succeed")
+	
+	// Verify it was actually saved with an ID
+	as.NotEqual("", donation.ID.String(), "Donation should have generated ID")
+
+	// Verify we can find it again
+	var savedDonation models.Donation
+	err = as.DB.Find(&savedDonation, donation.ID)
+	as.NoError(err, "Should be able to find saved donation")
+	as.Equal("Transaction Test", savedDonation.DonorName)
+}
+
+// Test form validation error handling
+func (as *ActionSuite) Test_DonationForm_ValidationErrors() {
+	// Submit form with missing required fields
+	formData := url.Values{
+		"amount": {"25"},
+		// Missing required fields: first_name, last_name, donor_email, etc.
+	}
+
+	req := as.HTML("/api/donations/initialize")
+	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	res := req.Post(strings.NewReader(formData.Encode()))
+
+	// Should return to form with validation errors
+	as.Equal(http.StatusOK, res.Code, "Should return form with errors")
+	as.Contains(res.Body.String(), "First name is required", "Should show validation error")
+}
+
+// Test that nullable database constraints are properly set
+func (as *ActionSuite) Test_DonationDatabase_NullableConstraints() {
+	// This test verifies the database schema allows null values where expected
+	timestamp := time.Now().UnixNano()
+	
+	donation := &models.Donation{
+		DonorName:     "Nullable Test",
+		DonorEmail:    fmt.Sprintf("nullable-%d@example.com", timestamp),
+		Amount:        75.00,
+		Currency:      "USD",
+		DonationType:  "one-time",
+		Status:        "pending",
+		// These should all be allowed to be null/empty:
+		CheckoutToken:       "",
+		SecretToken:         "",
+		DonorPhone:          nil,
+		AddressLine1:        nil,
+		AddressLine2:        nil,
+		City:                nil,
+		State:               nil,
+		Zip:                 nil,
+		Comments:            nil,
+		HelcimTransactionID: nil,
+		SubscriptionID:      nil,
+		CustomerID:          nil,
+		PaymentPlanID:       nil,
+		TransactionID:       nil,
+		UserID:              nil,
+	}
+
+	err := as.DB.Create(donation)
+	as.NoError(err, "Should be able to create donation with all nullable fields empty")
+	
+	// Verify it was actually saved
+	var savedDonation models.Donation
+	err = as.DB.Find(&savedDonation, donation.ID)
+	as.NoError(err)
+	as.Equal("Nullable Test", savedDonation.DonorName)
+}
 
 func (as *ActionSuite) Test_DonateHandler() {
 	res := as.HTML("/donate").Get()
@@ -32,7 +208,7 @@ func (as *ActionSuite) Test_DonateHandler() {
 	as.Contains(res.Body.String(), "donation-form")
 
 	// Single-template architecture - returns full HTML structure
-	as.Contains(res.Body.String(), "/assets/donation.js")
+	as.Contains(res.Body.String(), "/assets/js/donation.js")
 	as.Contains(res.Body.String(), "<!DOCTYPE html>")
 	as.Contains(res.Body.String(), "<html lang=\"en\">")
 }
@@ -88,13 +264,13 @@ func (as *ActionSuite) Test_DonationInitializeHandler_RateLimiting() {
 	donationRequest := map[string]interface{}{
 		"amount":        25.00,
 		"donation_type": "one-time",
-		"donor_name":    "Rate Test User",
+		"first_name":    "Rate",
+		"last_name":     "User",
 		"donor_email":   "ratetest@example.com",
 		"address_line1": "123 Main Street",
 		"city":          "Test City",
 		"state":         "CA",
-		"zip":           "90210",
-		"country":       "USA",
+		"zip_code":      "90210",
 	}
 
 	// Make multiple rapid requests - should not crash
@@ -111,13 +287,13 @@ func (as *ActionSuite) Test_DonationAPI_CSRF_Handling() {
 	donationRequest := map[string]interface{}{
 		"amount":        30.00,
 		"donation_type": "one-time",
-		"donor_name":    "CSRF Test User",
+		"first_name":    "CSRF",
+		"last_name":     "User",
 		"donor_email":   "csrf@example.com",
 		"address_line1": "123 CSRF Street",
 		"city":          "Test City",
 		"state":         "CA",
-		"zip":           "90210",
-		"country":       "USA",
+		"zip_code":      "90210",
 	}
 
 	// Request without CSRF token should not fail due to CSRF (API is working now)
@@ -167,13 +343,13 @@ func (as *ActionSuite) Test_DonationEndpoints_PublicAccess() {
 	donationRequest := map[string]interface{}{
 		"amount":        15.00,
 		"donation_type": "one-time",
-		"donor_name":    "Public User",
+		"first_name":    "Public",
+		"last_name":     "User",
 		"donor_email":   "public@example.com",
 		"address_line1": "123 Public Street",
 		"city":          "Test City",
 		"state":         "CA",
-		"zip":           "90210",
-		"country":       "USA",
+		"zip_code":      "90210",
 	}
 	jsonRes := as.JSON("/api/donations/initialize").Post(donationRequest)
 	// Should return success now that API is working, not auth error
@@ -189,14 +365,14 @@ func (as *ActionSuite) Test_RecurringDonation_FullFlow() {
 	donationData := map[string]interface{}{
 		"amount":        "25.00",
 		"donation_type": "monthly",
-		"donor_name":    "Test Donor",
+		"first_name":    "Test",
+		"last_name":     "Donor",
 		"donor_email":   fmt.Sprintf("test-donor-%d@example.com", timestamp),
 		"donor_phone":   "555-123-4567",
 		"address_line1": "123 Test Street",
 		"city":          "Test City",
 		"state":         "CA",
-		"zip":           "90210",
-		"country":       "USA",
+		"zip_code":      "90210",
 		"comments":      "Test recurring donation",
 	}
 
@@ -222,14 +398,14 @@ func (as *ActionSuite) Test_RecurringDonation_PaymentPlanCreation() {
 	donationData := map[string]interface{}{
 		"amount":        "50.00",
 		"donation_type": "monthly",
-		"donor_name":    "Plan Test Donor",
+		"first_name":    "Plan",
+		"last_name":     "Donor",
 		"donor_email":   fmt.Sprintf("plan-test-%d@example.com", timestamp),
 		"donor_phone":   "555-987-6543",
 		"address_line1": "456 Plan Avenue",
 		"city":          "Plan City",
 		"state":         "CA",
-		"zip":           "90210",
-		"country":       "USA",
+		"zip_code":      "90210",
 	}
 
 	// Initialize donation - expecting 200 success with working API key
@@ -252,7 +428,8 @@ func (as *ActionSuite) Test_RecurringDonation_ErrorHandling() {
 	invalidData := map[string]interface{}{
 		"amount":        "0", // Invalid amount
 		"donation_type": "monthly",
-		"donor_name":    "Error Test",
+		"first_name":    "Error",
+		"last_name":     "Test",
 		"donor_email":   fmt.Sprintf("error-test-%d@example.com", timestamp),
 	}
 
@@ -283,5 +460,5 @@ func (as *ActionSuite) Test_DonationPage_RecurringOptions() {
 
 	// Check for recurring-specific JavaScript
 	as.Contains(res.Body.String(), "name=\"frequency\"")
-	as.Contains(res.Body.String(), "/assets/donation.js")
+	as.Contains(res.Body.String(), "/assets/js/donation.js")
 }

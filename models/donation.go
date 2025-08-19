@@ -57,8 +57,7 @@ func (d Donations) String() string {
 // Validate gets run every time you call a "pop.Validate*" (pop.ValidateAndSave, pop.ValidateAndCreate, pop.ValidateAndUpdate) method.
 func (d *Donation) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
-		&validators.StringIsPresent{Field: d.CheckoutToken, Name: "CheckoutToken"},
-		&validators.StringIsPresent{Field: d.SecretToken, Name: "SecretToken"},
+		// Note: CheckoutToken and SecretToken are populated after Helcim API call, so not required here
 		&validators.StringIsPresent{Field: d.DonorName, Name: "DonorName"},
 		&validators.StringIsPresent{Field: d.DonorEmail, Name: "DonorEmail"},
 		&validators.EmailIsPresent{Field: d.DonorEmail, Name: "DonorEmail"},

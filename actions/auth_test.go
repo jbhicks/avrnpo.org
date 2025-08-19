@@ -10,8 +10,8 @@ import (
 
 func (as *ActionSuite) Test_Auth_Signin() {
 	res := as.HTML("/auth/").Get()
-	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), `<a href="/auth/new/">Sign In</a>`)
+	as.Equal(http.StatusFound, res.Code)
+	as.Equal("/auth/new", res.Header().Get("Location"))
 }
 
 func (as *ActionSuite) Test_Auth_New() {

@@ -83,8 +83,11 @@ func DonateHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 	c.Set("comments", "")
+	
+	// Ensure amount fields are explicitly empty strings
 	c.Set("amount", "")
 	c.Set("customAmount", "")
+	
 	c.Set("firstName", "")
 	c.Set("lastName", "")
 	c.Set("donorEmail", "")

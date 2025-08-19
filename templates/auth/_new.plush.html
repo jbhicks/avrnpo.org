@@ -10,24 +10,27 @@
                          hx-swap="innerHTML">Sign up for a new account</a></p>
   </hgroup>
     
-    <%= formFor(user, {action: "/auth", method: "POST"}) { %>
+    <%= formFor(user, {action: "/auth", method: "POST", autocomplete: "on"}) { %>
       <fieldset>
         <label>
           Email
-          <%= f.InputTag("Email", {
-            type: "email",
-            required: true,
-            placeholder: "Enter your email"
-          }) %>
+          <input type="email" 
+                 id="email" 
+                 name="email" 
+                 autocomplete="email" 
+                 required 
+                 placeholder="Enter your email"
+                 value="<%= user.Email %>">
         </label>
         
         <label>
           Password
-          <%= f.InputTag("Password", {
-            type: "password",
-            required: true,
-            placeholder: "Enter your password"
-          }) %>
+          <input type="password" 
+                 id="password" 
+                 name="password" 
+                 autocomplete="current-password" 
+                 required 
+                 placeholder="Enter your password">
         </label>
       </fieldset>
 

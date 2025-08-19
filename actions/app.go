@@ -86,7 +86,8 @@ func App() *buffalo.App {
 		blogResource := PublicPostsResource{}
 
 		// Main route declarations
-		app.GET("/", HomeHandler)
+		app.GET("/", SetCurrentUser(HomeHandler))
+		app.GET("/dashboard", SetCurrentUser(Authorize(DashboardHandler)))
 		app.GET("/donate", SetCurrentUser(DonateHandler))
 		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
@@ -109,23 +110,21 @@ func App() *buffalo.App {
 		app.GET("/account/subscriptions", SetCurrentUser(Authorize(SubscriptionsList)))
 		app.GET("/account/subscriptions/{subscriptionId}", SetCurrentUser(Authorize(SubscriptionDetails)))
 		app.POST("/account/subscriptions/{subscriptionId}/cancel", SetCurrentUser(Authorize(CancelSubscription)))
-		app.GET("/profile", ProfileSettings)
-		app.POST("/profile", ProfileUpdate)
+		app.GET("/profile", SetCurrentUser(Authorize(ProfileSettings)))
+		app.POST("/profile", SetCurrentUser(Authorize(ProfileUpdate)))
 
 		// Admin group with required middleware
 		adminGroup := app.Group("/admin")
 		adminGroup.Use(SetCurrentUser)
 		adminGroup.Use(AdminRequired)
+		adminGroup.GET("/", func(c buffalo.Context) error {
+			return c.Redirect(http.StatusFound, "/admin/dashboard")
+		})
 		adminGroup.GET("/dashboard", AdminDashboard)
 		postsResource := PostsResource{}
 		adminGroup.Resource("/posts", postsResource)
 		adminUsersResource := AdminUsersResource{}
 		adminGroup.Resource("/users", adminUsersResource)
-
-		// Add /admin root route to redirect to dashboard
-		app.GET("/admin", func(c buffalo.Context) error {
-			return c.Redirect(http.StatusFound, "/admin/dashboard")
-		})
 
 		// Donation API endpoints
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
@@ -155,23 +154,15 @@ func App() *buffalo.App {
 		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
-		// Serve assets - use filesystem in development, embedded in production
-		if ENV == "development" {
-			// In development, serve assets directly from filesystem for hot reloading
-			app.ServeFiles("/assets/", http.Dir("public/assets"))
-			app.ServeFiles("/css/", http.Dir("public/assets/css"))
-			app.ServeFiles("/js/", http.Dir("public/assets/js"))
-			app.ServeFiles("/images/", http.Dir("public/assets/images"))
+		// Serve assets using Buffalo best practices
+		// ServeFiles should be LAST as it's a catch-all route
+		if ENV == "production" {
+			// Production: use embedded assets
+			app.ServeFiles("/", http.FS(avrnpo.FS()))
 		} else {
-			// In production, use embedded assets
-			app.ServeFiles("/assets/", http.FS(avrnpo.FS()))
-			app.ServeFiles("/css/", http.FS(avrnpo.FS()))
-			app.ServeFiles("/js/", http.FS(avrnpo.FS()))
-			app.ServeFiles("/images/", http.FS(avrnpo.FS()))
+			// Development/Test: serve from filesystem for hot reload
+			app.ServeFiles("/", http.Dir("public"))
 		}
-
-		// Serve static files from root (embed setup)
-		// app.ServeFiles("/", http.FS(avrnpo.FS()))
 	})
 
 	return app

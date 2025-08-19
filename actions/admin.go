@@ -28,7 +28,7 @@ func AdminRequired(next buffalo.Handler) buffalo.Handler {
 				}
 			}
 			c.Flash().Add("danger", "Access denied. Administrator privileges required.")
-			return c.Redirect(http.StatusFound, "/dashboard")
+			return c.Redirect(http.StatusFound, "/auth/new")
 		}
 
 		if user.Role != "admin" {
