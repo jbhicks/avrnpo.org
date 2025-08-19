@@ -10,22 +10,118 @@
   </div>
   
   <div id="helcim-pay-container">
-    <!-- Helcim Pay will inject the payment form here -->
+    <!-- Helcim Pay iframe will be injected here -->
   </div>
   
-  <script src="https://pay.helcim.com/helcim-pay.js"></script>
+  <div id="transaction-details"></div>
+  
+  <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
   <script>
-    // Initialize Helcim Pay with the checkout token
-    HelcimPay.initialize({
-      token: '<%= checkoutToken %>',
-      onPaymentSuccess: function(response) {
-        // Redirect to success page
-        window.location.href = '/donate/success?transactionId=' + response.transactionId;
-      },
-      onPaymentFailure: function(error) {
-        // Redirect to failure page
-        window.location.href = '/donate/failed?error=' + encodeURIComponent(error.message);
+    // Initialize Helcim Pay with the checkout token from session
+    const checkoutToken = '<%= checkoutToken %>';
+    const donationId = '<%= donationId %>';
+    const donationAmount = parseFloat('<%= amount %>');
+    
+    console.log('Initializing Helcim payment with token:', checkoutToken.substring(0, 5) + '...');
+    
+    // Setup event listener for payment completion
+    const messageHandler = (event) => {
+      console.log('Received Helcim event:', event.data);
+      const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+      
+      if (event.data.eventName === helcimPayJsIdentifierKey) {
+        // Remove the event listener once we get a response
+        window.removeEventListener('message', messageHandler);
+        
+        if (event.data.eventStatus === 'ABORTED') {
+          console.error('Transaction aborted:', event.data.eventMessage);
+          document.getElementById('transaction-details').innerHTML = `
+            <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+              <strong>Payment Cancelled</strong><br>
+              The payment was cancelled. Please try again or contact support if you continue to have issues.
+            </div>
+          `;
+          return;
+        }
+        
+        if (event.data.eventStatus === 'SUCCESS') {
+          console.log('Payment verification successful, processing...');
+          processPayment(event.data);
+        } else {
+          console.error('Payment failed:', event.data.eventMessage);
+          document.getElementById('transaction-details').innerHTML = `
+            <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+              <strong>Payment Failed</strong><br>
+              ${event.data.eventMessage || 'An error occurred during payment processing.'}
+            </div>
+          `;
+        }
       }
-    });
+    };
+    
+    // Process the payment after verification
+    async function processPayment(helcimData) {
+      try {
+        console.log('Processing payment data:', helcimData);
+        
+        // Show processing status
+        document.getElementById('transaction-details').innerHTML = `
+          <div style="color: var(--pico-primary); margin-top: 1rem;">
+            <strong>Processing Payment...</strong><br>
+            Please wait while we complete your donation.
+          </div>
+        `;
+        
+        // Extract payment data from Helcim response
+        const paymentData = {
+          customerCode: helcimData.eventMessage?.data?.customerCode || helcimData.data?.customerCode,
+          cardToken: helcimData.eventMessage?.data?.cardToken || helcimData.data?.cardToken,
+          donationId: donationId,
+          amount: donationAmount
+        };
+        
+        console.log('Calling ProcessPaymentHandler with:', paymentData);
+        
+        // Call our ProcessPaymentHandler to complete the donation
+        const response = await fetch('/api/donations/process', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(paymentData)
+        });
+        
+        const result = await response.json();
+        console.log('ProcessPaymentHandler response:', result);
+        
+        if (result.success) {
+          // Success! Redirect based on donation type
+          if (result.type === 'recurring') {
+            window.location.href = `/donate/success?type=recurring&subscriptionId=${result.subscriptionId}`;
+          } else {
+            window.location.href = `/donate/success?type=one-time&transactionId=${result.transactionId}`;
+          }
+        } else {
+          throw new Error(result.error || 'Payment processing failed');
+        }
+        
+      } catch (error) {
+        console.error('Error processing payment:', error);
+        document.getElementById('transaction-details').innerHTML = `
+          <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+            <strong>Processing Error</strong><br>
+            ${error.message || 'An error occurred while processing your payment. Please contact support.'}
+          </div>
+        `;
+      }
+    }
+    
+    // Add event listener for Helcim messages
+    window.addEventListener('message', messageHandler);
+    
+    // Initialize Helcim Pay iframe
+    console.log('Calling appendHelcimPayIframe...');
+    appendHelcimPayIframe(checkoutToken);
+    
   </script>
 </section>

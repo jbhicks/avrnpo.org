@@ -1,0 +1,99 @@
+<% contentFor("title") { %>Subscription Details<% } %>
+
+<div class="container">
+    <div class="grid">
+        <article class="card">
+            <header>
+                <h1>💳 Subscription Details</h1>
+                <p>Manage your recurring donation</p>
+            </header>
+
+            <main>
+                <!-- Donation Information -->
+                <section>
+                    <h3>💸 Donation Information</h3>
+                    <dl>
+                        <dt>Amount</dt>
+                        <dd><strong>$<%= donation.Amount %> USD</strong></dd>
+                        
+                        <dt>Type</dt>
+                        <dd><%= capitalize(donation.DonationType) %></dd>
+                        
+                        <dt>Started</dt>
+                        <dd><%= donation.CreatedAt.Format("January 2, 2006") %></dd>
+                        
+                        <dt>Status</dt>
+                        <dd>
+                            <% if (donation.Status == "active") { %>
+                                <span style="color: var(--pico-primary)">✅ Active</span>
+                            <% } else if (donation.Status == "cancelled") { %>
+                                <span style="color: var(--pico-del-color)">❌ Cancelled</span>
+                            <% } else { %>
+                                <span><%= donation.Status %></span>
+                            <% } %>
+                        </dd>
+                        
+                        <% if (donation.Comments != nil && len(*donation.Comments) > 0) { %>
+                            <dt>Comments</dt>
+                            <dd><%= *donation.Comments %></dd>
+                        <% } %>
+                    </dl>
+                </section>
+
+                <!-- Subscription Status (from Helcim) -->
+                <% if (subscription != nil) { %>
+                    <section>
+                        <h3>🔄 Current Status</h3>
+                        <dl>
+                            <dt>Helcim Status</dt>
+                            <dd><%= subscription.Status %></dd>
+                            
+                            <dt>Next Billing Date</dt>
+                            <dd><%= subscription.NextBillingDate.Format("January 2, 2006") %></dd>
+                            
+                            <dt>Payment Method</dt>
+                            <dd><%= subscription.PaymentMethod %></dd>
+                        </dl>
+                    </section>
+                <% } %>
+
+                <!-- Actions -->
+                <% if (donation.Status == "active") { %>
+                    <section>
+                        <h3>⚙️ Actions</h3>
+                        <p>Need to make changes to your subscription?</p>
+                        
+                        <details class="dropdown">
+                            <summary class="outline secondary" role="button">Cancel Subscription</summary>
+                            <div style="padding: 1rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
+                                <p><strong>⚠️ Are you sure?</strong></p>
+                                <p>Canceling your subscription will stop all future donations. This action cannot be undone.</p>
+                                
+                                <form method="POST" action="/account/subscriptions/<%= *donation.SubscriptionID %>/cancel" onsubmit="return confirm('Are you absolutely sure you want to cancel your recurring donation?')">
+                                    <button type="submit" class="outline" style="color: var(--pico-del-color)">
+                                        Yes, Cancel Subscription
+                                    </button>
+                                </form>
+                            </div>
+                        </details>
+                    </section>
+                <% } %>
+
+                <!-- Support Information -->
+                <section>
+                    <h3>🆘 Need Help?</h3>
+                    <p>For subscription changes, payment method updates, or other questions:</p>
+                    <ul>
+                        <li>📧 Email us at <a href="mailto:support@avrnpo.org">support@avrnpo.org</a></li>
+                        <li>📞 Call us at <a href="tel:+1234567890">(123) 456-7890</a></li>
+                    </ul>
+                </section>
+            </main>
+
+            <footer>
+                <a href="/account/subscriptions" class="outline">← Back to Subscriptions</a>
+                <a href="/account" class="outline">Account Settings</a>
+            </footer>
+        </article>
+    </div>
+</div>

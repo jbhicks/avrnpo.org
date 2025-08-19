@@ -87,13 +87,14 @@ func App() *buffalo.App {
 
 		// Main route declarations
 		app.GET("/", HomeHandler)
-		app.GET("/donate", DonateHandler)
+		app.GET("/donate", SetCurrentUser(DonateHandler))
 		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
 		app.GET("/team", TeamHandler)
 		app.GET("/projects", ProjectsHandler)
 		app.GET("/contact", ContactHandler)
+		app.POST("/contact", ContactSubmitHandler)
 		app.GET("/blog", blogResource.List)
 		app.GET("/blog/{slug}", blogResource.Show)
 		app.GET("/users/new", UsersNew)
@@ -105,6 +106,9 @@ func App() *buffalo.App {
 		})
 		app.GET("/account", SetCurrentUser(Authorize(AccountSettings)))
 		app.POST("/account", SetCurrentUser(Authorize(AccountUpdate)))
+		app.GET("/account/subscriptions", SetCurrentUser(Authorize(SubscriptionsList)))
+		app.GET("/account/subscriptions/{subscriptionId}", SetCurrentUser(Authorize(SubscriptionDetails)))
+		app.POST("/account/subscriptions/{subscriptionId}/cancel", SetCurrentUser(Authorize(CancelSubscription)))
 		app.GET("/profile", ProfileSettings)
 		app.POST("/profile", ProfileUpdate)
 

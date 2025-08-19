@@ -12,23 +12,24 @@ import (
 
 // Donation represents a donation transaction
 type Donation struct {
-	ID                  uuid.UUID `json:"id" db:"id"`
-	HelcimTransactionID *string   `json:"helcim_transaction_id,omitempty" db:"helcim_transaction_id"`
-	CheckoutToken       string    `json:"checkout_token" db:"checkout_token"`
-	SecretToken         string    `json:"secret_token" db:"secret_token"`
-	Amount              float64   `json:"amount" db:"amount"`
-	Currency            string    `json:"currency" db:"currency"`
-	DonorName           string    `json:"donor_name" db:"donor_name"`
-	DonorEmail          string    `json:"donor_email" db:"donor_email"`
-	DonorPhone          *string   `json:"donor_phone,omitempty" db:"donor_phone"`
-	AddressLine1        *string   `json:"address_line1,omitempty" db:"address_line1"`
-	AddressLine2        *string   `json:"address_line2,omitempty" db:"address_line2"`
-	City                *string   `json:"city,omitempty" db:"city"`
-	State               *string   `json:"state,omitempty" db:"state"`
-	Zip                 *string   `json:"zip,omitempty" db:"zip"`
-	DonationType        string    `json:"donation_type" db:"donation_type"`
-	Status              string    `json:"status" db:"status"`
-	Comments            *string   `json:"comments,omitempty" db:"comments"`
+	ID                  uuid.UUID  `json:"id" db:"id"`
+	UserID              *uuid.UUID `json:"user_id,omitempty" db:"user_id"`
+	HelcimTransactionID *string    `json:"helcim_transaction_id,omitempty" db:"helcim_transaction_id"`
+	CheckoutToken       string     `json:"checkout_token" db:"checkout_token"`
+	SecretToken         string     `json:"secret_token" db:"secret_token"`
+	Amount              float64    `json:"amount" db:"amount"`
+	Currency            string     `json:"currency" db:"currency"`
+	DonorName           string     `json:"donor_name" db:"donor_name"`
+	DonorEmail          string     `json:"donor_email" db:"donor_email"`
+	DonorPhone          *string    `json:"donor_phone,omitempty" db:"donor_phone"`
+	AddressLine1        *string    `json:"address_line1,omitempty" db:"address_line1"`
+	AddressLine2        *string    `json:"address_line2,omitempty" db:"address_line2"`
+	City                *string    `json:"city,omitempty" db:"city"`
+	State               *string    `json:"state,omitempty" db:"state"`
+	Zip                 *string    `json:"zip,omitempty" db:"zip"`
+	DonationType        string     `json:"donation_type" db:"donation_type"`
+	Status              string     `json:"status" db:"status"`
+	Comments            *string    `json:"comments,omitempty" db:"comments"`
 	// Recurring payment fields
 	SubscriptionID *string   `json:"subscription_id,omitempty" db:"subscription_id"`
 	CustomerID     *string   `json:"customer_id,omitempty" db:"customer_id"`

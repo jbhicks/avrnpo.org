@@ -252,3 +252,144 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 
 	return &responseData[0], nil
 }
+
+// GetSubscription retrieves a subscription by ID
+func (h *HelcimClient) GetSubscription(subscriptionID string) (*SubscriptionResponse, error) {
+	url := fmt.Sprintf("%s/subscriptions/%s", h.BaseURL, subscriptionID)
+
+	httpReq, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", h.APIToken)
+
+	resp, err := h.Client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result SubscriptionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// CancelSubscription cancels a subscription by ID
+func (h *HelcimClient) CancelSubscription(subscriptionID string) error {
+	url := fmt.Sprintf("%s/subscriptions/%s", h.BaseURL, subscriptionID)
+
+	httpReq, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", h.APIToken)
+
+	resp, err := h.Client.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// UpdateSubscription updates a subscription's details
+func (h *HelcimClient) UpdateSubscription(subscriptionID string, updates map[string]interface{}) (*SubscriptionResponse, error) {
+	url := fmt.Sprintf("%s/subscriptions", h.BaseURL)
+
+	// Add the subscription ID to the updates
+	subscriptionUpdate := make(map[string]interface{})
+	for k, v := range updates {
+		subscriptionUpdate[k] = v
+	}
+	subscriptionUpdate["id"] = subscriptionID
+
+	// Wrap in subscriptions array as required by Helcim API
+	request := map[string]interface{}{
+		"subscriptions": []map[string]interface{}{subscriptionUpdate},
+	}
+
+	jsonData, err := json.Marshal(request)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	httpReq, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", h.APIToken)
+
+	resp, err := h.Client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Parse response - Helcim returns array of updated subscriptions
+	var responseData []SubscriptionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&responseData); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	if len(responseData) == 0 {
+		return nil, fmt.Errorf("no subscription returned in response")
+	}
+
+	return &responseData[0], nil
+}
+
+// ListSubscriptionsByCustomer retrieves all subscriptions for a customer
+func (h *HelcimClient) ListSubscriptionsByCustomer(customerID string) ([]SubscriptionResponse, error) {
+	url := fmt.Sprintf("%s/subscriptions?customerId=%s", h.BaseURL, customerID)
+
+	httpReq, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", h.APIToken)
+
+	resp, err := h.Client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var result []SubscriptionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return result, nil
+}

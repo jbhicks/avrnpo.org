@@ -271,6 +271,11 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		Comments:     stringPointer(req.Comments),
 	}
 
+	// Link to user account if logged in
+	if currentUser, ok := c.Value("current_user").(*models.User); ok && currentUser != nil {
+		donation.UserID = &currentUser.ID
+	}
+
 	// Save to database
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Create(donation); err != nil {

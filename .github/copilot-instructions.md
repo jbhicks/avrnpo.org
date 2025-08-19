@@ -500,6 +500,92 @@ as.Contains(res.Body.String(), "<nav") // Navigation included
 - Don't hardcode colors - use CSS variables for theme compatibility
 - Don't write custom CSS without first checking if Pico variables can achieve the same result
 
+## 🚨 CRITICAL: DOCUMENTATION ORGANIZATION RULES 🚨
+
+**ALWAYS FOLLOW THE NEW ORGANIZED DOCUMENTATION STRUCTURE**
+
+### 📂 Documentation Directory Structure
+
+**🚨 CRITICAL RULE: All documentation MUST be placed in the correct directory based on functional area 🚨**
+
+```
+docs/
+├── README.md                    # Main navigation (DO NOT MODIFY WITHOUT APPROVAL)
+├── getting-started/            # Setup and onboarding guides
+├── payment-system/             # Donation and subscription documentation  
+├── buffalo-framework/          # Buffalo development guides
+├── frontend/                   # Styling, HTMX, and UI patterns
+├── deployment/                 # Production and security guides
+└── reference/                  # API docs and technical references
+```
+
+### 🚨 DOCUMENTATION PLACEMENT RULES
+
+**When creating or updating documentation:**
+
+1. **Payment/Donation content** → `/docs/payment-system/`
+   - Helcim integration, donation flows, subscription management
+   - API references, webhook guides, payment testing
+
+2. **Buffalo framework content** → `/docs/buffalo-framework/`
+   - Templates, routing, database, authentication patterns
+   - Testing guides, troubleshooting, Buffalo-specific knowledge
+
+3. **Frontend/UI content** → `/docs/frontend/`
+   - Pico CSS variables and styling, HTMX patterns
+   - Asset pipeline, responsive design, theme management
+
+4. **Setup/onboarding content** → `/docs/getting-started/`
+   - Environment setup, first run, development workflow
+   - Testing procedures, common commands
+
+5. **Production content** → `/docs/deployment/`
+   - Security guidelines, production checklist, monitoring
+
+6. **Technical references** → `/docs/reference/`
+   - API endpoints, database schema, dependencies, changelog
+
+### 🚨 FORBIDDEN DOCUMENTATION PRACTICES
+
+**❌ NEVER do these:**
+- Create new files in the root `/docs/` directory (except with explicit approval)
+- Duplicate content across multiple directories
+- Create status/summary files that overlap with existing content
+- Use marketing language or promotional tone
+- Expose real credentials in any documentation
+
+**✅ ALWAYS do these:**
+- Place files in the correct functional directory
+- Update the relevant directory README.md with navigation links
+- Use the existing organized structure
+- Follow factual, technical tone
+- Test all code examples before including them
+
+### 📋 Documentation Navigation Requirements
+
+**When adding new documentation:**
+1. **Place in appropriate directory** based on functional area
+2. **Update directory README.md** to include navigation link
+3. **Use consistent formatting** with existing documentation
+4. **Include practical examples** with placeholder credentials
+5. **Test all code examples** to ensure they work
+
+**Directory README.md files provide:**
+- Overview of the functional area
+- Quick navigation within that topic
+- Links to related topics in other directories
+- Status and completion information
+
+### 🧹 Documentation Cleanup Rules
+
+**The `/docs/` directory was reorganized from 39 scattered files into organized directories:**
+- **Legacy files** in root directory should be migrated or archived
+- **Redundant content** should be consolidated, not duplicated
+- **Status files** should be updated in place rather than creating new ones
+- **Cross-references** should use the new organized paths
+
+**Clean documentation directory = better developer experience**
+
 ### Documentation and Communication Guidelines
 
 ### Tone and Language Requirements

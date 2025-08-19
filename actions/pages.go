@@ -1,6 +1,10 @@
 package actions
 
 import (
+	"strings"
+	"time"
+
+	"avrnpo.org/services"
 	"github.com/gobuffalo/buffalo"
 	"net/http"
 )
@@ -18,6 +22,50 @@ func ProjectsHandler(c buffalo.Context) error {
 // ContactHandler shows the contact form
 func ContactHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+}
+
+// ContactSubmitHandler handles contact form submissions
+func ContactSubmitHandler(c buffalo.Context) error {
+	// Extract form data
+	name := c.Param("name")
+	email := c.Param("email")
+	subject := c.Param("subject")
+	message := c.Param("message")
+
+	// Validation
+	if name == "" || email == "" || message == "" {
+		c.Flash().Add("error", "Please fill in all required fields (Name, Email, Message).")
+		return c.Redirect(http.StatusSeeOther, "/contact")
+	}
+
+	// Basic email validation
+	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
+		c.Flash().Add("error", "Please enter a valid email address.")
+		return c.Redirect(http.StatusSeeOther, "/contact")
+	}
+
+	// Prepare contact form data
+	contactData := services.ContactFormData{
+		Name:           name,
+		Email:          email,
+		Subject:        subject,
+		Message:        message,
+		SubmissionDate: time.Now(),
+	}
+
+	// Send notification email
+	emailService := services.NewEmailService()
+	if err := emailService.SendContactNotification(contactData); err != nil {
+		// Log error but show user-friendly message
+		c.Logger().Errorf("Failed to send contact form notification: %v", err)
+		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at info@avrnpo.org.")
+		return c.Redirect(http.StatusSeeOther, "/contact")
+	}
+
+	// Success
+	c.Logger().Infof("Contact form submission from %s (%s): %s", name, email, subject)
+	c.Flash().Add("success", "Thank you for your message! We'll get back to you soon.")
+	return c.Redirect(http.StatusSeeOther, "/contact")
 }
 
 // DonateHandler shows the donation page

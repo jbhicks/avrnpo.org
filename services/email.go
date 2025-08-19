@@ -49,6 +49,15 @@ type DonationReceiptData struct {
 	DonorZip            string
 }
 
+// ContactFormData contains data for contact form submissions
+type ContactFormData struct {
+	Name           string
+	Email          string
+	Subject        string
+	Message        string
+	SubmissionDate time.Time
+}
+
 // SendDonationReceipt sends a donation receipt email to the donor
 func (e *EmailService) SendDonationReceipt(toEmail string, data DonationReceiptData) error {
 	if !e.isConfigured() {
@@ -63,6 +72,26 @@ func (e *EmailService) SendDonationReceipt(toEmail string, data DonationReceiptD
 	}
 
 	textBody := e.generateReceiptText(data)
+
+	// Send email
+	return e.sendEmail(toEmail, subject, htmlBody, textBody)
+}
+
+// SendContactNotification sends a contact form notification to the organization
+func (e *EmailService) SendContactNotification(contactData ContactFormData) error {
+	if !e.isConfigured() {
+		return fmt.Errorf("email service not configured - missing environment variables")
+	}
+
+	// Send to organization email
+	toEmail := "info@avrnpo.org"
+	subject := fmt.Sprintf("New Contact Form Submission: %s", contactData.Subject)
+	htmlBody, err := e.generateContactNotificationHTML(contactData)
+	if err != nil {
+		return fmt.Errorf("error generating email HTML: %v", err)
+	}
+
+	textBody := e.generateContactNotificationText(contactData)
 
 	// Send email
 	return e.sendEmail(toEmail, subject, htmlBody, textBody)
@@ -281,4 +310,97 @@ Content-Type: text/html; charset=UTF-8
 	}
 
 	return nil
+}
+
+// generateContactNotificationHTML creates HTML email content for contact notifications
+func (e *EmailService) generateContactNotificationHTML(data ContactFormData) (string, error) {
+	htmlTemplate := `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form Submission</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #ffb627; color: #fff; padding: 20px; text-align: center; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .form-details { background-color: #fff; padding: 15px; border: 1px solid #ddd; margin: 20px 0; }
+        .message-content { background-color: #f5f5f5; padding: 15px; border-left: 4px solid #ffb627; margin: 15px 0; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Contact Form Submission</h1>
+            <p>American Veterans Rebuilding</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-details">
+                <h3>Contact Details</h3>
+                <p><strong>Name:</strong> {{.Name}}</p>
+                <p><strong>Email:</strong> {{.Email}}</p>
+                <p><strong>Subject:</strong> {{.Subject}}</p>
+                <p><strong>Submitted:</strong> {{.SubmissionDate.Format "January 2, 2006 at 3:04 PM"}}</p>
+            </div>
+            
+            <div class="message-content">
+                <h3>Message</h3>
+                <p>{{.Message}}</p>
+            </div>
+            
+            <p><strong>Reply to:</strong> <a href="mailto:{{.Email}}">{{.Email}}</a></p>
+        </div>
+        
+        <div class="footer">
+            <p>This message was sent from the AVRNPO.org contact form</p>
+        </div>
+    </div>
+</body>
+</html>
+`
+
+	tmpl, err := template.New("contact").Parse(htmlTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+// generateContactNotificationText creates plain text email content for contact notifications
+func (e *EmailService) generateContactNotificationText(data ContactFormData) string {
+	return fmt.Sprintf(`
+New Contact Form Submission
+American Veterans Rebuilding
+
+CONTACT DETAILS
+Name: %s
+Email: %s
+Subject: %s
+Submitted: %s
+
+MESSAGE
+%s
+
+Reply to: %s
+
+This message was sent from the AVRNPO.org contact form.
+`,
+		data.Name,
+		data.Email,
+		data.Subject,
+		data.SubmissionDate.Format("January 2, 2006 at 3:04 PM"),
+		data.Message,
+		data.Email,
+	)
 }

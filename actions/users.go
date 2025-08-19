@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"
@@ -10,6 +11,7 @@ import (
 
 	"avrnpo.org/models"
 	"avrnpo.org/pkg/logging"
+	"avrnpo.org/services"
 )
 
 // UsersNew renders the users form
@@ -188,6 +190,113 @@ func AccountUpdate(c buffalo.Context) error {
 	}
 
 	return c.Redirect(http.StatusFound, "/account")
+}
+
+// SubscriptionsList shows all subscriptions for the current user
+func SubscriptionsList(c buffalo.Context) error {
+	user := c.Value("current_user").(*models.User)
+	tx := c.Value("tx").(*pop.Connection)
+
+	// Get all donations for this user with subscription IDs
+	var donations []models.Donation
+	err := tx.Where("user_id = ? AND subscription_id IS NOT NULL", user.ID).Order("created_at desc").All(&donations)
+	if err != nil {
+		c.Flash().Add("danger", "Unable to load your subscriptions")
+		return c.Redirect(http.StatusFound, "/account")
+	}
+
+	// Group subscriptions by subscription_id (in case there are duplicates)
+	subscriptionMap := make(map[string]*models.Donation)
+	for i := range donations {
+		if donations[i].SubscriptionID != nil {
+			subscriptionMap[*donations[i].SubscriptionID] = &donations[i]
+		}
+	}
+
+	// Convert to slice for template
+	var subscriptions []*models.Donation
+	for _, donation := range subscriptionMap {
+		subscriptions = append(subscriptions, donation)
+	}
+
+	c.Set("subscriptions", subscriptions)
+	return c.Render(http.StatusOK, r.HTML("users/subscriptions_list.plush.html"))
+}
+
+// SubscriptionDetails shows details for a specific subscription
+func SubscriptionDetails(c buffalo.Context) error {
+	user := c.Value("current_user").(*models.User)
+	subscriptionID := c.Param("subscriptionId")
+	tx := c.Value("tx").(*pop.Connection)
+
+	// Find the donation record for this subscription
+	donation := &models.Donation{}
+	err := tx.Where("user_id = ? AND subscription_id = ?", user.ID, subscriptionID).First(donation)
+	if err != nil {
+		c.Flash().Add("danger", "Subscription not found")
+		return c.Redirect(http.StatusFound, "/account/subscriptions")
+	}
+
+	// Get subscription details from Helcim
+	helcimClient := services.NewHelcimClient()
+	subscription, err := helcimClient.GetSubscription(subscriptionID)
+	if err != nil {
+		c.Flash().Add("warning", "Unable to load current subscription status from payment processor")
+		// Still show the page with limited info
+		subscription = nil
+	}
+
+	c.Set("donation", donation)
+	c.Set("subscription", subscription)
+	return c.Render(http.StatusOK, r.HTML("users/subscription_details.plush.html"))
+}
+
+// CancelSubscription cancels a user's subscription
+func CancelSubscription(c buffalo.Context) error {
+	user := c.Value("current_user").(*models.User)
+	subscriptionID := c.Param("subscriptionId")
+	tx := c.Value("tx").(*pop.Connection)
+
+	// Verify this subscription belongs to the user
+	donation := &models.Donation{}
+	err := tx.Where("user_id = ? AND subscription_id = ?", user.ID, subscriptionID).First(donation)
+	if err != nil {
+		c.Flash().Add("danger", "Subscription not found")
+		return c.Redirect(http.StatusFound, "/account/subscriptions")
+	}
+
+	// Cancel the subscription with Helcim
+	helcimClient := services.NewHelcimClient()
+	err = helcimClient.CancelSubscription(subscriptionID)
+	if err != nil {
+		// Log the error but don't expose internal details
+		logging.Error("subscription_cancellation_failed", err, logging.Fields{
+			"subscription_id": subscriptionID,
+			"user_id":         user.ID.String(),
+		})
+		c.Flash().Add("danger", "Unable to cancel subscription. Please contact support.")
+		return c.Redirect(http.StatusFound, fmt.Sprintf("/account/subscriptions/%s", subscriptionID))
+	}
+
+	// Update our local record
+	donation.Status = "cancelled"
+	err = tx.Update(donation)
+	if err != nil {
+		// Log the error but subscription is already cancelled with Helcim
+		logging.Error("donation_status_update_failed", err, logging.Fields{
+			"donation_id":     donation.ID.String(),
+			"subscription_id": subscriptionID,
+		})
+	}
+
+	// Log the successful cancellation
+	logging.UserAction(c, user.Email, "cancel_subscription", "User cancelled recurring donation", logging.Fields{
+		"subscription_id": subscriptionID,
+		"donation_amount": donation.Amount,
+	})
+
+	c.Flash().Add("success", "Your subscription has been cancelled successfully")
+	return c.Redirect(http.StatusFound, "/account/subscriptions")
 }
 
 // SetCurrentUser attempts to find a user based on the current_user_id
