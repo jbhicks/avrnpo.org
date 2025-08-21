@@ -138,7 +138,7 @@ The subscription management system is **fully documented** and **production-read
 ### **For Users:**
 - Access subscription management at `/account/subscriptions` (login required)
 - Account settings at `/account` include subscription management link
-- Support contact: info@avrnpo.org for manual assistance
+- Support contact: michael@avrnpo.org for manual assistance
 
 ---
 

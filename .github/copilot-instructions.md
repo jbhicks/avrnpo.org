@@ -13,21 +13,54 @@
 
 ## 🚨 CRITICAL PROCESS MANAGEMENT RULES 🚨
 
-**NEVER KILL THE BUFFALO DEVELOPMENT SERVER PROCESS**
+**🚨 ABSOLUTELY NEVER KILL OR START BUFFALO SERVER PROCESSES 🚨**
 
-- **Buffalo automatically reloads** on ALL file changes (Go code, templates, assets)
-- **DO NOT run `kill -9`, `pkill buffalo`, `kill $(lsof -t -i:3000)` or similar commands**
-- **DO NOT restart Buffalo** unless there are compilation errors or the user explicitly asks
-- **Assume Buffalo is running and working** - it should stay running throughout development
-- **Let Buffalo handle recompilation** - it's designed to auto-reload everything
-- **Only check processes** - don't kill them: `ps aux | grep buffalo` or `lsof -i :3000`
+**⚠️ CRITICAL WARNING: Buffalo dev server is designed to auto-reload - NEVER interfere with it**
 
-**When Buffalo is running properly:**
-- ✅ Go code changes trigger automatic recompilation
-- ✅ Template changes reload immediately 
-- ✅ Static asset changes update automatically
-- ✅ Database migration commands work while Buffalo runs
-- ✅ Just refresh the browser to see changes
+**🚨 COMPLETELY FORBIDDEN ACTIONS:**
+- **NEVER run `make dev`** - user will start this themselves
+- **NEVER run `buffalo dev`** - user will start this themselves  
+- **NEVER run `pkill buffalo`** - this breaks the development workflow
+- **NEVER run `kill -9`** on Buffalo processes
+- **NEVER run `kill $(lsof -t -i:3000)`** or similar port-killing commands
+- **NEVER run `pkill my-go-saa`** or kill any Go processes
+- **NEVER restart the server** for any reason except compilation errors
+- **NEVER check if server is running with intent to start it**
+- **NEVER assume server needs to be restarted**
+
+**🚨 THE ONLY ACCEPTABLE PROCESS COMMANDS:**
+- `ps aux | grep buffalo` - ONLY to check status, NEVER to kill
+- `lsof -i :3000` - ONLY to check what's using port, NEVER to kill
+
+**✅ WHAT BUFFALO AUTO-RELOAD HANDLES:**
+- **Go code changes** → Automatic recompilation and server restart
+- **Template changes** → Instant template reload (no server restart needed)
+- **Static asset changes** → Automatic asset pipeline refresh
+- **CSS/JS changes** → Hot reload without server restart
+- **Database migrations** → Can run while server is running
+- **Configuration changes** → Usually handled automatically
+
+**🚨 TRUST BUFFALO'S AUTO-RELOAD - IT WORKS PERFECTLY**
+
+**Buffalo development server is DESIGNED to stay running throughout the entire development session:**
+- ✅ Make file changes
+- ✅ Buffalo detects changes automatically
+- ✅ Buffalo recompiles/reloads automatically
+- ✅ Refresh browser to see changes
+- ✅ NEVER manually restart unless user explicitly requests it
+
+**🚨 WHEN USER SAYS "Continue to iterate?":**
+- ✅ Make code changes
+- ✅ Trust Buffalo to auto-reload
+- ✅ Test changes in browser
+- ✅ Run tests with `make test-fast`
+- ❌ NEVER kill or restart Buffalo
+
+**🚨 IF THERE ARE ERRORS:**
+- ✅ Check Buffalo console output for compilation errors
+- ✅ Fix the code errors
+- ✅ Let Buffalo auto-reload after fixes
+- ❌ NEVER restart the server to "fix" errors
 
 ## 🎯 CURRENT DEVELOPMENT FOCUS 🎯
 
@@ -112,6 +145,8 @@ This rule prevents the recurring double underscore template errors that keep app
 ### Buffalo Development Server
 
 **🚨 CRITICAL: NEVER KILL BUFFALO UNLESS ABSOLUTELY NECESSARY 🚨**
+
+**🚨 CRITICAL WARNING: Buffalo dev server is designed to auto-reload - NEVER interfere with it**
 
 **Buffalo runs on port 3000** and has intelligent auto-reload for ALL file changes:
 - **Go code changes** → Automatic recompilation and server restart

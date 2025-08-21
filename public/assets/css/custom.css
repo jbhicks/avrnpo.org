@@ -1046,6 +1046,19 @@ textarea:invalid:not(:user-invalid) {
 }
 
 /* =============================================================================
+   CONTACT PAGE SOCIAL MEDIA ICONS
+   ============================================================================= */
+
+/* Ensure consistent sizing for contact page social icons */
+.contact-content .grid img {
+  max-height: 2.5rem;
+  max-width: 2.5rem;
+  height: auto;
+  width: auto;
+  object-fit: contain;
+}
+
+/* =============================================================================
    SHARED RESPONSIVE STYLES FOR DONATION PAGES
    ============================================================================= */
 

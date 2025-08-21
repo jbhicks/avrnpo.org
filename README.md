@@ -153,7 +153,7 @@ For technical issues with this website:
 
 For AVR NPO program information:
 - Visit the contact page on the website
-- Email: info@avrnpo.org
+- Email: michael@avrnpo.org
 - See team member contact information
 
 ## License

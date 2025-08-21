@@ -87,8 +87,8 @@
                     <%= if (user.ID.String() != current_user.ID.String()) { %>
                       <form method="POST" action="/admin/users/<%= user.ID %>" class="inline-form">
                         <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="outline" 
-                                onclick="return confirm('Are you sure you want to delete this user?')">Delete</button>
+                        <input type="hidden" name="confirm_delete" value="true">
+                        <button type="submit" class="outline">Delete</button>
                       </form>
                     <% } %>
                   </div>

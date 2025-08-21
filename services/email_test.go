@@ -177,3 +177,43 @@ func TestEmailService_generateReceiptText(t *testing.T) {
 	require.Contains(t, text, "321 Pine St")
 	require.Contains(t, text, "Somewhere, NY 10001")
 }
+
+func TestEmailService_generateReceipt_IncludesSubscription(t *testing.T) {
+	emailService := &EmailService{}
+
+	next := time.Date(2025, 8, 1, 0, 0, 0, 0, time.UTC)
+
+	testData := DonationReceiptData{
+		DonorName:       "Subscription Donor",
+		DonationAmount:  20.00,
+		DonationType:    "Monthly",
+		TransactionID:   "SUB-123",
+		DonationDate:    time.Now(),
+		SubscriptionID:  "SUB-ABC-123",
+		NextBillingDate: &next,
+		OrganizationEIN: "12-3456789",
+		OrganizationName: "Test Organization",
+		OrganizationAddress: "123 Main St",
+		DonorAddressLine1: "456 Donor Rd",
+		DonorCity: "City",
+		DonorState: "ST",
+		DonorZip: "00000",
+	}
+
+	html, err := emailService.generateReceiptHTML(testData)
+	require.NoError(t, err)
+	require.NotEmpty(t, html)
+
+	// Ensure subscription fields are present in HTML
+	require.Contains(t, html, testData.SubscriptionID)
+	require.Contains(t, html, next.Format("January 2, 2006"))
+
+	// Log HTML for inspection (sanitized data used)
+	t.Logf("Generated HTML:\n%s", html)
+
+	text := emailService.generateReceiptText(testData)
+	require.NotEmpty(t, text)
+	require.Contains(t, text, testData.SubscriptionID)
+	require.Contains(t, text, next.Format("January 2, 2006"))
+	t.Logf("Generated Text:\n%s", text)
+}

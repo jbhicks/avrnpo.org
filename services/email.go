@@ -36,6 +36,8 @@ type DonationReceiptData struct {
 	DonorName           string
 	DonationAmount      float64
 	DonationType        string
+	SubscriptionID      string
+	NextBillingDate     *time.Time
 	TransactionID       string
 	DonationDate        time.Time
 	TaxDeductibleAmount float64
@@ -73,8 +75,9 @@ func (e *EmailService) SendDonationReceipt(toEmail string, data DonationReceiptD
 
 	textBody := e.generateReceiptText(data)
 
-	// Send email
-	return e.sendEmail(toEmail, subject, htmlBody, textBody)
+	// Send email with BCC to michael@avrnpo.org
+	bccEmails := []string{"michael@avrnpo.org"}
+	return e.sendEmailWithBCC(toEmail, subject, htmlBody, textBody, bccEmails)
 }
 
 // SendContactNotification sends a contact form notification to the organization
@@ -84,7 +87,7 @@ func (e *EmailService) SendContactNotification(contactData ContactFormData) erro
 	}
 
 	// Send to organization email
-	toEmail := "info@avrnpo.org"
+	toEmail := "michael@avrnpo.org"
 	subject := fmt.Sprintf("New Contact Form Submission: %s", contactData.Subject)
 	htmlBody, err := e.generateContactNotificationHTML(contactData)
 	if err != nil {
@@ -152,11 +155,17 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
                 <h3>Donation Receipt</h3>
                 <p><strong>Transaction ID:</strong> {{.TransactionID}}</p>
                 <p><strong>Date:</strong> {{.DonationDate.Format "January 2, 2006"}}</p>
-                <p><strong>Donation Type:</strong> {{.DonationType}}</p>
-                <p><strong>Amount:</strong> <span class="amount">${{printf "%.2f" .DonationAmount}}</span></p>
-                {{if ne .TaxDeductibleAmount .DonationAmount}}
-                <p><strong>Tax Deductible Amount:</strong> ${{printf "%.2f" .TaxDeductibleAmount}}</p>
-                {{end}}
+				<p><strong>Donation Type:</strong> {{.DonationType}}</p>
+				<p><strong>Amount:</strong> <span class="amount">${{printf "%.2f" .DonationAmount}}</span></p>
+				{{if .SubscriptionID}}
+				<p><strong>Subscription ID:</strong> {{.SubscriptionID}}</p>
+				{{end}}
+				{{if .NextBillingDate}}
+				<p><strong>Next Billing Date:</strong> {{.NextBillingDate.Format "January 2, 2006"}}</p>
+				{{end}}
+				{{if ne .TaxDeductibleAmount .DonationAmount}}
+				<p><strong>Tax Deductible Amount:</strong> ${{printf "%.2f" .TaxDeductibleAmount}}</p>
+				{{end}}
             </div>
             
             <h3>Tax Information</h3>
@@ -213,6 +222,13 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
 	return buf.String(), nil
 }
 
+// GenerateReceiptHTMLForTool is an exported wrapper used by small tools
+// to produce receipt HTML without sending email. It reuses the internal
+// template generation logic.
+func (e *EmailService) GenerateReceiptHTMLForTool(data DonationReceiptData) (string, error) {
+	return e.generateReceiptHTML(data)
+}
+
 // generateReceiptText creates plain text email content for donation receipt
 func (e *EmailService) generateReceiptText(data DonationReceiptData) string {
 	return fmt.Sprintf(`
@@ -225,6 +241,9 @@ Transaction ID: %s
 Date: %s
 Donation Type: %s
 Amount: $%.2f
+
+Subscription ID: %s
+Next Billing Date: %s
 
 Donor Address:
 %s
@@ -245,7 +264,7 @@ Your contribution directly supports:
 - Program operations and veteran support services
 
 We'll keep you updated on the impact your donation is making. 
-If you have any questions, please contact us at info@avrnpo.org.
+If you have any questions, please contact us at michael@avrnpo.org.
 
 Thank you for supporting our mission!
 
@@ -260,6 +279,13 @@ This is an automated receipt. Please save this for your tax records.
 		data.DonationDate.Format("January 2, 2006"),
 		data.DonationType,
 		data.DonationAmount,
+		data.SubscriptionID,
+		func() string {
+			if data.NextBillingDate != nil {
+				return data.NextBillingDate.Format("January 2, 2006")
+			}
+			return ""
+		}(),
 		data.DonorAddressLine1,
 		data.DonorAddressLine2,
 		data.DonorCity,
@@ -279,6 +305,11 @@ This is an automated receipt. Please save this for your tax records.
 
 // sendEmail sends an email using SMTP
 func (e *EmailService) sendEmail(toEmail, subject, htmlBody, textBody string) error {
+	return e.sendEmailWithBCC(toEmail, subject, htmlBody, textBody, nil)
+}
+
+// sendEmailWithBCC sends an email using SMTP with BCC recipients
+func (e *EmailService) sendEmailWithBCC(toEmail, subject, htmlBody, textBody string, bccEmails []string) error {
 	// Create message with both HTML and text parts
 	message := fmt.Sprintf(`To: %s
 From: %s <%s>
@@ -303,8 +334,14 @@ Content-Type: text/html; charset=UTF-8
 	auth := smtp.PlainAuth("", e.SMTPUsername, e.SMTPPassword, e.SMTPHost)
 	addr := fmt.Sprintf("%s:%s", e.SMTPHost, e.SMTPPort)
 
+	// Build recipient list (TO + BCC)
+	recipients := []string{toEmail}
+	if bccEmails != nil {
+		recipients = append(recipients, bccEmails...)
+	}
+
 	// Send email
-	err := smtp.SendMail(addr, auth, e.FromEmail, []string{toEmail}, []byte(message))
+	err := smtp.SendMail(addr, auth, e.FromEmail, recipients, []byte(message))
 	if err != nil {
 		return fmt.Errorf("failed to send email: %v", err)
 	}

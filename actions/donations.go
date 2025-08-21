@@ -190,23 +190,25 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		errors.Add("zip_code", "ZIP Code is required")
 	}
 
-	// Determine donation amount - simplified approach
+	// Determine donation amount - check both form and session
 	var amount float64
 	var err error
 
-	// Convert amount to string if it's numeric
-	var amountStr string
-	switch v := req.Amount.(type) {
-	case string:
-		amountStr = v
-	case float64:
-		amountStr = fmt.Sprintf("%.2f", v)
-	case int:
-		amountStr = fmt.Sprintf("%d", v)
-	case nil:
-		amountStr = ""
-	default:
-		errors.Add("amount", "Invalid amount format")
+	// First try to get amount from form submission
+	amountStr := strings.TrimSpace(req.CustomAmount)
+	
+	// If no amount in form, check session (from preset button selections)
+	if amountStr == "" {
+		if sessionAmount := c.Session().Get("donation_amount"); sessionAmount != nil {
+			amountStr = sessionAmount.(string)
+		}
+	}
+
+	// Normalize money strings like "$25.00" or "25,00" -> "25.00"
+	if amountStr != "" {
+		// Remove currency symbols and commas
+		amountStr = strings.ReplaceAll(amountStr, "$", "")
+		amountStr = strings.ReplaceAll(amountStr, ",", "")
 	}
 
 	if strings.TrimSpace(amountStr) == "" {
@@ -252,7 +254,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		c.Set("hasStateError", errors.Get("state") != nil)
 		c.Set("hasZipError", errors.Get("zip_code") != nil)
 		c.Set("comments", req.Comments)
-		
+
 		// Convert amount to string to avoid template rendering issues
 		amountStr := ""
 		if req.Amount != nil {
@@ -270,7 +272,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}
 		}
 		c.Set("amount", amountStr)
-		
+
 		// Ensure customAmount is always a safe string
 		c.Set("customAmount", safeString(req.CustomAmount))
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
@@ -330,6 +332,15 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		donation.UserID = &currentUser.ID
 	}
 
+	// Ensure amount is valid before saving - extra safeguard
+	if amount <= 0 {
+		if isAPIRequest(c) {
+			return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid donation amount"}))
+		}
+		c.Flash().Add("error", "Invalid donation amount. Please try again.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
+	}
+
 	// Save to database
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Create(donation); err != nil {
@@ -385,9 +396,10 @@ func DonationInitializeHandler(c buffalo.Context) error {
 
 	// For form submissions, redirect to payment processing page
 	// Store checkout data in session for the payment page
+	// Store amount as formatted string to avoid template rendering issues
 	c.Session().Set("donation_id", donation.ID.String())
 	c.Session().Set("checkout_token", helcimResponse.CheckoutToken)
-	c.Session().Set("amount", amount)
+	c.Session().Set("amount", fmt.Sprintf("%.2f", amount))
 	c.Session().Set("donor_name", donorName)
 	return c.Redirect(http.StatusSeeOther, "/donate/payment")
 }
@@ -439,10 +451,18 @@ func DonationCompleteHandler(c buffalo.Context) error {
 	if completionData.Status == "APPROVED" {
 		emailService := services.NewEmailService()
 		// Prepare receipt data
+		// Map stored donation type to display label
+		displayType := donation.DonationType
+		if displayType == "monthly" {
+			displayType = "Monthly"
+		} else {
+			displayType = "One-time"
+		}
+
 		receiptData := services.DonationReceiptData{
 			DonorName:           donation.DonorName,
 			DonationAmount:      donation.Amount,
-			DonationType:        donation.DonationType,
+			DonationType:        displayType,
 			TransactionID:       *donation.HelcimTransactionID, // Dereference pointer
 			DonationDate:        donation.CreatedAt,
 			TaxDeductibleAmount: donation.Amount, // Full amount is tax deductible
@@ -528,9 +548,9 @@ func HelcimWebhookHandler(c buffalo.Context) error {
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid JSON"}))
 	}
 
-	// Log the webhook event
-	c.Logger().Infof("Received Helcim webhook: type=%s, id=%s, transactionId=%s",
-		event.Type, event.ID, event.Data.TransactionID)
+	// Log the webhook event and full payload for debugging (signature verified)
+	c.Logger().Infof("Received Helcim webhook: type=%s, id=%s, transactionId=%s", event.Type, event.ID, event.Data.TransactionID)
+	c.Logger().Debugf("Helcim webhook raw payload: %s", string(body))
 
 	// Get database connection
 	tx, ok := c.Value("tx").(*pop.Connection)
@@ -613,9 +633,9 @@ func handlePaymentSuccess(tx *pop.Connection, event *HelcimWebhookEvent, c buffa
 		TransactionID:       event.Data.TransactionID,
 		DonationDate:        donation.CreatedAt,
 		TaxDeductibleAmount: donation.Amount, // Full amount is tax deductible
-		OrganizationEIN:     "XX-XXXXXXX",    // Replace with actual EIN
+		OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
 		OrganizationName:    "American Veterans Rebuilding",
-		OrganizationAddress: "Your Organization Address", // Replace with actual address
+		OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
 	}
 
 	if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
@@ -792,7 +812,83 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	Amount       float64 `json:"amount"`
 }, donation *models.Donation) error {
 
-	// Create Helcim client
+	// Server-side sanity check: donation amount must be > 0
+	if donation.Amount <= 0 {
+		c.Logger().Errorf("Refusing to process payment: stored donation amount invalid (%.2f). req.Amount=%.2f donation.ID=%s", donation.Amount, req.Amount, donation.ID.String())
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
+			"success": false,
+			"error":   "Invalid donation amount on server",
+		}))
+	}
+
+	// Log a mismatch if client-supplied amount differs significantly from stored amount
+	if req.Amount > 0 && (fmt.Sprintf("%.2f", req.Amount) != fmt.Sprintf("%.2f", donation.Amount)) {
+		c.Logger().Warnf("Client amount (%.2f) differs from stored donation amount (%.2f) for donation ID %s", req.Amount, donation.Amount, donation.ID.String())
+	}
+
+	// TEMPORARY: For development, simulate successful payment
+	if os.Getenv("GO_ENV") == "development" {
+		c.Logger().Info("Development mode: Simulating successful payment")
+
+		// Generate a fake transaction ID
+		transactionID := fmt.Sprintf("dev_txn_%d", time.Now().Unix())
+
+		// Update donation record
+		donation.TransactionID = &transactionID
+		donation.CustomerID = &req.CustomerCode
+		donation.Status = "completed"
+
+		tx := c.Value("tx").(*pop.Connection)
+		if err := tx.Update(donation); err != nil {
+			c.Logger().Errorf("Failed to update donation: %v", err)
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
+				"success": false,
+				"error":   "Failed to update donation",
+			}))
+		}
+
+		// Send donation receipt email in development
+		emailService := services.NewEmailService()
+		// Map stored donation type to display label for receipt
+		displayType := donation.DonationType
+		if displayType == "monthly" {
+			displayType = "Monthly"
+		} else {
+			displayType = "One-time"
+		}
+
+		receiptData := services.DonationReceiptData{
+			DonorName:           donation.DonorName,
+			DonationAmount:      donation.Amount,
+			DonationType:        displayType,
+			TransactionID:       transactionID,
+			DonationDate:        donation.CreatedAt,
+			TaxDeductibleAmount: donation.Amount,
+			OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+			OrganizationName:    "American Veterans Rebuilding",
+			OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
+			DonorAddressLine1:   stringOrEmpty(donation.AddressLine1),
+			DonorAddressLine2:   stringOrEmpty(donation.AddressLine2),
+			DonorCity:           stringOrEmpty(donation.City),
+			DonorState:          stringOrEmpty(donation.State),
+			DonorZip:            stringOrEmpty(donation.Zip),
+		}
+
+		if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
+			c.Logger().Errorf("Failed to send donation receipt email: %v", err)
+		} else {
+			c.Logger().Infof("Development: Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionID)
+		}
+
+		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+			"success":       true,
+			"transactionId": transactionID,
+			"type":          "one-time",
+			"message":       "Payment processed successfully!",
+		}))
+	}
+
+	// Production: Use real Helcim API
 	helcimClient := services.NewHelcimClient()
 
 	// Use Payment API to charge the card token
@@ -808,8 +904,10 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	transaction, err := helcimClient.ProcessPayment(paymentReq)
 	if err != nil {
 		c.Logger().Errorf("Payment processing failed: %v", err)
-		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
-			"error": "Payment processing failed",
+		c.Logger().Errorf("Payment request data: %+v", paymentReq)
+		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
+			"success": false,
+			"error":   "Payment processing failed: " + err.Error(),
 		}))
 	}
 
@@ -840,6 +938,63 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	DonationID   string  `json:"donationId"`
 	Amount       float64 `json:"amount"`
 }, donation *models.Donation) error {
+	// DEVELOPMENT-SAFE PATH: Simulate subscription creation when in development
+	if os.Getenv("GO_ENV") == "development" {
+		c.Logger().Info("Development mode: Simulating recurring subscription creation (no Helcim calls)")
+
+		// Create fake IDs and next billing date
+		subscriptionID := fmt.Sprintf("dev_sub_%d", time.Now().Unix())
+		paymentPlanID := fmt.Sprintf("dev_plan_%.0f", donation.Amount)
+		nextBilling := time.Now().AddDate(0, 1, 0)
+
+		// Update donation record
+		donation.SubscriptionID = &subscriptionID
+		donation.CustomerID = &req.CustomerCode
+		donation.PaymentPlanID = &paymentPlanID
+		donation.Status = "active"
+
+		tx := c.Value("tx").(*pop.Connection)
+		if err := tx.Update(donation); err != nil {
+			c.Logger().Errorf("Failed to update donation: %v", err)
+			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
+				"error": "Failed to update donation",
+			}))
+		}
+
+		// Send simulated receipt email for subscription creation
+		emailService := services.NewEmailService()
+		receiptData := services.DonationReceiptData{
+			DonorName:           donation.DonorName,
+			DonationAmount:      donation.Amount,
+			DonationType:        "Monthly",
+			SubscriptionID:      subscriptionID,
+			NextBillingDate:     &nextBilling,
+			TransactionID:       "",
+			DonationDate:        donation.CreatedAt,
+			TaxDeductibleAmount: donation.Amount,
+			OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+			OrganizationName:    "American Veterans Rebuilding",
+			OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
+			DonorAddressLine1:   stringOrEmpty(donation.AddressLine1),
+			DonorAddressLine2:   stringOrEmpty(donation.AddressLine2),
+			DonorCity:           stringOrEmpty(donation.City),
+			DonorState:          stringOrEmpty(donation.State),
+			DonorZip:            stringOrEmpty(donation.Zip),
+		}
+
+		if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
+			c.Logger().Errorf("Failed to send subscription receipt email: %v", err)
+		} else {
+			c.Logger().Infof("Development: Subscription receipt sent to %s for subscription %s", donation.DonorEmail, subscriptionID)
+		}
+
+		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+			"success":        true,
+			"subscriptionId": subscriptionID,
+			"nextBilling":    nextBilling,
+			"type":           "recurring",
+		}))
+	}
 
 	// Create Helcim client
 	helcimClient := services.NewHelcimClient()
@@ -884,6 +1039,33 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		}))
 	}
 
+	// Send receipt email for subscription creation (recurring donation)
+	emailService := services.NewEmailService()
+	receiptData := services.DonationReceiptData{
+		DonorName:           donation.DonorName,
+		DonationAmount:      donation.Amount,
+		DonationType:        "Monthly",
+		SubscriptionID:      subscriptionIDStr,
+		NextBillingDate:     &subscription.NextBillingDate,
+		TransactionID:       "", // No one-time transaction ID for subscriptions on create
+		DonationDate:        donation.CreatedAt,
+		TaxDeductibleAmount: donation.Amount,
+		OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+		OrganizationName:    "American Veterans Rebuilding",
+		OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
+		DonorAddressLine1:   stringOrEmpty(donation.AddressLine1),
+		DonorAddressLine2:   stringOrEmpty(donation.AddressLine2),
+		DonorCity:           stringOrEmpty(donation.City),
+		DonorState:          stringOrEmpty(donation.State),
+		DonorZip:            stringOrEmpty(donation.Zip),
+	}
+
+	if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
+		c.Logger().Errorf("Failed to send subscription receipt email: %v", err)
+	} else {
+		c.Logger().Infof("Subscription receipt sent to %s for subscription %s", donation.DonorEmail, subscriptionIDStr)
+	}
+
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"success":        true,
 		"subscriptionId": subscription.ID,
@@ -893,7 +1075,7 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 }
 
 // getOrCreateMonthlyDonationPlan creates a payment plan for monthly donations
-func getOrCreateMonthlyDonationPlan(client *services.HelcimClient, amount float64) (int, error) {
+func getOrCreateMonthlyDonationPlan(client services.HelcimAPI, amount float64) (int, error) {
 	// Create a standardized plan name based on amount
 	planName := fmt.Sprintf("Monthly Donation - $%.2f", amount)
 
@@ -980,4 +1162,94 @@ func splitName(fullName string) (string, string) {
 	firstName := parts[0]
 	lastName := strings.Join(parts[1:], " ")
 	return firstName, lastName
+}
+
+// DonateUpdateAmountHandler handles HTMX updates to donation amounts
+func DonateUpdateAmountHandler(c buffalo.Context) error {
+	// Get form values
+	amount := c.Param("amount")
+	donationType := c.Param("donation_type")
+	source := c.Param("source")
+
+	// Get current state from session
+	sessionAmount := ""
+	if sessionAmountInterface := c.Session().Get("donation_amount"); sessionAmountInterface != nil {
+		sessionAmount = sessionAmountInterface.(string)
+	}
+	
+	sessionDonationType := "one-time" // Default
+	if sessionDonationTypeInterface := c.Session().Get("donation_type"); sessionDonationTypeInterface != nil {
+		sessionDonationType = sessionDonationTypeInterface.(string)
+	}
+
+	// Update amount in session if a new amount is provided
+	if amount != "" {
+		c.Session().Set("donation_amount", amount)
+		sessionAmount = amount
+	}
+
+	// Update donation type in session if provided
+	if donationType != "" {
+		c.Session().Set("donation_type", donationType)
+		sessionDonationType = donationType
+	}
+
+	// Use session values if not provided in request (e.g., radio button clicks)
+	if amount == "" {
+		amount = sessionAmount
+	}
+	if donationType == "" {
+		donationType = sessionDonationType
+	}
+
+	// Preserve existing form values from the request
+	firstName := c.Param("first_name")
+	lastName := c.Param("last_name")
+	donorEmail := c.Param("donor_email")
+	donorPhone := c.Param("donor_phone")
+	addressLine1 := c.Param("address_line1")
+	addressLine2 := c.Param("address_line2")
+	city := c.Param("city")
+	state := c.Param("state")
+	zipCode := c.Param("zip_code")
+	comments := c.Param("comments")
+
+	// Set default values - these are now handled above
+	// if donationType == "" {
+	//	donationType = "one-time"
+	// }
+
+	// Set template variables for the donation form
+	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+	c.Set("amount", amount)  // Use 'amount' as the template variable
+	c.Set("donationType", donationType)
+	c.Set("source", source)  // Add source for template conditionals
+	
+	// Preserve form values
+	c.Set("firstName", firstName)
+	c.Set("lastName", lastName)
+	c.Set("donorEmail", donorEmail)
+	c.Set("donorPhone", donorPhone)
+	c.Set("addressLine1", addressLine1)
+	c.Set("addressLine2", addressLine2)
+	c.Set("city", city)
+	c.Set("state", state)
+	c.Set("zip", zipCode)
+	c.Set("comments", comments)
+
+	// Set error flags to false (no errors in amount updates)
+	c.Set("errors", nil)
+	c.Set("hasAnyErrors", false)
+	c.Set("hasCommentsError", false)
+	c.Set("hasAmountError", false)
+	c.Set("hasFirstNameError", false)
+	c.Set("hasLastNameError", false)
+	c.Set("hasDonorEmailError", false)
+	c.Set("hasDonorPhoneError", false)
+	c.Set("hasAddressLine1Error", false)
+	c.Set("hasCityError", false)
+	c.Set("hasStateError", false)
+	c.Set("hasZipError", false)
+	
+	return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content_with_button.plush.html"))
 }

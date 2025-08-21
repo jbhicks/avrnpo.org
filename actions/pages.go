@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -22,6 +23,37 @@ func ProjectsHandler(c buffalo.Context) error {
 // ContactHandler shows the contact form
 func ContactHandler(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+}
+
+// DebugFlashHandler creates debug flash messages for testing
+func DebugFlashHandler(c buffalo.Context) error {
+	flashType := c.Param("type")
+
+	// Clear any existing flash messages first
+	c.Flash().Clear()
+
+	switch flashType {
+	case "success":
+		c.Flash().Add("success", "Debug: This is a SUCCESS flash message! Flash system is working correctly.")
+		c.Logger().Info("DEBUG: Added SUCCESS flash message")
+	case "error":
+		c.Flash().Add("error", "Debug: This is an ERROR flash message! Something went wrong (but not really).")
+		c.Logger().Info("DEBUG: Added ERROR flash message")
+	case "warning":
+		c.Flash().Add("warning", "Debug: This is a WARNING flash message! Please pay attention.")
+		c.Logger().Info("DEBUG: Added WARNING flash message")
+	case "info":
+		c.Flash().Add("info", "Debug: This is an INFO flash message! Just some information for you.")
+		c.Logger().Info("DEBUG: Added INFO flash message")
+	case "clear":
+		c.Logger().Info("DEBUG: Clearing flash messages")
+		// Just clear, don't add anything
+		return c.Redirect(http.StatusSeeOther, "/contact")
+	default:
+		c.Flash().Add("info", "Debug: Unknown flash type. Available types: success, error, warning, info")
+	}
+
+	return c.Redirect(http.StatusSeeOther, "/contact")
 }
 
 // ContactSubmitHandler handles contact form submissions
@@ -58,7 +90,7 @@ func ContactSubmitHandler(c buffalo.Context) error {
 	if err := emailService.SendContactNotification(contactData); err != nil {
 		// Log error but show user-friendly message
 		c.Logger().Errorf("Failed to send contact form notification: %v", err)
-		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at info@avrnpo.org.")
+		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at michael@avrnpo.org.")
 		return c.Redirect(http.StatusSeeOther, "/contact")
 	}
 
@@ -83,11 +115,16 @@ func DonateHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 	c.Set("comments", "")
-	
+
+	// Initialize session defaults
+	c.Session().Set("donation_amount", "")
+	c.Session().Set("donation_type", "one-time")
+
 	// Ensure amount fields are explicitly empty strings
 	c.Set("amount", "")
 	c.Set("customAmount", "")
-	
+	c.Set("donationType", "one-time")
+
 	c.Set("firstName", "")
 	c.Set("lastName", "")
 	c.Set("donorEmail", "")
@@ -116,9 +153,24 @@ func DonatePaymentHandler(c buffalo.Context) error {
 	}
 
 	// Set template variables for payment processing
+	// Ensure amount is a safe, formatted string for template rendering
+	amountStr := ""
+	if amount != nil {
+		switch v := amount.(type) {
+		case string:
+			amountStr = v
+		case float64:
+			amountStr = fmt.Sprintf("%.2f", v)
+		case int:
+			amountStr = fmt.Sprintf("%d", v)
+		default:
+			amountStr = fmt.Sprintf("%v", v)
+		}
+	}
+
 	c.Set("donationId", donationID)
 	c.Set("checkoutToken", checkoutToken)
-	c.Set("amount", amount)
+	c.Set("amount", amountStr)
 	c.Set("donorName", donorName)
 
 	return c.Render(http.StatusOK, r.HTML("pages/donate_payment.plush.html"))

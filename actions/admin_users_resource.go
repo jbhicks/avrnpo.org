@@ -258,6 +258,19 @@ func (aur AdminUsersResource) Destroy(c buffalo.Context) error {
 		return c.Redirect(http.StatusSeeOther, "/admin/users")
 	}
 
+	// Check for confirmation
+	if c.Param("confirm_delete") != "true" {
+		c.Flash().Add("warning", fmt.Sprintf("Are you sure you want to delete user \"%s\"? This action cannot be undone.", user.Email))
+		
+		// Check if this is an HTMX request
+		if c.Request().Header.Get("HX-Request") == "true" {
+			c.Response().Header().Set("HX-Redirect", "/admin/users")
+			return c.Render(http.StatusOK, r.String(""))
+		}
+		
+		return c.Redirect(http.StatusSeeOther, "/admin/users")
+	}
+
 	if err := tx.Destroy(user); err != nil {
 		return errors.WithStack(err)
 	}

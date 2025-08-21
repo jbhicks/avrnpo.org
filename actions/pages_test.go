@@ -19,9 +19,10 @@ func (as *ActionSuite) Test_DonateHandler_Pure_HTMX() {
 
 	// Should contain amount buttons with proper classes
 	as.Contains(res.Body.String(), "amount-btn")
-	as.Contains(res.Body.String(), "data-amount=\"25\"")
-	as.Contains(res.Body.String(), "data-amount=\"50\"")
-	as.Contains(res.Body.String(), "data-amount=\"100\"")
+	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"25\"")
+	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"50\"")
+	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"100\"")
+	as.Contains(res.Body.String(), "hx-patch=\"/donate/update-amount\"")
 
 	// Now returns full HTML structure (single-template architecture)
 	as.Contains(res.Body.String(), "<!DOCTYPE")       // Full HTML document
@@ -108,12 +109,13 @@ func (as *ActionSuite) Test_Donation_Amount_Button_Classes() {
 
 	as.Equal(http.StatusOK, res.Code)
 
-	// Check for proper button structure with selection classes
+	// Check for proper button structure with HTMX attributes
 	as.Contains(res.Body.String(), "class=\"outline amount-btn\"")
-	as.Contains(res.Body.String(), "data-amount=")
+	as.Contains(res.Body.String(), "hx-patch=\"/donate/update-amount\"")
+	as.Contains(res.Body.String(), "hx-vals=")
 
 	// Check that CSS is structured for selection feedback
-	// (The JavaScript and CSS handle the .selected class)
+	// (HTMX handles the updates declaratively)
 	body := res.Body.String()
 	as.Contains(body, "amount-btn")
 	as.Contains(body, "amount-grid")

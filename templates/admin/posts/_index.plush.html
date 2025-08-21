@@ -87,7 +87,14 @@
 function bulkAction(action) {
   const checkboxes = document.querySelectorAll('input[name="post_ids"]:checked');
   if (checkboxes.length === 0) {
-    alert('Please select at least one post');
+    // Let server handle validation and flash messages
+    const formData = new FormData();
+    formData.append('action', action);
+    
+    htmx.ajax('POST', '/admin/posts/bulk', {
+      values: Object.fromEntries(formData),
+      target: '#main-content'
+    });
     return;
   }
   
@@ -96,8 +103,9 @@ function bulkAction(action) {
   formData.append('action', action);
   postIds.forEach(id => formData.append('post_ids', id));
   
-  if (action === 'delete' && !confirm('Are you sure you want to delete the selected posts?')) {
-    return;
+  // For delete action, show confirmation via server-side validation
+  if (action === 'delete') {
+    formData.append('confirm_delete', 'true');
   }
   
   htmx.ajax('POST', '/admin/posts/bulk', {

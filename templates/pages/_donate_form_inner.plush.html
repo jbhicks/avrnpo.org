@@ -1,0 +1,60 @@
+<!-- Only return the amount selection section for HTMX updates -->
+<div class="donation-amounts" id="amount-selection">
+   <h4>Select Amount</h4>
+    <div class="amount-grid">
+      <%= for (preset) in presetAmounts { %>
+        <button type="button" 
+                class="outline amount-btn<%= if (amount == preset) { %> active<% } %>" 
+                hx-patch="/donate/update-amount"
+                hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
+                hx-include="closest form"
+                hx-target="#amount-selection"
+                hx-swap="outerHTML">$<%= preset %></button>
+      <% } %>
+    </div>
+    
+    <div class="custom-amount-group" style="margin-top:1em;">
+      <label for="amount">Or enter a custom amount</label>
+      <input type="number" 
+             id="amount" 
+             name="amount" 
+             autocomplete="transaction-amount" 
+             placeholder="Enter custom amount" 
+             step="any" 
+             hx-patch="/donate/update-amount"
+             hx-trigger="input changed delay:500ms"
+             hx-include="closest form"
+             hx-target="#amount-selection"
+             hx-swap="outerHTML"
+             value="<%= amount %>">
+    </div>
+    
+    <style>
+    /* Active state for amount buttons */
+    .amount-btn.active {
+      background-color: var(--pico-primary) !important;
+      border-color: var(--pico-primary) !important;
+      color: var(--pico-primary-inverse) !important;
+    }
+    
+    /* Ensure outline buttons have proper hover/focus states */
+    .amount-btn.outline:hover:not(.active) {
+      background-color: var(--pico-primary-hover);
+      border-color: var(--pico-primary-hover);
+      color: var(--pico-primary-inverse);
+    }
+    
+    /* Active state for custom amount input */
+    .active-custom {
+      border-color: var(--pico-primary) !important;
+      box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
+    }
+    </style>
+</div>
+
+<!-- Button text update section -->
+<div id="donation-button-container">
+  <button role="button" class="contrast donation-submit">
+    <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+  </button>
+</div>

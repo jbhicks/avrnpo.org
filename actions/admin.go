@@ -525,27 +525,25 @@ func AdminPostsBulk(c buffalo.Context) error {
 		return fmt.Errorf("no transaction found")
 	}
 
-	action := c.Param("bulk_action")
-	postIDsStr := c.Param("post_ids")
+	action := c.Param("action")
+	postIDsParam := c.Request().Form["post_ids"]
 
-	if postIDsStr == "" {
-		c.Flash().Add("error", "No posts selected")
-		return c.Redirect(302, "/admin/posts")
+	if len(postIDsParam) == 0 {
+		c.Flash().Add("error", "Please select at least one post")
+		return c.Render(200, r.HTML("admin/posts/index.plush.html"))
 	}
 
 	// Parse post IDs
-	postIDStrings := strings.Split(postIDsStr, ",")
-	postIDs := make([]int, 0, len(postIDStrings))
-
-	for _, idStr := range postIDStrings {
+	postIDInts := make([]int, 0, len(postIDsParam))
+	for _, idStr := range postIDsParam {
 		if id, err := strconv.Atoi(strings.TrimSpace(idStr)); err == nil {
-			postIDs = append(postIDs, id)
+			postIDInts = append(postIDInts, id)
 		}
 	}
 
-	if len(postIDs) == 0 {
+	if len(postIDInts) == 0 {
 		c.Flash().Add("error", "No valid posts selected")
-		return c.Redirect(302, "/admin/posts")
+		return c.Render(200, r.HTML("admin/posts/index.plush.html"))
 	}
 
 	currentUser := c.Value("current_user").(*models.User)
@@ -553,40 +551,47 @@ func AdminPostsBulk(c buffalo.Context) error {
 	switch action {
 	case "publish":
 		now := time.Now()
-		err := tx.RawQuery("UPDATE posts SET published_at = ? WHERE id IN (?)", now, postIDs).Exec()
+		err := tx.RawQuery("UPDATE posts SET published_at = ? WHERE id IN (?)", now, postIDInts).Exec()
 		if err != nil {
 			return err
 		}
 		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_published", "Bulk published posts", logging.Fields{
-			"post_count": len(postIDs),
+			"post_count": len(postIDInts),
 		})
-		c.Flash().Add("success", fmt.Sprintf("Published %d post(s)", len(postIDs)))
+		c.Flash().Add("success", fmt.Sprintf("Published %d post(s)", len(postIDInts)))
 
 	case "unpublish":
-		err := tx.RawQuery("UPDATE posts SET published_at = NULL WHERE id IN (?)", postIDs).Exec()
+		err := tx.RawQuery("UPDATE posts SET published_at = NULL WHERE id IN (?)", postIDInts).Exec()
 		if err != nil {
 			return err
 		}
 		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_unpublished", "Bulk unpublished posts", logging.Fields{
-			"post_count": len(postIDs),
+			"post_count": len(postIDInts),
 		})
-		c.Flash().Add("success", fmt.Sprintf("Unpublished %d post(s)", len(postIDs)))
+		c.Flash().Add("success", fmt.Sprintf("Unpublished %d post(s)", len(postIDInts)))
 
 	case "delete":
-		err := tx.RawQuery("DELETE FROM posts WHERE id IN (?)", postIDs).Exec()
+		// For delete action, require confirmation
+		if c.Param("confirm_delete") != "true" {
+			c.Flash().Add("warning", fmt.Sprintf("Are you sure you want to delete %d post(s)? This action cannot be undone.", len(postIDInts)))
+			// Return the current page with confirmation message
+			return c.Render(200, r.HTML("admin/posts/index.plush.html"))
+		}
+		
+		err := tx.RawQuery("DELETE FROM posts WHERE id IN (?)", postIDInts).Exec()
 		if err != nil {
 			return err
 		}
 		logging.UserAction(c, currentUser.ID.String(), "posts_bulk_deleted", "Bulk deleted posts", logging.Fields{
-			"post_count": len(postIDs),
+			"post_count": len(postIDInts),
 		})
-		c.Flash().Add("success", fmt.Sprintf("Deleted %d post(s)", len(postIDs)))
+		c.Flash().Add("success", fmt.Sprintf("Deleted %d post(s)", len(postIDInts)))
 
 	default:
 		c.Flash().Add("error", "Invalid bulk action")
 	}
 
-	return c.Redirect(302, "/admin/posts")
+	return c.Render(200, r.HTML("admin/posts/index.plush.html"))
 }
 
 // AdminDonationsIndex shows the donations management page

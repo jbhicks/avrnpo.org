@@ -89,6 +89,8 @@ func App() *buffalo.App {
 		app.GET("/", SetCurrentUser(HomeHandler))
 		app.GET("/dashboard", SetCurrentUser(Authorize(DashboardHandler)))
 		app.GET("/donate", SetCurrentUser(DonateHandler))
+		app.PATCH("/donate/update-amount", DonateUpdateAmountHandler)
+		app.POST("/donate/update-amount", DonateUpdateAmountHandler) // For testing - Buffalo test suite doesn't support PATCH
 		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
@@ -151,7 +153,10 @@ func App() *buffalo.App {
 			return c.Render(200, r.String(out))
 		}
 
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler)
+		// Debug routes
+		app.GET("/debug/flash/{type}", DebugFlashHandler)
+
+		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonateUpdateAmountHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Serve assets using Buffalo best practices

@@ -10,7 +10,18 @@ import (
 	"time"
 )
 
-// Helcim API client for Payment and Recurring APIs
+// HelcimAPI defines the methods used by the application
+type HelcimAPI interface {
+	ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error)
+	CreatePaymentPlan(amount float64, planName string) (*PaymentPlan, error)
+	CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error)
+	GetSubscription(subscriptionID string) (*SubscriptionResponse, error)
+	CancelSubscription(subscriptionID string) error
+	UpdateSubscription(subscriptionID string, updates map[string]interface{}) (*SubscriptionResponse, error)
+	ListSubscriptionsByCustomer(customerID string) ([]SubscriptionResponse, error)
+}
+
+// HelcimClient is the real implementation of HelcimAPI
 type HelcimClient struct {
 	APIToken string
 	BaseURL  string
@@ -87,13 +98,28 @@ type SubscriptionResponse struct {
 }
 
 // NewHelcimClient creates a new Helcim API client
-func NewHelcimClient() *HelcimClient {
+func NewHelcimClient() HelcimAPI {
 	apiKey := os.Getenv("HELCIM_PRIVATE_API_KEY")
+	goEnv := os.Getenv("GO_ENV")
+
+	// In development, prefer a safe fallback rather than panicking
 	if apiKey == "" {
+		if goEnv == "development" {
+			fmt.Printf("[Helcim] Development mode: HELCIM_PRIVATE_API_KEY not set — returning mockHelcimClient\n")
+			return &mockHelcimClient{}
+		}
+
+		// Non-development environments must provide an API key
 		panic("[Helcim] FATAL: HELCIM_PRIVATE_API_KEY is not set or empty! Test runner did not load .env or environment variable.")
-	} else {
-		fmt.Printf("[Helcim] API key loaded: %s\n", apiKey[:6]+"..."+apiKey[len(apiKey)-4:]) // Print only partial for safety
 	}
+
+	// Print partial key for safety
+	if len(apiKey) > 10 {
+		fmt.Printf("[Helcim] API key loaded: %s\n", apiKey[:6]+"..."+apiKey[len(apiKey)-4:])
+	} else {
+		fmt.Printf("[Helcim] API key loaded (short): %s\n", apiKey)
+	}
+
 	return &HelcimClient{
 		APIToken: apiKey,
 		BaseURL:  "https://api.helcim.com/v2",
@@ -392,4 +418,95 @@ func (h *HelcimClient) ListSubscriptionsByCustomer(customerID string) ([]Subscri
 	}
 
 	return result, nil
+}
+
+// mockHelcimClient implements HelcimAPI for development/testing
+type mockHelcimClient struct{}
+
+func (m *mockHelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error) {
+	// Simulate an approved transaction
+	return &PaymentAPIResponse{
+		TransactionID: fmt.Sprintf("dev_txn_%d", time.Now().UnixNano()),
+		Status:        "APPROVED",
+		Amount:        req.Amount,
+		Currency:      req.Currency,
+		CustomerCode:  req.CustomerCode,
+	}, nil
+}
+
+func (m *mockHelcimClient) CreatePaymentPlan(amount float64, planName string) (*PaymentPlan, error) {
+	return &PaymentPlan{
+		ID:              int(time.Now().Unix() % 1000000),
+		Name:            planName,
+		Description:     fmt.Sprintf("Dev plan for $%.2f", amount),
+		Type:            "subscription",
+		Currency:        "USD",
+		RecurringAmount: amount,
+		BillingPeriod:   "monthly",
+		Status:          "active",
+	}, nil
+}
+
+func (m *mockHelcimClient) CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error) {
+	return &SubscriptionResponse{
+		ID:             int(time.Now().Unix() % 1000000),
+		CustomerID:     req.CustomerID,
+		PaymentPlanID:  req.PaymentPlanID,
+		Amount:         req.Amount,
+		Status:         "active",
+		ActivationDate: time.Now().Format("2006-01-02"),
+		NextBillingDate: time.Now().AddDate(0, 1, 0),
+		PaymentMethod:  req.PaymentMethod,
+	}, nil
+}
+
+func (m *mockHelcimClient) GetSubscription(subscriptionID string) (*SubscriptionResponse, error) {
+	// Return a simulated active subscription
+	now := time.Now()
+	return &SubscriptionResponse{
+		ID:             123456,
+		CustomerID:     "dev_customer",
+		PaymentPlanID:  1111,
+		Amount:         10.00,
+		Status:         "active",
+		ActivationDate: now.Format("2006-01-02"),
+		NextBillingDate: now.AddDate(0, 1, 0),
+		PaymentMethod:  "card",
+	}, nil
+}
+
+func (m *mockHelcimClient) CancelSubscription(subscriptionID string) error {
+	// Simulate success
+	return nil
+}
+
+func (m *mockHelcimClient) UpdateSubscription(subscriptionID string, updates map[string]interface{}) (*SubscriptionResponse, error) {
+	// Simulate returning an updated subscription
+	sub := &SubscriptionResponse{
+		ID:            123456,
+		CustomerID:    "dev_customer",
+		PaymentPlanID: 1111,
+		Amount:        10.00,
+		Status:        "active",
+		ActivationDate: time.Now().Format("2006-01-02"),
+		NextBillingDate: time.Now().AddDate(0, 1, 0),
+		PaymentMethod: "card",
+	}
+	return sub, nil
+}
+
+func (m *mockHelcimClient) ListSubscriptionsByCustomer(customerID string) ([]SubscriptionResponse, error) {
+	now := time.Now()
+	return []SubscriptionResponse{
+		{
+			ID:             123456,
+			CustomerID:     customerID,
+			PaymentPlanID:  1111,
+			Amount:         10.00,
+			Status:         "active",
+			ActivationDate: now.Format("2006-01-02"),
+			NextBillingDate: now.AddDate(0, 1, 0),
+			PaymentMethod:  "card",
+		},
+	}, nil
 }

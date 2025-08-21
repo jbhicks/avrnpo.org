@@ -1,0 +1,4 @@
+<!-- Just the submit button with updated text -->
+<button role="button" class="contrast donation-submit">
+  <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+</button>

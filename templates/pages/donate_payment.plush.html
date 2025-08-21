@@ -11,18 +11,89 @@
   
   <div id="helcim-pay-container">
     <!-- Helcim Pay iframe will be injected here -->
+    <div id="loading-message" style="text-align: center; padding: 2rem; color: var(--pico-primary);">
+      <strong>Loading payment form...</strong><br>
+      <small>Please wait while we prepare your secure payment form.</small>
+    </div>
   </div>
+  
+  <!-- Fallback: Try loading Helcim script via static script tag -->
+  <script src="https://secure.helcim.app/helcim-pay/services/start.js" async defer></script>
   
   <div id="transaction-details"></div>
   
-  <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
   <script>
     // Initialize Helcim Pay with the checkout token from session
     const checkoutToken = '<%= checkoutToken %>';
     const donationId = '<%= donationId %>';
-    const donationAmount = parseFloat('<%= amount %>');
+    // Parse amount passed from server. Server stores formatted string ("25.00").
+    let donationAmount = 0;
+    try {
+      donationAmount = Number('<%= amount %>');
+      if (!isFinite(donationAmount) || isNaN(donationAmount)) donationAmount = 0;
+    } catch (e) {
+      donationAmount = 0;
+    }
     
     console.log('Initializing Helcim payment with token:', checkoutToken.substring(0, 5) + '...');
+    
+    // Function to load Helcim script dynamically
+    function loadHelcimScript() {
+      return new Promise((resolve, reject) => {
+        // Check if script is already loaded
+        if (typeof appendHelcimPayIframe !== 'undefined') {
+          resolve();
+          return;
+        }
+        
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://secure.helcim.app/helcim-pay/services/start.js';
+        script.onload = () => {
+          console.log('Helcim script loaded successfully');
+          // Retry checking for the function multiple times with increasing delays
+          let attempts = 0;
+          const maxAttempts = 10;
+          const checkFunction = () => {
+            attempts++;
+            if (typeof appendHelcimPayIframe === 'function') {
+              console.log(`Helcim function available after ${attempts} attempts`);
+              resolve();
+            } else if (attempts < maxAttempts) {
+              console.log(`Attempt ${attempts}: Function not available yet, retrying...`);
+              setTimeout(checkFunction, 100 * attempts); // Increasing delay
+            } else {
+              console.error('Function never became available after', maxAttempts, 'attempts');
+              reject(new Error('Helcim script loaded but appendHelcimPayIframe function never became available'));
+            }
+          };
+          setTimeout(checkFunction, 50);
+        };
+        script.onerror = () => {
+          reject(new Error('Failed to load Helcim payment script'));
+        };
+        
+        document.head.appendChild(script);
+      });
+    }
+    
+    // Check if Helcim script loaded properly
+    function checkHelcimScript() {
+      if (typeof appendHelcimPayIframe === 'undefined') {
+        console.error('Helcim script not loaded or appendHelcimPayIframe function not available');
+        document.getElementById('transaction-details').innerHTML = `
+          <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+            <strong>Payment System Error</strong><br>
+            The payment system failed to load. Please refresh the page and try again, or contact support if the issue persists.
+          </div>
+        `;
+        // Hide loading message
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) loadingMsg.style.display = 'none';
+        return false;
+      }
+      return true;
+    }
     
     // Setup event listener for payment completion
     const messageHandler = (event) => {
@@ -79,6 +150,18 @@
           donationId: donationId,
           amount: donationAmount
         };
+
+        // Client-side sanity check: never send zero or negative amounts
+        if (typeof paymentData.amount !== 'number' || !isFinite(paymentData.amount) || paymentData.amount <= 0) {
+          console.error('Invalid donation amount detected on client before processing:', paymentData.amount);
+          document.getElementById('transaction-details').innerHTML = `
+            <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+              <strong>Payment Error</strong><br>
+              The donation amount appears to be invalid. Please return to the donation form and try again.
+            </div>
+          `;
+          return;
+        }
         
         console.log('Calling ProcessPaymentHandler with:', paymentData);
         
@@ -120,8 +203,55 @@
     window.addEventListener('message', messageHandler);
     
     // Initialize Helcim Pay iframe
-    console.log('Calling appendHelcimPayIframe...');
-    appendHelcimPayIframe(checkoutToken);
+    async function initializeHelcimPay() {
+      console.log('Initializing Helcim Pay...');
+      
+      try {
+        // First check if the function is already available (from static script tag)
+        if (typeof appendHelcimPayIframe === 'function') {
+          console.log('Helcim function already available from static script');
+        } else {
+          console.log('Loading Helcim script dynamically...');
+          // Try dynamic loading
+          await loadHelcimScript();
+        }
+        
+        // Double-check that the function is available
+        if (typeof appendHelcimPayIframe !== 'function') {
+          throw new Error('Helcim payment function not available after script load');
+        }
+        
+        console.log('Calling appendHelcimPayIframe with token:', checkoutToken.substring(0, 5) + '...');
+        appendHelcimPayIframe(checkoutToken);
+        
+        // Hide loading message
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) loadingMsg.style.display = 'none';
+        
+        console.log('Helcim payment form should now be visible');
+        
+      } catch (error) {
+        console.error('Failed to initialize Helcim Pay:', error);
+        document.getElementById('transaction-details').innerHTML = `
+          <div role="alert" style="color: var(--pico-danger); margin-top: 1rem;">
+            <strong>Payment System Error</strong><br>
+            ${error.message || 'Failed to load payment system. Please refresh the page and try again.'}<br>
+            <small>Token: ${checkoutToken ? checkoutToken.substring(0, 8) + '...' : 'Missing'}</small>
+          </div>
+        `;
+        
+        // Hide loading message
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) loadingMsg.style.display = 'none';
+      }
+    }
+    
+    // Start initialization when page is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeHelcimPay);
+    } else {
+      initializeHelcimPay();
+    }
     
   </script>
 </section>

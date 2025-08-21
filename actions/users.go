@@ -265,6 +265,12 @@ func CancelSubscription(c buffalo.Context) error {
 		return c.Redirect(http.StatusFound, "/account/subscriptions")
 	}
 
+	// Check for confirmation
+	if c.Param("confirm_cancel") != "true" {
+		c.Flash().Add("warning", "Are you absolutely sure you want to cancel your recurring donation? This action cannot be undone.")
+		return c.Redirect(http.StatusFound, fmt.Sprintf("/account/subscriptions/%s", subscriptionID))
+	}
+
 	// Cancel the subscription with Helcim
 	helcimClient := services.NewHelcimClient()
 	err = helcimClient.CancelSubscription(subscriptionID)

@@ -99,7 +99,7 @@ ORDER BY created_at DESC;
 ## 📞 Support Contact
 
 When API systems are unavailable, users are directed to:
-- **Email**: info@avrnpo.org
+- **Email**: michael@avrnpo.org
 - **Subject**: Subscription Management Request
 
 ## 🔧 Configuration
