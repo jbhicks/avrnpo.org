@@ -1,12 +1,15 @@
 <%= partial("main") %>
 
 <section>
-  <h1>Processing Your Donation</h1>
-  <p>Thank you for your generous donation to American Veterans Rebuilding!</p>
+  <h1>Processing Your <%= if (donationType == "monthly") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
+  <p>Thank you for your generous <%= if (donationType == "monthly") { %>monthly recurring<% } else { %>one-time<% } %> donation to American Veterans Rebuilding!</p>
   
   <div class="payment-details">
-    <p><strong>Donation Amount:</strong> $<%= amount %></p>
+    <p><strong>Donation Amount:</strong> $<%= amount %><%= if (donationType == "monthly") { %> per month<% } %></p>
     <p><strong>Donor:</strong> <%= donorName %></p>
+    <%= if (donationType == "monthly") { %>
+    <p><strong>Billing:</strong> Monthly recurring donation</p>
+    <% } %>
   </div>
   
   <div id="helcim-pay-container">
@@ -17,35 +20,68 @@
     </div>
   </div>
   
-  <!-- Fallback: Try loading Helcim script via static script tag -->
-  <script src="https://secure.helcim.app/helcim-pay/services/start.js" async defer></script>
-  
   <div id="transaction-details"></div>
   
   <script>
-    // Initialize Helcim Pay with the checkout token from session
-    const checkoutToken = '<%= checkoutToken %>';
-    const donationId = '<%= donationId %>';
-    // Parse amount passed from server. Server stores formatted string ("25.00").
-    let donationAmount = 0;
-    try {
-      donationAmount = Number('<%= amount %>');
-      if (!isFinite(donationAmount) || isNaN(donationAmount)) donationAmount = 0;
-    } catch (e) {
-      donationAmount = 0;
-    }
+    // Prevent variable redeclaration on HTMX navigation
+    if (typeof window.donationPaymentInitialized === 'undefined') {
+      window.donationPaymentInitialized = true;
+      
+      // Initialize Helcim Pay with the checkout token from session
+      const checkoutToken = '<%= checkoutToken %>';
+      const donationId = '<%= donationId %>';
+      const donationType = '<%= donationType %>'; // "one-time" or "recurring"
+      const donorName = '<%= donorName %>';
+      const donorEmail = '<%= donorEmail %>';
+      
+      // Parse amount passed from server. Server stores formatted string ("25.00").
+      let donationAmount = 0;
+      try {
+        donationAmount = Number('<%= amount %>');
+        if (!isFinite(donationAmount) || isNaN(donationAmount)) donationAmount = 0;
+      } catch (e) {
+        donationAmount = 0;
+      }
     
     console.log('Initializing Helcim payment with token:', checkoutToken.substring(0, 5) + '...');
+    console.log('Donation type:', donationType, 'Amount:', donationAmount);
+    
+    // Note: HelcimPay.js uses "verify" mode for both one-time and recurring donations
+    // The backend handles the difference in ProcessPaymentHandler based on donation type
     
     // Function to load Helcim script dynamically
     function loadHelcimScript() {
       return new Promise((resolve, reject) => {
         // Check if script is already loaded
         if (typeof appendHelcimPayIframe !== 'undefined') {
+          console.log('Helcim script already loaded');
           resolve();
           return;
         }
         
+        // Check if script element already exists to prevent duplicate loading
+        const existingScript = document.querySelector('script[src*="helcim-pay/services/start.js"]');
+        if (existingScript) {
+          console.log('Helcim script element already exists, waiting for load...');
+          // Script exists but function may not be ready yet
+          let attempts = 0;
+          const maxAttempts = 15;
+          const checkFunction = () => {
+            attempts++;
+            if (typeof appendHelcimPayIframe === 'function') {
+              console.log(`Helcim function available after ${attempts} attempts`);
+              resolve();
+            } else if (attempts < maxAttempts) {
+              setTimeout(checkFunction, 200);
+            } else {
+              reject(new Error('Existing Helcim script never loaded properly'));
+            }
+          };
+          checkFunction();
+          return;
+        }
+        
+        console.log('Creating new Helcim script element...');
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = 'https://secure.helcim.app/helcim-pay/services/start.js';
@@ -138,18 +174,87 @@
         // Show processing status
         document.getElementById('transaction-details').innerHTML = `
           <div style="color: var(--pico-primary); margin-top: 1rem;">
-            <strong>Processing Payment...</strong><br>
-            Please wait while we complete your donation.
+            <strong>Processing ${donationType === 'monthly' ? 'Recurring Subscription' : 'Payment'}...</strong><br>
+            Please wait while we complete your ${donationType === 'monthly' ? 'subscription setup' : 'donation'}.
           </div>
         `;
         
         // Extract payment data from Helcim response
-        const paymentData = {
-          customerCode: helcimData.eventMessage?.data?.customerCode || helcimData.data?.customerCode,
-          cardToken: helcimData.eventMessage?.data?.cardToken || helcimData.data?.cardToken,
+        let paymentData = {
+          customerCode: undefined,
+          cardToken: undefined,
           donationId: donationId,
           amount: donationAmount
         };
+
+        // Parse the eventMessage JSON string to extract payment details
+        try {
+          if (helcimData.eventMessage) {
+            const eventData = JSON.parse(helcimData.eventMessage);
+            console.log('Parsed Helcim event data:', eventData);
+            
+            // Debug: Log the full structure to understand the response format
+            if (eventData.data) {
+              console.log('Event data structure:', Object.keys(eventData.data));
+              console.log('Full event data.data:', eventData.data);
+              
+              // Check if there's a nested data object (which seems to be the case)
+              if (eventData.data.data && typeof eventData.data.data === 'object') {
+                console.log('Found nested data.data object:', eventData.data.data);
+                console.log('Nested data keys:', Object.keys(eventData.data.data));
+                
+                const nestedData = eventData.data.data;
+                paymentData.customerCode = nestedData.customerCode || 
+                                          nestedData.customer_code ||
+                                          nestedData.customerId ||
+                                          nestedData.customer_id;
+                                          
+                paymentData.cardToken = nestedData.cardToken || 
+                                      nestedData.card_token ||
+                                      nestedData.token;
+              }
+              
+              // Try multiple possible locations for the customer data at the first level
+              paymentData.customerCode = paymentData.customerCode ||
+                                        eventData.data.customerCode || 
+                                        eventData.data.customer_code ||
+                                        eventData.data.customerId ||
+                                        eventData.data.customer_id;
+                                        
+              paymentData.cardToken = paymentData.cardToken ||
+                                    eventData.data.cardToken || 
+                                    eventData.data.card_token ||
+                                    eventData.data.token;
+                                    
+              // Check if the data is nested deeper
+              if (eventData.data.response && typeof eventData.data.response === 'object') {
+                console.log('Found nested response object:', eventData.data.response);
+                paymentData.customerCode = paymentData.customerCode || 
+                                          eventData.data.response.customerCode ||
+                                          eventData.data.response.customer_code;
+                paymentData.cardToken = paymentData.cardToken || 
+                                      eventData.data.response.cardToken ||
+                                      eventData.data.response.card_token;
+              }
+              
+              // Check if there's a nested transaction object
+              if (eventData.data.transaction && typeof eventData.data.transaction === 'object') {
+                console.log('Found nested transaction object:', eventData.data.transaction);
+                paymentData.customerCode = paymentData.customerCode || 
+                                          eventData.data.transaction.customerCode ||
+                                          eventData.data.transaction.customer_code;
+                paymentData.cardToken = paymentData.cardToken || 
+                                      eventData.data.transaction.cardToken ||
+                                      eventData.data.transaction.card_token;
+              }
+            }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse Helcim eventMessage:', parseError);
+          console.log('Raw eventMessage:', helcimData.eventMessage);
+        }
+
+        console.log('Final payment data for processing:', paymentData);
 
         // Client-side sanity check: never send zero or negative amounts
         if (typeof paymentData.amount !== 'number' || !isFinite(paymentData.amount) || paymentData.amount <= 0) {
@@ -253,5 +358,6 @@
       initializeHelcimPay();
     }
     
+    } // End donationPaymentInitialized check
   </script>
 </section>

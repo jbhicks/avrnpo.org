@@ -126,16 +126,21 @@ type HelcimWebhookEvent struct {
 }
 
 type HelcimWebhookData struct {
-	ID            string                `json:"id"`
-	Amount        float64               `json:"amount"`
-	Currency      string                `json:"currency"`
-	Status        string                `json:"status"`
-	TransactionID string                `json:"transactionId"`
-	CardToken     string                `json:"cardToken"`
-	CustomerCode  string                `json:"customerCode"`
-	Customer      HelcimWebhookCustomer `json:"customer"`
-	CreatedAt     string                `json:"createdAt"`
-	ProcessedAt   string                `json:"processedAt"`
+	ID               string                `json:"id"`
+	Amount           float64               `json:"amount"`
+	Currency         string                `json:"currency"`
+	Status           string                `json:"status"`
+	TransactionID    string                `json:"transactionId"`
+	CardToken        string                `json:"cardToken"`
+	CustomerCode     string                `json:"customerCode"`
+	Customer         HelcimWebhookCustomer `json:"customer"`
+	CreatedAt        string                `json:"createdAt"`
+	ProcessedAt      string                `json:"processedAt"`
+	// Subscription-specific fields
+	SubscriptionID   string                `json:"subscriptionId"`
+	PaymentPlanID    string                `json:"paymentPlanId"`
+	PaymentNumber    int                   `json:"paymentNumber"`
+	NextBillingDate  string                `json:"nextBillingDate"`
 }
 
 type HelcimWebhookCustomer struct {
@@ -569,6 +574,12 @@ func HelcimWebhookHandler(c buffalo.Context) error {
 		err = handlePaymentRefunded(tx, &event, c)
 	case "payment_cancelled", "payment.cancelled":
 		err = handlePaymentCancelled(tx, &event, c)
+	case "subscription.charged", "subscription_charged":
+		err = handleSubscriptionCharged(tx, &event, c)
+	case "subscription.failed", "subscription_failed":
+		err = handleSubscriptionFailed(tx, &event, c)
+	case "subscription.cancelled", "subscription_cancelled":
+		err = handleSubscriptionCancelled(tx, &event, c)
 	default:
 		c.Logger().Warnf("Unknown webhook event type: %s", event.Type)
 		return c.Render(http.StatusOK, r.JSON(map[string]string{"status": "ignored", "reason": "unknown event type"}))
@@ -786,6 +797,23 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 		}))
 	}
 
+	// Validate required fields for payment processing
+	if req.CustomerCode == "" {
+		c.Logger().Errorf("ProcessPaymentHandler: missing customerCode - req=%+v", req)
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "Missing customer code - payment verification may have failed",
+		}))
+	}
+
+	if req.DonationID == "" {
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "Missing donation ID",
+		}))
+	}
+
+	c.Logger().Infof("ProcessPaymentHandler: customerCode=%s, donationId=%s, amount=%.2f", 
+		req.CustomerCode, req.DonationID, req.Amount)
+
 	// Get donation record
 	tx := c.Value("tx").(*pop.Connection)
 	donation := &models.Donation{}
@@ -826,8 +854,11 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 		c.Logger().Warnf("Client amount (%.2f) differs from stored donation amount (%.2f) for donation ID %s", req.Amount, donation.Amount, donation.ID.String())
 	}
 
-	// TEMPORARY: For development, simulate successful payment
-	if os.Getenv("GO_ENV") == "development" {
+	// Check if we should use live payments even in development
+	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
+	
+	// TEMPORARY: For development, simulate successful payment (unless live testing enabled)
+	if os.Getenv("GO_ENV") == "development" && !useLivePayments {
 		c.Logger().Info("Development mode: Simulating successful payment")
 
 		// Generate a fake transaction ID
@@ -938,14 +969,21 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	DonationID   string  `json:"donationId"`
 	Amount       float64 `json:"amount"`
 }, donation *models.Donation) error {
-	// DEVELOPMENT-SAFE PATH: Simulate subscription creation when in development
-	if os.Getenv("GO_ENV") == "development" {
-		c.Logger().Info("Development mode: Simulating recurring subscription creation (no Helcim calls)")
+	// Check if we should use live payments even in development
+	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
+	
+	// DEVELOPMENT-SAFE PATH: Simulate subscription creation when in development (unless live testing enabled)
+	if os.Getenv("GO_ENV") == "development" && !useLivePayments {
+		c.Logger().Infof("Development mode: Simulating recurring subscription creation - donation_id=%s, amount=%.2f, donor=%s", 
+			donation.ID.String(), donation.Amount, donation.DonorEmail)
 
 		// Create fake IDs and next billing date
 		subscriptionID := fmt.Sprintf("dev_sub_%d", time.Now().Unix())
 		paymentPlanID := fmt.Sprintf("dev_plan_%.0f", donation.Amount)
 		nextBilling := time.Now().AddDate(0, 1, 0)
+		
+		c.Logger().Infof("Generated development subscription: subscription_id=%s, plan_id=%s, next_billing=%s", 
+			subscriptionID, paymentPlanID, nextBilling.Format("2006-01-02"))
 
 		// Update donation record
 		donation.SubscriptionID = &subscriptionID
@@ -1000,27 +1038,36 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	helcimClient := services.NewHelcimClient()
 
 	// Create or get payment plan
+	c.Logger().Infof("Creating payment plan for recurring donation - donation_id=%s, amount=%.2f, donor=%s", 
+		donation.ID.String(), donation.Amount, donation.DonorEmail)
 	paymentPlanID, err := getOrCreateMonthlyDonationPlan(helcimClient, donation.Amount)
 	if err != nil {
-		c.Logger().Errorf("Failed to setup payment plan: %v", err)
+		c.Logger().Errorf("Failed to setup payment plan for donation_id=%s, amount=%.2f: %v", 
+			donation.ID.String(), donation.Amount, err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to setup payment plan",
 		}))
 	}
+	c.Logger().Infof("Payment plan created successfully - plan_id=%d, donation_id=%s", paymentPlanID, donation.ID.String())
 
 	// Create subscription using Recurring API
+	c.Logger().Infof("Creating Helcim subscription - customer_code=%s, plan_id=%d, amount=%.2f", 
+		req.CustomerCode, paymentPlanID, donation.Amount)
 	subscription, err := helcimClient.CreateSubscription(services.SubscriptionRequest{
 		CustomerID:    req.CustomerCode,
 		PaymentPlanID: paymentPlanID,
-		Amount:        donation.Amount,
+		Amount:        donation.Amount, // Use actual donation amount for subscription
 		PaymentMethod: "card",
 	})
 	if err != nil {
-		c.Logger().Errorf("Failed to create subscription: %v", err)
+		c.Logger().Errorf("Failed to create Helcim subscription - donation_id=%s, customer_code=%s, plan_id=%d: %v", 
+			donation.ID.String(), req.CustomerCode, paymentPlanID, err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to create subscription",
 		}))
 	}
+	c.Logger().Infof("Helcim subscription created successfully - subscription_id=%d, next_billing=%s, donation_id=%s", 
+		subscription.ID, subscription.NextBillingDate.Format("2006-01-02"), donation.ID.String())
 
 	// Update donation record - convert int IDs to strings for storage
 	subscriptionIDStr := fmt.Sprintf("%d", subscription.ID)
@@ -1074,19 +1121,67 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	}))
 }
 
-// getOrCreateMonthlyDonationPlan creates a payment plan for monthly donations
+// getOrCreateMonthlyDonationPlan creates or reuses standardized payment plans for monthly donations
 func getOrCreateMonthlyDonationPlan(client services.HelcimAPI, amount float64) (int, error) {
-	// Create a standardized plan name based on amount
-	planName := fmt.Sprintf("Monthly Donation - $%.2f", amount)
-
-	// For now, create a new plan each time
-	// TODO: In production, implement plan caching/reuse logic
-	plan, err := client.CreatePaymentPlan(amount, planName)
+	// Standardized donation amounts to reduce plan proliferation
+	// Note: The subscription amount can override the plan amount, so we can use standardized plans
+	// while still charging the exact requested amount per Helcim documentation
+	standardAmounts := []float64{5, 10, 25, 50, 100, 250, 500, 1000}
+	
+	// Find the closest standard amount or use exact amount for large donations
+	var standardAmount float64
+	if amount >= 1000 {
+		// For large donations over $1000, create exact plans to maintain accuracy
+		standardAmount = amount
+	} else {
+		// Find closest standard amount for common donation ranges
+		standardAmount = findClosestStandardAmount(amount, standardAmounts)
+	}
+	
+	// Create a standardized plan name
+	planName := fmt.Sprintf("Monthly Donation - $%.0f", standardAmount)
+	
+	// TODO: Implement plan caching/lookup to reuse existing plans
+	// This would involve querying existing plans by name/amount before creating new ones
+	plan, err := client.CreatePaymentPlan(standardAmount, planName)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create payment plan: %w", err)
+		return 0, fmt.Errorf("failed to create payment plan for $%.2f: %w", standardAmount, err)
+	}
+
+	// Log if we're using a different amount than requested (for monitoring)
+	if standardAmount != amount {
+		fmt.Printf("[PaymentPlan] Using standardized plan amount $%.2f instead of exact $%.2f\n", standardAmount, amount)
 	}
 
 	return plan.ID, nil
+}
+
+// findClosestStandardAmount finds the closest standard amount to the requested amount
+func findClosestStandardAmount(amount float64, standardAmounts []float64) float64 {
+	if len(standardAmounts) == 0 {
+		return amount
+	}
+	
+	closest := standardAmounts[0]
+	minDiff := abs(amount - closest)
+	
+	for _, standard := range standardAmounts {
+		diff := abs(amount - standard)
+		if diff < minDiff {
+			minDiff = diff
+			closest = standard
+		}
+	}
+	
+	return closest
+}
+
+// abs returns the absolute value of a float64
+func abs(x float64) float64 {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 // stringPointer is a helper function to convert string to string pointer
@@ -1252,4 +1347,165 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	c.Set("hasZipError", false)
 	
 	return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content_with_button.plush.html"))
+}
+
+// handleSubscriptionCharged processes successful recurring payment webhook events
+func handleSubscriptionCharged(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	c.Logger().Infof("Processing subscription charged event: subscription_id=%s, transaction_id=%s, amount=%.2f, payment_number=%d", 
+		event.Data.SubscriptionID, event.Data.TransactionID, event.Data.Amount, event.Data.PaymentNumber)
+
+	// Find the donation record by subscription ID
+	donation := &models.Donation{}
+	err := tx.Where("subscription_id = ?", event.Data.SubscriptionID).First(donation)
+	if err != nil {
+		// Log warning but don't fail the webhook - this might be a subscription created outside our system
+		c.Logger().Warnf("Could not find donation for subscription ID: %s - this may be an external subscription", event.Data.SubscriptionID)
+		return nil
+	}
+	
+	c.Logger().Infof("Found original donation record for recurring payment - donor=%s, original_amount=%.2f, subscription_id=%s", 
+		donation.DonorEmail, donation.Amount, event.Data.SubscriptionID)
+
+	// Create a new donation record for this recurring payment
+	recurringDonation := &models.Donation{
+		UserID:              donation.UserID, // Keep same user if linked
+		HelcimTransactionID: &event.Data.TransactionID,
+		SubscriptionID:      &event.Data.SubscriptionID,
+		CustomerID:          donation.CustomerID,
+		PaymentPlanID:       donation.PaymentPlanID,
+		TransactionID:       &event.Data.TransactionID,
+		Amount:              event.Data.Amount,
+		Currency:            event.Data.Currency,
+		DonorName:           donation.DonorName,
+		DonorEmail:          donation.DonorEmail,
+		DonorPhone:          donation.DonorPhone,
+		AddressLine1:        donation.AddressLine1,
+		AddressLine2:        donation.AddressLine2,
+		City:                donation.City,
+		State:               donation.State,
+		Zip:                 donation.Zip,
+		DonationType:        "monthly", // This is a recurring payment
+		Status:              "completed",
+		Comments:            stringPointer(fmt.Sprintf("Recurring payment #%d", event.Data.PaymentNumber)),
+	}
+
+	if err := tx.Create(recurringDonation); err != nil {
+		c.Logger().Errorf("Failed to create recurring donation record - subscription_id=%s, transaction_id=%s, donor=%s: %v", 
+			event.Data.SubscriptionID, event.Data.TransactionID, donation.DonorEmail, err)
+		return err
+	}
+	c.Logger().Infof("Created recurring donation record - id=%s, subscription_id=%s, transaction_id=%s, amount=%.2f", 
+		recurringDonation.ID.String(), event.Data.SubscriptionID, event.Data.TransactionID, event.Data.Amount)
+
+	// Send receipt email for the recurring payment
+	emailService := services.NewEmailService()
+	receiptData := services.DonationReceiptData{
+		DonorName:           recurringDonation.DonorName,
+		DonationAmount:      recurringDonation.Amount,
+		DonationType:        "Monthly Recurring",
+		SubscriptionID:      event.Data.SubscriptionID,
+		TransactionID:       event.Data.TransactionID,
+		DonationDate:        recurringDonation.CreatedAt,
+		TaxDeductibleAmount: recurringDonation.Amount,
+		OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+		OrganizationName:    "American Veterans Rebuilding",
+		OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
+		DonorAddressLine1:   stringOrEmpty(recurringDonation.AddressLine1),
+		DonorAddressLine2:   stringOrEmpty(recurringDonation.AddressLine2),
+		DonorCity:           stringOrEmpty(recurringDonation.City),
+		DonorState:          stringOrEmpty(recurringDonation.State),
+		DonorZip:            stringOrEmpty(recurringDonation.Zip),
+	}
+
+	if err := emailService.SendDonationReceipt(recurringDonation.DonorEmail, receiptData); err != nil {
+		c.Logger().Errorf("Failed to send recurring donation receipt - subscription_id=%s, donor=%s: %v", 
+			event.Data.SubscriptionID, recurringDonation.DonorEmail, err)
+		// Don't fail the webhook for email issues
+	} else {
+		c.Logger().Infof("Recurring donation receipt sent successfully - subscription_id=%s, donor=%s, transaction_id=%s", 
+			event.Data.SubscriptionID, recurringDonation.DonorEmail, event.Data.TransactionID)
+	}
+
+	c.Logger().Infof("Successfully processed recurring payment - subscription_id=%s, amount=%.2f, donor=%s, payment_number=%d", 
+		event.Data.SubscriptionID, event.Data.Amount, recurringDonation.DonorEmail, event.Data.PaymentNumber)
+	return nil
+}
+
+// handleSubscriptionFailed processes failed recurring payment webhook events
+func handleSubscriptionFailed(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	c.Logger().Warnf("Processing subscription failed event: subscription_id=%s, reason=%s, amount=%.2f", 
+		event.Data.SubscriptionID, event.Data.Status, event.Data.Amount)
+
+	// Find the donation record by subscription ID
+	donation := &models.Donation{}
+	err := tx.Where("subscription_id = ?", event.Data.SubscriptionID).First(donation)
+	if err != nil {
+		c.Logger().Warnf("Could not find donation for failed subscription ID: %s - may be external subscription", event.Data.SubscriptionID)
+		return nil
+	}
+	
+	c.Logger().Warnf("Failed payment for donor: %s, subscription_id=%s, original_amount=%.2f, failed_amount=%.2f", 
+		donation.DonorEmail, event.Data.SubscriptionID, donation.Amount, event.Data.Amount)
+
+	// Create a failed payment record for tracking
+	failedDonation := &models.Donation{
+		UserID:         donation.UserID,
+		SubscriptionID: &event.Data.SubscriptionID,
+		CustomerID:     donation.CustomerID,
+		PaymentPlanID:  donation.PaymentPlanID,
+		Amount:         event.Data.Amount,
+		Currency:       event.Data.Currency,
+		DonorName:      donation.DonorName,
+		DonorEmail:     donation.DonorEmail,
+		DonorPhone:     donation.DonorPhone,
+		AddressLine1:   donation.AddressLine1,
+		AddressLine2:   donation.AddressLine2,
+		City:           donation.City,
+		State:          donation.State,
+		Zip:            donation.Zip,
+		DonationType:   "monthly",
+		Status:         "failed",
+		Comments:       stringPointer(fmt.Sprintf("Failed recurring payment: %s", event.Data.Status)),
+	}
+
+	if err := tx.Create(failedDonation); err != nil {
+		c.Logger().Errorf("Failed to create failed donation record - subscription_id=%s, donor=%s: %v", 
+			event.Data.SubscriptionID, donation.DonorEmail, err)
+		return err
+	}
+	c.Logger().Infof("Created failed payment record - subscription_id=%s, donor=%s, amount=%.2f, reason=%s", 
+		event.Data.SubscriptionID, donation.DonorEmail, event.Data.Amount, event.Data.Status)
+
+	// TODO: Send notification email to donor about failed payment
+	// TODO: Send notification to admin about failed payment
+	
+	c.Logger().Infof("Recorded failed subscription payment - subscription_id=%s, donor=%s, next_action=notify_donor", 
+		event.Data.SubscriptionID, donation.DonorEmail)
+	return nil
+}
+
+// handleSubscriptionCancelled processes subscription cancellation webhook events
+func handleSubscriptionCancelled(tx *pop.Connection, event *HelcimWebhookEvent, c buffalo.Context) error {
+	c.Logger().Infof("Processing subscription cancelled event: subscription_id=%s", event.Data.SubscriptionID)
+
+	// Find and update the original donation record
+	donation := &models.Donation{}
+	err := tx.Where("subscription_id = ?", event.Data.SubscriptionID).First(donation)
+	if err != nil {
+		c.Logger().Warnf("Could not find donation for cancelled subscription ID: %s", event.Data.SubscriptionID)
+		return nil
+	}
+
+	// Update the subscription status to cancelled
+	donation.Status = "cancelled"
+	if err := tx.Update(donation); err != nil {
+		c.Logger().Errorf("Failed to update cancelled subscription: %v", err)
+		return err
+	}
+
+	// TODO: Send cancellation confirmation email to donor
+	// TODO: Send notification to admin about cancellation
+
+	c.Logger().Infof("Successfully processed subscription cancellation: subscription_id=%s", event.Data.SubscriptionID)
+	return nil
 }

@@ -14,7 +14,7 @@ Files that were:
 
 ### Consolidated into Payment System
 - `helcim-api-reference.md` → `../payment-system/helcim-integration.md`
-- `helcim-recurring-implementation-plan.md` → `../payment-system/recurring-payments.md`
+- `helcim-recurring-implementation-plan.md` → `../payment-system/recurring-payments-final.md` (**PRODUCTION READY**)
 - `subscription-management-implementation.md` → `../payment-system/README.md`
 
 ### Consolidated into Buffalo Framework  

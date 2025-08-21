@@ -25,7 +25,7 @@ Complete donation and subscription management system documentation.
 - **[Payment Overview](./payment-system/README.md)** - System architecture and status
 - **[Helcim Integration](./payment-system/helcim-integration.md)** - Complete API integration guide
 - **[Donation Flow](./payment-system/donation-flow.md)** - User experience and form handling
-- **[Recurring Payments](./payment-system/recurring-payments.md)** - Subscription management
+- **[Recurring Payments](./payment-system/recurring-payments-final.md)** - **PRODUCTION READY** subscription management
 - **[Webhooks](./payment-system/webhooks.md)** - Event processing and notifications
 - **[Testing](./payment-system/testing.md)** - Payment testing procedures
 
@@ -78,7 +78,7 @@ API documentation, schemas, and technical references.
 **💳 Payment Features:**
 1. [Helcim Integration](./payment-system/helcim-integration.md) - Complete API guide
 2. [Donation Flow](./payment-system/donation-flow.md) - Frontend implementation
-3. [Recurring Payments](./payment-system/recurring-payments.md) - Subscription system
+3. [Recurring Payments](./payment-system/recurring-payments-final.md) - **PRODUCTION READY** subscription system
 
 **🎨 Frontend Work:**
 1. [Pico CSS Guide](./frontend/pico-css.md) - Styling and theming

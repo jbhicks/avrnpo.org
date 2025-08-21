@@ -5,8 +5,10 @@ import (
 	"strings"
 	"time"
 
+	"avrnpo.org/models"
 	"avrnpo.org/services"
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/pop/v6"
 	"net/http"
 )
 
@@ -152,6 +154,14 @@ func DonatePaymentHandler(c buffalo.Context) error {
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
+	// Get donation details from database to access donation type and donor info
+	tx := c.Value("tx").(*pop.Connection)
+	donation := &models.Donation{}
+	if err := tx.Find(donation, donationID); err != nil {
+		c.Flash().Add("error", "Donation record not found. Please start your donation again.")
+		return c.Redirect(http.StatusSeeOther, "/donate")
+	}
+
 	// Set template variables for payment processing
 	// Ensure amount is a safe, formatted string for template rendering
 	amountStr := ""
@@ -172,6 +182,8 @@ func DonatePaymentHandler(c buffalo.Context) error {
 	c.Set("checkoutToken", checkoutToken)
 	c.Set("amount", amountStr)
 	c.Set("donorName", donorName)
+	c.Set("donationType", donation.DonationType) // "one-time" or "recurring"
+	c.Set("donorEmail", donation.DonorEmail)
 
 	return c.Render(http.StatusOK, r.HTML("pages/donate_payment.plush.html"))
 }

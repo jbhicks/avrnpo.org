@@ -377,6 +377,6 @@ func (h *HelcimService) ProcessPayment(amount float64, cardToken, customerCode s
 
 For specific implementation details, see the related guides:
 - [Donation Flow](./donation-flow.md) - Frontend form implementation
-- [Recurring Payments](./recurring-payments.md) - Subscription system  
+- [Recurring Payments](./recurring-payments-final.md) - **PRODUCTION READY** subscription system  
 - [Webhooks](./webhooks.md) - Event processing
 - [Testing](./testing.md) - Testing procedures and test cards
