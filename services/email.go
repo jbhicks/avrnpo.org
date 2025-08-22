@@ -37,6 +37,7 @@ type DonationReceiptData struct {
 	DonationAmount      float64
 	DonationType        string
 	SubscriptionID      string
+	CustomerID          string  // Helcim Customer ID for subscription management
 	NextBillingDate     *time.Time
 	TransactionID       string
 	DonationDate        time.Time
@@ -160,6 +161,9 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
 				{{if .SubscriptionID}}
 				<p><strong>Subscription ID:</strong> {{.SubscriptionID}}</p>
 				{{end}}
+				{{if .CustomerID}}
+				<p><strong>Customer ID:</strong> {{.CustomerID}}</p>
+				{{end}}
 				{{if .NextBillingDate}}
 				<p><strong>Next Billing Date:</strong> {{.NextBillingDate.Format "January 2, 2006"}}</p>
 				{{end}}
@@ -167,6 +171,16 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
 				<p><strong>Tax Deductible Amount:</strong> ${{printf "%.2f" .TaxDeductibleAmount}}</p>
 				{{end}}
             </div>
+            
+            {{if eq .DonationType "Monthly"}}
+            <h3>Subscription Management</h3>
+            <p>
+                Your monthly recurring donation will automatically process on the same day each month. 
+                To modify the amount, change frequency, or cancel your subscription, please contact us at 
+                <strong>michael@avrnpo.org</strong> and reference your <strong>Customer ID: {{.CustomerID}}</strong> 
+                in your message.
+            </p>
+            {{end}}
             
             <h3>Tax Information</h3>
             <p>
@@ -243,7 +257,13 @@ Donation Type: %s
 Amount: $%.2f
 
 Subscription ID: %s
+Customer ID: %s
 Next Billing Date: %s
+
+RECURRING SUBSCRIPTION MANAGEMENT
+Your subscription Customer ID is %s. Please reference this ID when 
+contacting us to cancel or modify your recurring donation.
+Email: michael@avrnpo.org
 
 Donor Address:
 %s
@@ -280,12 +300,14 @@ This is an automated receipt. Please save this for your tax records.
 		data.DonationType,
 		data.DonationAmount,
 		data.SubscriptionID,
+		data.CustomerID,
 		func() string {
 			if data.NextBillingDate != nil {
 				return data.NextBillingDate.Format("January 2, 2006")
 			}
 			return ""
 		}(),
+		data.CustomerID,
 		data.DonorAddressLine1,
 		data.DonorAddressLine2,
 		data.DonorCity,
