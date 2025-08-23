@@ -37,7 +37,7 @@ type DonationReceiptData struct {
 	DonationAmount      float64
 	DonationType        string
 	SubscriptionID      string
-	CustomerID          string  // Helcim Customer ID for subscription management
+	CustomerID          string // Helcim Customer ID for subscription management
 	NextBillingDate     *time.Time
 	TransactionID       string
 	DonationDate        time.Time
@@ -110,6 +110,19 @@ func (e *EmailService) isConfigured() bool {
 		e.FromEmail != ""
 }
 
+// isValidNextBillingDate checks if NextBillingDate is not nil and not zero time
+func (e *EmailService) isValidNextBillingDate(data DonationReceiptData) bool {
+	return data.NextBillingDate != nil && !data.NextBillingDate.IsZero()
+}
+
+// formatNextBillingDate formats NextBillingDate with fallback for zero dates
+func (e *EmailService) formatNextBillingDate(data DonationReceiptData) string {
+	if e.isValidNextBillingDate(data) {
+		return data.NextBillingDate.Format("January 2, 2006")
+	}
+	return "To be determined"
+}
+
 // generateReceiptHTML creates HTML email content for donation receipt
 func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, error) {
 	htmlTemplate := `
@@ -165,7 +178,11 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
 				<p><strong>Customer ID:</strong> {{.CustomerID}}</p>
 				{{end}}
 				{{if .NextBillingDate}}
+				{{if .NextBillingDate.IsZero}}
+				<p><strong>Next Billing Date:</strong> To be determined</p>
+				{{else}}
 				<p><strong>Next Billing Date:</strong> {{.NextBillingDate.Format "January 2, 2006"}}</p>
+				{{end}}
 				{{end}}
 				{{if ne .TaxDeductibleAmount .DonationAmount}}
 				<p><strong>Tax Deductible Amount:</strong> ${{printf "%.2f" .TaxDeductibleAmount}}</p>
@@ -302,10 +319,10 @@ This is an automated receipt. Please save this for your tax records.
 		data.SubscriptionID,
 		data.CustomerID,
 		func() string {
-			if data.NextBillingDate != nil {
+			if data.NextBillingDate != nil && !data.NextBillingDate.IsZero() {
 				return data.NextBillingDate.Format("January 2, 2006")
 			}
-			return ""
+			return "To be determined"
 		}(),
 		data.CustomerID,
 		data.DonorAddressLine1,

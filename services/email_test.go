@@ -184,20 +184,20 @@ func TestEmailService_generateReceipt_IncludesSubscription(t *testing.T) {
 	next := time.Date(2025, 8, 1, 0, 0, 0, 0, time.UTC)
 
 	testData := DonationReceiptData{
-		DonorName:       "Subscription Donor",
-		DonationAmount:  20.00,
-		DonationType:    "Monthly",
-		TransactionID:   "SUB-123",
-		DonationDate:    time.Now(),
-		SubscriptionID:  "SUB-ABC-123",
-		NextBillingDate: &next,
-		OrganizationEIN: "12-3456789",
-		OrganizationName: "Test Organization",
+		DonorName:           "Subscription Donor",
+		DonationAmount:      20.00,
+		DonationType:        "Monthly",
+		TransactionID:       "SUB-123",
+		DonationDate:        time.Now(),
+		SubscriptionID:      "SUB-ABC-123",
+		NextBillingDate:     &next,
+		OrganizationEIN:     "12-3456789",
+		OrganizationName:    "Test Organization",
 		OrganizationAddress: "123 Main St",
-		DonorAddressLine1: "456 Donor Rd",
-		DonorCity: "City",
-		DonorState: "ST",
-		DonorZip: "00000",
+		DonorAddressLine1:   "456 Donor Rd",
+		DonorCity:           "City",
+		DonorState:          "ST",
+		DonorZip:            "00000",
 	}
 
 	html, err := emailService.generateReceiptHTML(testData)
@@ -216,4 +216,45 @@ func TestEmailService_generateReceipt_IncludesSubscription(t *testing.T) {
 	require.Contains(t, text, testData.SubscriptionID)
 	require.Contains(t, text, next.Format("January 2, 2006"))
 	t.Logf("Generated Text:\n%s", text)
+}
+
+func TestEmailService_generateReceipt_ZeroNextBillingDate(t *testing.T) {
+	emailService := &EmailService{}
+
+	// Test the issue where NextBillingDate is zero value
+	var zeroTime time.Time
+	testData := DonationReceiptData{
+		DonorName:           "Zero Date Donor",
+		DonationAmount:      50.00,
+		DonationType:        "Monthly",
+		TransactionID:       "ZERO-123",
+		DonationDate:        time.Now(),
+		SubscriptionID:      "SUB-ZERO-123",
+		NextBillingDate:     &zeroTime, // This reproduces the issue
+		OrganizationEIN:     "12-3456789",
+		OrganizationName:    "Test Organization",
+		OrganizationAddress: "123 Main St",
+		DonorAddressLine1:   "456 Donor Rd",
+		DonorCity:           "City",
+		DonorState:          "ST",
+		DonorZip:            "00000",
+	}
+
+	html, err := emailService.generateReceiptHTML(testData)
+	require.NoError(t, err)
+	require.NotEmpty(t, html)
+
+	// This should NOT contain "January 1, 0001" - that's the bug we're fixing
+	require.NotContains(t, html, "January 1, 0001")
+
+	// Instead it should show a reasonable fallback message
+	require.Contains(t, html, "To be determined") // Or whatever fallback we implement
+
+	text := emailService.generateReceiptText(testData)
+	require.NotEmpty(t, text)
+	require.NotContains(t, text, "January 1, 0001")
+	require.Contains(t, text, "To be determined")
+
+	t.Logf("Generated HTML with zero date:\n%s", html)
+	t.Logf("Generated Text with zero date:\n%s", text)
 }
