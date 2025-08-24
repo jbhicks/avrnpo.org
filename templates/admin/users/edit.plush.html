@@ -1,12 +1,8 @@
 <!-- Admin User Edit -->
-<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
-  <!-- Admin Navigation -->
-  <aside>
-    <%= partial("admin/nav") %>
-  </aside>
+<div class="admin-grid">
+    <!-- Admin Navigation -->
+    <aside><%= partial("admin/nav") %></aside>
 
-  <!-- Main Content -->
-  <main id="main-content">
-    <%= partial("admin/users/edit") %>
-  </main>
+    <!-- Main Content -->
+    <main id="main-content"><%= partial("admin/users/edit") %></main>
 </div>

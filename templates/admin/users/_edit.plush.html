@@ -1,5 +1,5 @@
 <!-- Edit User (HTMX Partial) -->
-<header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+<header class="admin-header">
   <div>
     <h1>Edit User</h1>
     <p>Editing: <strong><%= user.FirstName %> <%= user.LastName %></strong></p>
@@ -11,28 +11,28 @@
 </header>
 
 <%= if (errors) { %>
-<article style="background-color: var(--pico-form-element-invalid-border-color); color: white; margin-bottom: 2rem;">
-  <header><strong>Validation Errors</strong></header>
-  <ul style="margin: 0;">
+<div class="error-box">
+  <h4>Validation Errors</h4>
+  <ul>
     <%= for (key, messages) in errors { %>
       <%= for (message) in messages { %>
       <li><%= message %></li>
       <% } %>
     <% } %>
   </ul>
-</article>
+</div>
 <% } %>
 
-<form action="/admin/users/<%= user.ID %>" method="POST" 
+<form action="/admin/users/<%= user.ID %>" method="POST"
       hx-put="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-swap="innerHTML">
   <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
 
-  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+  <div class="grid-2col">
     <!-- User Information -->
     <section>
       <h3>User Information</h3>
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+
+      <div class="grid-2col-equal form-group">
         <div>
           <label for="user-first-name">First Name *</label>
           <input type="text" id="user-first-name" name="FirstName" value="<%= user.FirstName %>" required>
@@ -43,13 +43,13 @@
         </div>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div class="form-group">
         <label for="user-email">Email Address *</label>
         <input type="email" id="user-email" name="Email" value="<%= user.Email %>" required>
         <small>User's email address for login and communications</small>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div class="form-group">
         <label for="user-role">Account Role *</label>
         <select id="user-role" name="Role" required>
           <%= for (option) in roleOptions { %>
@@ -66,34 +66,34 @@
     </section>
 
     <!-- Account Details -->
-    <aside style="background-color: var(--pico-card-background-color); padding: 1.5rem; border-radius: var(--pico-border-radius); height: fit-content;">
-      <h3 style="margin-top: 0;">Account Status</h3>
-      
-      <div style="margin-bottom: 1rem;">
+    <aside class="sidebar">
+      <h3>Account Status</h3>
+
+      <div class="mb-2">
         <strong>User ID:</strong><br>
         <code><%= user.ID %></code>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div class="mb-2">
         <strong>Created:</strong><br>
         <%= dateFormat(user.CreatedAt, "Jan 2, 2006 at 3:04 PM") %>
       </div>
 
-      <div style="margin-bottom: 1rem;">
+      <div class="mb-2">
         <strong>Last Updated:</strong><br>
         <%= dateFormat(user.UpdatedAt, "Jan 2, 2006 at 3:04 PM") %>
       </div>
 
       <hr>
-      <small style="color: var(--pico-muted-color);">
+      <small class="text-muted">
         <strong>Note:</strong> Password changes must be done by the user through their account settings.
       </small>
     </aside>
   </div>
 
   <!-- Form Actions -->
-  <section style="border-top: 1px solid var(--pico-muted-border-color); padding-top: 2rem;">
-    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+  <section class="form-actions">
+    <div class="flex flex-gap">
       <a href="/admin/users/<%= user.ID %>" role="button" class="secondary"
          hx-get="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-push-url="true">
         Cancel

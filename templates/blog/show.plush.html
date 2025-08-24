@@ -1,56 +1,84 @@
 <!-- Individual blog post partial for HTMX loading -->
 <article class="blog-post">
-  <header style="text-align: center; margin-bottom: 2rem;">    <%= if (post.Image != "") { %>
-    <img src="<%= post.Image %>" alt="<%= post.Title %>" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: var(--pico-border-radius); margin-bottom: 2rem;">
-    <% } %>
-    
-    <hgroup>
-      <h1><%= post.Title %></h1>      <small>
-        <%= if (post.User.FirstName != "") { %>
-        By <%= post.User.FirstName %> <%= post.User.LastName %> • 
+    <header class="text-center mb-2">
+        <%= if (post.Image != "") { %>
+        <img
+            src="<%= post.Image %>"
+            alt="<%= post.Title %>"
+            class="post-image-large mb-2"
+        />
         <% } %>
-        <%= dateFormat(post.CreatedAt, "January 2, 2006") %>
-        <%= if (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %>
-        • Updated <%= dateFormat(post.UpdatedAt, "January 2, 2006") %>
-        <% } %>
-      </small>
-    </hgroup>
-  </header>
 
-  <!-- Post Content -->
-  <div class="post-content" style="font-size: 1.125rem; line-height: 1.7; margin-bottom: 3rem;">
-    <%= raw(post.Content) %>
-  </div>
+        <hgroup>
+            <h1><%= post.Title %></h1>
+            <small>
+                <%= if (post.User.FirstName != "") { %> By <%=
+                post.User.FirstName %> <%= post.User.LastName %> • <% } %> <%=
+                dateFormat(post.CreatedAt, "January 2, 2006") %> <%= if
+                (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %> •
+                Updated <%= dateFormat(post.UpdatedAt, "January 2, 2006") %> <%
+                } %>
+            </small>
+        </hgroup>
+    </header>
 
-  <!-- Social Sharing -->
-  <section class="social-sharing" style="border-top: 1px solid var(--pico-muted-border-color); padding-top: 2rem; margin-bottom: 3rem;">
-    <h3>Share This Story</h3>
-    <p>Help us spread awareness about veteran support programs and success stories.</p>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-      <a href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>" target="_blank" role="button" class="secondary outline">
-        Share on Facebook
-      </a>
-      <a href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo" target="_blank" role="button" class="secondary outline">
-        Share on X
-      </a>
-      <a href="/contact" role="button" class="secondary outline">
-        Get Involved
-      </a>
-    </div>
-  </section>
+    <!-- Post Content -->
+    <div class="post-content mb-3"><%= raw(post.Content) %></div>
 
-  <!-- Back to Blog -->
-  <nav style="margin-bottom: 2rem;">
-    <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary outline">← Back to Updates</a>
-  </nav>
+    <!-- Social Sharing -->
+    <section class="social-sharing mb-3">
+        <h3>Share This Story</h3>
+        <p>
+            Help us spread awareness about veteran support programs and success
+            stories.
+        </p>
+        <div class="flex-gap flex-wrap">
+            <a
+                href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Share on Facebook
+            </a>
+            <a
+                href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Share on X
+            </a>
+            <a href="/contact" role="button" class="secondary outline">
+                Contact Us
+            </a>
+        </div>
+    </section>
 
-  <!-- Call to Action -->
-  <section class="post-cta" style="background-color: var(--pico-card-background-color); padding: 2rem; border-radius: var(--pico-border-radius); text-align: center;">
-    <h3>Support American Veterans</h3>
-    <p>Stories like this are made possible by generous supporters who believe in helping veterans rebuild their lives.</p>
-    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-      <a href="/donate" role="button" class="contrast">Make a Donation</a>
-      <a href="/team" role="button" class="secondary">Meet Our Team</a>
-    </div>
-  </section>
+    <!-- Back to Blog -->
+    <nav class="mb-2">
+        <a
+            href="/blog"
+            hx-get="/blog"
+            hx-target="#htmx-content"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            role="button"
+            class="secondary outline"
+            >← Back to Updates</a
+        >
+    </nav>
+
+    <!-- Call to Action -->
+    <section class="post-cta text-center">
+        <h3>Support American Veterans</h3>
+        <p>
+            Stories like this are made possible by generous supporters who
+            believe in helping veterans rebuild their lives.
+        </p>
+        <div class="flex-gap flex-center flex-wrap">
+            <a href="/donate" role="button" class="contrast">Make a Donation</a>
+            <a href="/team" role="button" class="secondary">Meet Our Team</a>
+        </div>
+    </section>
 </article>

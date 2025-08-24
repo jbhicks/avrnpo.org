@@ -1,5 +1,5 @@
 <!-- Create New Post Form -->
-<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+<div class="admin-grid">
   <!-- Admin Navigation -->
   <aside>
     <%= partial("admin/nav") %>
@@ -7,8 +7,8 @@
 
   <!-- New Post Form -->
   <main>
-    <header style="margin-bottom: 2rem;">
-      <nav style="margin-bottom: 1rem;">
+    <header class="mb-2">
+      <nav class="mb-1">
         <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">← Back to Posts</a>
       </nav>
       <h1>Create New Post</h1>
@@ -16,9 +16,9 @@
     </header>
 
     <%= if (errors) { %>
-    <div style="background-color: var(--pico-del-background-color); border: 1px solid var(--pico-del-color); border-radius: var(--pico-border-radius); padding: 1rem; margin-bottom: 2rem;">
-      <h4 style="margin-top: 0; color: var(--pico-del-color);">Please fix the following errors:</h4>
-      <ul style="margin-bottom: 0;">
+    <div class="error-box">
+      <h4 class="mt-0 text-danger">Please fix the following errors:</h4>
+      <ul class="mb-0">
         <%= for (key, messages) in errors { %>
           <%= for (message) in messages { %>
           <li><%= message %></li>
@@ -30,24 +30,24 @@
       <% if (authenticity_token) { %>
         <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
       <% } %>
-      
+
       <!-- Basic Information -->
-      <section style="margin-bottom: 2rem;">
+      <section class="form-section">
         <h3>Basic Information</h3>
-        
-        <div style="margin-bottom: 1rem;">
+
+        <div class="form-group">
           <label for="post-title">Post Title *</label>
           <input type="text" id="post-title" name="Title" value="<%= post.Title %>" required placeholder="e.g., Veteran John Smith Completes Technical Training Program">
           <small>This will be the main headline for your post</small>
         </div>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="form-group">
           <label for="post-slug">URL Slug</label>
           <input type="text" id="post-slug" name="Slug" value="<%= post.Slug %>" placeholder="Auto-generated from title">
           <small>Leave blank to auto-generate from title (e.g., veteran-john-smith-training)</small>
         </div>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="form-group">
           <label for="post-published">
             <input type="checkbox" id="post-published" name="Published" value="true" <%= if (post.Published) { %>checked<% } %>>
             Publish immediately
@@ -57,16 +57,16 @@
       </section>
 
       <!-- Content -->
-      <section style="margin-bottom: 2rem;">
+      <section class="form-section">
         <h3>Content</h3>
-        
-        <div style="margin-bottom: 1rem;">
+
+        <div class="form-group">
           <label for="post-content">Post Content *</label>
           <textarea id="post-content" name="Content" rows="15" required placeholder="Share the veteran's story, program details, or community impact..."><%= post.Content %></textarea>
           <small>Use HTML tags for formatting: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;</small>
         </div>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="form-group">
           <label for="post-image">Featured Image</label>
           <input type="file" id="post-image" name="Image" accept="image/*">
           <small>Upload a photo related to the story (veterans, training, community events)</small>
@@ -74,16 +74,16 @@
       </section>
 
       <!-- SEO Settings -->
-      <section style="margin-bottom: 2rem;">
+      <section class="form-section">
         <h3>SEO & Social Sharing</h3>
-        
-        <div style="margin-bottom: 1rem;">
+
+        <div class="form-group">
           <label for="post-meta-description">Meta Description</label>
           <textarea id="post-meta-description" name="MetaDescription" rows="3" maxlength="160" placeholder="Brief description for search engines and social media (160 characters max)"><%= post.MetaDescription %></textarea>
           <small>This appears in search results and social media previews</small>
         </div>
 
-        <div style="margin-bottom: 1rem;">
+        <div class="form-group">
           <label for="post-meta-keywords">Keywords</label>
           <input type="text" id="post-meta-keywords" name="MetaKeywords" value="<%= post.MetaKeywords %>" placeholder="veterans, training, American Veterans Rebuilding, military">
           <small>Comma-separated keywords to help people find this content</small>
@@ -91,8 +91,8 @@
       </section>
 
       <!-- Form Actions -->
-      <section style="border-top: 1px solid var(--pico-muted-border-color); padding-top: 2rem;">
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+      <section class="form-actions between">
+        <div class="flex-gap">
           <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">Cancel</a>
           <button type="submit" name="action" value="draft" role="button" class="outline">Save as Draft</button>
           <button type="submit" name="action" value="publish" role="button">Publish Post</button>
@@ -101,12 +101,12 @@
     </form>
 
     <!-- Content Guidelines -->
-    <section style="margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+    <section class="content-block mt-3">
       <h3>Content Guidelines</h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+      <div class="grid-auto">
         <div>
           <h4>Veteran Success Stories</h4>
-          <ul style="font-size: 0.95rem;">
+          <ul class="text-small">
             <li>Focus on specific achievements</li>
             <li>Include before/after context</li>
             <li>Highlight program impact</li>

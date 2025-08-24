@@ -1,21 +1,21 @@
 <!-- Shared Post Form Fields -->
 <!-- Basic Information -->
-<section style="margin-bottom: 2rem;">
+<section class="form-section">
   <h3>Basic Information</h3>
-  
-  <div style="margin-bottom: 1rem;">
+
+  <div class="form-group">
     <label for="post-title">Post Title *</label>
     <input type="text" id="post-title" name="Title" value="<%= post.Title %>" required placeholder="e.g., Veteran John Smith Completes Technical Training Program">
     <small>This will be the main headline for your post</small>
   </div>
 
-  <div style="margin-bottom: 1rem;">
+  <div class="form-group">
     <label for="post-slug">URL Slug</label>
     <input type="text" id="post-slug" name="Slug" value="<%= post.Slug %>" placeholder="Auto-generated from title">
     <small>Leave blank to auto-generate from title (e.g., veteran-john-smith-training)</small>
   </div>
 
-  <div style="margin-bottom: 1rem;">
+  <div class="form-group">
     <label for="post-excerpt">Excerpt</label>
     <textarea id="post-excerpt" name="Excerpt" rows="3" placeholder="Brief summary of the post (appears in previews)"><%= post.Excerpt %></textarea>
     <small>A short description that appears in blog listings and social media previews</small>
@@ -23,10 +23,10 @@
 </section>
 
 <!-- Content -->
-<section style="margin-bottom: 2rem;">
+<section class="form-section">
   <h3>Content</h3>
-  
-  <div style="margin-bottom: 1rem;">
+
+  <div class="form-group">
     <label for="post-content">Post Content *</label>
     <textarea id="post-content" name="Content" rows="15" required placeholder="Write your post content here... You can use Markdown formatting."><%= post.Content %></textarea>
     <small>Use Markdown formatting for rich content. Images can be uploaded separately.</small>
@@ -34,16 +34,16 @@
 </section>
 
 <!-- Featured Image -->
-<section style="margin-bottom: 2rem;">
+<section class="form-section">
   <h3>Featured Image</h3>
-  
-  <div style="margin-bottom: 1rem;">
+
+  <div class="form-group">
     <label for="post-image">Image URL</label>
     <input type="url" id="post-image" name="Image" value="<%= post.Image %>" placeholder="https://example.com/image.jpg">
     <small>URL to the featured image for this post</small>
   </div>
 
-  <div style="margin-bottom: 1rem;">
+  <div class="form-group">
     <label for="post-image-alt">Image Alt Text</label>
     <input type="text" id="post-image-alt" name="ImageAlt" value="<%= post.ImageAlt %>" placeholder="Describe the image for accessibility">
     <small>Brief description of the image for screen readers and SEO</small>
@@ -51,41 +51,41 @@
 </section>
 
 <!-- SEO & Social Media -->
-<details style="margin-bottom: 2rem;">
+<details class="form-section">
   <summary><strong>SEO & Social Media Settings</strong></summary>
-  
-  <div style="margin-top: 1rem;">
-    <div style="margin-bottom: 1rem;">
+
+  <div class="mt-2">
+    <div class="form-group">
       <label for="post-meta-title">Meta Title</label>
       <input type="text" id="post-meta-title" name="MetaTitle" value="<%= post.MetaTitle %>" maxlength="60" placeholder="SEO title (leave blank to use post title)">
       <small>Appears in search engine results. Recommended: 50-60 characters</small>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div class="form-group">
       <label for="post-meta-description">Meta Description</label>
       <textarea id="post-meta-description" name="MetaDescription" rows="2" maxlength="160" placeholder="Brief description for search engines"><%= post.MetaDescription %></textarea>
       <small>Appears in search engine results. Recommended: 150-160 characters</small>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div class="form-group">
       <label for="post-meta-keywords">Keywords</label>
       <input type="text" id="post-meta-keywords" name="MetaKeywords" value="<%= post.MetaKeywords %>" placeholder="veterans, training, construction, avr">
       <small>Comma-separated keywords for this post</small>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div class="form-group">
       <label for="post-og-title">Social Media Title</label>
       <input type="text" id="post-og-title" name="OgTitle" value="<%= post.OgTitle %>" placeholder="Title for social media sharing">
       <small>Title when shared on Facebook, Twitter, etc. (leave blank to use post title)</small>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div class="form-group">
       <label for="post-og-description">Social Media Description</label>
       <textarea id="post-og-description" name="OgDescription" rows="2" placeholder="Description for social media sharing"><%= post.OgDescription %></textarea>
       <small>Description when shared on social media (leave blank to use excerpt)</small>
     </div>
 
-    <div style="margin-bottom: 1rem;">
+    <div class="form-group">
       <label for="post-og-image">Social Media Image</label>
       <input type="url" id="post-og-image" name="OgImage" value="<%= post.OgImage %>" placeholder="https://example.com/social-image.jpg">
       <small>Image when shared on social media (recommended: 1200x630px)</small>
@@ -94,10 +94,10 @@
 </details>
 
 <!-- Publishing -->
-<section style="margin-bottom: 2rem;">
+<section class="form-section">
   <h3>Publishing</h3>
-  
-  <div style="margin-bottom: 1rem;">
+
+  <div class="form-group">
     <label>
       <input type="checkbox" name="Published" value="true" <%= if (post.Published) { %>checked<% } %>>
       Publish this post immediately

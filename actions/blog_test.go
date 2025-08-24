@@ -130,7 +130,7 @@ func (as *ActionSuite) Test_AdminPostsCreate() {
 	}
 
 	res := as.HTML("/admin/posts").Post(postData)
-	
+
 	as.Equal(303, res.Code) // Should redirect after creation (303 See Other)
 
 	// Verify post was created
@@ -154,7 +154,7 @@ func (as *ActionSuite) Test_BlogIndex() {
 	as.Contains(body, "<!DOCTYPE html>")
 	as.Contains(body, "<html lang=\"en\">")
 	as.Contains(body, "Blog") // Page header
-	
+
 	// Print the actual body to see what the baseline is
 	as.T().Logf("Blog index response body:\n%s", body)
 }
@@ -195,7 +195,7 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	res := as.HTML("/admin/posts").Get()
 	as.Equal(200, res.Code)
 	body := res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts index should have navigation header")
+	as.Contains(body, `<nav class="admin-nav"`, "Admin posts index should have navigation header")
 	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
 	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
@@ -203,7 +203,7 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	res = as.HTML("/admin/posts/new").Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts new should have navigation header")
+	as.Contains(body, `<nav class="admin-nav"`, "Admin posts new should have navigation header")
 	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
 	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
@@ -211,7 +211,7 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	res = as.HTML("/admin/posts/%d", post.ID).Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts show should have navigation header")
+	as.Contains(body, `<nav class="admin-nav"`, "Admin posts show should have navigation header")
 	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
 	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 
@@ -219,7 +219,7 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	res = as.HTML("/admin/posts/%d/edit", post.ID).Get()
 	as.Equal(200, res.Code)
 	body = res.Body.String()
-	as.Contains(body, `<nav class="container-fluid dashboard-nav"`, "Admin posts edit should have navigation header")
+	as.Contains(body, `<nav class="admin-nav"`, "Admin posts edit should have navigation header")
 	as.Contains(body, `Admin Panel`, "Navigation should have admin panel header")
 	as.Contains(body, `Dashboard`, "Navigation should have dashboard link")
 }

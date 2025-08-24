@@ -41,7 +41,7 @@
                                     </td>
                                     <td><%= subscription.CreatedAt.Format("Jan 2, 2006") %></td>
                                     <td>
-                                        <a href="/account/subscriptions/<%= *subscription.SubscriptionID %>" class="outline">View Details</a>
+                                        <a href="/account/subscriptions/<%= subscription.SubscriptionID %>" class="outline">View Details</a>
                                     </td>
                                 </tr>
                             <% } %>

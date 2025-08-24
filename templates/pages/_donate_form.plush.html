@@ -2,9 +2,9 @@
 <div id="donation-form-content">
         <!-- Hidden field to store selected amount for form submission -->
         <input type="hidden" name="custom_amount" value="<%= amount %>">
-        
+
         <h3>Make a Donation</h3>
-        
+
 <%  hasAnyErrors = errors && errors.Count() > 0
   hasCommentsError = errors && errors.Get("comments")
   hasAmountError = errors && errors.Get("amount")
@@ -19,7 +19,7 @@
 %>
 
 <%= if (hasAnyErrors) { %>
-  <div class="error-summary" style="color:var(--pico-danger);margin-bottom:1em;">
+  <div class="error-summary">
     <strong>Please correct the errors below:</strong>
     <ul>
 <%= for (err) in errors.Errors { %>
@@ -32,13 +32,13 @@
 <p class="donation-subtitle">
   Choose your donation amount or enter a custom amount. All donations are tax-deductible.
 </p>
-        
+
         <div class="donation-amounts">
            <h4>Select Amount</h4>
             <div id="amount-buttons" class="amount-grid">
                             <%= for (preset) in presetAmounts { %>
-                <button type="button" 
-                        class="outline amount-btn<%= if (amount == preset) { %> active<% } %>" 
+                <button type="button"
+                        class="outline amount-btn<%= if (amount == preset) { %> active<% } %>"
                         hx-patch="/donate/update-amount"
                         hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
                         hx-include="closest form"
@@ -46,30 +46,30 @@
                         hx-swap="innerHTML">$<%= preset %></button>
               <% } %>
             </div>
-            
-            <div class="custom-amount-group" style="margin-top:1em;">
+
+            <div class="custom-amount-group">
               <label for="amount">Or enter a custom amount</label>
-              <input type="number" 
-                     id="amount" 
-                     name="amount" 
-                     autocomplete="transaction-amount" 
-                     placeholder="Enter custom amount" 
-                     step="any" 
+              <input type="number"
+                     id="amount"
+                     name="amount"
+                     autocomplete="transaction-amount"
+                     placeholder="Enter custom amount"
+                     step="any"
                      hx-patch="/donate/update-amount"
                      hx-trigger="input changed delay:500ms"
                      hx-vals='{"source": "custom"}'
                      hx-include="closest form"
                      hx-target="#donation-form-content"
                      hx-swap="innerHTML"
-                     value="<% if (source == "custom") { %><%= amount %><% } %>" 
+                     value="<% if (source == "custom") { %><%= amount %><% } %>"
                      <% if (hasAmountError) { %>class="invalid"<% } %>>
               <% if (hasAmountError) { %>
                 <small class="error"><%= errors.Get("amount") %></small>
               <% } %>
             </div>
-            
+
             <!-- Inline script removed; logic now lives in public/assets/js/donation.js -->
-            
+
             <style>
             /* Active state for amount buttons */
             .amount-btn.active {
@@ -77,14 +77,14 @@
               border-color: var(--pico-primary) !important;
               color: var(--pico-primary-inverse) !important;
             }
-            
+
             /* Ensure outline buttons have proper hover/focus states */
             .amount-btn.outline:hover:not(.active) {
               background-color: var(--pico-primary-hover);
               border-color: var(--pico-primary-hover);
               color: var(--pico-primary-inverse);
             }
-            
+
             /* Active state for custom amount input */
             .active-custom {
               border-color: var(--pico-primary) !important;
@@ -92,14 +92,14 @@
             }
             </style>
            </div>
-           
+
         <div class="donation-frequency">
           <fieldset>
             <legend>Donation Frequency</legend>
             <label>
-              <input type="radio" 
-                     name="donation_type" 
-                     value="one-time" 
+              <input type="radio"
+                     name="donation_type"
+                     value="one-time"
                      hx-patch="/donate/update-amount"
                      hx-include="closest form"
                      hx-target="#donation-form-content"
@@ -108,8 +108,8 @@
               One-time donation
             </label>
             <label>
-              <input type="radio" 
-                     name="donation_type" 
+              <input type="radio"
+                     name="donation_type"
                      value="monthly"
                      hx-patch="/donate/update-amount"
                      hx-include="closest form"
@@ -124,18 +124,18 @@
 <label for="comments">Comments (optional)
 </label>
 <%= if (hasCommentsError) { %>
-  <textarea id="comments" 
-            name="comments" 
-            rows="3" 
-            autocomplete="off" 
-            placeholder="Any special message or dedication..." 
+  <textarea id="comments"
+            name="comments"
+            rows="3"
+            autocomplete="off"
+            placeholder="Any special message or dedication..."
             class="invalid"><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
   <small class="error"><%= errors.Get("comments") %></small>
 <% } else { %>
-  <textarea id="comments" 
-            name="comments" 
-            rows="3" 
-            autocomplete="off" 
+  <textarea id="comments"
+            name="comments"
+            rows="3"
+            autocomplete="off"
             placeholder="Any special message or dedication..."><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
 <% } %>
 
@@ -144,21 +144,21 @@
         </small>
 
 </div>
-        
+
 <div class="donor-info">
   <h4>Donor Information</h4>
   <p><small>Required for payment processing and tax receipt</small></p>
-  
+
   <div class="grid">
     <div>
       <label for="first_name">First Name *</label>
-      <input type="text" 
-             id="first_name" 
-             name="first_name" 
-             autocomplete="billing given-name" 
-             aria-required="true" 
+      <input type="text"
+             id="first_name"
+             name="first_name"
+             autocomplete="billing given-name"
+             aria-required="true"
              required
-             value="<% if (firstName && firstName != false) { %><%= firstName %><% } %>" 
+             value="<% if (firstName && firstName != false) { %><%= firstName %><% } %>"
              <% if (hasFirstNameError) { %>class="invalid"<% } %>>
       <% if (hasFirstNameError) { %>
         <small class="error"><%= errors.Get("first_name") %></small>
@@ -167,13 +167,13 @@
 
     <div>
       <label for="last_name">Last Name *</label>
-      <input type="text" 
-             id="last_name" 
-             name="last_name" 
-             autocomplete="billing family-name" 
-             aria-required="true" 
+      <input type="text"
+             id="last_name"
+             name="last_name"
+             autocomplete="billing family-name"
+             aria-required="true"
              required
-             value="<% if (lastName && lastName != false) { %><%= lastName %><% } %>" 
+             value="<% if (lastName && lastName != false) { %><%= lastName %><% } %>"
              <% if (hasLastNameError) { %>class="invalid"<% } %>>
       <% if (hasLastNameError) { %>
         <small class="error"><%= errors.Get("last_name") %></small>
@@ -185,59 +185,59 @@
   <input type="hidden" id="donor-name" name="donor-name" value="">
 
   <label for="donor-email">Email Address *</label>
-  <input type="email" 
-         id="donor-email" 
-         name="donor_email" 
-         autocomplete="billing email" 
-         aria-required="true" 
+  <input type="email"
+         id="donor-email"
+         name="donor_email"
+         autocomplete="billing email"
+         aria-required="true"
          required
-         value="<% if (donorEmail && donorEmail != false) { %><%= donorEmail %><% } %>" 
+         value="<% if (donorEmail && donorEmail != false) { %><%= donorEmail %><% } %>"
          <% if (hasDonorEmailError) { %>class="invalid"<% } %>>
   <% if (hasDonorEmailError) { %>
     <small class="error"><%= errors.Get("donor_email") %></small>
   <% } %>
 
   <label for="donor-phone">Phone Number (optional)</label>
-  <input type="tel" 
-         id="donor-phone" 
-         name="donor_phone" 
-         autocomplete="billing tel" 
-         value="<% if (donorPhone && donorPhone != false) { %><%= donorPhone %><% } %>" 
+  <input type="tel"
+         id="donor-phone"
+         name="donor_phone"
+         autocomplete="billing tel"
+         value="<% if (donorPhone && donorPhone != false) { %><%= donorPhone %><% } %>"
          <% if (hasDonorPhoneError) { %>class="invalid"<% } %>>
   <% if (hasDonorPhoneError) { %>
     <small class="error"><%= errors.Get("donor_phone") %></small>
   <% } %>
 
   <label for="address_line1">Address Line 1 *</label>
-  <input type="text" 
-         id="address_line1" 
-         name="address_line1" 
-         autocomplete="billing address-line1" 
-         aria-required="true" 
+  <input type="text"
+         id="address_line1"
+         name="address_line1"
+         autocomplete="billing address-line1"
+         aria-required="true"
          required
-         value="<% if (addressLine1 && addressLine1 != false) { %><%= addressLine1 %><% } %>" 
+         value="<% if (addressLine1 && addressLine1 != false) { %><%= addressLine1 %><% } %>"
          <% if (hasAddressLine1Error) { %>class="invalid"<% } %>>
   <% if (hasAddressLine1Error) { %>
     <small class="error"><%= errors.Get("address_line1") %></small>
   <% } %>
 
   <label for="address_line2">Address Line 2 (optional)</label>
-  <input type="text" 
-         id="address_line2" 
-         name="address_line2" 
-         autocomplete="billing address-line2" 
+  <input type="text"
+         id="address_line2"
+         name="address_line2"
+         autocomplete="billing address-line2"
          value="<% if (addressLine2 && addressLine2 != false) { %><%= addressLine2 %><% } %>">
 
   <div class="grid">
     <div>
       <label for="city">City *</label>
-      <input type="text" 
-             id="city" 
-             name="city" 
-             autocomplete="billing address-level2" 
-             aria-required="true" 
+      <input type="text"
+             id="city"
+             name="city"
+             autocomplete="billing address-level2"
+             aria-required="true"
              required
-             value="<% if (city && city != false) { %><%= city %><% } %>" 
+             value="<% if (city && city != false) { %><%= city %><% } %>"
              <% if (hasCityError) { %>class="invalid"<% } %>>
       <% if (hasCityError) { %>
         <small class="error"><%= errors.Get("city") %></small>
@@ -246,10 +246,10 @@
 
     <div>
       <label for="state">State *</label>
-      <select id="state" 
-              name="state" 
-              autocomplete="billing address-level1" 
-              aria-required="true" 
+      <select id="state"
+              name="state"
+              autocomplete="billing address-level1"
+              aria-required="true"
               required
               <% if (hasStateError) { %>class="invalid"<% } %>>
         <option value="">Select State</option>
@@ -311,13 +311,13 @@
 
     <div>
       <label for="zip_code">ZIP Code *</label>
-      <input type="text" 
-             id="zip_code" 
-             name="zip_code" 
-             autocomplete="billing postal-code" 
-             aria-required="true" 
+      <input type="text"
+             id="zip_code"
+             name="zip_code"
+             autocomplete="billing postal-code"
+             aria-required="true"
              required
-             value="<% if (zip && zip != false) { %><%= zip %><% } %>" 
+             value="<% if (zip && zip != false) { %><%= zip %><% } %>"
              <% if (hasZipError) { %>class="invalid"<% } %>>
       <% if (hasZipError) { %>
         <small class="error"><%= errors.Get("zip_code") %></small>

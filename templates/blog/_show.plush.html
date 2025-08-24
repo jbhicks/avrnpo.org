@@ -1,41 +1,60 @@
 <!-- Individual blog post partial for HTMX loading -->
 <article class="blog-post">
-  <header style="text-align: center; margin-bottom: 2rem;">
-    <hgroup>
-      <h1><%= post.Title %></h1>
-      <small>
-        <%= if (post.User.FirstName != "") { %>
-        By <%= post.User.FirstName %> <%= post.User.LastName %> • 
-        <% } %>
-        <%= dateFormat(post.CreatedAt, "January 2, 2006") %>
-      </small>
-    </hgroup>
-  </header>
-  
-  <div class="blog-content" style="font-size: 1.125rem; line-height: 1.7; margin-bottom: 3rem;">
-    <%= raw(post.Content) %>
-  </div>
-  
-  <!-- Social Sharing -->
-  <section style="text-align: center; padding: 2rem 0; border-top: 1px solid var(--pico-muted-border-color); margin-top: 3rem;">
-    <h3>Share This Story</h3>
-    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1rem;">
-      <a href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>" target="_blank" role="button" class="secondary outline">
-        Facebook
-      </a>
-      <a href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo" target="_blank" role="button" class="secondary outline">
-        Twitter
-      </a>
-    </div>
-  </section>
-  
-  <!-- Call to Action -->
-  <section style="background-color: var(--pico-card-background-color); padding: 2rem; border-radius: var(--pico-border-radius); margin-top: 3rem; text-align: center;">
-    <h3>Support Our Mission</h3>
-    <p>Help us continue supporting American veterans through training, licensing, and home ownership opportunities.</p>
-    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
-      <a href="/donate" role="button" class="contrast">Make a Donation</a>
-      <a href="/blog" hx-get="/blog" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">Read More Stories</a>
-    </div>
-  </section>
+    <header class="blog-post-header">
+        <hgroup>
+            <h1><%= post.Title %></h1>
+            <small>
+                <%= if (post.User.FirstName != "") { %> By <%=
+                post.User.FirstName %> <%= post.User.LastName %> • <% } %> <%=
+                dateFormat(post.CreatedAt, "January 2, 2006") %>
+            </small>
+        </hgroup>
+    </header>
+
+    <div class="blog-content"><%= raw(post.Content) %></div>
+
+    <!-- Social Sharing -->
+    <section class="social-sharing text-center">
+        <h3>Share This Story</h3>
+        <div class="flex flex-gap flex-center mt-2">
+            <a
+                href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Facebook
+            </a>
+            <a
+                href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Twitter
+            </a>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="post-cta mt-4">
+        <h3>Support Our Mission</h3>
+        <p>
+            Help us continue supporting American veterans through training,
+            licensing, and home ownership opportunities.
+        </p>
+        <div class="flex flex-gap flex-center flex-wrap mt-2">
+            <a href="/donate" role="button" class="contrast">Make a Donation</a>
+            <a
+                href="/blog"
+                hx-get="/blog"
+                hx-target="#htmx-content"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                role="button"
+                class="secondary"
+                >Read More Stories</a
+            >
+        </div>
+    </section>
 </article>

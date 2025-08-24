@@ -1,99 +1,119 @@
 <!-- Admin Dashboard -->
-<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
-  <!-- Admin Navigation -->
-  <aside>
-    <%= partial("admin/nav") %>
-  </aside>
+<div class="admin-grid">
+    <!-- Admin Navigation -->
+    <aside><%= partial("admin/nav") %></aside>
 
-  <!-- Main Dashboard Content -->
-  <main>
-    <header style="margin-bottom: 2rem;">
-      <h1>Admin Dashboard</h1>
-      <p>Welcome to the American Veterans Rebuilding content management system.</p>
-    </header>
+    <!-- Main Dashboard Content -->
+    <main>
+        <header class="mb-4">
+            <h1>Admin Dashboard</h1>
+            <p>
+                Welcome to the American Veterans Rebuilding content management
+                system.
+            </p>
+        </header>
 
-    <!-- Statistics Cards -->
-    <section class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-      <article style="padding: 1.5rem; text-align: center; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-        <h3 style="margin-bottom: 0.5rem; color: var(--pico-primary);"><%= totalPosts %></h3>
-        <p style="margin: 0;">Total Posts</p>
-      </article>
-      
-      <article style="padding: 1.5rem; text-align: center; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-        <h3 style="margin-bottom: 0.5rem; color: var(--pico-primary);"><%= publishedPosts %></h3>
-        <p style="margin: 0;">Published</p>
-      </article>
-      
-      <article style="padding: 1.5rem; text-align: center; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-        <h3 style="margin-bottom: 0.5rem; color: var(--pico-secondary);"><%= draftPosts %></h3>
-        <p style="margin: 0;">Drafts</p>
-      </article>
-      
-      <article style="padding: 1.5rem; text-align: center; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-        <h3 style="margin-bottom: 0.5rem; color: var(--pico-primary);"><%= recentPosts %></h3>
-        <p style="margin: 0;">This Month</p>
-      </article>
-    </section>
+        <!-- Statistics Cards -->
+        <section class="stats-grid">
+            <article class="stat-card">
+                <h3><%= totalPosts %></h3>
+                <p>Total Posts</p>
+            </article>
 
-    <!-- Quick Actions -->
-    <section style="margin-bottom: 2rem;">
-      <h2>Quick Actions</h2>      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <a href="/admin/posts/new" role="button">Create New Post</a>
-        <a href="/admin/posts" role="button" class="secondary">Manage Posts</a>
-        <a href="/blog" role="button" class="outline">View Blog</a>
-      </div>
-    </section>
+            <article class="stat-card">
+                <h3><%= publishedPosts %></h3>
+                <p>Published</p>
+            </article>
 
-    <!-- Recent Posts -->
-    <section>      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2>Recent Posts</h2>
-        <a href="/admin/posts">View All →</a>
-      </div>
-      
-      <%= if (len(posts) > 0) { %>
-      <div class="posts-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for (post) in posts { %>
-            <tr>
-              <td>
-                <strong><%= post.Title %></strong>
-                <%= if (!post.Published) { %>
-                <small style="color: var(--pico-secondary);"> (Draft)</small>
-                <% } %>
-              </td>
-              <td>
-                <%= if (post.Published) { %>
-                <span style="color: var(--pico-primary);">Published</span>
-                <% } else { %>
-                <span style="color: var(--pico-secondary);">Draft</span>
-                <% } %>
-              </td>
-              <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
-              <td>                <div style="display: flex; gap: 0.5rem;">
-                  <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                  <a href="/blog/<%= post.Slug %>" role="button" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">View</a>
-                </div>
-              </td>
-            </tr>
+            <article class="stat-card draft">
+                <h3><%= draftPosts %></h3>
+                <p>Drafts</p>
+            </article>
+
+            <article class="stat-card">
+                <h3><%= recentPosts %></h3>
+                <p>This Month</p>
+            </article>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="mb-4">
+            <h2>Quick Actions</h2>
+            <div class="flex flex-gap flex-wrap">
+                <a href="/admin/posts/new" role="button">Create New Post</a>
+                <a href="/admin/posts" role="button" class="secondary"
+                    >Manage Posts</a
+                >
+                <a href="/blog" role="button" class="outline">View Blog</a>
+            </div>
+        </section>
+
+        <!-- Recent Posts -->
+        <section>
+            <div class="flex-between-center mb-2">
+                <h2>Recent Posts</h2>
+                <a href="/admin/posts">View All →</a>
+            </div>
+
+            <%= if (len(posts) > 0) { %>
+            <div class="posts-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%= for (post) in posts { %>
+                        <tr>
+                            <td>
+                                <strong><%= post.Title %></strong>
+                                <%= if (!post.Published) { %>
+                                <small class="text-secondary"> (Draft)</small>
+                                <% } %>
+                            </td>
+                            <td>
+                                <%= if (post.Published) { %>
+                                <span class="status-published">Published</span>
+                                <% } else { %>
+                                <span class="status-draft">Draft</span>
+                                <% } %>
+                            </td>
+                            <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
+                            <td>
+                                <div class="table-actions">
+                                    <a
+                                        href="/admin/posts/<%= post.ID %>/edit"
+                                        role="button"
+                                        class="secondary outline btn-sm"
+                                        >Edit</a
+                                    >
+                                    <a
+                                        href="/blog/<%= post.Slug %>"
+                                        role="button"
+                                        class="outline btn-sm"
+                                        >View</a
+                                    >
+                                </div>
+                            </td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            <% } else { %>
+            <div class="empty-state">
+                <h3>No Posts Yet</h3>
+                <p>
+                    Get started by creating your first blog post about AVR's
+                    impact.
+                </p>
+                <a href="/admin/posts/new" role="button">Create First Post</a>
+            </div>
             <% } %>
-          </tbody>
-        </table>
-      </div>
-      <% } else { %>      <div style="text-align: center; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-        <h3>No Posts Yet</h3>
-        <p>Get started by creating your first blog post about AVR's impact.</p>
-        <a href="/admin/posts/new" role="button">Create First Post</a>
-      </div>
-      <% } %>
-    </section>
-  </main>
+        </section>
+    </main>
 </div>

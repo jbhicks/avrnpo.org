@@ -1,25 +1,26 @@
 <!-- Admin navigation sidebar -->
-<nav class="container-fluid dashboard-nav" style="background-color: var(--pico-card-background-color); padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 2rem;">  <ul style="margin: 0; padding: 0; list-style: none;">
-    <li style="margin-bottom: 0.5rem;">
-      <strong>Admin Panel</strong>
-    </li>
-    <li style="margin-bottom: 0.5rem;">
-      <a href="/admin">Dashboard</a>
-    </li>
-    <li style="margin-bottom: 0.5rem;">
-      <a href="/admin/posts">Manage Posts</a>
-    </li>
-    <li style="margin-bottom: 0.5rem;">
-      <a href="/admin/posts/new">Create New Post</a>
-    </li>
-    <li style="margin-bottom: 0.5rem; border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem;">
-      <a href="/blog">View Blog</a>
-    </li>
-    <li style="margin-bottom: 0.5rem;">
-      <a href="/dashboard">User Dashboard</a>
-    </li>
-    <li style="margin-bottom: 0.5rem;">
-      <a href="/auth/destroy" data-method="DELETE">Logout</a>
-    </li>
-  </ul>
+<nav class="admin-nav">
+    <ul>
+        <li>
+            <strong>Admin Panel</strong>
+        </li>
+        <li>
+            <a href="/admin">Dashboard</a>
+        </li>
+        <li>
+            <a href="/admin/posts">Manage Posts</a>
+        </li>
+        <li>
+            <a href="/admin/posts/new">Create New Post</a>
+        </li>
+        <li class="nav-section">
+            <a href="/blog">View Blog</a>
+        </li>
+        <li>
+            <a href="/dashboard">User Dashboard</a>
+        </li>
+        <li>
+            <a href="/auth/destroy" data-method="DELETE">Logout</a>
+        </li>
+    </ul>
 </nav>

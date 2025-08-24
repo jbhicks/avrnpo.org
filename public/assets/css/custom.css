@@ -10,86 +10,91 @@
  */
 
 :root {
-  /* AVR Orange/Warning Color Scheme - Matching original DaisyUI warning colors */
-  --pico-primary: #ffb627;                    /* Orange primary color */
-  --pico-primary-background: transparent;     /* Transparent background for outline buttons */
-  --pico-primary-border: #ffb627;            /* Orange border */
-  --pico-primary-underline: #ffb627;
-  --pico-primary-hover: #ffb627;             /* Keep orange on hover */
-  --pico-primary-hover-background: rgba(255, 182, 39, 0.1); /* Light orange hover bg */
-  --pico-primary-focus: #ffb627;
-  --pico-primary-inverse: #ffffff;           /* White text for good contrast on orange background */
-  
-  /* Contrast colors for important CTAs */
-  --pico-contrast: #dc2626;                   /* Red for donations/important actions */
-  --pico-contrast-background: transparent;    /* Transparent background */
-  --pico-contrast-border: #dc2626;
-  --pico-contrast-hover: #dc2626;
-  --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
-  --pico-contrast-inverse: #ffffff;          /* White text for good contrast on red background */
-  
-  /* Secondary colors */
-  --pico-secondary: #6b7280;                  /* Gray for secondary buttons */
-  --pico-secondary-background: transparent;   /* Transparent background */
-  --pico-secondary-border: #6b7280;
-  --pico-secondary-hover: #6b7280;
-  --pico-secondary-hover-background: rgba(107, 114, 128, 0.1);
-  --pico-secondary-inverse: #ffffff;         /* White text for good contrast on gray background */
-  
-  /* Enhanced spacing for better hierarchy */
-  --pico-spacing: 1rem;
-  --pico-typography-spacing-vertical: 1.5rem;
-  --pico-form-element-spacing-vertical: 0.75rem;
-  --pico-form-element-spacing-horizontal: 1rem;
-  
-  /* Better border radius for military/professional look */
-  --pico-border-radius: 0.375rem;
-  --pico-outline-width: 2px;
-  
-  /* Typography improvements */
-  --pico-font-weight: 400;
-  --pico-line-height: 1.6;
+    /* AVR Orange/Warning Color Scheme - Matching original DaisyUI warning colors */
+    --pico-primary: #ffb627; /* Orange primary color */
+    --pico-primary-background: transparent; /* Transparent background for outline buttons */
+    --pico-primary-border: #ffb627; /* Orange border */
+    --pico-primary-underline: #ffb627;
+    --pico-primary-hover: #ffb627; /* Keep orange on hover */
+    --pico-primary-hover-background: rgba(
+        255,
+        182,
+        39,
+        0.1
+    ); /* Light orange hover bg */
+    --pico-primary-focus: #ffb627;
+    --pico-primary-inverse: #ffffff; /* White text for good contrast on orange background */
+
+    /* Contrast colors for important CTAs */
+    --pico-contrast: #dc2626; /* Red for donations/important actions */
+    --pico-contrast-background: transparent; /* Transparent background */
+    --pico-contrast-border: #dc2626;
+    --pico-contrast-hover: #dc2626;
+    --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
+    --pico-contrast-inverse: #ffffff; /* White text for good contrast on red background */
+
+    /* Secondary colors - Using orange to match primary for consistent navigation */
+    --pico-secondary: #ffb627; /* Orange for secondary buttons to match primary */
+    --pico-secondary-background: transparent; /* Transparent background */
+    --pico-secondary-border: #ffb627;
+    --pico-secondary-hover: #ffb627;
+    --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
+    --pico-secondary-inverse: #ffffff; /* White text for good contrast on orange background */
+
+    /* Enhanced spacing for better hierarchy */
+    --pico-spacing: 1rem;
+    --pico-typography-spacing-vertical: 1.5rem;
+    --pico-form-element-spacing-vertical: 0.75rem;
+    --pico-form-element-spacing-horizontal: 1rem;
+
+    /* Better border radius for military/professional look */
+    --pico-border-radius: 0.375rem;
+    --pico-outline-width: 2px;
+
+    /* Typography improvements */
+    --pico-font-weight: 400;
+    --pico-line-height: 1.6;
 }
 
 /* Dark theme customizations to match original AVR */
 [data-theme="dark"],
 :root:not([data-theme="light"]) {
-  /* Dark background like original AVR site */
-  --pico-background-color: hsl(210, 15%, 8%);
-  --pico-color: hsl(210, 15%, 90%);
-  
-  /* Card/section backgrounds */
-  --pico-card-background-color: hsl(210, 15%, 12%);
-  --pico-card-border-color: hsl(210, 15%, 20%);
-  
-  /* Navigation colors */
-  --pico-muted-color: hsl(210, 15%, 70%);
-  --pico-muted-border-color: hsl(210, 15%, 25%);
-  
-  /* Form elements in dark theme */
-  --pico-form-element-background-color: hsl(210, 15%, 15%);
-  --pico-form-element-border-color: hsl(210, 15%, 25%);
-  --pico-form-element-color: hsl(210, 15%, 95%);
-  
-  /* Table/content sections */
-  --pico-table-border-color: hsl(210, 15%, 25%);
-  --pico-table-row-stripped-background-color: hsl(210, 15%, 10%);
+    /* Dark background like original AVR site */
+    --pico-background-color: hsl(210, 15%, 8%);
+    --pico-color: hsl(210, 15%, 90%);
+
+    /* Card/section backgrounds */
+    --pico-card-background-color: hsl(210, 15%, 12%);
+    --pico-card-border-color: hsl(210, 15%, 20%);
+
+    /* Navigation colors */
+    --pico-muted-color: hsl(210, 15%, 70%);
+    --pico-muted-border-color: hsl(210, 15%, 25%);
+
+    /* Form elements in dark theme */
+    --pico-form-element-background-color: hsl(210, 15%, 15%);
+    --pico-form-element-border-color: hsl(210, 15%, 25%);
+    --pico-form-element-color: hsl(210, 15%, 95%);
+
+    /* Table/content sections */
+    --pico-table-border-color: hsl(210, 15%, 25%);
+    --pico-table-row-stripped-background-color: hsl(210, 15%, 10%);
 }
 
 /* Light theme adjustments */
 [data-theme="light"] {
-  /* Clean light backgrounds */
-  --pico-background-color: hsl(0, 0%, 98%);
-  --pico-color: hsl(210, 15%, 15%);
-  
-  /* Card/section backgrounds */
-  --pico-card-background-color: hsl(0, 0%, 100%);
-  --pico-card-border-color: hsl(210, 15%, 85%);
-  
-  /* Subtle borders and separators */
-  --pico-muted-border-color: hsl(210, 15%, 80%);
-  --pico-table-border-color: hsl(210, 15%, 85%);
-  --pico-table-row-stripped-background-color: hsl(210, 15%, 95%);
+    /* Clean light backgrounds */
+    --pico-background-color: hsl(0, 0%, 98%);
+    --pico-color: hsl(210, 15%, 15%);
+
+    /* Card/section backgrounds */
+    --pico-card-background-color: hsl(0, 0%, 100%);
+    --pico-card-border-color: hsl(210, 15%, 85%);
+
+    /* Subtle borders and separators */
+    --pico-muted-border-color: hsl(210, 15%, 80%);
+    --pico-table-border-color: hsl(210, 15%, 85%);
+    --pico-table-row-stripped-background-color: hsl(210, 15%, 95%);
 }
 
 /* =============================================================================
@@ -100,10 +105,10 @@
 
 /* Hero section styling using Pico variables */
 .hero-section {
-  background: var(--pico-card-background-color);
-  border: var(--pico-border-width) solid var(--pico-card-border-color);
-  border-radius: var(--pico-border-radius);
-  margin: var(--pico-typography-spacing-vertical) 0;
+    background: var(--pico-card-background-color);
+    border: var(--pico-border-width) solid var(--pico-card-border-color);
+    border-radius: var(--pico-border-radius);
+    margin: var(--pico-typography-spacing-vertical) 0;
 }
 
 /* Logo styling in navigation */
@@ -114,232 +119,247 @@
 
 /* Header container */
 .avr-header {
-  background-color: var(--pico-card-background-color);
-  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
-  padding: calc(var(--pico-spacing) * 1.5);
-  width: 100%;
-  display: block;
-  box-sizing: border-box;
+    background-color: var(--pico-card-background-color);
+    border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+    padding: calc(var(--pico-spacing) * 1.5);
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
 }
 
 /* 3-column grid layout */
 .header-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: calc(var(--pico-spacing) * 1.5);
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  min-height: 8rem;
-  width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: calc(var(--pico-spacing) * 1.5);
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 8rem;
+    width: 100%;
 }
 
 /* Left section - Armed Services logos */
 .header-left {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 
 .armed-services-logo {
-  max-height: 6rem;
-  max-width: 100%;
-  width: auto;
-  object-fit: contain;
+    max-height: 6rem;
+    max-width: 100%;
+    width: auto;
+    object-fit: contain;
 }
 
 /* Center section - Main logo and tagline */
 .header-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
 }
 
 .main-logo {
-  height: 7.5rem;
-  width: auto;
-  margin-bottom: calc(var(--pico-spacing) * 0.75);
+    height: 7.5rem;
+    width: auto;
+    margin-bottom: calc(var(--pico-spacing) * 0.75);
 }
 
 .tagline {
-  font-style: italic;
-  font-size: 1.125rem;
-  color: var(--pico-muted-color);
-  margin: 0;
-  max-width: 300px;
-  line-height: 1.4;
+    font-style: italic;
+    font-size: 1.125rem;
+    color: var(--pico-muted-color);
+    margin: 0;
+    max-width: 300px;
+    line-height: 1.4;
 }
 
 /* Right section - Social icons */
 .header-right {
-  display: flex;
-  gap: calc(var(--pico-spacing) * 0.75);
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  height: 100%;
+    display: flex;
+    gap: calc(var(--pico-spacing) * 0.75);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    height: 100%;
 }
 
 .social-icon {
-  display: inline-block;
-  transition: opacity 0.2s ease;
-  text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.2s ease;
+    text-decoration: none;
 }
 
 .social-icon:hover {
-  opacity: 0.7;
+    opacity: 0.7;
 }
 
 .social-icon img {
-  height: 2.5rem;
-  width: 2.5rem;
-  object-fit: contain;
-  display: block;
+    height: 2.5rem;
+    width: 2.5rem;
+    object-fit: contain;
+    display: block;
 }
 
 /* AVR Navigation Bar */
 .avr-navigation {
-  background-color: var(--pico-background-color);
-  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
-  padding: calc(var(--pico-spacing) * 1.25) 0;
-  margin-top: 0;
-  width: 100%;
+    background-color: var(--pico-background-color);
+    border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+    padding: calc(var(--pico-spacing) * 1.25) 0;
+    margin-top: 0;
+    width: 100%;
 }
 
 .nav-links {
-  display: flex;
-  justify-content: center;
-  gap: calc(var(--pico-spacing) * 2);
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 var(--pico-spacing);
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: calc(var(--pico-spacing) * 2);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--pico-spacing);
+    flex-wrap: wrap;
 }
 
-.nav-links a[role="button"] {
-  font-size: 0.875rem;
-  padding: calc(var(--pico-spacing) * 0.625) calc(var(--pico-spacing) * 1.25);
-  white-space: nowrap;
-  border-color: var(--pico-primary);
-  color: var(--pico-primary);
+/* Navigation buttons - force orange color with maximum specificity */
+nav.avr-navigation .nav-links a[role="button"],
+nav.avr-navigation .nav-links a[role="button"].outline {
+    font-size: 0.875rem;
+    padding: calc(var(--pico-spacing) * 0.625) calc(var(--pico-spacing) * 1.25);
+    white-space: nowrap;
+    border: 1px solid #ffb627 !important;
+    color: #ffb627 !important;
+    background-color: transparent !important;
+    text-decoration: none !important;
 }
 
-.nav-links a[role="button"]:hover {
-  background-color: var(--pico-primary-hover-background);
+nav.avr-navigation .nav-links a[role="button"]:hover,
+nav.avr-navigation .nav-links a[role="button"].outline:hover {
+    background-color: rgba(255, 182, 39, 0.1) !important;
+    border-color: #ffb627 !important;
+    color: #ffb627 !important;
 }
 
-.nav-links a[role="button"].contrast {
-  border-color: var(--pico-contrast);
-  color: var(--pico-contrast);
+nav.avr-navigation .nav-links a[role="button"]:focus,
+nav.avr-navigation .nav-links a[role="button"].outline:focus {
+    border-color: #ffb627 !important;
+    color: #ffb627 !important;
+    box-shadow: 0 0 0 2px rgba(255, 182, 39, 0.25) !important;
 }
 
-.nav-links a[role="button"].contrast:hover {
-  background-color: var(--pico-contrast-hover-background);
+nav.avr-navigation .nav-links a[role="button"].contrast {
+    border-color: var(--pico-contrast) !important;
+    color: var(--pico-contrast) !important;
+}
+
+nav.avr-navigation .nav-links a[role="button"].contrast:hover {
+    background-color: var(--pico-contrast-hover-background) !important;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .header-grid {
-    grid-template-columns: 1fr;
-    gap: calc(var(--pico-spacing) * 0.75);
-    text-align: center;
-  }
-  
-  .armed-services-logo {
-    max-height: 4rem;
-  }
-  
-  .main-logo {
-    height: 5rem;
-  }
-  
-  .tagline {
-    font-size: 1rem;
-  }
-  
-  .nav-links {
-    flex-wrap: wrap;
-    gap: var(--pico-spacing);
-    justify-content: center;
-  }
-  
-  .nav-links a[role="button"] {
-    font-size: 0.75rem;
-    padding: calc(var(--pico-spacing) * 0.375) calc(var(--pico-spacing) * 0.75);
-  }
+    .header-grid {
+        grid-template-columns: 1fr;
+        gap: calc(var(--pico-spacing) * 0.75);
+        text-align: center;
+    }
+
+    .armed-services-logo {
+        max-height: 4rem;
+    }
+
+    .main-logo {
+        height: 5rem;
+    }
+
+    .tagline {
+        font-size: 1rem;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        gap: var(--pico-spacing);
+        justify-content: center;
+    }
+
+    .nav-links a[role="button"] {
+        font-size: 0.75rem;
+        padding: calc(var(--pico-spacing) * 0.375)
+            calc(var(--pico-spacing) * 0.75);
+    }
 }
 
 /* Legacy styles for other templates */
 .logo img {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 /* Header logo styling */
 .header-logo {
-  height: 2rem;
-  width: auto;
-  margin-right: var(--pico-spacing);
+    height: 2rem;
+    width: auto;
+    margin-right: var(--pico-spacing);
 }
 
 /* Brand text styling */
 .brand-text {
-  color: var(--pico-primary);
+    color: var(--pico-primary);
 }
 
 /* Dashboard navigation styling */
 .dashboard-nav {
-  background: var(--pico-card-background-color);
-  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
-  margin-bottom: var(--pico-typography-spacing-vertical);
+    background: var(--pico-card-background-color);
+    border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+    margin-bottom: var(--pico-typography-spacing-vertical);
 }
 
 /* Theme toggle button */
 .theme-toggle-btn {
-  background: transparent;
-  border: none;
-  color: var(--pico-color);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: var(--pico-border-radius);
+    background: transparent;
+    border: none;
+    color: var(--pico-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--pico-border-radius);
 }
 
 .theme-toggle-btn:hover {
-  background: var(--pico-primary-hover-background);
-  color: var(--pico-primary);
+    background: var(--pico-primary-hover-background);
+    color: var(--pico-primary);
 }
 
 /* Icon spacing */
 .icon-standard {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
 .icon-spacing {
-  margin-right: 0.5rem;
+    margin-right: 0.5rem;
 }
 
 /* Theme toggle button styling using Pico variables */
 .theme-toggle-btn {
-  background: none;
-  border: none;
-  padding: 0.25rem;
-  cursor: pointer;
-  color: inherit;
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: inherit;
 }
 
 .theme-toggle-btn:hover,
 .theme-toggle-btn:focus {
-  background-color: var(--pico-muted-hover-background);
-  border-radius: var(--pico-border-radius);
+    background-color: var(--pico-muted-hover-background);
+    border-radius: var(--pico-border-radius);
 }
 
 /* Icon styling */
 .icon {
-  vertical-align: middle;
-  margin-right: calc(var(--pico-spacing) * 0.25);
+    vertical-align: middle;
+    margin-right: calc(var(--pico-spacing) * 0.25);
 }
 
 /* =============================================================================
@@ -347,101 +367,101 @@
    ============================================================================= */
 
 .dashboard-nav {
-  border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
-  margin-bottom: var(--pico-spacing);
-  padding: calc(var(--pico-spacing) * 0.75) calc(var(--pico-spacing) * 2);
+    border-bottom: var(--pico-border-width) solid var(--pico-muted-border-color);
+    margin-bottom: var(--pico-spacing);
+    padding: calc(var(--pico-spacing) * 0.75) calc(var(--pico-spacing) * 2);
 }
 
 .dashboard-nav a.logo {
-  color: var(--pico-contrast);
-  text-decoration: none;
+    color: var(--pico-contrast);
+    text-decoration: none;
 }
 
 .dashboard-nav a.logo:hover {
-  color: var(--pico-primary);
+    color: var(--pico-primary);
 }
 
 /* Consistent Stats Card Design */
 .stats-card {
-  text-align: center;
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+    text-align: center;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .stats-card header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: calc(var(--pico-spacing) / 2);
-  margin-bottom: var(--pico-spacing);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--pico-spacing) / 2);
+    margin-bottom: var(--pico-spacing);
 }
 
 .stats-card header svg {
-  color: var(--pico-primary);
-  flex-shrink: 0;
+    color: var(--pico-primary);
+    flex-shrink: 0;
 }
 
 .stats-card header h3 {
-  margin: 0;
-  font-size: 1.1rem;
+    margin: 0;
+    font-size: 1.1rem;
 }
 
 .stats-card p {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: calc(var(--pico-spacing) / 2) 0;
-  text-align: center;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--pico-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    margin: calc(var(--pico-spacing) / 2) 0;
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pico-primary);
 }
 
 .stats-card footer {
-  margin-top: auto;
+    margin-top: auto;
 }
 
 .stats-card footer small {
-  color: var(--pico-muted-color);
+    color: var(--pico-muted-color);
 }
 
 /* Profile Summary Styling */
 .profile-summary {
-  text-align: left;
-  margin: var(--pico-spacing) 0;
+    text-align: left;
+    margin: var(--pico-spacing) 0;
 }
 
 .profile-summary h4 {
-  margin: 0 0 calc(var(--pico-spacing) / 2) 0;
-  font-size: 1.2rem;
+    margin: 0 0 calc(var(--pico-spacing) / 2) 0;
+    font-size: 1.2rem;
 }
 
 .profile-summary p {
-  margin: calc(var(--pico-spacing) / 4) 0;
-  font-size: 0.9rem;
+    margin: calc(var(--pico-spacing) / 4) 0;
+    font-size: 0.9rem;
 }
 
 /* Consistent Icon Sizing */
 article header svg,
 .icon-standard {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
 /* Large icon variant for special cases */
 .icon-large {
-  width: 24px;
-  height: 24px;
+    width: 24px;
+    height: 24px;
 }
 
 /* Small icon variant */
 .icon-small {
-  width: 16px;
-  height: 16px;
+    width: 16px;
+    height: 16px;
 }
 
 /* =============================================================================
@@ -449,99 +469,104 @@ article header svg,
    ============================================================================= */
 
 .form-grid {
-  max-width: 500px; /* Structural constraint, fine */
-  margin: 0 auto;
+    max-width: 500px; /* Structural constraint, fine */
+    margin: 0 auto;
 }
 
 .form-actions {
-  display: flex;
-  gap: var(--pico-spacing);
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--pico-spacing);
+    display: flex;
+    gap: var(--pico-spacing);
+    justify-content: space-between;
+    align-items: center;
+    margin-top: var(--pico-spacing);
 }
 
 .action-buttons button,
 .action-buttons a {
-  margin: 0;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
 }
 
 .admin-role {
-  color: var(--pico-color-red-500);
+    color: var(--pico-color-red-500);
 }
 
 .warning-header {
-  color: var(--pico-color-red-500);
+    color: var(--pico-color-red-500);
 }
 
 .inline-form {
-  margin: 0;
+    margin: 0;
 }
 
 .icon-spacing {
-  margin-right: 8px;
+    margin-right: 8px;
 }
 
 .pagination-spacing {
-  margin: 0 1rem;
+    margin: 0 1rem;
 }
 
 .danger-zone {
-  border-left: 4px solid var(--pico-color-red-500);
+    border-left: 4px solid var(--pico-color-red-500);
 }
 
 /* Blog Templates */
 .unstyled-link {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 .unstyled-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 /* Blog grid layout */
 .grid article {
-  margin-bottom: var(--pico-spacing);
+    margin-bottom: var(--pico-spacing);
 }
 
 /* Blog post content */
 .content {
-  margin: var(--pico-typography-spacing-vertical) 0;
-  line-height: 1.6;
+    margin: var(--pico-typography-spacing-vertical) 0;
+    line-height: 1.6;
 }
 
-.content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-  margin-top: calc(var(--pico-typography-spacing-vertical) * 1.5);
-  margin-bottom: var(--pico-typography-spacing-vertical);
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+    margin-top: calc(var(--pico-typography-spacing-vertical) * 1.5);
+    margin-bottom: var(--pico-typography-spacing-vertical);
 }
 
 .content p {
-  margin-bottom: var(--pico-typography-spacing-vertical);
+    margin-bottom: var(--pico-typography-spacing-vertical);
 }
 
 .content img {
-  max-width: 100%;
-  height: auto;
-  border-radius: var(--pico-border-radius);
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--pico-border-radius);
 }
 
 /* Admin table improvements */
 .action-buttons {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .inline-form {
-  display: inline;
+    display: inline;
 }
 
 .admin-role {
-  font-weight: bold;
-  color: var(--pico-primary);
+    font-weight: bold;
+    color: var(--pico-primary);
 }
 
 /* =============================================================================
@@ -556,18 +581,22 @@ button:not(.amount-btn),
 input[type="submit"]:not(.amount-btn),
 input[type="button"]:not(.amount-btn),
 a[role="button"]:not(.amount-btn) {
-  background-color: transparent;
-  border: 2px solid currentColor;
+    background-color: transparent;
+    border: 2px solid currentColor;
 }
 
 /* Primary buttons use orange - exclude amount buttons */
 [role="button"]:not(.secondary):not(.contrast):not(.outline):not(.amount-btn),
 button:not(.secondary):not(.contrast):not(.outline):not(.amount-btn),
-input[type="submit"]:not(.secondary):not(.contrast):not(.outline):not(.amount-btn),
-input[type="button"]:not(.secondary):not(.contrast):not(.outline):not(.amount-btn),
+input[type="submit"]:not(.secondary):not(.contrast):not(.outline):not(
+        .amount-btn
+    ),
+input[type="button"]:not(.secondary):not(.contrast):not(.outline):not(
+        .amount-btn
+    ),
 a[role="button"]:not(.secondary):not(.contrast):not(.outline):not(.amount-btn) {
-  color: var(--pico-primary);
-  border-color: var(--pico-primary);
+    color: var(--pico-primary);
+    border-color: var(--pico-primary);
 }
 
 /* Outline buttons use orange - exclude amount buttons */
@@ -576,8 +605,9 @@ button.outline:not(.amount-btn),
 input[type="submit"].outline:not(.amount-btn),
 input[type="button"].outline:not(.amount-btn),
 a[role="button"].outline:not(.amount-btn) {
-  color: var(--pico-primary);
-  border-color: var(--pico-primary);
+    color: var(--pico-primary) !important;
+    border-color: var(--pico-primary) !important;
+    background-color: transparent !important;
 }
 
 /* Secondary buttons use primary color - exclude amount buttons */
@@ -586,8 +616,8 @@ button.secondary:not(.amount-btn),
 input[type="submit"].secondary:not(.amount-btn),
 input[type="button"].secondary:not(.amount-btn),
 a[role="button"].secondary:not(.amount-btn) {
-  color: var(--pico-primary);
-  border-color: var(--pico-primary);
+    color: var(--pico-primary);
+    border-color: var(--pico-primary);
 }
 
 /* Contrast buttons use red for donations - exclude amount buttons */
@@ -596,8 +626,8 @@ button.contrast:not(.amount-btn),
 input[type="submit"].contrast:not(.amount-btn),
 input[type="button"].contrast:not(.amount-btn),
 a[role="button"].contrast:not(.amount-btn) {
-  color: var(--pico-contrast);
-  border-color: var(--pico-contrast);
+    color: var(--pico-contrast);
+    border-color: var(--pico-contrast);
 }
 
 /* Hover effects - exclude amount buttons to allow their custom styles */
@@ -606,7 +636,7 @@ button:not(.amount-btn):hover,
 input[type="submit"]:not(.amount-btn):hover,
 input[type="button"]:not(.amount-btn):hover,
 a[role="button"]:not(.amount-btn):hover {
-  background-color: rgba(255, 182, 39, 0.1);
+    background-color: rgba(255, 182, 39, 0.1);
 }
 
 [role="button"].secondary:not(.amount-btn):hover,
@@ -614,7 +644,7 @@ button.secondary:not(.amount-btn):hover,
 input[type="submit"].secondary:not(.amount-btn):hover,
 input[type="button"].secondary:not(.amount-btn):hover,
 a[role="button"].secondary:not(.amount-btn):hover {
-  background-color: rgba(255, 182, 39, 0.1);
+    background-color: rgba(255, 182, 39, 0.1);
 }
 
 [role="button"].contrast:not(.amount-btn):hover,
@@ -622,7 +652,7 @@ button.contrast:not(.amount-btn):hover,
 input[type="submit"].contrast:not(.amount-btn):hover,
 input[type="button"].contrast:not(.amount-btn):hover,
 a[role="button"].contrast:not(.amount-btn):hover {
-  background-color: rgba(220, 38, 38, 0.1);
+    background-color: rgba(220, 38, 38, 0.1);
 }
 
 /* =============================================================================
@@ -630,11 +660,11 @@ a[role="button"].contrast:not(.amount-btn):hover {
    ============================================================================= */
 
 .text-center {
-  text-align: center;
+    text-align: center;
 }
 
 .text-muted {
-  color: var(--pico-muted-color);
+    color: var(--pico-muted-color);
 }
 
 /* =============================================================================
@@ -642,14 +672,14 @@ a[role="button"].contrast:not(.amount-btn):hover {
    ============================================================================= */
 
 @media (max-width: 768px) {
-  .dashboard-nav {
-    padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
-  }
-  
-  .form-actions {
-    flex-direction: column;
-    gap: calc(var(--pico-spacing) / 2);
-  }
+    .dashboard-nav {
+        padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: calc(var(--pico-spacing) / 2);
+    }
 }
 
 /* =============================================================================
@@ -657,21 +687,21 @@ a[role="button"].contrast:not(.amount-btn):hover {
    ============================================================================= */
 
 [data-theme="dark"] .site-header {
-  background-color: var(--pico-card-background-color);
-  color: var(--pico-color);
-  border-bottom-color: var(--pico-muted-border-color);
+    background-color: var(--pico-card-background-color);
+    color: var(--pico-color);
+    border-bottom-color: var(--pico-muted-border-color);
 }
 
 [data-theme="light"] .site-header {
-  background-color: var(--pico-card-background-color);
-  border-bottom-color: var(--pico-muted-border-color);
+    background-color: var(--pico-card-background-color);
+    border-bottom-color: var(--pico-muted-border-color);
 }
 
 /* Fix any dropdown positioning issues */
 .site-header details[role="list"] ul,
 .dashboard-nav details[role="list"] ul {
-  right: 0;
-  left: auto;
+    right: 0;
+    left: auto;
 }
 
 /* =============================================================================
@@ -686,11 +716,11 @@ a[role="button"].contrast:not(.amount-btn):hover {
 /* Only show valid/invalid state after user interaction */
 input:valid:not(:user-valid),
 textarea:valid:not(:user-valid) {
-  box-shadow: none !important;
+    box-shadow: none !important;
 }
 input:invalid:not(:user-invalid),
 textarea:invalid:not(:user-invalid) {
-  box-shadow: none !important;
+    box-shadow: none !important;
 }
 
 /* =============================================================================
@@ -699,19 +729,19 @@ textarea:invalid:not(:user-invalid) {
 
 /* Amount button styling - Custom buttons without Pico.css conflicts */
 .amount-grid button.amount-btn {
-  background-color: transparent !important;
-  background: transparent !important;
-  border: 2px solid #ffb627 !important;
-  color: #ffb627 !important;
-  padding: 0.75rem 1rem !important;
-  border-radius: 0.375rem !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  font-size: 1rem !important;
-  font-weight: 500 !important;
-  text-decoration: none !important;
-  display: inline-block !important;
-  text-align: center !important;
+    background-color: transparent !important;
+    background: transparent !important;
+    border: 2px solid #ffb627 !important;
+    color: #ffb627 !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 0.375rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    text-align: center !important;
 }
 
 /* Active state - filled background - highest specificity */
@@ -719,61 +749,61 @@ textarea:invalid:not(:user-invalid) {
 .amount-grid button.amount-btn.active:focus,
 .amount-grid button.amount-btn.active:active,
 .amount-grid button.amount-btn.active:focus-visible {
-  background-color: #ffb627 !important;
-  background: #ffb627 !important;
-  border-color: #ffb627 !important;
-  color: #ffffff !important;
-  outline: none !important;
+    background-color: #ffb627 !important;
+    background: #ffb627 !important;
+    border-color: #ffb627 !important;
+    color: #ffffff !important;
+    outline: none !important;
 }
 
 /* Hover state - filled background - but don't override active */
 .amount-grid button.amount-btn:hover:not(.active) {
-  background-color: #ffb627 !important;
-  background: #ffb627 !important;
-  border-color: #ffb627 !important;
-  color: #ffffff !important;
+    background-color: #ffb627 !important;
+    background: #ffb627 !important;
+    border-color: #ffb627 !important;
+    color: #ffffff !important;
 }
 
 /* Focus state for non-active buttons */
 .amount-grid button.amount-btn:focus:not(.active),
 .amount-grid button.amount-btn:focus-visible:not(.active) {
-  outline: 2px solid #ffb627 !important;
-  outline-offset: 2px !important;
+    outline: 2px solid #ffb627 !important;
+    outline-offset: 2px !important;
 }
 
 .amount-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .amount-btn {
-  flex: 0 1 calc(33.333% - 0.5rem);
-  min-width: 100px;
-  max-width: 120px;
-  text-align: center;
+    flex: 0 1 calc(33.333% - 0.5rem);
+    min-width: 100px;
+    max-width: 120px;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
-  .amount-grid {
-    gap: 0.5rem;
-  }
-  
-  .amount-btn {
-    flex: 0 1 calc(50% - 0.25rem);
-    min-width: 90px;
-    max-width: 110px;
-  }
+    .amount-grid {
+        gap: 0.5rem;
+    }
+
+    .amount-btn {
+        flex: 0 1 calc(50% - 0.25rem);
+        min-width: 90px;
+        max-width: 110px;
+    }
 }
 
 @media (max-width: 480px) {
-  .amount-btn {
-    flex: 0 1 calc(50% - 0.25rem);
-    min-width: 80px;
-    max-width: 100px;
-  }
+    .amount-btn {
+        flex: 0 1 calc(50% - 0.25rem);
+        min-width: 80px;
+        max-width: 100px;
+    }
 }
 
 /* =============================================================================
@@ -781,33 +811,33 @@ textarea:invalid:not(:user-invalid) {
    ============================================================================= */
 
 .auth-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
 }
 
 .sign-in-btn {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .signout-form {
-  display: inline;
-  margin-left: 10px;
+    display: inline;
+    margin-left: 10px;
 }
 
 .signout-btn {
-  background: none;
-  border: none;
-  color: #007bff;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: inherit;
-  font-family: inherit;
+    background: none;
+    border: none;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
 }
 
 .signout-btn:hover {
-  color: #0056b3;
+    color: #0056b3;
 }
 
 /* =============================================================================
@@ -815,10 +845,10 @@ textarea:invalid:not(:user-invalid) {
    ============================================================================= */
 
 .posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--pico-spacing);
-  margin-top: var(--pico-spacing);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--pico-spacing);
+    margin-top: var(--pico-spacing);
 }
 
 /* =============================================================================
@@ -827,81 +857,84 @@ textarea:invalid:not(:user-invalid) {
 
 /* AVR Header styles */
 .avr-header {
-  background-color: var(--pico-card-background-color);
-  padding: 1rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
+    background-color: var(--pico-card-background-color);
+    padding: 1rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 .header-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  align-items: center;
-  gap: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.header-left, .header-right {
-  display: flex;
-  align-items: center;
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
 }
 
 .header-right {
-  justify-content: flex-end;
-  gap: 0.5rem;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 
 .header-center {
-  text-align: center;
+    text-align: center;
 }
 
-.armed-services-logo, .main-logo {
-  max-height: 120px;
-  width: auto;
+.armed-services-logo,
+.main-logo {
+    max-height: 120px;
+    width: auto;
 }
 
 .main-logo {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .tagline {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--pico-muted-color);
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--pico-muted-color);
 }
 
 .social-icon img {
-  width: 40px;
-  height: 40px;
+    width: 40px;
+    height: 40px;
 }
 
 .avr-navigation {
-  background-color: var(--pico-background-color);
-  padding: 1rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
+    background-color: var(--pico-background-color);
+    padding: 1rem;
+    border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 .nav-links {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
-  .header-grid {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  
-  .header-left, .header-right {
-    justify-content: center;
-  }
-  
-  .nav-links {
-    flex-direction: column;
-    align-items: center;
-  }
+    .header-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .header-left,
+    .header-right {
+        justify-content: center;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+    }
 }
 
 /* =============================================================================
@@ -909,75 +942,75 @@ textarea:invalid:not(:user-invalid) {
    ============================================================================= */
 
 .donation-success {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: calc(var(--pico-spacing) * 2) var(--pico-spacing);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: calc(var(--pico-spacing) * 2) var(--pico-spacing);
 }
 
 .success-message {
-  text-align: center;
-  margin-bottom: calc(var(--pico-spacing) * 3);
+    text-align: center;
+    margin-bottom: calc(var(--pico-spacing) * 3);
 }
 
 .success-message h1 {
-  color: var(--pico-primary);
-  margin-bottom: var(--pico-spacing);
+    color: var(--pico-primary);
+    margin-bottom: var(--pico-spacing);
 }
 
 .lead {
-  font-size: 1.125rem;
-  color: var(--pico-muted-color);
-  max-width: 600px;
-  margin: 0 auto;
+    font-size: 1.125rem;
+    color: var(--pico-muted-color);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .next-step {
-  background-color: var(--pico-card-background-color);
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: var(--pico-border-radius);
-  padding: var(--pico-spacing);
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: var(--pico-spacing);
 }
 
 .next-step h3 {
-  margin-bottom: calc(var(--pico-spacing) / 2);
-  color: var(--pico-primary);
+    margin-bottom: calc(var(--pico-spacing) / 2);
+    color: var(--pico-primary);
 }
 
 .impact-examples {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: calc(var(--pico-spacing) / 2);
-  margin-top: var(--pico-spacing);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: calc(var(--pico-spacing) / 2);
+    margin-top: var(--pico-spacing);
 }
 
 .impact-item {
-  background-color: var(--pico-card-background-color);
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: var(--pico-border-radius);
-  padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
-  text-align: center;
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: calc(var(--pico-spacing) / 2) var(--pico-spacing);
+    text-align: center;
 }
 
 .impact-item strong {
-  color: var(--pico-primary);
-  font-size: 1.25rem;
-  display: block;
-  margin-bottom: calc(var(--pico-spacing) / 4);
+    color: var(--pico-primary);
+    font-size: 1.25rem;
+    display: block;
+    margin-bottom: calc(var(--pico-spacing) / 4);
 }
 
 .action-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--pico-spacing);
-  justify-content: center;
-  margin-top: var(--pico-spacing);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--pico-spacing);
+    justify-content: center;
+    margin-top: var(--pico-spacing);
 }
 
 .next-actions {
-  text-align: center;
-  margin-top: calc(var(--pico-spacing) * 2);
-  padding-top: calc(var(--pico-spacing) * 2);
-  border-top: 1px solid var(--pico-muted-border-color);
+    text-align: center;
+    margin-top: calc(var(--pico-spacing) * 2);
+    padding-top: calc(var(--pico-spacing) * 2);
+    border-top: 1px solid var(--pico-muted-border-color);
 }
 
 /* =============================================================================
@@ -985,64 +1018,64 @@ textarea:invalid:not(:user-invalid) {
    ============================================================================= */
 
 .donation-failed {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: calc(var(--pico-spacing) * 2) var(--pico-spacing);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: calc(var(--pico-spacing) * 2) var(--pico-spacing);
 }
 
 .error-message {
-  text-align: center;
-  margin-bottom: calc(var(--pico-spacing) * 3);
+    text-align: center;
+    margin-bottom: calc(var(--pico-spacing) * 3);
 }
 
 .error-message h1 {
-  color: var(--pico-contrast);
-  margin-bottom: var(--pico-spacing);
+    color: var(--pico-contrast);
+    margin-bottom: var(--pico-spacing);
 }
 
 .troubleshoot-step {
-  background-color: var(--pico-card-background-color);
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: var(--pico-border-radius);
-  padding: var(--pico-spacing);
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: var(--pico-spacing);
 }
 
 .troubleshoot-step h3 {
-  margin-bottom: calc(var(--pico-spacing) / 2);
-  color: var(--pico-primary);
+    margin-bottom: calc(var(--pico-spacing) / 2);
+    color: var(--pico-primary);
 }
 
 .troubleshoot-step a {
-  margin-top: calc(var(--pico-spacing) / 2);
-  display: inline-block;
+    margin-top: calc(var(--pico-spacing) / 2);
+    display: inline-block;
 }
 
 .common-issues {
-  margin: calc(var(--pico-spacing) * 2) 0;
+    margin: calc(var(--pico-spacing) * 2) 0;
 }
 
 .common-issues details {
-  margin-bottom: var(--pico-spacing);
+    margin-bottom: var(--pico-spacing);
 }
 
 .support-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--pico-spacing);
-  margin-top: var(--pico-spacing);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--pico-spacing);
+    margin-top: var(--pico-spacing);
 }
 
 .support-item {
-  background-color: var(--pico-card-background-color);
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: var(--pico-border-radius);
-  padding: var(--pico-spacing);
-  text-align: center;
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: var(--pico-spacing);
+    text-align: center;
 }
 
 .support-item h4 {
-  margin-bottom: calc(var(--pico-spacing) / 2);
-  color: var(--pico-primary);
+    margin-bottom: calc(var(--pico-spacing) / 2);
+    color: var(--pico-primary);
 }
 
 /* =============================================================================
@@ -1051,23 +1084,605 @@ textarea:invalid:not(:user-invalid) {
 
 /* Ensure consistent sizing for contact page social icons */
 .contact-content .grid img {
-  max-height: 2.5rem;
-  max-width: 2.5rem;
-  height: auto;
-  width: auto;
-  object-fit: contain;
+    max-height: 2.5rem;
+    max-width: 2.5rem;
+    height: auto;
+    width: auto;
+    object-fit: contain;
 }
 
 /* =============================================================================
-   SHARED RESPONSIVE STYLES FOR DONATION PAGES
+   ADMIN PANEL COMPONENT CLASSES
+   ============================================================================= */
+
+/* Admin grid layout */
+.admin-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+}
+
+/* Admin navigation styling */
+.admin-nav {
+    background-color: var(--pico-card-background-color);
+    padding: 1rem;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 2rem;
+}
+
+.admin-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.admin-nav .nav-section {
+    border-top: 1px solid var(--pico-muted-border-color);
+    padding-top: 0.5rem;
+}
+
+/* Admin header with actions */
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.admin-header-start {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+}
+
+/* Admin statistics cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    text-align: center;
+    background-color: var(--pico-card-background-color);
+    border-radius: var(--pico-border-radius);
+}
+
+.stat-card h3 {
+    margin-bottom: 0.5rem;
+    color: var(--pico-primary);
+}
+
+.stat-card p {
+    margin: 0;
+}
+
+.stat-card.draft h3 {
+    color: var(--pico-secondary);
+}
+
+/* =============================================================================
+   LAYOUT UTILITY CLASSES
+   ============================================================================= */
+
+/* Flexbox utilities */
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.flex-center {
+    display: flex;
+    justify-content: center;
+}
+
+.flex-align-center {
+    display: flex;
+    align-items: center;
+}
+
+.flex-between-center {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-gap {
+    gap: 1rem;
+}
+
+.flex-gap-sm {
+    gap: 0.5rem;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+/* Grid utilities */
+.grid {
+    display: grid;
+}
+
+.grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.grid-2col {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.grid-2col-equal {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* =============================================================================
+   SPACING UTILITY CLASSES
+   ============================================================================= */
+
+/* Margin utilities */
+.mb-0 {
+    margin-bottom: 0;
+}
+.mb-1 {
+    margin-bottom: calc(var(--pico-spacing) * 0.5);
+}
+.mb-2 {
+    margin-bottom: var(--pico-spacing);
+}
+.mb-3 {
+    margin-bottom: calc(var(--pico-spacing) * 1.5);
+}
+.mb-4 {
+    margin-bottom: calc(var(--pico-spacing) * 2);
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+.mt-1 {
+    margin-top: calc(var(--pico-spacing) * 0.5);
+}
+.mt-2 {
+    margin-top: var(--pico-spacing);
+}
+.mt-3 {
+    margin-top: calc(var(--pico-spacing) * 1.5);
+}
+.mt-4 {
+    margin-top: calc(var(--pico-spacing) * 2);
+}
+
+/* Padding utilities */
+.p-1 {
+    padding: calc(var(--pico-spacing) * 0.5);
+}
+.p-2 {
+    padding: var(--pico-spacing);
+}
+.p-3 {
+    padding: calc(var(--pico-spacing) * 1.5);
+}
+.p-4 {
+    padding: calc(var(--pico-spacing) * 2);
+}
+
+/* =============================================================================
+   FORM COMPONENT CLASSES
+   ============================================================================= */
+
+/* Form sections */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h3 {
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+/* Form actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 2rem;
+    border-top: 1px solid var(--pico-muted-border-color);
+}
+
+.form-actions.between {
+    justify-content: space-between;
+}
+
+/* Search and filter bar */
+.search-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* =============================================================================
+   CONTENT COMPONENT CLASSES
+   ============================================================================= */
+
+/* Error messages */
+.error-box {
+    background-color: var(--pico-del-background-color);
+    border: 1px solid var(--pico-del-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.error-box h4 {
+    margin-top: 0;
+    color: var(--pico-del-color);
+}
+
+.error-box ul {
+    margin-bottom: 0;
+}
+
+/* Card components */
+.card {
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 1rem;
+}
+
+.card-padded {
+    padding: 1.5rem;
+}
+
+.card-lg {
+    padding: 2rem;
+}
+
+/* Content blocks */
+.content-block {
+    background-color: var(--pico-card-background-color);
+    padding: 1rem;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--pico-primary);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--pico-muted-color);
+}
+
+.sidebar {
+    background-color: var(--pico-card-background-color);
+    padding: 1.5rem;
+    border-radius: var(--pico-border-radius);
+    height: fit-content;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+}
+
+/* =============================================================================
+   STATUS AND COLOR UTILITIES
+   ============================================================================= */
+
+/* Status colors */
+.status-published {
+    color: var(--pico-primary);
+    font-weight: bold;
+}
+
+.status-draft {
+    color: var(--pico-secondary);
+    font-weight: bold;
+}
+
+.status-success {
+    color: green;
+}
+
+.status-warning {
+    color: orange;
+}
+
+.status-danger {
+    color: red;
+}
+
+/* Text colors */
+.text-muted {
+    color: var(--pico-muted-color);
+}
+
+.text-primary {
+    color: var(--pico-primary);
+}
+
+.text-secondary {
+    color: var(--pico-secondary);
+}
+
+.text-small {
+    font-size: 0.875rem;
+}
+
+.text-danger {
+    color: var(--pico-del-color);
+}
+
+/* Icon alignment */
+.icon-spacing {
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+/* Lead text */
+.lead {
+    font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+/* Action column utilities */
+.action-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Error and status message utilities */
+.error-summary {
+    color: var(--pico-del-color);
+    margin-bottom: 1rem;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--pico-primary);
+}
+
+.payment-error {
+    color: var(--pico-del-color);
+    margin-top: 1rem;
+}
+
+.payment-processing {
+    color: var(--pico-primary);
+    margin-top: 1rem;
+}
+
+.custom-amount-group {
+    margin-top: 1rem;
+}
+
+/* Role badge styling */
+.admin-role {
+    background-color: var(--pico-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--pico-border-radius);
+    font-size: 0.875rem;
+    font-weight: bold;
+}
+
+.user-role {
+    background-color: var(--pico-muted-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--pico-border-radius);
+    font-size: 0.875rem;
+}
+
+/* Blog-specific component classes */
+.blog-hero {
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.blog-hero p {
+    font-size: 1.2rem;
+    color: var(--pico-primary);
+    margin-bottom: 2rem;
+}
+
+.featured-post {
+    margin-bottom: 3rem;
+}
+
+.featured-post article {
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    padding: 2rem;
+}
+
+.featured-post p {
+    font-size: 1.125rem;
+    line-height: 1.6;
+}
+
+.blog-post header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.blog-content {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+}
+
+.post-content {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+}
+
+.post-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--pico-border-radius);
+}
+
+.post-image-large {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 2rem;
+}
+
+.social-sharing {
+    border-top: 1px solid var(--pico-muted-border-color);
+    padding-top: 2rem;
+    margin-bottom: 3rem;
+}
+
+.post-cta {
+    background-color: var(--pico-card-background-color);
+    padding: 2rem;
+    border-radius: var(--pico-border-radius);
+    text-align: center;
+}
+
+.blog-nav {
+    margin-bottom: 2rem;
+}
+
+.empty-blog-state {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+/* =============================================================================
+   BUTTON UTILITIES
+   ============================================================================= */
+
+/* Button sizing */
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.btn-xs {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Danger button styling */
+.btn-danger {
+    color: red;
+    border-color: red;
+}
+
+/* Action button groups */
+.action-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bulk-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* =============================================================================
+   TABLE UTILITIES
+   ============================================================================= */
+
+/* Table action cells */
+.table-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* =============================================================================
+   MEDIA AND IMAGE UTILITIES
+   ============================================================================= */
+
+/* Responsive images */
+.img-cover {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 1rem;
+}
+
+/* =============================================================================
+   RESPONSIVE UTILITIES
    ============================================================================= */
 
 @media (max-width: 768px) {
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .action-buttons a {
-    width: 100%;
-  }
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-2col {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .flex-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-buttons a {
+        width: 100%;
+    }
 }

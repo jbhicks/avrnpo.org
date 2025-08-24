@@ -17,7 +17,7 @@ help:
 	@echo "  admin      - 👑 Promote first user to admin role"
 	@echo ""
 	@echo "Database Commands:"
-	@echo "  db-up      - 🗄️  Start PostgreSQL database with Podman"
+	@echo "  db-up      - 🗄️  Start PostgreSQL database with Docker/Podman"
 	@echo "  db-down    - ⬇️  Stop PostgreSQL database"
 	@echo "  db-reset   - 🔄 Reset database (drop, create, migrate)"
 	@echo "  db-status  - 📊 Check database container status"
@@ -56,11 +56,15 @@ check-deps:
 		echo "✅ Buffalo CLI is installed: $$(buffalo version)"; \
 	fi; \
 	if ! command -v podman-compose >/dev/null 2>&1; then \
-		if ! command -v docker-compose >/dev/null 2>&1; then \
-			echo "❌ Neither podman-compose nor docker-compose found. Please install Podman or Docker."; \
+		if ! command -v docker-compose >/dev/null 2>&1 && ! (command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1); then \
+			echo "❌ No container orchestration found. Please install Podman (recommended) or Docker with Compose."; \
 			error_count=$$((error_count + 1)); \
 		else \
-			echo "✅ Docker Compose is installed: $$(docker-compose version)"; \
+			if command -v docker-compose >/dev/null 2>&1; then \
+				echo "✅ Docker Compose (v1) is installed: $$(docker-compose version)"; \
+			else \
+				echo "✅ Docker Compose (v2) is installed: $$(docker compose version)"; \
+			fi; \
 		fi; \
 	else \
 		echo "✅ Podman Compose is installed: $$(podman-compose version)"; \
@@ -90,19 +94,7 @@ dev: check-deps
 	@echo "🔍 Checking database status..."
 	@# Check if database is already running and ready
 	@DB_READY=false; \
-	if command -v podman-compose >/dev/null 2>&1; then \
-		if podman-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
-			echo "✅ Database container is running (Podman)"; \
-			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
-				echo "✅ PostgreSQL is ready and accepting connections"; \
-				DB_READY=true; \
-			else \
-				echo "⚠️  Database container is running but PostgreSQL is not ready"; \
-			fi; \
-		else \
-			echo "🔷 Database container not running, starting with Podman Compose..."; \
-		fi; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	if command -v docker-compose >/dev/null 2>&1; then \
 		if docker-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
 			echo "✅ Database container is running (Docker)"; \
 			if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
@@ -114,31 +106,43 @@ dev: check-deps
 		else \
 			echo "🐳 Database container not running, starting with Docker Compose..."; \
 		fi; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		if podman-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
+			echo "✅ Database container is running (Podman)"; \
+			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+				echo "✅ PostgreSQL is ready and accepting connections"; \
+				DB_READY=true; \
+			else \
+				echo "⚠️  Database container is running but PostgreSQL is not ready"; \
+			fi; \
+		else \
+			echo "🔷 Database container not running, starting with Podman Compose..."; \
+		fi; \
 	else \
-		echo "❌ Neither podman-compose nor docker-compose found."; \
-		echo "Please install Podman (recommended) or Docker."; \
+		echo "❌ Neither docker-compose nor podman-compose found."; \
+		echo "Please install Docker (recommended) or Podman."; \
 		exit 1; \
 	fi; \
 	\
 	if [ "$$DB_READY" = "false" ]; then \
 		echo "🗄️  Ensuring database is running..."; \
-		if command -v podman-compose >/dev/null 2>&1; then \
-			podman-compose up -d postgres || (echo "❌ Failed to start database with Podman Compose" && exit 1); \
-		elif command -v docker-compose >/dev/null 2>&1; then \
+		if command -v docker-compose >/dev/null 2>&1; then \
 			docker-compose up -d postgres || (echo "❌ Failed to start database with Docker Compose" && exit 1); \
+		elif command -v podman-compose >/dev/null 2>&1; then \
+			podman-compose up -d postgres || (echo "❌ Failed to start database with Podman Compose" && exit 1); \
 		fi; \
 		\
 		echo "🔍 Waiting for database to be ready..."; \
 		MAX_WAIT=30; \
 		WAIT_COUNT=0; \
 		while [ $$WAIT_COUNT -lt $$MAX_WAIT ]; do \
-			if command -v podman-compose >/dev/null 2>&1; then \
-				if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+			if command -v docker-compose >/dev/null 2>&1; then \
+				if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
 					echo "✅ PostgreSQL is ready!"; \
 					break; \
 				fi; \
-			elif command -v docker-compose >/dev/null 2>&1; then \
-				if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+			elif command -v podman-compose >/dev/null 2>&1; then \
+				if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
 					echo "✅ PostgreSQL is ready!"; \
 					break; \
 				fi; \
@@ -151,14 +155,14 @@ dev: check-deps
 		if [ $$WAIT_COUNT -ge $$MAX_WAIT ]; then \
 			echo "❌ PostgreSQL failed to become ready within $$MAX_WAIT seconds"; \
 			echo "Database container status:"; \
-			if command -v podman-compose >/dev/null 2>&1; then \
-				podman-compose ps; \
-				echo "Container logs:"; \
-				podman-compose logs postgres --tail 20; \
-			elif command -v docker-compose >/dev/null 2>&1; then \
+			if command -v docker-compose >/dev/null 2>&1; then \
 				docker-compose ps; \
 				echo "Container logs:"; \
 				docker-compose logs postgres --tail 20; \
+			elif command -v podman-compose >/dev/null 2>&1; then \
+				podman-compose ps; \
+				echo "Container logs:"; \
+				podman-compose logs postgres --tail 20; \
 			fi; \
 			echo "⚠️  Database startup failed, but continuing to try Buffalo..."; \
 			echo "💡 You may need to run 'make db-reset' if there are database issues."; \
@@ -217,20 +221,7 @@ migrate: db-up
 db-up:
 	@echo "🗄️  Starting PostgreSQL database..."
 	@# Check if database is already running
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		if podman-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
-			echo "✅ Database is already running (Podman)"; \
-			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
-				echo "✅ PostgreSQL is ready and accepting connections"; \
-			else \
-				echo "🔄 Database container is running but PostgreSQL is not ready, restarting..."; \
-				podman-compose restart postgres; \
-			fi; \
-		else \
-			echo "🔷 Starting database with Podman Compose..."; \
-			podman-compose up -d postgres || (echo "❌ Failed to start database with Podman Compose" && exit 1); \
-		fi; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		if docker-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
 			echo "✅ Database is already running (Docker)"; \
 			if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
@@ -243,11 +234,24 @@ db-up:
 			echo "🐳 Starting database with Docker Compose..."; \
 			docker-compose up -d postgres || (echo "❌ Failed to start database with Docker Compose" && exit 1); \
 		fi; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		if podman-compose ps 2>/dev/null | grep -q "postgres.*Up\|postgres.*running\|postgres.*healthy"; then \
+			echo "✅ Database is already running (Podman)"; \
+			if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+				echo "✅ PostgreSQL is ready and accepting connections"; \
+			else \
+				echo "🔄 Database container is running but PostgreSQL is not ready, restarting..."; \
+				podman-compose restart postgres; \
+			fi; \
+		else \
+			echo "🔷 Starting database with Podman Compose..."; \
+			podman-compose up -d postgres || (echo "❌ Failed to start database with Podman Compose" && exit 1); \
+		fi; \
 	else \
-		echo "❌ Neither podman-compose nor docker-compose found."; \
-		echo "Please install Podman (recommended) or Docker."; \
-		echo "Podman: https://podman.io/getting-started/installation"; \
+		echo "❌ Neither docker-compose nor podman-compose found."; \
+		echo "Please install Docker (recommended) or Podman."; \
 		echo "Docker: https://docs.docker.com/get-docker/"; \
+		echo "Podman: https://podman.io/getting-started/installation"; \
 		exit 1; \
 	fi
 	@echo "✅ Database container started successfully."
@@ -255,10 +259,10 @@ db-up:
 # Stop PostgreSQL database
 db-down:
 	@echo "⬇️  Stopping PostgreSQL database..."
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		podman-compose down || echo "Database was not running."; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose down || echo "Database was not running."; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		podman-compose down || echo "Database was not running."; \
 	else \
 		echo "❌ No compose command found."; \
 	fi
@@ -267,20 +271,20 @@ db-down:
 # Check database status with detailed information
 db-status:
 	@echo "📊 Database container status:"
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		podman-compose ps postgres 2>/dev/null || echo "❌ Database container not found (Podman)"; \
-		echo ""; \
-		echo "📡 Container health:"; \
-		if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
-			echo "✅ PostgreSQL is ready and accepting connections"; \
-		else \
-			echo "❌ PostgreSQL is not ready"; \
-		fi; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose ps postgres 2>/dev/null || echo "❌ Database container not found (Docker)"; \
 		echo ""; \
 		echo "📡 Container health:"; \
 		if docker-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
+			echo "✅ PostgreSQL is ready and accepting connections"; \
+		else \
+			echo "❌ PostgreSQL is not ready"; \
+		fi; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		podman-compose ps postgres 2>/dev/null || echo "❌ Database container not found (Podman)"; \
+		echo ""; \
+		echo "📡 Container health:"; \
+		if podman-compose exec postgres pg_isready -U postgres >/dev/null 2>&1; then \
 			echo "✅ PostgreSQL is ready and accepting connections"; \
 		else \
 			echo "❌ PostgreSQL is not ready"; \
@@ -292,10 +296,10 @@ db-status:
 # Show database logs
 db-logs:
 	@echo "📋 Database container logs (last 50 lines):"
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		podman-compose logs postgres --tail 50 || echo "❌ Cannot access database logs"; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose logs postgres --tail 50 || echo "❌ Cannot access database logs"; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		podman-compose logs postgres --tail 50 || echo "❌ Cannot access database logs"; \
 	else \
 		echo "❌ No compose command found."; \
 	fi
@@ -312,10 +316,10 @@ db-reset:
 		exit 1; \
 	fi
 	@echo "� Terminating active database connections..."
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		podman-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='avrnpo_development' AND pid <> pg_backend_pid();" 2>/dev/null || echo "No active connections to terminate"; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='avrnpo_development' AND pid <> pg_backend_pid();" 2>/dev/null || echo "No active connections to terminate"; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		podman-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='avrnpo_development' AND pid <> pg_backend_pid();" 2>/dev/null || echo "No active connections to terminate"; \
 	fi
 	@echo "�🗑️  Dropping development database..."
 	@buffalo pop drop -e development 2>/dev/null || echo "Database drop failed (may not exist)"
@@ -359,7 +363,7 @@ test-fast: check-deps
 test-resilient: check-deps
 	@echo "🔄 Running resilient test suite..."
 	@echo "🔍 Checking if database is running..."
-	@if ! podman-compose ps | grep -q "postgres.*Up" 2>/dev/null; then \
+	@if ! docker-compose ps | grep -q "postgres.*Up" 2>/dev/null && ! podman-compose ps | grep -q "postgres.*Up" 2>/dev/null; then \
 		echo "🗄️  Database not running, starting it..."; \
 		$(MAKE) db-up; \
 		sleep 3; \
@@ -400,14 +404,14 @@ clean:
 	@echo "🧹 Cleaning up development environment..."
 	@echo "This will stop all services and remove containers. Continue? [y/N]" && read ans && [ $${ans:-N} = y ]
 	@echo "🛑 Stopping all services..."
-	@if command -v podman-compose >/dev/null 2>&1; then \
-		podman-compose down || echo "Services were not running."; \
-		echo "🗑️  Cleaning up containers and volumes..."; \
-		podman system prune -f --volumes 2>/dev/null || echo "Cleanup completed with warnings."; \
-	elif command -v docker-compose >/dev/null 2>&1; then \
+	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose down || echo "Services were not running."; \
 		echo "🗑️  Cleaning up containers and volumes..."; \
 		docker system prune -f --volumes 2>/dev/null || echo "Cleanup completed with warnings."; \
+	elif command -v podman-compose >/dev/null 2>&1; then \
+		podman-compose down || echo "Services were not running."; \
+		echo "🗑️  Cleaning up containers and volumes..."; \
+		podman system prune -f --volumes 2>/dev/null || echo "Cleanup completed with warnings."; \
 	else \
 		echo "❌ No compose command found."; \
 	fi

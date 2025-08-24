@@ -1,95 +1,145 @@
 <!-- Admin Posts Management -->
-<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
-  <!-- Admin Navigation -->
-  <aside>
-    <%= partial("admin/nav") %>
-  </aside>
+<div class="admin-grid">
+    <!-- Admin Navigation -->
+    <aside><%= partial("admin/nav") %></aside>
 
-  <!-- Posts Management Content -->
-  <main>    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-      <div>
-        <h1>Manage Posts</h1>
-        <p>Create, edit, and manage blog posts for American Veterans Rebuilding.</p>
-      </div>
-      <a href="/admin/posts/new" role="button">Create New Post</a>
-    </header>
+    <!-- Posts Management Content -->
+    <main>
+        <header class="admin-header mb-2">
+            <div>
+                <h1>Manage Posts</h1>
+                <p>
+                    Create, edit, and manage blog posts for American Veterans
+                    Rebuilding.
+                </p>
+            </div>
+            <a href="/admin/posts/new" role="button">Create New Post</a>
+        </header>
 
-    <%= if (len(posts) > 0) { %>
-    <!-- Posts Table -->
-    <div class="posts-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Updated</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= for (post) in posts { %>
-          <tr>
-            <td>
-              <div>
-                <strong><%= post.Title %></strong>
-                <%= if (post.Slug != "") { %>
-                <br><small style="color: var(--pico-muted-color);">/blog/<%= post.Slug %></small>
-                <% } %>
-              </div>
-            </td>            <td>
-              <%= if (post.User != nil && post.User.FirstName != "") { %>
-              <%= post.User.FirstName %> <%= post.User.LastName %>
-              <% } else { %>
-              <em>No author</em>
-              <% } %>
-            </td>
-            <td>
-              <%= if (post.Published) { %>
-              <span style="color: var(--pico-primary); font-weight: bold;">Published</span>
-              <% } else { %>
-              <span style="color: var(--pico-secondary);">Draft</span>
-              <% } %>
-            </td>
-            <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
-            <td>
-              <%= if (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %>
-              <%= post.UpdatedAt.Format("Jan 2, 2006") %>
-              <% } else { %>
-              <em>Not updated</em>
-              <% } %>
-            </td>
-            <td>              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Edit</a>
-                <a href="/blog/<%= post.Slug %>" target="_blank" role="button" class="outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">View</a>
-                <button hx-delete="/admin/posts/<%= post.ID %>" hx-confirm="Are you sure you want to delete this post? This action cannot be undone." hx-target="closest tr" hx-swap="outerHTML" role="button" class="contrast outline" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">Delete</button>
-              </div>
-            </td>
-          </tr>
-          <% } %>
-        </tbody>
-      </table>
-    </div>
-    <% } else { %>
-    <!-- No Posts State -->    <div style="text-align: center; padding: 3rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-      <h2>No Posts Yet</h2>
-      <p>Start sharing American Veterans Rebuilding's impact by creating your first blog post.</p>
-      <p>Share veteran success stories, program updates, and community involvement opportunities.</p>
-      <a href="/admin/posts/new" role="button">Create First Post</a>
-    </div>
-    <% } %>
+        <%= if (len(posts) > 0) { %>
+        <!-- Posts Table -->
+        <div class="posts-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <%= for (post) in posts { %>
+                    <tr>
+                        <td>
+                            <div>
+                                <strong><%= post.Title %></strong>
+                                <%= if (post.Slug != "") { %>
+                                <br /><small class="text-muted"
+                                    >/blog/<%= post.Slug %></small
+                                >
+                                <% } %>
+                            </div>
+                        </td>
+                        <td>
+                            <%= if (post.User != nil && post.User.FirstName !=
+                            "") { %> <%= post.User.FirstName %> <%=
+                            post.User.LastName %> <% } else { %>
+                            <em>No author</em>
+                            <% } %>
+                        </td>
+                        <td>
+                            <%= if (post.Published) { %>
+                            <span class="status-published">Published</span>
+                            <% } else { %>
+                            <span class="status-draft">Draft</span>
+                            <% } %>
+                        </td>
+                        <td><%= post.CreatedAt.Format("Jan 2, 2006") %></td>
+                        <td>
+                            <%= if
+                            (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour)))
+                            { %> <%= post.UpdatedAt.Format("Jan 2, 2006") %> <%
+                            } else { %>
+                            <em>Not updated</em>
+                            <% } %>
+                        </td>
+                        <td>
+                            <div class="action-group flex-gap-sm flex-wrap">
+                                <a
+                                    href="/admin/posts/<%= post.ID %>/edit"
+                                    role="button"
+                                    class="secondary outline btn-sm"
+                                    >Edit</a
+                                >
+                                <a
+                                    href="/blog/<%= post.Slug %>"
+                                    target="_blank"
+                                    role="button"
+                                    class="outline btn-sm"
+                                    >View</a
+                                >
+                                <button
+                                    hx-delete="/admin/posts/<%= post.ID %>"
+                                    hx-confirm="Are you sure you want to delete this post? This action cannot be undone."
+                                    hx-target="closest tr"
+                                    hx-swap="outerHTML"
+                                    role="button"
+                                    class="contrast outline btn-sm"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+        <% } else { %>
+        <div class="empty-state text-center">
+            <h2>No Posts Yet</h2>
+            <p>
+                Start sharing American Veterans Rebuilding's impact by creating
+                your first blog post.
+            </p>
+            <p>
+                Share veteran success stories, program updates, and community
+                involvement opportunities.
+            </p>
+            <a href="/admin/posts/new" role="button">Create First Post</a>
+        </div>
+        <% } %>
 
-    <!-- Tips for Content Creation -->
-    <section style="margin-top: 3rem; padding: 2rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
-      <h3>Content Creation Tips</h3>
-      <ul>
-        <li><strong>Veteran Stories:</strong> Share success stories of veterans who have benefited from AVR programs</li>
-        <li><strong>Program Updates:</strong> Announce new training opportunities, licensing programs, or home ownership initiatives</li>
-        <li><strong>Community Impact:</strong> Highlight how donations and volunteer work are making a difference</li>
-        <li><strong>SEO Optimization:</strong> Include relevant keywords and meta descriptions to help people find your content</li>
-        <li><strong>Call to Action:</strong> Every post should guide readers toward donation, volunteering, or program participation</li>
-      </ul>
-    </section>
-  </main>
+        <!-- Tips for Content Creation -->
+        <section class="content-block mt-3">
+            <h3>Content Creation Tips</h3>
+            <ul>
+                <li>
+                    <strong>Veteran Stories:</strong> Share success stories of
+                    veterans who have benefited from AVR programs
+                </li>
+                <li>
+                    <strong>Program Updates:</strong> Announce new training
+                    opportunities, licensing programs, or home ownership
+                    initiatives
+                </li>
+                <li>
+                    <strong>Community Impact:</strong> Highlight how donations
+                    and volunteer work are making a difference
+                </li>
+                <li>
+                    <strong>SEO Optimization:</strong> Include relevant keywords
+                    and meta descriptions to help people find your content
+                </li>
+                <li>
+                    <strong>Call to Action:</strong> Every post should guide
+                    readers toward donation, volunteering, or program
+                    participation
+                </li>
+            </ul>
+        </section>
+    </main>
 </div>
