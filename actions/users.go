@@ -6,6 +6,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
+	"github.com/gobuffalo/validate/v3"
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 
@@ -28,11 +29,22 @@ func UsersCreate(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 
+	// Check if accept_terms checkbox was checked
+	acceptTerms := c.Param("accept_terms")
+	verrs := validate.NewErrors()
+
+	if acceptTerms != "on" {
+		verrs.Add("accept_terms", "You must accept the Terms of Service and Privacy Policy")
+	}
+
 	tx := c.Value("tx").(*pop.Connection)
-	verrs, err := u.Create(tx)
+	userVerrs, err := u.Create(tx)
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
+	// Combine validation errors
+	verrs.Append(userVerrs)
 
 	if verrs.HasAny() {
 		// Log failed registration attempt
@@ -43,7 +55,7 @@ func UsersCreate(c buffalo.Context) error {
 
 		c.Set("user", u)
 		c.Set("errors", verrs)
-		return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
+		return c.Render(http.StatusUnprocessableEntity, r.HTML("users/new.plush.html"))
 	}
 
 	// Log successful user registration
@@ -53,7 +65,7 @@ func UsersCreate(c buffalo.Context) error {
 	})
 
 	c.Session().Set("current_user_id", u.ID)
-	c.Flash().Add("success", "Welcome to my-go-saas-template!")
+	c.Flash().Add("success", "Welcome to American Veterans Rebuilding!")
 
 	return c.Redirect(http.StatusFound, "/")
 }
@@ -317,9 +329,13 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 			if err != nil {
 				// If user not found, clear the session and continue
 				c.Session().Delete("current_user_id")
+				c.Set("current_user", nil)
 			} else {
 				c.Set("current_user", u)
 			}
+		} else {
+			// Explicitly set current_user to nil when no session
+			c.Set("current_user", nil)
 		}
 		return next(c)
 	}
@@ -330,7 +346,7 @@ func Authorize(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		// Check if current_user was set by SetCurrentUser middleware
 		user, ok := c.Value("current_user").(*models.User)
-		
+
 		if !ok || user == nil {
 			c.Session().Set("redirectURL", c.Request().URL.String())
 

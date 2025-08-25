@@ -36,10 +36,10 @@
     <a href="/projects" role="button" class="secondary outline">Projects</a>
     <a href="/donate" role="button" class="secondary outline">Donate</a>
     <a href="/contact" role="button" class="secondary outline">Contact</a>
-    <% if (current_user) { %>
+    <%= if (current_user) { %>
       <a href="/dashboard" role="button" class="outline">Dashboard</a>
       <a href="/account" role="button" class="outline">Account</a>
-      <% if (current_user.Role == "admin") { %>
+      <%= if (current_user.Role == "admin") { %>
         <a href="/admin" role="button" class="outline">Admin</a>
       <% } %>
       <a href="/signout" role="button" class="outline">Sign Out</a>

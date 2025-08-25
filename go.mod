@@ -41,6 +41,7 @@ require (
 	github.com/gobuffalo/github_flavored_markdown v1.1.3 // indirect
 	github.com/gobuffalo/httptest v1.5.2 // indirect
 	github.com/gobuffalo/meta v0.3.3 // indirect
+	github.com/gobuffalo/mw-csrf v1.0.2 // indirect
 	github.com/gobuffalo/nulls v0.4.2 // indirect
 	github.com/gobuffalo/plush/v4 v4.1.18 // indirect
 	github.com/gobuffalo/plush/v5 v5.0.4 // indirect

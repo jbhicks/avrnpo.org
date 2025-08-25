@@ -23,8 +23,8 @@ type User struct {
 	LastName     string    `json:"last_name" db:"last_name"`
 	Role         string    `json:"role" db:"role"` // Added Role field
 
-	Password             string `json:"-" db:"-"`
-	PasswordConfirmation string `json:"-" db:"-"`
+	Password             string `json:"-" db:"-" form:"password"`
+	PasswordConfirmation string `json:"-" db:"-" form:"password_confirmation"`
 }
 
 // Create wraps up the pattern of encrypting the password and
@@ -51,6 +51,8 @@ func (u *User) VerifyPassword(password string) error {
 func (u *User) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	var err error
 	return validate.Validate(
+		&validators.StringIsPresent{Field: u.FirstName, Name: "FirstName"},
+		&validators.StringIsPresent{Field: u.LastName, Name: "LastName"},
 		&validators.StringIsPresent{Field: u.Email, Name: "Email"},
 		&validators.EmailIsPresent{Field: u.Email, Name: "Email"},
 		&validators.StringIsPresent{Field: u.PasswordHash, Name: "PasswordHash"},

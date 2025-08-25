@@ -17,6 +17,7 @@ import (
 	"github.com/gobuffalo/logger"
 	"github.com/gobuffalo/middleware/forcessl"
 	"github.com/gobuffalo/middleware/i18n"
+	"github.com/gobuffalo/mw-csrf"
 	"github.com/unrolled/secure"
 )
 
@@ -83,6 +84,11 @@ func App() *buffalo.App {
 		// Inject i18n translations middleware for all requests
 		app.Use(translations())
 
+		// Enable CSRF protection for non-test environments
+		if ENV != "test" {
+			app.Use(csrf.New)
+		}
+
 		blogResource := PublicPostsResource{}
 
 		// Main route declarations
@@ -94,14 +100,17 @@ func App() *buffalo.App {
 		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
-		app.GET("/team", TeamHandler)
-		app.GET("/projects", ProjectsHandler)
-		app.GET("/contact", ContactHandler)
-		app.POST("/contact", ContactSubmitHandler)
-		app.GET("/blog", blogResource.List)
-		app.GET("/blog/{slug}", blogResource.Show)
-		app.GET("/users/new", UsersNew)
-		app.POST("/users", UsersCreate)
+		app.GET("/team", SetCurrentUser(TeamHandler))
+		app.GET("/projects", SetCurrentUser(ProjectsHandler))
+		app.GET("/contact", SetCurrentUser(ContactHandler))
+		app.POST("/contact", SetCurrentUser(ContactSubmitHandler))
+		app.GET("/blog", SetCurrentUser(blogResource.List))
+		app.GET("/blog/{slug}", SetCurrentUser(blogResource.Show))
+		app.GET("/users/new", SetCurrentUser(UsersNew))
+		app.GET("/users/new/", func(c buffalo.Context) error {
+			return c.Redirect(http.StatusFound, "/users/new")
+		})
+		app.POST("/users", SetCurrentUser(UsersCreate))
 		app.GET("/auth/new", AuthNew)
 		app.POST("/auth", AuthCreate)
 		app.GET("/auth/", func(c buffalo.Context) error {
@@ -156,6 +165,10 @@ func App() *buffalo.App {
 		// Debug routes
 		app.GET("/debug/flash/{type}", DebugFlashHandler)
 
+		// Skip CSRF protection for specific routes
+		if ENV != "test" {
+			app.Middleware.Skip(csrf.New, DonationInitializeHandler, DonationCompleteHandler, DonationStatusHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, UsersCreate)
+		}
 		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonateUpdateAmountHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
