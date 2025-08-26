@@ -24,7 +24,7 @@
 <% } %>
 
 <form action="/admin/users" method="POST"
-      hx-post="/admin/users" hx-target="#main-content" hx-swap="innerHTML">
+      hx-post="/admin/users" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
   <% if (authenticity_token) { %>
     <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
   <% } %>

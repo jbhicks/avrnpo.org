@@ -27,7 +27,8 @@
 
 <form
     hx-post="/admin/posts"
-    hx-target="#main-content"
+    hx-target="body"
+    hx-swap="outerHTML"
     hx-push-url="true"
     enctype="multipart/form-data"
 >

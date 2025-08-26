@@ -100,7 +100,6 @@ func (aur AdminUsersResource) Create(c buffalo.Context) error {
 		}
 		c.Set("roleOptions", roleOptions)
 
-		// Check if this is an HTMX request
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/new.plush.html"))
 	}
@@ -116,7 +115,7 @@ func (aur AdminUsersResource) Create(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" created successfully!", user.Email))
 
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))
 }
 
 // Edit displays the form for editing a user (GET /admin/users/{user_id}/edit)
@@ -182,7 +181,6 @@ func (aur AdminUsersResource) Update(c buffalo.Context) error {
 		}
 		c.Set("roleOptions", roleOptions)
 
-		// Check if this is an HTMX request
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/edit.plush.html"))
 	}
@@ -199,8 +197,6 @@ func (aur AdminUsersResource) Update(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" updated successfully!", updatedUser.Email))
 
-	// Check if this is an HTMX request
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", updatedUser.ID))
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", updatedUser.ID))
 }
 
@@ -217,18 +213,12 @@ func (aur AdminUsersResource) Destroy(c buffalo.Context) error {
 	currentUser := c.Value("current_user").(*models.User)
 	if user.ID == currentUser.ID {
 		c.Flash().Add("danger", "You cannot delete your own account.")
-
-		// Check if this is an HTMX request
-		return c.Redirect(http.StatusSeeOther, "/admin/users")
 		return c.Redirect(http.StatusSeeOther, "/admin/users")
 	}
 
 	// Check for confirmation
 	if c.Param("confirm_delete") != "true" {
 		c.Flash().Add("warning", fmt.Sprintf("Are you sure you want to delete user \"%s\"? This action cannot be undone.", user.Email))
-
-		// Check if this is an HTMX request
-		return c.Redirect(http.StatusSeeOther, "/admin/users")
 		return c.Redirect(http.StatusSeeOther, "/admin/users")
 	}
 
@@ -247,7 +237,5 @@ func (aur AdminUsersResource) Destroy(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" deleted successfully!", user.Email))
 
-	// Check if this is an HTMX request
-	return c.Redirect(http.StatusSeeOther, "/admin/users")
 	return c.Redirect(http.StatusSeeOther, "/admin/users")
 }

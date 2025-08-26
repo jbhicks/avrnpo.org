@@ -26,7 +26,7 @@
         <% } %>
       </ul>
     </div>
-    <% } %>    <form action="/admin/posts" method="POST" hx-post="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" enctype="multipart/form-data">
+    <% } %>    <form action="/admin/posts" method="POST" hx-post="/admin/posts" hx-target="body" hx-swap="outerHTML" hx-push-url="true" enctype="multipart/form-data">
       <% if (authenticity_token) { %>
         <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
       <% } %>
