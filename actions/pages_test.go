@@ -25,7 +25,7 @@ func (as *ActionSuite) Test_DonateHandler_Pure_HTMX() {
 	as.Contains(res.Body.String(), "hx-patch=\"/donate/update-amount\"")
 
 	// Now returns full HTML structure (single-template architecture)
-	as.Contains(res.Body.String(), "<!DOCTYPE")       // Full HTML document
+	as.Contains(res.Body.String(), "<!doctype")       // Full HTML document
 	as.Contains(res.Body.String(), "<html")           // HTML tag present
 	as.Contains(res.Body.String(), "<head>")          // Head section present
 	as.Contains(res.Body.String(), "Make a Donation") // Main donate content
@@ -39,14 +39,14 @@ func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
 	res := as.HTML("/team").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "team")
-	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<!doctype html>")
 	as.Contains(res.Body.String(), "<html lang=\"en\">")
 
 	// Test projects page
 	res = as.HTML("/projects").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "projects")
-	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<!doctype html>")
 	as.Contains(res.Body.String(), "<html lang=\"en\">")
 	as.NotContains(res.Body.String(), "htmx-content")
 
@@ -54,7 +54,7 @@ func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
 	res = as.HTML("/contact").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "contact")
-	as.Contains(res.Body.String(), "<!DOCTYPE html>")
+	as.Contains(res.Body.String(), "<!doctype html>")
 	as.Contains(res.Body.String(), "<html lang=\"en\">")
 	as.NotContains(res.Body.String(), "htmx-content")
 }
@@ -65,7 +65,7 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	// Test direct access - should return full page
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "<!DOCTYPE")
+	as.Contains(res.Body.String(), "<!doctype html>")
 	as.Contains(res.Body.String(), "<html")
 	as.Contains(res.Body.String(), "THE AVR MISSION") // Actual home content
 	as.Contains(res.Body.String(), "American Veterans Rebuilding")
@@ -76,8 +76,8 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	res2 := req.Get()
 	as.Equal(http.StatusOK, res2.Code)
 	as.Contains(res2.Body.String(), "THE AVR MISSION")
-	as.Contains(res2.Body.String(), "<!DOCTYPE") // Now also returns full page
-	as.Contains(res2.Body.String(), "<html")     // Single-template architecture
+	as.Contains(res2.Body.String(), "<!doctype html>") // Now also returns full page
+	as.Contains(res2.Body.String(), "<html")           // Single-template architecture
 }
 
 func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
@@ -97,8 +97,8 @@ func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
 
 	// Should return identical content regardless of header
 	as.Equal(body1, body2)
-	as.Contains(body1, "<!DOCTYPE html>")
-	as.Contains(body2, "<!DOCTYPE html>")
+	as.Contains(body1, "<!doctype html>")
+	as.Contains(body2, "<!doctype html>")
 }
 
 func (as *ActionSuite) Test_Donation_Amount_Button_Classes() {

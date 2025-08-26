@@ -11,6 +11,67 @@
 - **NEVER** expose production credentials in test files or examples
 - **IMMEDIATELY** flag and remove any exposed credentials found in files
 
+## 🚨 CRITICAL FORM HANDLING RULES 🚨
+
+**NEVER SUBMIT FORMS TO API ENDPOINTS FOR USER-FACING PAGES**
+
+**⚠️ CRITICAL WARNING: Form submission to API endpoints causes URL issues that break user experience**
+
+**🚨 COMPLETELY FORBIDDEN FORM PATTERNS:**
+- **NEVER use `action="/api/anything"`** in HTML forms
+- **NEVER submit user-facing forms to `/api/` endpoints**
+- **NEVER mix API endpoints with form submission logic**
+- **NEVER ignore HTMX requests in form handlers**
+- **NEVER use forms without progressive enhancement**
+
+**🚨 THE ONLY ACCEPTABLE FORM PATTERN:**
+```html
+<!-- ✅ CORRECT: Same route for GET and POST -->
+<form method="post" action="/route"
+      hx-post="/route" 
+      hx-target="body" 
+      hx-swap="outerHTML" 
+      hx-push-url="true">
+```
+
+**✅ REQUIRED FORM HANDLER PATTERN:**
+```go
+func FormHandler(c buffalo.Context) error {
+    // Handle GET request - show the form
+    if c.Request().Method == "GET" {
+        // Set up form defaults
+        return c.Render(http.StatusOK, r.HTML("pages/form.plush.html"))
+    }
+    
+    // Handle POST request - process form data
+    if errors.HasAny() {
+        // Return form with errors (same for both HTMX and regular)
+        return c.Render(http.StatusOK, r.HTML("pages/form.plush.html"))
+    }
+    
+    // Success handling for both HTMX and regular requests
+    if c.Request().Header.Get("HX-Request") == "true" {
+        return c.Render(http.StatusOK, r.HTML("pages/success.plush.html"))
+    }
+    return c.Redirect(http.StatusSeeOther, "/success")
+}
+```
+
+**🚨 WHY SEPARATE FORM ROUTES BREAK URLS:**
+- Form submits to `POST /route/submit` 
+- Handler redirects to `/success`
+- Browser URL shows `/route/submit` (NOT `/success`)
+- Refreshing page tries `GET /route/submit` → 404 ERROR
+- User cannot bookmark or refresh the page
+
+**🚨 SOLUTION: Use same route for GET and POST**
+- Form displays at `GET /route`
+- Form submits to `POST /route` (same URL)
+- HTMX gets result directly, no redirect needed
+- Browser URL stays correct and refreshable
+
+**🚨 MANDATORY READING:** `/docs/buffalo-framework/forms-and-htmx-patterns.md`
+
 ## 🚨 CRITICAL PROCESS MANAGEMENT RULES 🚨
 
 **🚨 ABSOLUTELY NEVER KILL OR START BUFFALO SERVER PROCESSES 🚨**

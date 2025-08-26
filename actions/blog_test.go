@@ -151,7 +151,7 @@ func (as *ActionSuite) Test_BlogIndex() {
 
 	// Check that page has basic structure
 	body := res.Body.String()
-	as.Contains(body, "<!DOCTYPE html>")
+	as.Contains(body, "<!doctype html>")
 	as.Contains(body, "<html lang=\"en\">")
 	as.Contains(body, "Blog") // Page header
 

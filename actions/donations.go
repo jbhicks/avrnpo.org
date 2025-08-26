@@ -1346,5 +1346,7 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 
-	return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content_with_button.plush.html"))
+	// Always render the complete donation page
+	// This follows the Single Template Architecture - every URL must serve a complete page
+	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }

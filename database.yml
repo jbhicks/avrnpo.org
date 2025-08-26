@@ -5,5 +5,8 @@ development:
 test:
   url: {{envOr "TEST_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_test?sslmode=disable"}}
 
+integration:
+  url: {{envOr "INTEGRATION_DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_integration?sslmode=disable"}}
+
 production:
   url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@127.0.0.1:5432/avrnpo_production?sslmode=disable"}}

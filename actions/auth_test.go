@@ -24,17 +24,21 @@ func (as *ActionSuite) Test_Auth_Create() {
 	timestamp := time.Now().UnixNano()
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("mark-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Mark",
-		LastName:             "Smith",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("mark-%d@example.com", timestamp),
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Mark",
+		"LastName":             "Smith",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
+
+	// Extract email for auth tests
+	userEmail := fmt.Sprintf("mark-%d@example.com", timestamp)
 
 	tcases := []struct {
 		Email       string
@@ -44,9 +48,9 @@ func (as *ActionSuite) Test_Auth_Create() {
 
 		Identifier string
 	}{
-		{signupData.Email, signupData.Password, http.StatusFound, "/", "Valid"},
+		{userEmail, "password", http.StatusFound, "/", "Valid"},
 		{"noexist@example.com", "password", http.StatusUnauthorized, "", "Email Invalid"},
-		{signupData.Email, "invalidPassword", http.StatusUnauthorized, "", "Password Invalid"},
+		{userEmail, "invalidPassword", http.StatusUnauthorized, "", "Password Invalid"},
 	}
 
 	for _, tcase := range tcases {
@@ -66,17 +70,25 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 	timestamp := time.Now().UnixNano()
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("redirect-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Redirect",
-		LastName:             "Test",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("redirect-%d@example.com", timestamp),
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Redirect",
+		"LastName":             "Test",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
+
+	// Create auth data for login attempts
+	userEmail := fmt.Sprintf("redirect-%d@example.com", timestamp)
+	authData := &models.User{
+		Email:    userEmail,
+		Password: "password",
+	}
 
 	tcases := []struct {
 		redirectURL    interface{}
@@ -87,6 +99,17 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 		{"/some/url", "/some/url", "RedirectURL defined"},
 		{nil, "/", "RedirectURL nil"},
 		{"", "/", "RedirectURL empty"},
+	}
+
+	for _, tcase := range tcases {
+		as.Run(tcase.identifier, func() {
+			as.Session.Set("redirectURL", tcase.redirectURL)
+
+			res := as.HTML("/auth").Post(authData)
+
+			as.Equal(http.StatusFound, res.Code)
+			as.Equal(res.Location(), tcase.resultLocation)
+		})
 	}
 
 	for _, tcase := range tcases {
@@ -109,12 +132,13 @@ func (as *ActionSuite) Test_Auth_Create_Password_Preservation() {
 	// This would catch the bug where tx.First(u) overwrites the Password field.
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("test.password.preservation-%d@example.com", timestamp),
-		Password:             "secretpassword123",
-		PasswordConfirmation: "secretpassword123",
-		FirstName:            "Test",
-		LastName:             "User",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("test.password.preservation-%d@example.com", timestamp),
+		"Password":             "secretpassword123",
+		"PasswordConfirmation": "secretpassword123",
+		"FirstName":            "Test",
+		"LastName":             "User",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
@@ -124,7 +148,7 @@ func (as *ActionSuite) Test_Auth_Create_Password_Preservation() {
 	// Now attempt to login with the correct password
 	// This should succeed if the password is properly preserved during auth
 	loginUser := &models.User{
-		Email:    signupData.Email,
+		Email:    fmt.Sprintf("test.password.preservation-%d@example.com", timestamp),
 		Password: "secretpassword123", // Same password used during creation
 	}
 

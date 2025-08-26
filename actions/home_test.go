@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"avrnpo.org/models"
 )
 
 func (as *ActionSuite) Test_HomeHandler() {
@@ -33,16 +31,17 @@ func (as *ActionSuite) Test_HomeHandler_HTMX_Content() {
 }
 
 func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
-	// Create a user through the signup endpoint (which works)  
+	// Create a user through the signup endpoint (which works)
 	timestamp := time.Now().UnixNano()
 	email := fmt.Sprintf("mark-%d@example.com", timestamp)
-	
-	signupData := &models.User{
-		Email:                email,
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Mark",
-		LastName:             "Smith",
+
+	signupData := map[string]interface{}{
+		"Email":                email,
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Mark",
+		"LastName":             "Smith",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
@@ -62,16 +61,16 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	// Test that logged in users see the main shell with authenticated nav
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
-	
+
 	// Debug: Let's check what we actually get
 	body := res.Body.String()
 	as.T().Logf("Home page HTML length: %d", len(body))
 	as.T().Logf("Contains Dashboard: %v", strings.Contains(body, "Dashboard"))
 	as.T().Logf("Contains Account: %v", strings.Contains(body, "Account"))
 	as.T().Logf("Contains Sign Out: %v", strings.Contains(body, "Sign Out"))
-	
+
 	// For now, just check that we get a 200 response and basic content
-	as.Contains(body, "THE AVR MISSION")  // Main content should be there
+	as.Contains(body, "THE AVR MISSION") // Main content should be there
 
 	// Test HTMX content for logged in user
 	req := as.HTML("/")

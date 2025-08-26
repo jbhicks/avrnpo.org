@@ -31,11 +31,8 @@ func (aur AdminUsersResource) List(c buffalo.Context) error {
 	c.Set("users", users)
 	c.Set("pagination", q.Paginator)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/users/_index.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
+	// This ensures direct access (bookmarks, reloads) works correctly
 	return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
 }
 
@@ -57,11 +54,7 @@ func (aur AdminUsersResource) Show(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/users/_show.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/users/show.plush.html"))
 }
 
@@ -77,11 +70,7 @@ func (aur AdminUsersResource) New(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/users/_new.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/users/new.plush.html"))
 }
 
@@ -112,31 +101,22 @@ func (aur AdminUsersResource) Create(c buffalo.Context) error {
 		c.Set("roleOptions", roleOptions)
 
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/_new.plush.html"))
-		}
-
+		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/new.plush.html"))
 	}
 
 	// Log admin user creation
 	adminUser := c.Value("current_user").(*models.User)
 	logging.UserAction(c, adminUser.ID.String(), "admin_create_user", fmt.Sprintf("Admin created user %s", user.Email), logging.Fields{
-		"admin_email":   adminUser.Email,
+		"admin_email":     adminUser.Email,
 		"created_user_id": user.ID.String(),
-		"created_email": user.Email,
-		"created_role":  user.Role,
+		"created_email":   user.Email,
+		"created_role":    user.Role,
 	})
 
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" created successfully!", user.Email))
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", fmt.Sprintf("/admin/users/%s", user.ID))
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", user.ID))
 }
 
 // Edit displays the form for editing a user (GET /admin/users/{user_id}/edit)
@@ -157,11 +137,7 @@ func (aur AdminUsersResource) Edit(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/users/_edit.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/users/edit.plush.html"))
 }
 
@@ -207,10 +183,7 @@ func (aur AdminUsersResource) Update(c buffalo.Context) error {
 		c.Set("roleOptions", roleOptions)
 
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/_edit.plush.html"))
-		}
-
+		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/users/edit.plush.html"))
 	}
 
@@ -227,11 +200,7 @@ func (aur AdminUsersResource) Update(c buffalo.Context) error {
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" updated successfully!", updatedUser.Email))
 
 	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", fmt.Sprintf("/admin/users/%s", updatedUser.ID))
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", updatedUser.ID))
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/users/%s", updatedUser.ID))
 }
 
@@ -250,24 +219,16 @@ func (aur AdminUsersResource) Destroy(c buffalo.Context) error {
 		c.Flash().Add("danger", "You cannot delete your own account.")
 
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			c.Response().Header().Set("HX-Redirect", "/admin/users")
-			return c.Render(http.StatusOK, r.String(""))
-		}
-
+		return c.Redirect(http.StatusSeeOther, "/admin/users")
 		return c.Redirect(http.StatusSeeOther, "/admin/users")
 	}
 
 	// Check for confirmation
 	if c.Param("confirm_delete") != "true" {
 		c.Flash().Add("warning", fmt.Sprintf("Are you sure you want to delete user \"%s\"? This action cannot be undone.", user.Email))
-		
+
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			c.Response().Header().Set("HX-Redirect", "/admin/users")
-			return c.Render(http.StatusOK, r.String(""))
-		}
-		
+		return c.Redirect(http.StatusSeeOther, "/admin/users")
 		return c.Redirect(http.StatusSeeOther, "/admin/users")
 	}
 
@@ -287,10 +248,6 @@ func (aur AdminUsersResource) Destroy(c buffalo.Context) error {
 	c.Flash().Add("success", fmt.Sprintf("User \"%s\" deleted successfully!", user.Email))
 
 	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/users")
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, "/admin/users")
 	return c.Redirect(http.StatusSeeOther, "/admin/users")
 }

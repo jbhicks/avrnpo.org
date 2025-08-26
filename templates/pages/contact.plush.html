@@ -4,7 +4,7 @@
     <h1>Contact Us</h1>
     <p>We'd love to hear from you. Whether you're a veteran looking for support, someone who wants to help, or you just have questions about our mission, don't hesitate to reach out.</p>
   </hgroup>
-  
+
   <!-- Debug Tools - Always visible in development -->
   <%= if (ENV != "production") { %>
     <div style="margin: 1rem 0; padding: 1rem; background: var(--pico-muted-background); border-radius: var(--pico-border-radius); border-left: 4px solid var(--pico-primary);">
@@ -23,45 +23,45 @@
 
 <!-- Contact Information -->
 <section class="grid">
-  
+
   <!-- Contact Form -->
   <article>
     <header>
       <h2>Send us a Message</h2>
     </header>
-    
-    <form method="post" action="/contact">
+
+    <form method="post" action="/contact" hx-post="/contact" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
       <label for="name">Name *
         <input type="text" id="name" name="name" required />
       </label>
-      
+
       <label for="email">Email *
         <input type="email" id="email" name="email" required />
       </label>
-      
+
       <label for="subject">Subject
         <input type="text" id="subject" name="subject" />
       </label>
-      
+
       <label for="message">Message *
         <textarea id="message" name="message" rows="6" required placeholder="Tell us how we can help or how you'd like to get involved..."></textarea>
       </label>
-      
+
       <button type="submit" role="button">Send Message</button>
     </form>
   </article>
-  
+
   <!-- Contact Info -->
   <article>
     <header>
       <h2>Get in Touch</h2>
     </header>
-    
+
     <section>
       <h4>Email</h4>
       <p><a href="mailto:michael@avrnpo.org">michael@avrnpo.org</a></p>
     </section>
-    
+
     <section style="margin-bottom: 2rem;">
       <h4>Follow Us</h4>
       <div class="grid">
@@ -79,26 +79,26 @@
               </a>
             </div>
           </div>
-          
+
           <div style="margin-bottom: 2rem;">
             <h4>For Veterans</h4>
             <p style="font-size: 0.95rem; line-height: 1.5;">
-              If you're a veteran interested in our programs, please include your service information 
+              If you're a veteran interested in our programs, please include your service information
               and what type of support you're looking for in your message.
             </p>
           </div>
-          
+
           <div>
             <h4>For Supporters</h4>
             <p style="font-size: 0.95rem; line-height: 1.5;">
-              Interested in volunteering, donating, or partnering with us? 
+              Interested in volunteering, donating, or partnering with us?
               Let us know how you'd like to contribute to our mission.
             </p>
           </div>
-          
+
         </div>
       </div>
-      
+
     </div>
   </div>
 </section>

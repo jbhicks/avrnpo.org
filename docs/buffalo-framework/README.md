@@ -5,6 +5,7 @@ Complete guide for developing with the Buffalo web framework for the AVR NPO don
 ## 📋 Quick Navigation
 
 - [Templates](./templates.md) - Plush templating syntax and patterns
+- [Forms & HTMX Patterns](./forms-and-htmx-patterns.md) - **CRITICAL** form handling and URL management
 - [Routing & HTMX](./routing-htmx.md) - Route configuration and HTMX integration  
 - [Authentication](./authentication.md) - Auth patterns and testing strategies
 - [Database](./database.md) - Migrations and database operations
@@ -25,6 +26,20 @@ avrnpo.org/
 ```
 
 ## 🚨 CRITICAL Buffalo Development Rules
+
+### 🚨 NEVER SUBMIT FORMS TO API ENDPOINTS
+**CRITICAL WARNING:** Form submission to API endpoints causes URL issues that break user experience.
+
+**❌ FORBIDDEN:** `<form action="/api/anything">`  
+**✅ REQUIRED:** `<form action="/route/submit" hx-post="/route/submit" hx-target="body" hx-swap="outerHTML" hx-push-url="true">`
+
+**Why API endpoints break forms:**
+- Form submits to `POST /api/endpoint`
+- Handler redirects to `/success`  
+- Browser URL shows `/api/endpoint` (NOT `/success`)
+- Refreshing page tries `GET /api/endpoint` → 404 ERROR
+
+**📖 MANDATORY READING:** [Forms & HTMX Patterns](./forms-and-htmx-patterns.md)
 
 ### NEVER KILL BUFFALO UNLESS ABSOLUTELY NECESSARY
 Buffalo has intelligent auto-reload that handles:

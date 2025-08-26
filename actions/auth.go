@@ -90,12 +90,7 @@ func AuthCreate(c buffalo.Context) error {
 	// Always clear the redirect URL after use, even if empty
 	c.Session().Delete("redirectURL")
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", redirectURL)
-		return c.Render(http.StatusOK, nil)
-	}
-	return c.Redirect(http.StatusFound, redirectURL)
-}
+	return c.Redirect(http.StatusFound, redirectURL)}
 
 // AuthDestroy clears the session and logs a user out
 func AuthDestroy(c buffalo.Context) error {

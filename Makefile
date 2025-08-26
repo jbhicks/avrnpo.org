@@ -28,6 +28,7 @@ help:
 	@echo "  test            - 🧪 Run all tests with Buffalo (recommended)"
 	@echo "  test-fast       - ⚡ Run Buffalo tests without database setup"
 	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
+	@echo "  test-integration - 🔒 Run CSRF integration tests (tests real middleware)"
 	@echo "  validate-templates - 🎨 Validate admin template structure"
 	@echo "  build           - 🔨 Build the application for production"
 	@echo "  health          - 🏥 Check system health (dependencies, database, etc.)"
@@ -382,6 +383,26 @@ test-resilient: check-deps
 		echo "✅ All tests passed!"; \
 	else \
 		echo "❌ Some tests failed. Check the output above for details."; \
+		exit 1; \
+	fi
+
+# CSRF Integration tests - tests with CSRF middleware enabled
+test-integration: check-deps db-up
+	@echo "🔒 Running CSRF integration tests..."
+	@if ! ./scripts/wait-for-postgres.sh; then \
+		echo "❌ Database is not ready. Cannot run integration tests."; \
+		exit 1; \
+	fi
+	@echo "🔄 Setting up integration test database..."
+	@GO_ENV=integration buffalo pop create -a >/dev/null 2>&1 || true
+	@GO_ENV=integration buffalo pop migrate up >/dev/null 2>&1 || true
+	@echo "🏃 Executing CSRF integration tests..."
+	@if GO_ENV=integration go test ./actions -run "TestCSRF" -v; then \
+		echo "✅ All CSRF integration tests passed!"; \
+		echo "🔒 CSRF middleware is working correctly"; \
+	else \
+		echo "❌ CSRF integration tests failed. Check the output above for details."; \
+		echo "💡 These tests verify that CSRF protection works with real middleware"; \
 		exit 1; \
 	fi
 

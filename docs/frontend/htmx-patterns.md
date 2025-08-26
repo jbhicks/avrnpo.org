@@ -1,141 +1,176 @@
 # HTMX Best Practices (Based on Official v2.0.4 Docs)
 
-## 🚨 CRITICAL SAFEGUARD: NEVER CREATE DUPLICATE HEADERS
+## 🎯 SINGLE TEMPLATE ARCHITECTURE: The HTMX Way
 
-**BEFORE making ANY handler changes, ALWAYS verify HTMX navigation:**
+**Our application follows the official HTMX "Single Template Architecture" pattern using `hx-boost`.**
 
-### ✅ Required Check Process:
-1. **Test HTMX navigation**: Click nav links - should NOT show duplicate headers
-2. **Test direct access**: Visit URL directly - should show single header
-3. **Verify handler pattern**: ALL page handlers must follow the same pattern
+### ✅ CORRECT PATTERN: Single Template with hx-boost
 
-### ❌ COMMON MISTAKE: Inconsistent Handler Patterns
 ```go
-// ❌ BAD: This handler always returns full page
+// ✅ ALWAYS USE: Simple full page handlers
 func DonateHandler(c buffalo.Context) error {
-    return c.Render(http.StatusOK, r.HTML("pages/donate_full.plush.html"))
+    return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }
 
-// ✅ GOOD: This handler checks for HTMX requests
-func DonateHandler(c buffalo.Context) error {
-    if c.Request().Header.Get("HX-Request") == "true" {
-        return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
-    }
-    return c.Render(http.StatusOK, r.HTML("pages/donate_full.plush.html"))
+func AdminUsersHandler(c buffalo.Context) error {
+    return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
 }
 ```
 
-### 🔧 MANDATORY: All Page Handlers Must Follow This Pattern
+**Key Benefits:**
+- ✅ **Works with and without JavaScript**
+- ✅ **Bookmarks work correctly**
+- ✅ **Page refreshes work correctly**
+- ✅ **No complex server-side header checking**
+- ✅ **Progressive enhancement by default**
+
+### ❌ ANTI-PATTERN: Header Checking (NEVER USE)
+
 ```go
-func PageHandler(c buffalo.Context) error {
-    // Check if this is an HTMX request
+// ❌ NEVER USE: This breaks bookmarks and direct URL access
+func BadHandler(c buffalo.Context) error {
     if c.Request().Header.Get("HX-Request") == "true" {
-        // Return just the content for HTMX
-        return c.Render(http.StatusOK, r.HTML("pages/page.plush.html"))
+        return c.Render(http.StatusOK, r.HTML("partial.plush.html"))
     }
-    // Return full page for direct access
-    return c.Render(http.StatusOK, r.HTML("pages/page_full.plush.html"))
+    return c.Render(http.StatusOK, r.HTML("full.plush.html"))
 }
 ```
 
-**NEVER deviate from this pattern without explicit testing!**
+**Why this is wrong:**
+- ❌ Breaks when users bookmark URLs
+- ❌ Breaks when users refresh pages
+- ❌ Breaks when users access URLs directly
+- ❌ Creates maintenance burden with duplicate templates
+- ❌ Violates progressive enhancement principles
 
-## ✅ RECOMMENDED: Use `hx-boost` for Simple Navigation
+## ✅ RECOMMENDED: Use `hx-boost` for Navigation
 
-The **official HTMX documentation recommends `hx-boost`** as the simplest approach for basic navigation:
+The **official HTMX documentation recommends `hx-boost`** as the optimal approach:
 
 ```html
-<div hx-boost="true">
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-    <a href="/donate">Donate</a>
-</div>
-```
-
-**Why `hx-boost` is better:**
-- ✅ **Progressive Enhancement**: Links work without JavaScript
-- ✅ **Simplest implementation**: No server-side header checking needed
-- ✅ **Automatic history management**: Built-in browser history support
-- ✅ **Graceful degradation**: Falls back to normal page loads
-- ✅ **Full page responses**: Server returns normal HTML pages
-
-### Server-Side with `hx-boost` (SIMPLE)
-
-```go
-func (app *App) AboutHandler(c buffalo.Context) error {
-    // Just render the full page - hx-boost handles everything!
-    return c.Render(http.StatusOK, r.HTML("pages/about.plush.html"))
-}
-```
-
-**No header checking needed!** HTMX automatically swaps the `<body>` content.
-
-## ❌ AVOID: Manual Header Checking (Unless Necessary)
-
-This pattern is more complex and error-prone:
-
-```go
-// ❌ More complex - only use if you need fine control
-func (app *App) AboutHandler(c buffalo.Context) error {
-    if c.Request().Header.Get("HX-Request") == "true" {
-        return c.Render(http.StatusOK, rHTMX.HTML("partial.plush.html"))
-    }
-    return c.Render(http.StatusOK, r.HTML("full_page.plush.html"))
-}
-```
-
-**Problems with this approach:**
-- ❌ More server-side complexity
-- ❌ Requires separate partial templates
-- ❌ No progressive enhancement
-- ❌ Breaks if JavaScript fails
-
-## When to Use Each Approach
-
-### Use `hx-boost` for:
-- ✅ Simple navigation between pages
-- ✅ Forms that should work without JS
-- ✅ Applications that need accessibility
-- ✅ Progressive enhancement
-
-### Use explicit HTMX attributes for:
-- 🔧 Loading content into specific containers
-- 🔧 Complex form interactions
-- 🔧 Real-time updates
-- 🔧 Fine-grained control over swapping
-
-## Progressive Enhancement Example
-
-```html
-<!-- ✅ GOOD: Works with and without JavaScript -->
-<div hx-boost="true">
+<!-- ✅ GOOD: Already implemented in application.plush.html -->
+<body hx-boost="true">
     <nav>
         <a href="/">Home</a>
         <a href="/about">About</a>
         <a href="/donate">Donate</a>
+        <a href="/admin">Admin</a>
     </nav>
-</div>
-
-<!-- ❌ AVOID: Breaks without JavaScript -->
-<nav>
-    <button hx-get="/about" hx-target="#content">About</button>
-</nav>
+    <!-- All navigation links automatically use HTMX -->
+</body>
 ```
 
-## Key Takeaways from HTMX Docs
+**How `hx-boost` works:**
+- ✅ **Intercepts all clicks** on `<a>` tags and form submissions
+- ✅ **Makes AJAX requests** automatically
+- ✅ **Swaps entire `<body>` content** with new page
+- ✅ **Updates browser history** correctly
+- ✅ **Graceful degradation** - falls back to normal navigation if JS fails
 
-1. **`hx-boost` is the recommended starting point** for most applications
-2. **Progressive enhancement is a core principle** - always include `href` attributes
-3. **Server-side complexity should be minimized** when possible
-4. **Full HTML responses are preferred** over fragments when using `hx-boost`
+### Server-Side Implementation (SIMPLE)
 
-## Our Implementation Fix
+```go
+// ✅ Perfect for hx-boost - just return full pages
+func AboutHandler(c buffalo.Context) error {
+    return c.Render(http.StatusOK, r.HTML("pages/about.plush.html"))
+}
 
-Based on the official docs, we should:
+func AdminUsersHandler(c buffalo.Context) error {
+    return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
+}
+```
 
-1. ✅ Use `hx-boost="true"` on navigation
-2. ✅ Return full HTML pages from handlers
-3. ✅ Remove complex header checking logic
-4. ✅ Ensure all links have proper `href` attributes
+**No header checking needed!** HTMX handles everything automatically.
 
-This gives us the simplest, most robust HTMX implementation that follows official best practices.
+## 🔧 SPECIFIC USE CASES: When to Use Explicit HTMX
+
+Only use explicit HTMX attributes for specialized functionality:
+
+### ✅ Form Validation & Updates
+```html
+<!-- ✅ GOOD: Specific form interaction -->
+<button hx-patch="/donate/update-amount" 
+        hx-include="closest form"
+        hx-target="#donation-form-content">
+    Update Amount
+</button>
+```
+
+### ✅ Real-time Content Updates  
+```html
+<!-- ✅ GOOD: Loading content into specific containers -->
+<div hx-get="/api/notifications" 
+     hx-trigger="every 30s"
+     hx-target="#notification-panel">
+</div>
+```
+
+### ✅ Progressive Enhancement Forms
+```html
+<!-- ✅ GOOD: Works with and without JS -->
+<form method="post" action="/contact" 
+      hx-post="/contact" 
+      hx-target="body" 
+      hx-swap="outerHTML">
+</form>
+```
+
+## 📋 IMPLEMENTATION CHECKLIST
+
+### ✅ Current Status
+- [x] **Global `hx-boost` enabled** in `templates/application.plush.html`
+- [x] **Navigation links work** with and without JavaScript  
+- [x] **Forms use progressive enhancement** patterns
+
+### 🎯 Our Single Template Architecture
+
+Every page handler follows this simple pattern:
+
+```go
+func PageHandler(c buffalo.Context) error {
+    // Always return full page - hx-boost handles the rest!
+    return c.Render(http.StatusOK, r.HTML("pages/page.plush.html"))
+}
+```
+
+### 🚫 What We DON'T Do
+
+- ❌ No `HX-Request` header checking
+- ❌ No separate partial templates for HTMX vs direct access
+- ❌ No complex conditional rendering logic
+- ❌ No duplicate template maintenance
+
+### 🔍 Template Architecture
+
+**Full page templates** include:
+- Complete HTML structure (`<html>`, `<head>`, `<body>`)
+- Navigation (`_nav.plush.html` partial)
+- Footer (`_footer.plush.html` partial)  
+- Main content area with HTMX target containers
+
+**HTMX automatically handles:**
+- Extracting `<body>` content for navigation
+- Updating browser history
+- Managing loading states
+- Graceful fallback for disabled JavaScript
+
+## 🛡️ Progressive Enhancement Principles
+
+1. **Links first**: Every action starts with a proper `<a href="">` or `<form action="">`
+2. **HTMX second**: Add HTMX attributes to enhance the experience
+3. **JavaScript optional**: Site works perfectly without JavaScript
+4. **Accessibility built-in**: Screen readers and keyboard navigation work correctly
+
+## ✨ Best Practices Summary
+
+✅ **DO:**
+- Use `hx-boost="true"` for navigation
+- Return full HTML pages from all handlers
+- Include proper `href` and `action` attributes
+- Test functionality with JavaScript disabled
+
+❌ **DON'T:**
+- Check `HX-Request` headers
+- Create separate partial templates
+- Use `hx-get` without `href` fallbacks
+- Assume JavaScript is enabled

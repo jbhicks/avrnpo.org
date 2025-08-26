@@ -119,12 +119,6 @@ func AdminDashboard(c buffalo.Context) error {
 	c.Set("recentPosts", recentPosts)
 	c.Set("posts", posts)
 
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/index.plush.html"))
-	}
-
-	// Direct access - render full page with navigation
 	return c.Render(http.StatusOK, r.HTML("admin/index.plush.html"))
 }
 
@@ -206,9 +200,6 @@ func AdminUserUpdate(c buffalo.Context) error {
 		}
 		c.Set("roleOptions", roleOptions)
 
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
-		}
 		return c.Render(http.StatusOK, r.HTML("admin/user_edit.plush.html"))
 	}
 
@@ -223,10 +214,6 @@ func AdminUserUpdate(c buffalo.Context) error {
 	})
 
 	c.Flash().Add("success", "User updated successfully!")
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/users")
-		return c.Render(http.StatusOK, nil)
-	}
 	return c.Redirect(http.StatusFound, "/admin/users")
 }
 
@@ -260,10 +247,6 @@ func AdminUserDelete(c buffalo.Context) error {
 	})
 
 	c.Flash().Add("success", "User deleted successfully!")
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/users")
-		return c.Render(http.StatusOK, nil)
-	}
 	return c.Redirect(http.StatusFound, "/admin/users")
 }
 
@@ -289,11 +272,6 @@ func AdminPostsIndex(c buffalo.Context) error {
 
 	c.Set("posts", posts)
 
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/index.plush.html"))
-	}
-
 	return c.Render(http.StatusOK, r.HTML("admin/posts/index.plush.html"))
 }
 
@@ -301,11 +279,6 @@ func AdminPostsIndex(c buffalo.Context) error {
 func AdminPostsNew(c buffalo.Context) error {
 	post := &models.Post{}
 	c.Set("post", post)
-
-	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
-	}
 
 	return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
 }
@@ -358,10 +331,6 @@ func AdminPostsCreate(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" created successfully!", post.Title))
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/posts")
-		return c.Render(http.StatusOK, nil)
-	}
 	return c.Redirect(http.StatusFound, "/admin/posts")
 }
 
@@ -382,10 +351,6 @@ func AdminPostsEdit(c buffalo.Context) error {
 	c.Set("post", post)
 
 	// Check if this is an HTMX request for partial content
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
-	}
-
 	return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
 }
 
@@ -429,10 +394,6 @@ func AdminPostsUpdate(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" updated successfully!", post.Title))
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/posts")
-		return c.Render(http.StatusOK, nil)
-	}
 	return c.Redirect(http.StatusFound, "/admin/posts")
 }
 
@@ -458,9 +419,6 @@ func AdminPostsDestroy(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" deleted successfully!", post.Title))
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.String(""))
-	}
 	return c.Redirect(http.StatusFound, "/admin/posts")
 }
 
@@ -512,9 +470,6 @@ func AdminPostsDelete(c buffalo.Context) error {
 
 	c.Flash().Add("success", fmt.Sprintf("Post \"%s\" deleted successfully!", post.Title))
 
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.String(""))
-	}
 	return c.Redirect(http.StatusFound, "/admin/posts")
 }
 
@@ -577,7 +532,7 @@ func AdminPostsBulk(c buffalo.Context) error {
 			// Return the current page with confirmation message
 			return c.Render(200, r.HTML("admin/posts/index.plush.html"))
 		}
-		
+
 		err := tx.RawQuery("DELETE FROM posts WHERE id IN (?)", postIDInts).Exec()
 		if err != nil {
 			return err
@@ -672,26 +627,23 @@ func AdminDonationsIndex(c buffalo.Context) error {
 	c.Set("currentSearch", search)
 	c.Set("user", currentUser)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/donations/index.plush.html"))
-	}
-
-	// Direct access - render full page
-	return c.Render(http.StatusOK, r.HTML("admin/donations/index_full.plush.html"))
+	// TODO: Admin donations templates not implemented yet
+	// Redirect to main admin dashboard for now
+	c.Flash().Add("info", "Donation management interface coming soon!")
+	return c.Redirect(http.StatusSeeOther, "/admin")
 }
 
 // DonationStats holds donation statistics
 type DonationStats struct {
-	TotalDonations    int     `json:"total_donations"`
-	CompletedCount    int     `json:"completed_count"`
-	PendingCount      int     `json:"pending_count"`
-	FailedCount       int     `json:"failed_count"`
-	TotalAmount       float64 `json:"total_amount"`
-	CompletedAmount   float64 `json:"completed_amount"`
-	AverageAmount     float64 `json:"average_amount"`
-	MonthlyTotal      float64 `json:"monthly_total"`
-	RecurringCount    int     `json:"recurring_count"`
+	TotalDonations  int     `json:"total_donations"`
+	CompletedCount  int     `json:"completed_count"`
+	PendingCount    int     `json:"pending_count"`
+	FailedCount     int     `json:"failed_count"`
+	TotalAmount     float64 `json:"total_amount"`
+	CompletedAmount float64 `json:"completed_amount"`
+	AverageAmount   float64 `json:"average_amount"`
+	MonthlyTotal    float64 `json:"monthly_total"`
+	RecurringCount  int     `json:"recurring_count"`
 }
 
 // getDonationStats calculates donation statistics
@@ -792,11 +744,8 @@ func AdminDonationShow(c buffalo.Context) error {
 	c.Set("donation", donation)
 	c.Set("user", currentUser)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/donations/show.plush.html"))
-	}
-
-	// Direct access - render full page
-	return c.Render(http.StatusOK, r.HTML("admin/donations/show_full.plush.html"))
+	// TODO: Admin donation show template not implemented yet
+	// Redirect to main admin dashboard for now
+	c.Flash().Add("info", "Donation details view coming soon!")
+	return c.Redirect(http.StatusSeeOther, "/admin")
 }

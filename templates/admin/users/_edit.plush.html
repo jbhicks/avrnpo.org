@@ -25,7 +25,9 @@
 
 <form action="/admin/users/<%= user.ID %>" method="POST"
       hx-put="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-swap="innerHTML">
-  <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <% if (authenticity_token) { %>
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <% } %>
 
   <div class="grid-2col">
     <!-- User Information -->

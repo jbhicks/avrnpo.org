@@ -88,7 +88,9 @@
     </header>
     
     <form action="/account" method="POST">
-      <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+      <% if (authenticity_token) { %>
+        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+      <% } %>
       <fieldset>
         <label>
           Current Password

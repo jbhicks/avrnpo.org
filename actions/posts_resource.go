@@ -1,11 +1,11 @@
 package actions
 
 import (
+	"avrnpo.org/models"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
-	"avrnpo.org/models"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -26,7 +26,7 @@ func (pr PostsResource) List(c buffalo.Context) error {
 	posts := []models.Post{}
 	// Get all posts (published and unpublished) with pagination
 	query := tx.Eager("User").Order("created_at desc")
-	
+
 	// Handle search functionality
 	if search := c.Param("search"); search != "" {
 		query = query.Where("title ILIKE ? OR content ILIKE ?", "%"+search+"%", "%"+search+"%")
@@ -49,11 +49,7 @@ func (pr PostsResource) List(c buffalo.Context) error {
 
 	c.Set("posts", posts)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/_index.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/index.plush.html"))
 }
 
@@ -73,11 +69,7 @@ func (pr PostsResource) Show(c buffalo.Context) error {
 
 	c.Set("post", post)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/_show.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/show.plush.html"))
 }
 
@@ -86,11 +78,7 @@ func (pr PostsResource) New(c buffalo.Context) error {
 	post := &models.Post{}
 	c.Set("post", post)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/_new.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
 }
 
@@ -126,22 +114,13 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 		c.Set("errors", verrs)
 
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/_new.plush.html"))
-		}
-
+		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/new.plush.html"))
 	}
 
 	c.Flash().Add("success", T.Translate(c, "post.created.success"))
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		// Return updated posts list or redirect header
-		c.Response().Header().Set("HX-Redirect", fmt.Sprintf("/admin/posts/%d", post.ID))
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
 
@@ -161,11 +140,7 @@ func (pr PostsResource) Edit(c buffalo.Context) error {
 
 	c.Set("post", post)
 
-	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		return c.Render(http.StatusOK, r.HTML("admin/posts/_edit.plush.html"))
-	}
-
+	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
 }
 
@@ -199,21 +174,14 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 		c.Set("errors", verrs)
 
 		// Check if this is an HTMX request
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/_edit.plush.html"))
-		}
-
+		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/edit.plush.html"))
 	}
 
 	c.Flash().Add("success", T.Translate(c, "post.updated.success"))
 
 	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", fmt.Sprintf("/admin/posts/%d", post.ID))
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
 
@@ -238,11 +206,7 @@ func (pr PostsResource) Destroy(c buffalo.Context) error {
 	c.Flash().Add("success", T.Translate(c, "post.destroyed.success"))
 
 	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/posts")
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
 
@@ -305,10 +269,6 @@ func (pr PostsResource) Bulk(c buffalo.Context) error {
 	}
 
 	// Check if this is an HTMX request
-	if c.Request().Header.Get("HX-Request") == "true" {
-		c.Response().Header().Set("HX-Redirect", "/admin/posts")
-		return c.Render(http.StatusOK, r.String(""))
-	}
-
+	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }

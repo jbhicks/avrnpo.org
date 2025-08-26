@@ -17,10 +17,10 @@ type User struct {
 	ID           uuid.UUID `json:"id" db:"id"`
 	CreatedAt    time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at" db:"updated_at"`
-	Email        string    `json:"email" db:"email"`
+	Email        string    `json:"email" db:"email" form:"email"`
 	PasswordHash string    `json:"password_hash" db:"password_hash"`
-	FirstName    string    `json:"first_name" db:"first_name"`
-	LastName     string    `json:"last_name" db:"last_name"`
+	FirstName    string    `json:"first_name" db:"first_name" form:"first_name"`
+	LastName     string    `json:"last_name" db:"last_name" form:"last_name"`
 	Role         string    `json:"role" db:"role"` // Added Role field
 
 	Password             string `json:"-" db:"-" form:"password"`

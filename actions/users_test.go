@@ -17,12 +17,13 @@ func (as *ActionSuite) Test_Users_New() {
 func (as *ActionSuite) Test_Users_Create() {
 	timestamp := time.Now().UnixNano()
 	email := fmt.Sprintf("mark-%d@example.com", timestamp)
-	u := &models.User{
-		Email:                email,
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Mark",
-		LastName:             "Smith",
+	u := map[string]interface{}{
+		"Email":                email,
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Mark",
+		"LastName":             "Smith",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	res := as.HTML("/users").Post(u)
@@ -47,12 +48,13 @@ func (as *ActionSuite) Test_ProfileSettings_LoggedIn() {
 	timestamp := time.Now().UnixNano()
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("profile-test-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Profile",
-		LastName:             "Test",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("profile-test-%d@example.com", timestamp),
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Profile",
+		"LastName":             "Test",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
@@ -61,7 +63,7 @@ func (as *ActionSuite) Test_ProfileSettings_LoggedIn() {
 
 	// Now login with the same user
 	loginData := &models.User{
-		Email:    signupData.Email,
+		Email:    fmt.Sprintf("profile-test-%d@example.com", timestamp),
 		Password: "password",
 	}
 
@@ -84,12 +86,13 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 	timestamp := time.Now().UnixNano()
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("profile-update-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Update",
-		LastName:             "Test",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("profile-update-%d@example.com", timestamp),
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Update",
+		"LastName":             "Test",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
@@ -98,7 +101,7 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 
 	// Now login with the same user
 	loginData := &models.User{
-		Email:    signupData.Email,
+		Email:    fmt.Sprintf("profile-update-%d@example.com", timestamp),
 		Password: "password",
 	}
 
@@ -124,14 +127,16 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 
 func (as *ActionSuite) Test_AccountSettings_LoggedIn() {
 	timestamp := time.Now().UnixNano()
+	userEmail := fmt.Sprintf("account-test-%d@example.com", timestamp)
 
 	// Create a user through the signup endpoint (which works)
-	signupData := &models.User{
-		Email:                fmt.Sprintf("account-test-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "Account",
-		LastName:             "Test",
+	signupData := map[string]interface{}{
+		"Email":                userEmail,
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Account",
+		"LastName":             "Test",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	// Create user via web interface to ensure it's properly committed
@@ -140,7 +145,7 @@ func (as *ActionSuite) Test_AccountSettings_LoggedIn() {
 
 	// Now login with the same user
 	loginData := &models.User{
-		Email:    signupData.Email,
+		Email:    userEmail,
 		Password: "password",
 	}
 
@@ -152,7 +157,7 @@ func (as *ActionSuite) Test_AccountSettings_LoggedIn() {
 	res := as.HTML("/account").Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "Account Settings")
-	as.Contains(res.Body.String(), signupData.Email)
+	as.Contains(res.Body.String(), userEmail)
 }
 
 func (as *ActionSuite) Test_AccountSettings_RequiresAuth() {
@@ -164,19 +169,20 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 	timestamp := time.Now().UnixNano()
 
 	// Create and login user
-	signupData := &models.User{
-		Email:                fmt.Sprintf("htmx-test-%d@example.com", timestamp),
-		Password:             "password",
-		PasswordConfirmation: "password",
-		FirstName:            "HTMX",
-		LastName:             "Test",
+	signupData := map[string]interface{}{
+		"Email":                fmt.Sprintf("htmx-test-%d@example.com", timestamp),
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "HTMX",
+		"LastName":             "Test",
+		"accept_terms":         "on", // Add required terms acceptance
 	}
 
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	loginData := &models.User{
-		Email:    signupData.Email,
+		Email:    fmt.Sprintf("htmx-test-%d@example.com", timestamp),
 		Password: "password",
 	}
 

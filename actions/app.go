@@ -85,7 +85,7 @@ func App() *buffalo.App {
 		app.Use(translations())
 
 		// Enable CSRF protection for non-test environments
-		if ENV != "test" {
+		if os.Getenv("GO_ENV") != "test" {
 			app.Use(csrf.New)
 		}
 
@@ -95,6 +95,7 @@ func App() *buffalo.App {
 		app.GET("/", SetCurrentUser(HomeHandler))
 		app.GET("/dashboard", SetCurrentUser(Authorize(DashboardHandler)))
 		app.GET("/donate", SetCurrentUser(DonateHandler))
+		app.POST("/donate", SetCurrentUser(DonateHandler))
 		app.PATCH("/donate/update-amount", DonateUpdateAmountHandler)
 		app.POST("/donate/update-amount", DonateUpdateAmountHandler) // For testing - Buffalo test suite doesn't support PATCH
 		app.GET("/donate/payment", DonatePaymentHandler)

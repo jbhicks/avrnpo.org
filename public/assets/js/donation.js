@@ -5,6 +5,16 @@
 (function() {
     'use strict';
     
+    // Configure HTMX to include CSRF token in all requests
+    document.body.addEventListener('htmx:configRequest', function(evt) {
+        // Get CSRF token from meta tag
+        const token = document.querySelector('meta[name="csrf-token"]');
+        if (token) {
+            // Add CSRF token as a parameter (Buffalo expects authenticity_token)
+            evt.detail.parameters['authenticity_token'] = token.getAttribute('content');
+        }
+    });
+    
     // Initialize when DOM is ready  
     function initialize() {
         // HTMX handles form submission and validation
