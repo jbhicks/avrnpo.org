@@ -1266,20 +1266,34 @@ func splitName(fullName string) (string, string) {
 
 // DonateUpdateAmountHandler handles HTMX updates to donation amounts
 func DonateUpdateAmountHandler(c buffalo.Context) error {
+	// Add error handling wrapper
+	defer func() {
+		if r := recover(); r != nil {
+			c.Logger().Errorf("Panic in DonateUpdateAmountHandler: %v", r)
+			c.Error(http.StatusInternalServerError, fmt.Errorf("Internal server error"))
+		}
+	}()
+
 	// Get form values
 	amount := c.Param("amount")
 	donationType := c.Param("donation_type")
 	source := c.Param("source")
 
-	// Get current state from session
+	c.Logger().Debugf("DonateUpdateAmountHandler called with amount=%s, donationType=%s, source=%s", amount, donationType, source)
+
+	// Get current state from session with safe type checking
 	sessionAmount := ""
 	if sessionAmountInterface := c.Session().Get("donation_amount"); sessionAmountInterface != nil {
-		sessionAmount = sessionAmountInterface.(string)
+		if str, ok := sessionAmountInterface.(string); ok {
+			sessionAmount = str
+		}
 	}
 
 	sessionDonationType := "one-time" // Default
 	if sessionDonationTypeInterface := c.Session().Get("donation_type"); sessionDonationTypeInterface != nil {
-		sessionDonationType = sessionDonationTypeInterface.(string)
+		if str, ok := sessionDonationTypeInterface.(string); ok {
+			sessionDonationType = str
+		}
 	}
 
 	// Update amount in session if a new amount is provided
@@ -1314,23 +1328,23 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	zipCode := c.Param("zip_code")
 	comments := c.Param("comments")
 
-	// Set template variables for the donation form
+	// Set template variables for the donation form with defensive programming
 	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 	c.Set("amount", amount)
 	c.Set("donationType", donationType)
 	c.Set("source", source)
 
-	// Preserve form values
-	c.Set("firstName", firstName)
-	c.Set("lastName", lastName)
-	c.Set("donorEmail", donorEmail)
-	c.Set("donorPhone", donorPhone)
-	c.Set("addressLine1", addressLine1)
-	c.Set("addressLine2", addressLine2)
-	c.Set("city", city)
-	c.Set("state", state)
-	c.Set("zip", zipCode)
-	c.Set("comments", comments)
+	// Preserve form values with safe defaults
+	c.Set("firstName", safeString(firstName))
+	c.Set("lastName", safeString(lastName))
+	c.Set("donorEmail", safeString(donorEmail))
+	c.Set("donorPhone", safeString(donorPhone))
+	c.Set("addressLine1", safeString(addressLine1))
+	c.Set("addressLine2", safeString(addressLine2))
+	c.Set("city", safeString(city))
+	c.Set("state", safeString(state))
+	c.Set("zip", safeString(zipCode))
+	c.Set("comments", safeString(comments))
 
 	// Set error flags to false (no errors in amount updates)
 	c.Set("errors", nil)
@@ -1346,7 +1360,20 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 
-	// Always render the complete donation page
-	// This follows the Single Template Architecture - every URL must serve a complete page
-	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+	// Ensure CSRF token is available for template
+	if token := c.Value("authenticity_token"); token != nil {
+		c.Set("authenticity_token", token)
+	} else {
+		c.Logger().Warn("CSRF token not available in DonateUpdateAmountHandler context")
+		c.Set("authenticity_token", "")
+	}
+
+	// Render appropriate content based on request type
+	if c.Request().Header.Get("HX-Request") == "true" {
+		// HTMX request - return only the form content
+		return c.Render(http.StatusOK, r.HTML("pages/_donate_form.plush.html"))
+	} else {
+		// Regular request - return the complete page
+		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+	}
 }

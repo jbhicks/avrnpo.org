@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -20,6 +22,96 @@ import (
 	"github.com/gobuffalo/mw-csrf"
 	"github.com/unrolled/secure"
 )
+
+// Validation utilities for secure input validation
+var (
+	// RFC 5322 compliant email regex (simplified but secure)
+	emailRegex = regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`)
+)
+
+// Validation utilities for handlers to use
+// These functions provide consistent validation across the application
+
+// ValidateContactForm validates contact form input
+func ValidateContactForm(c buffalo.Context) error {
+	name := SanitizeInput(c.Param("name"))
+	email := SanitizeInput(c.Param("email"))
+	subject := SanitizeInput(c.Param("subject"))
+	message := SanitizeInput(c.Param("message"))
+
+	if err := ValidateRequiredString(name, "Name", 100); err != nil {
+		return err
+	}
+
+	if err := ValidateEmail(email); err != nil {
+		return err
+	}
+
+	if err := ValidateRequiredString(subject, "Subject", 200); err != nil {
+		return err
+	}
+
+	if err := ValidateRequiredString(message, "Message", 2000); err != nil {
+		return err
+	}
+
+	// Store sanitized values back in context for processing
+	c.Set("name", name)
+	c.Set("email", email)
+	c.Set("subject", subject)
+	c.Set("message", message)
+
+	return nil
+}
+
+// ValidateEmail performs secure email validation
+func ValidateEmail(email string) error {
+	if len(email) == 0 {
+		return fmt.Errorf("email is required")
+	}
+
+	if len(email) > 254 { // RFC 5321 limit
+		return fmt.Errorf("email address is too long")
+	}
+
+	if !emailRegex.MatchString(email) {
+		return fmt.Errorf("please enter a valid email address")
+	}
+
+	// Additional security checks
+	if strings.Contains(email, "..") || strings.Contains(email, " ") {
+		return fmt.Errorf("please enter a valid email address")
+	}
+
+	return nil
+}
+
+// ValidateRequiredString validates a required string field
+func ValidateRequiredString(value, fieldName string, maxLength int) error {
+	if len(strings.TrimSpace(value)) == 0 {
+		return fmt.Errorf("%s is required", fieldName)
+	}
+
+	if len(value) > maxLength {
+		return fmt.Errorf("%s must be less than %d characters", fieldName, maxLength)
+	}
+
+	return nil
+}
+
+// SanitizeInput removes potentially dangerous characters
+func SanitizeInput(input string) string {
+	// Remove null bytes and control characters
+	input = strings.Map(func(r rune) rune {
+		if r < 32 && r != 9 && r != 10 && r != 13 { // Keep tab, LF, CR
+			return -1
+		}
+		return r
+	}, input)
+
+	// Trim whitespace
+	return strings.TrimSpace(input)
+}
 
 // ENV is used to help switch settings based on where the
 // application is being run. Default is "development".
@@ -104,7 +196,7 @@ func App() *buffalo.App {
 		app.GET("/team", SetCurrentUser(TeamHandler))
 		app.GET("/projects", SetCurrentUser(ProjectsHandler))
 		app.GET("/contact", SetCurrentUser(ContactHandler))
-		app.POST("/contact", SetCurrentUser(ContactSubmitHandler))
+		app.POST("/contact", SetCurrentUser(ContactHandler))
 		app.GET("/blog", SetCurrentUser(blogResource.List))
 		app.GET("/blog/{slug}", SetCurrentUser(blogResource.Show))
 		app.GET("/users/new", SetCurrentUser(UsersNew))
@@ -168,7 +260,7 @@ func App() *buffalo.App {
 
 		// Skip CSRF protection for specific routes
 		if ENV != "test" {
-			app.Middleware.Skip(csrf.New, DonationInitializeHandler, DonationCompleteHandler, DonationStatusHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, UsersCreate)
+			app.Middleware.Skip(csrf.New, DonationInitializeHandler, DonationCompleteHandler, DonationStatusHandler, ProcessPaymentHandler, HelcimWebhookHandler, DonateUpdateAmountHandler, debugFilesHandler, DebugFlashHandler, UsersCreate)
 		}
 		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, blogResource.List, blogResource.Show, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonateUpdateAmountHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
 		app.GET("/debug/files", debugFilesHandler)

@@ -2,11 +2,10 @@ package actions
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"net/http"
 
 	"avrnpo.org/models"
 	"avrnpo.org/services"
@@ -28,7 +27,46 @@ func ProjectsHandler(c buffalo.Context) error {
 }
 
 // ContactHandler shows the contact form
+// ContactHandler handles both GET (show form) and POST (process form) for the contact page
 func ContactHandler(c buffalo.Context) error {
+	// Handle GET request - show the contact form
+	if c.Request().Method == "GET" {
+		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+	}
+
+	// Handle POST request - process form data
+	if err := ValidateContactForm(c); err != nil {
+		c.Flash().Add("error", err.Error())
+		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+	}
+
+	// Get validated and sanitized values
+	name := c.Value("name").(string)
+	email := c.Value("email").(string)
+	subject := c.Value("subject").(string)
+	message := c.Value("message").(string)
+
+	// Prepare contact form data
+	contactData := services.ContactFormData{
+		Name:           name,
+		Email:          email,
+		Subject:        subject,
+		Message:        message,
+		SubmissionDate: time.Now(),
+	}
+
+	// Send notification email
+	emailService := services.NewEmailService()
+	if err := emailService.SendContactNotification(contactData); err != nil {
+		// Log error but show user-friendly message
+		c.Logger().Errorf("Failed to send contact form notification: %v", err)
+		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at michael@avrnpo.org.")
+		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+	}
+
+	// Success
+	c.Logger().Infof("Contact form submission from %s (%s): %s", name, email, subject)
+	c.Flash().Add("success", "Thank you for your message! We'll get back to you soon.")
 	return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 }
 
@@ -63,56 +101,11 @@ func DebugFlashHandler(c buffalo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/contact")
 }
 
-// ContactSubmitHandler handles contact form submissions
-func ContactSubmitHandler(c buffalo.Context) error {
-	// Extract form data
-	name := c.Param("name")
-	email := c.Param("email")
-	subject := c.Param("subject")
-	message := c.Param("message")
-
-	// Validation
-	if name == "" || email == "" || message == "" {
-		c.Flash().Add("error", "Please fill in all required fields (Name, Email, Message).")
-		return c.Redirect(http.StatusSeeOther, "/contact")
-	}
-
-	// Basic email validation
-	if !strings.Contains(email, "@") || !strings.Contains(email, ".") {
-		c.Flash().Add("error", "Please enter a valid email address.")
-		return c.Redirect(http.StatusSeeOther, "/contact")
-	}
-
-	// Prepare contact form data
-	contactData := services.ContactFormData{
-		Name:           name,
-		Email:          email,
-		Subject:        subject,
-		Message:        message,
-		SubmissionDate: time.Now(),
-	}
-
-	// Send notification email
-	emailService := services.NewEmailService()
-	if err := emailService.SendContactNotification(contactData); err != nil {
-		// Log error but show user-friendly message
-		c.Logger().Errorf("Failed to send contact form notification: %v", err)
-		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at michael@avrnpo.org.")
-		// For HTMX requests, return the full contact page with flash message
-		return c.Redirect(http.StatusSeeOther, "/contact")
-	}
-
-	// Success
-	c.Logger().Infof("Contact form submission from %s (%s): %s", name, email, subject)
-	c.Flash().Add("success", "Thank you for your message! We'll get back to you soon.")
-	// For HTMX requests, return the full contact page with flash message
-	return c.Redirect(http.StatusSeeOther, "/contact")
-}
-
 // DonateHandler handles both GET (show form) and POST (process form) for the donation page
 func DonateHandler(c buffalo.Context) error {
 	// Handle GET request - show the donation form
 	if c.Request().Method == "GET" {
+		// Buffalo's CSRF middleware handles token generation automatically
 		c.Set("errors", nil)
 		c.Set("hasAnyErrors", false)
 		c.Set("hasCommentsError", false)

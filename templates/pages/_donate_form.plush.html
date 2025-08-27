@@ -1,10 +1,9 @@
 <form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate
+<form method="post" action="/donate"
       hx-post="/donate" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
 <div id="donation-form-content">
         <!-- CSRF Protection -->
-        <% if (authenticity_token) { %>
-          <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-        <% } %>
+        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
         <!-- Hidden field to store selected amount for form submission -->
         <input type="hidden" name="custom_amount" value="<%= amount %>">
 
