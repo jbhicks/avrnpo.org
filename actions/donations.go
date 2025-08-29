@@ -1,3 +1,4 @@
+
 package actions
 
 import (
@@ -181,8 +182,9 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}))
 		}
 		// For form submissions, redirect back with error
-		c.Flash().Add("error", "Invalid form data submitted")
-		return c.Redirect(http.StatusSeeOther, "/donate")
+	c.Flash().Add("error", "Invalid form data submitted")
+	ensureDonateContext(c)
+	return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Use Buffalo's validate.Errors for field-specific error collection
@@ -218,13 +220,22 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	var amount float64
 	var err error
 
-	// First try to get amount from form submission
+	// First try to get amount from form submission (HTMX or regular)
 	amountStr := strings.TrimSpace(req.CustomAmount)
 
-	// If no amount in form, check session (from preset button selections)
+	// If no amount in form, check for amount_source (HTMX preset selection)
+	if amountStr == "" {
+		if sourceAmount := c.Param("custom_amount"); sourceAmount != "" {
+			amountStr = sourceAmount
+		}
+	}
+
+	// If still no amount, check session (fallback)
 	if amountStr == "" {
 		if sessionAmount := c.Session().Get("donation_amount"); sessionAmount != nil {
-			amountStr = sessionAmount.(string)
+			if s, ok := sessionAmount.(string); ok {
+				amountStr = s
+			}
 		}
 	}
 
@@ -246,25 +257,6 @@ func DonationInitializeHandler(c buffalo.Context) error {
 
 	// If there are any errors, render the form with errors and user input
 	if errors.HasAny() {
-		// Check if this is an API request or form submission
-		if isAPIRequest(c) {
-			// Build a descriptive error message that includes required field info
-			errorMsg := "Validation failed"
-			for fieldName, fieldErrors := range errors.Errors {
-				for _, err := range fieldErrors {
-					if strings.Contains(err, "required") {
-						errorMsg = "Required fields missing: " + fieldName + " - " + err
-						break
-					}
-				}
-			}
-			return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
-				"error":  errorMsg,
-				"errors": errors,
-			}))
-		}
-
-		// For form submissions, render the template with errors
 		c.Set("errors", errors)
 		c.Set("hasAnyErrors", errors.HasAny())
 		c.Set("hasCommentsError", errors.Get("comments") != nil)
@@ -309,8 +301,11 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		c.Set("city", req.City)
 		c.Set("state", req.State)
 		c.Set("zip", req.Zip)
+		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
+
+	// Always process as full form submission, never partial
 
 	// UNIFIED APPROACH: Always use verify mode for payment collection
 	// This creates a consistent flow for both one-time and recurring donations
@@ -362,6 +357,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid donation amount"}))
 		}
 		c.Flash().Add("error", "Invalid donation amount. Please try again.")
+		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
@@ -374,6 +370,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}))
 		}
 		c.Flash().Add("error", "System error occurred. Please try again.")
+		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
@@ -388,6 +385,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}))
 		}
 		c.Flash().Add("error", "Payment system unavailable. Please try again later.")
+		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
@@ -403,6 +401,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}))
 		}
 		c.Flash().Add("error", "System error occurred. Please try again.")
+		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
@@ -425,6 +424,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	c.Session().Set("checkout_token", helcimResponse.CheckoutToken)
 	c.Session().Set("amount", fmt.Sprintf("%.2f", amount))
 	c.Session().Set("donor_name", donorName)
+	ensureDonateContext(c)
 	return c.Redirect(http.StatusSeeOther, "/donate/payment")
 }
 
@@ -1274,6 +1274,9 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 		}
 	}()
 
+	// Ensure minimal donate context is present
+	ensureDonateContext(c)
+
 	// Get form values
 	amount := c.Param("amount")
 	donationType := c.Param("donation_type")
@@ -1368,12 +1371,6 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 		c.Set("authenticity_token", "")
 	}
 
-	// Render appropriate content based on request type
-	if c.Request().Header.Get("HX-Request") == "true" {
-		// HTMX request - return only the form content
-		return c.Render(http.StatusOK, r.HTML("pages/_donate_form.plush.html"))
-	} else {
-		// Regular request - return the complete page
-		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
-	}
+	// Render the complete page - HTMX will extract content automatically
+	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }

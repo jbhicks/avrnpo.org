@@ -350,7 +350,6 @@ func AdminPostsEdit(c buffalo.Context) error {
 
 	c.Set("post", post)
 
-	// Check if this is an HTMX request for partial content
 	return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
 }
 

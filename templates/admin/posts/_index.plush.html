@@ -78,46 +78,38 @@
 <!-- Bulk Actions -->
 <div class="bulk-actions">
   <span>With selected posts:</span>
-  <button type="button" onclick="bulkAction('publish')" class="outline">Publish</button>
-  <button type="button" onclick="bulkAction('unpublish')" class="outline">Unpublish</button>
-  <button type="button" onclick="bulkAction('delete')" class="outline btn-danger">Delete</button>
+  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+    <input type="hidden" name="action" value="publish">
+    <button type="submit" class="outline" hx-indicator="#bulk-loading">Publish</button>
+  </form>
+  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+    <input type="hidden" name="action" value="unpublish">
+    <button type="submit" class="outline" hx-indicator="#bulk-loading">Unpublish</button>
+  </form>
+  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+    <input type="hidden" name="action" value="delete">
+    <input type="hidden" name="confirm_delete" value="true">
+    <button type="submit" class="outline btn-danger"
+            hx-confirm="Are you sure you want to delete the selected posts? This action cannot be undone."
+            hx-indicator="#bulk-loading">
+      Delete
+    </button>
+  </form>
+  <div id="bulk-loading" class="htmx-indicator" style="display: none;">
+    <small>Processing...</small>
+  </div>
 </div>
 
 <script>
-function bulkAction(action) {
-  const checkboxes = document.querySelectorAll('input[name="post_ids"]:checked');
-  if (checkboxes.length === 0) {
-    // Let server handle validation and flash messages
-    const formData = new FormData();
-    formData.append('action', action);
-
-    htmx.ajax('POST', '/admin/posts/bulk', {
-      values: Object.fromEntries(formData),
-      target: '#main-content'
+// Select all functionality (simple DOM manipulation, no HTMX needed)
+document.addEventListener('DOMContentLoaded', function() {
+  const selectAllCheckbox = document.getElementById('select-all');
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function() {
+      const checkboxes = document.querySelectorAll('input[name="post_ids"]');
+      checkboxes.forEach(cb => cb.checked = this.checked);
     });
-    return;
   }
-
-  const postIds = Array.from(checkboxes).map(cb => cb.value);
-  const formData = new FormData();
-  formData.append('action', action);
-  postIds.forEach(id => formData.append('post_ids', id));
-
-  // For delete action, show confirmation via server-side validation
-  if (action === 'delete') {
-    formData.append('confirm_delete', 'true');
-  }
-
-  htmx.ajax('POST', '/admin/posts/bulk', {
-    values: Object.fromEntries(formData),
-    target: '#main-content'
-  });
-}
-
-// Select all functionality
-document.getElementById('select-all').addEventListener('change', function() {
-  const checkboxes = document.querySelectorAll('input[name="post_ids"]');
-  checkboxes.forEach(cb => cb.checked = this.checked);
 });
 </script>
 

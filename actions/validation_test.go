@@ -469,7 +469,6 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 		token := c.Param("authenticity_token")
 
 		if token == "" {
-			// No token provided, return form with token
 			responseToken := c.Value("authenticity_token")
 			html := fmt.Sprintf(`<form method="post" action="/contact-test" hx-post="/contact-test" hx-target="#result" hx-swap="innerHTML">
 				<input type="hidden" name="authenticity_token" value="%s" />
@@ -480,10 +479,7 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 			return c.Render(200, r.String(html))
 		}
 
-		// Token provided, process submission
-		if c.Request().Header.Get("HX-Request") == "true" {
-			return c.Render(200, r.String(fmt.Sprintf("HTMX Success: %s", email)))
-		}
+		// Always return full page, regardless of HX-Request
 		return c.Render(200, r.String(fmt.Sprintf("Form Success: %s", email)))
 	})
 
@@ -520,9 +516,9 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 
 	app.ServeHTTP(w3, req3)
 	require.Equal(t, 200, w3.Code)
-	require.Contains(t, w3.Body.String(), "HTMX Success")
+	require.Contains(t, w3.Body.String(), "Form Success")
 
-	t.Logf("✅ HTMX progressive enhancement working with CSRF")
+	t.Logf("✅ HTMX progressive enhancement always returns full page")
 }
 
 // TestCSRFTokenExpiration tests token validation scenarios

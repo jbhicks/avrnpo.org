@@ -45,9 +45,7 @@
                         class="outline amount-btn<%= if (amount == preset) { %> active<% } %>"
                         hx-patch="/donate/update-amount"
                         hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
-                        hx-include="closest form"
-                        hx-target="#donation-form-content"
-                        hx-swap="innerHTML">$<%= preset %></button>
+                        hx-include="closest form">$<%= preset %></button>
               <% } %>
             </div>
 
@@ -59,12 +57,10 @@
                      autocomplete="transaction-amount"
                      placeholder="Enter custom amount"
                      step="any"
-                     hx-patch="/donate/update-amount"
-                     hx-trigger="input changed delay:500ms"
-                     hx-vals='{"source": "custom"}'
-                     hx-include="closest form"
-                     hx-target="#donation-form-content"
-                     hx-swap="innerHTML"
+                      hx-patch="/donate/update-amount"
+                      hx-trigger="input changed delay:500ms"
+                      hx-vals='{"source": "custom"}'
+                      hx-include="closest form"
                      value="<% if (source == "custom") { %><%= amount %><% } %>"
                      <% if (hasAmountError) { %>class="invalid"<% } %>>
               <% if (hasAmountError) { %>
@@ -104,10 +100,8 @@
               <input type="radio"
                      name="donation_type"
                      value="one-time"
-                     hx-patch="/donate/update-amount"
-                     hx-include="closest form"
-                     hx-target="#donation-form-content"
-                     hx-swap="innerHTML"
+                      hx-patch="/donate/update-amount"
+                      hx-include="closest form"
                      <%= if (donationType == "one-time" || donationType == "" || donationType == false) { %>checked<% } %>>
               One-time donation
             </label>
@@ -115,10 +109,8 @@
               <input type="radio"
                      name="donation_type"
                      value="monthly"
-                     hx-patch="/donate/update-amount"
-                     hx-include="closest form"
-                     hx-target="#donation-form-content"
-                     hx-swap="innerHTML"
+                      hx-patch="/donate/update-amount"
+                      hx-include="closest form"
                      <%= if (donationType == "monthly") { %>checked<% } %>>
               Monthly recurring
             </label>
@@ -331,7 +323,7 @@
 </div>
 
 <div id="submit-button">
-  <button role="button" class="contrast donation-submit">
+  <button type="submit" class="contrast donation-submit">
     <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
   </button>
 </div>

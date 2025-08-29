@@ -49,6 +49,40 @@
 
     /* Better border radius for military/professional look */
     --pico-border-radius: 0.375rem;
+
+/* =============================================================================
+   HTMX LOADING INDICATORS
+   =============================================================================
+*/
+
+/* HTMX indicator base styles */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+.htmx-request.htmx-indicator {
+    opacity: 1;
+}
+
+/* Specific loading indicator styles */
+#donation-loading,
+#bulk-loading {
+    display: inline-block;
+    margin-left: 0.5rem;
+    font-style: italic;
+    color: var(--pico-muted-color);
+}
+
+/* Inline form spacing for bulk actions */
+.inline-form {
+    display: inline-block;
+    margin-right: 0.5rem;
+}
     --pico-outline-width: 2px;
 
     /* Typography improvements */

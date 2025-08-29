@@ -44,15 +44,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle CSRF errors gracefully
+    // Handle HTMX errors gracefully
     document.body.addEventListener('htmx:responseError', function(event) {
-        if (event.detail.xhr.status === 403) {
-            console.warn('Request blocked by CSRF protection. This may indicate a session issue.');
-            // Try to refresh the page to get new tokens
-            if (confirm('Your session may have expired. Refresh the page to continue?')) {
-                window.location.reload();
-            }
+        const xhr = event.detail.xhr;
+        const status = xhr.status;
+
+        // Handle different error types
+        switch (status) {
+            case 403:
+                console.warn('Request blocked by CSRF protection. This may indicate a session issue.');
+                if (confirm('Your session may have expired. Refresh the page to continue?')) {
+                    window.location.reload();
+                }
+                break;
+            case 404:
+                console.error('Resource not found:', xhr.responseURL);
+                // Could show a user-friendly message
+                break;
+            case 422:
+                console.warn('Validation error - check form fields');
+                // Validation errors are typically handled by server-side rendering
+                break;
+            case 500:
+                console.error('Server error occurred');
+                if (confirm('A server error occurred. Would you like to refresh the page?')) {
+                    window.location.reload();
+                }
+                break;
+            default:
+                console.error('HTMX request failed with status:', status, xhr.responseText);
         }
+    });
+
+    // Handle network errors
+    document.body.addEventListener('htmx:sendError', function(event) {
+        console.error('Network error during HTMX request:', event.detail.error);
+        // Could show offline/network error message
     });
 });
 
@@ -60,36 +87,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('submit', function(event) {
         const form = event.target;
         if (form.tagName === 'FORM') {
-            window.CSRFUtils.addTokenToForm(form);
-        }
-    });
-
-    // Add loading indicators for HTMX requests
-    document.body.addEventListener('htmx:beforeRequest', function(event) {
-        // Add loading state to buttons/links that trigger requests
-        if (event.detail.elt.tagName === 'BUTTON' || event.detail.elt.tagName === 'INPUT') {
-            event.detail.elt.style.opacity = '0.7';
-            event.detail.elt.disabled = true;
-        }
-    });
-
-    document.body.addEventListener('htmx:afterRequest', function(event) {
-        // Remove loading state
-        if (event.detail.elt.tagName === 'BUTTON' || event.detail.elt.tagName === 'INPUT') {
-            event.detail.elt.style.opacity = '1';
-            event.detail.elt.disabled = false;
-        }
-    });
-
-    // CSRF Error Handling
-    document.body.addEventListener('htmx:responseError', function(event) {
-        if (event.detail.xhr.status === 403) {
-            // CSRF token error - try to refresh the page to get a new token
-            console.warn('CSRF token validation failed. This may be due to session expiry.');
-            // Optionally show user-friendly error message
-            if (confirm('Your session may have expired. Would you like to refresh the page?')) {
-                window.location.reload();
+            // Try to find CSRF token in the form
+            const csrfInput = form.querySelector('input[name="authenticity_token"]');
+            if (!csrfInput || !csrfInput.value) {
+                console.warn('CSRF token not found in form submission');
             }
         }
     });
-});

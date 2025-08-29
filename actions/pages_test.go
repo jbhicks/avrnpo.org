@@ -6,30 +6,33 @@ import (
 
 // Test all page handlers with pure HTMX implementation
 
-func (as *ActionSuite) Test_DonateHandler_Pure_HTMX() {
-	// Test that donation page ALWAYS returns only content (pure HTMX approach)
+func (as *ActionSuite) Test_DonateHandler_TraditionalForm() {
+	// Test that donation page returns traditional form without HTMX
 	res := as.HTML("/donate").Get()
 	as.Equal(http.StatusOK, res.Code)
 
 	// Should contain donation form content
 	as.Contains(res.Body.String(), "donation-form")
 	as.Contains(res.Body.String(), "Make a Donation")
-	as.Contains(res.Body.String(), "amount-grid")
 	as.Contains(res.Body.String(), "donor-info")
 
-	// Should contain amount buttons with proper classes
-	as.Contains(res.Body.String(), "amount-btn")
-	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"25\"")
-	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"50\"")
-	as.Contains(res.Body.String(), "hx-vals='{\"amount\": \"100\"")
-	as.Contains(res.Body.String(), "hx-patch=\"/donate/update-amount\"")
+	// Should contain radio buttons for amount selection
+	as.Contains(res.Body.String(), "name=\"amount\"")
+	as.Contains(res.Body.String(), "value=\"25\"")
+	as.Contains(res.Body.String(), "value=\"50\"")
+	as.Contains(res.Body.String(), "value=\"100\"")
+	as.Contains(res.Body.String(), "value=\"custom\"")
 
-	// Now returns full HTML structure (single-template architecture)
+	// Should NOT contain HTMX attributes
+	as.NotContains(res.Body.String(), "hx-vals")
+	as.NotContains(res.Body.String(), "hx-patch")
+	as.NotContains(res.Body.String(), "hx-target")
+
+	// Should return full HTML structure
 	as.Contains(res.Body.String(), "<!doctype")       // Full HTML document
 	as.Contains(res.Body.String(), "<html")           // HTML tag present
 	as.Contains(res.Body.String(), "<head>")          // Head section present
 	as.Contains(res.Body.String(), "Make a Donation") // Main donate content
-	as.NotContains(res.Body.String(), "<script src=\"/js/")
 }
 
 func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
@@ -101,24 +104,30 @@ func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
 	as.Contains(body2, "<!doctype html>")
 }
 
-func (as *ActionSuite) Test_Donation_Amount_Button_Classes() {
-	// Test that donation amount buttons have proper CSS classes for selection
+func (as *ActionSuite) Test_Donation_Amount_RadioButtons() {
+	// Test that donation amount radio buttons are properly structured
 	req := as.HTML("/donate")
-	req.Headers["HX-Request"] = "true"
 	res := req.Get()
 
 	as.Equal(http.StatusOK, res.Code)
 
-	// Check for proper button structure with HTMX attributes
-	as.Contains(res.Body.String(), "class=\"outline amount-btn\"")
-	as.Contains(res.Body.String(), "hx-patch=\"/donate/update-amount\"")
-	as.Contains(res.Body.String(), "hx-vals=")
+	// Check for proper radio button structure (no HTMX attributes)
+	as.Contains(res.Body.String(), "name=\"amount\"")
+	as.Contains(res.Body.String(), "type=\"radio\"")
+	as.Contains(res.Body.String(), "value=\"25\"")
+	as.Contains(res.Body.String(), "value=\"50\"")
+	as.Contains(res.Body.String(), "value=\"100\"")
+	as.Contains(res.Body.String(), "value=\"custom\"")
 
-	// Check that CSS is structured for selection feedback
-	// (HTMX handles the updates declaratively)
+	// Should NOT contain HTMX attributes
+	as.NotContains(res.Body.String(), "hx-patch")
+	as.NotContains(res.Body.String(), "hx-vals")
+	as.NotContains(res.Body.String(), "amount-btn")
+
+	// Check for fieldset structure for proper form semantics
 	body := res.Body.String()
-	as.Contains(body, "amount-btn")
-	as.Contains(body, "amount-grid")
+	as.Contains(body, "<fieldset>")
+	as.Contains(body, "<legend>Select Amount</legend>")
 }
 
 func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
@@ -128,9 +137,23 @@ func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 
 	// Check for JavaScript includes in main page (updated paths)
 	as.Contains(res.Body.String(), "/assets/js/htmx.min.js")
-	as.Contains(res.Body.String(), "/assets/js/donation.js")
 	as.Contains(res.Body.String(), "/assets/js/theme.js")
 	as.Contains(res.Body.String(), "/assets/js/application.js")
+}
+
+func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
+	// Simulate clicking a preset amount button using HTMX headers and values
+	req := as.HTML("/donate")
+	req.Headers["HX-Request"] = "true"
+	// HTMX sends values as form-encoded; simulate preset button sending custom_amount
+	res := req.Post("custom_amount=25&amount_source=preset")
+
+	// We expect a 200 and the donation form partial or full page (no 500)
+	as.Equal(http.StatusOK, res.Code)
+	body := res.Body.String()
+	as.Contains(body, "donation-form")
+	// Ensure preset amounts are present so template did not panic
+	as.Contains(body, "value=\"25\"")
 }
 
 // Test that static asset endpoints return 200 OK and non-empty body

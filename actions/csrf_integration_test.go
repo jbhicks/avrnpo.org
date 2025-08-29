@@ -105,80 +105,8 @@ func TestCSRFEnvironmentDifference(t *testing.T) {
 	t.Logf("💡 This confirms why unit tests missed the CSRF issue")
 }
 
-// TestCSRFProtectionEnabled verifies that CSRF middleware is working
-// This is the key test that would have caught the original donation form issue
-func TestCSRFProtectionEnabled(t *testing.T) {
-	app := setupAppWithCSRF()
 
-	// Submit form WITHOUT CSRF token
-	formData := url.Values{
-		"test_field": {"test_value"},
-		// Note: NO authenticity_token field
-	}
 
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/csrf-test", strings.NewReader(formData.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.ServeHTTP(w, req)
-
-	// Should return 403 Forbidden due to missing CSRF token
-	require.Equal(t, 403, w.Code, "Request without CSRF token should be rejected with 403")
-
-	t.Logf("✅ CSRF protection is working: POST request without token rejected with status %d", w.Code)
-}
-
-// TestCSRFWithInvalidToken verifies that invalid tokens are rejected
-func TestCSRFWithInvalidToken(t *testing.T) {
-	app := setupAppWithCSRF()
-
-	// Submit form with INVALID CSRF token
-	formData := url.Values{
-		"authenticity_token": {"invalid-token-12345"}, // Invalid token
-		"test_field":         {"test_value"},
-	}
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/csrf-test", strings.NewReader(formData.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	app.ServeHTTP(w, req)
-
-	// Should return 403 Forbidden due to invalid CSRF token
-	require.Equal(t, 403, w.Code, "Request with invalid CSRF token should be rejected with 403")
-
-	t.Logf("✅ CSRF protection is working: POST request with invalid token rejected with status %d", w.Code)
-}
-
-// TestCSRFEnvironmentDifference verifies that our test vs integration environment differs
-func TestCSRFEnvironmentDifference(t *testing.T) {
-	// Create an app with test environment (should NOT have CSRF)
-	testApp := buffalo.New(buffalo.Options{
-		Env: "test", // This is what regular tests use
-	})
-
-	// Notice: NO csrf.New middleware for test environment
-	testApp.POST("/csrf-test", func(c buffalo.Context) error {
-		return c.Render(200, r.JSON(map[string]string{"status": "success"}))
-	})
-
-	// Submit form without CSRF token to test environment
-	formData := url.Values{
-		"test_field": {"test_value"},
-	}
-
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/csrf-test", strings.NewReader(formData.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	testApp.ServeHTTP(w, req)
-
-	// Test environment should allow this (no CSRF protection)
-	require.Equal(t, 200, w.Code, "Test environment should allow requests without CSRF token")
-
-	t.Logf("✅ Test environment correctly allows requests without CSRF tokens (status %d)", w.Code)
-	t.Logf("💡 This confirms why unit tests missed the CSRF issue")
-}
 
 // TestBuffaloCSRFBuiltInPattern tests that our implementation follows Buffalo's CSRF patterns
 func TestBuffaloCSRFBuiltInPattern(t *testing.T) {
@@ -310,14 +238,7 @@ func TestBuffaloCSRFBasicFunctionality(t *testing.T) {
 	require.Equal(t, 403, w.Code, "Request with invalid CSRF token should be rejected")
 
 	t.Logf("✅ Buffalo CSRF middleware basic functionality working")
-}
-		html := fmt.Sprintf(`<form method="post" action="/submit">
-			<input type="hidden" name="authenticity_token" value="%s" />
-			<input type="text" name="test_field" value="test_value" />
-			<button type="submit">Submit</button>
-		</form>`, token)
-		return c.Render(200, r.String(html))
-	})
+// The following code is not valid here and should be moved to a separate test or function if needed.
 
 	app.POST("/submit", func(c buffalo.Context) error {
 		return c.Render(200, r.String("Form submitted successfully"))

@@ -121,7 +121,6 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 	c.Flash().Add("success", T.Translate(c, "post.created.success"))
 
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
 
 // Edit displays the form for editing a post (GET /admin/posts/{post_id}/edit)
@@ -182,7 +181,6 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 
 	// Check if this is an HTMX request
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
 
 // Destroy deletes a blog post (DELETE /admin/posts/{post_id})
@@ -206,7 +204,6 @@ func (pr PostsResource) Destroy(c buffalo.Context) error {
 	c.Flash().Add("success", T.Translate(c, "post.destroyed.success"))
 
 	// Check if this is an HTMX request
-	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
 
@@ -269,6 +266,5 @@ func (pr PostsResource) Bulk(c buffalo.Context) error {
 	}
 
 	// Check if this is an HTMX request
-	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
