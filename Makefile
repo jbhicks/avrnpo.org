@@ -353,12 +353,16 @@ test: check-deps db-up
 test-fast: check-deps
 	@echo "⚡ Running tests (fast mode)..."
 	@echo "🏃 Executing tests..."
-	@if HELCIM_PRIVATE_API_KEY=test_key_for_testing GO_ENV=test go test ./actions -v -vet=printf; then \
-		echo "✅ All tests passed!"; \
-	else \
-		echo "❌ Some tests failed. Check the output above for details."; \
-		exit 1; \
-	fi
+	@# Run tests and only show output on failure. Passing output is suppressed.
+	@HELCIM_PRIVATE_API_KEY=test_key_for_testing GO_ENV=test bash -c '\
+		tmp=$$(mktemp); \
+		if go test ./actions -vet=printf >"$$tmp" 2>&1; then \
+			echo "✅ All tests passed!"; \
+			rm -f "$$tmp"; \
+		else \
+			cat "$$tmp"; rm -f "$$tmp"; exit 1; \
+		fi'
+
 
 # Resilient test command that handles database startup automatically
 test-resilient: check-deps
