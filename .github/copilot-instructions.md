@@ -193,6 +193,22 @@ This rule prevents the recurring double underscore template errors that keep app
 
 ### Pico.css Styling Guidelines
 
+### Plush template syntax (quick reference)
+
+Add Plush templating guidance here:
+
+- Use <% %> for code execution without output, and <%= %> for expressions that output into the template.
+- Use <%# comment %> for comments that are not rendered.
+- Declare variables with `let`: <% let x = 1 %> and access Go-provided context variables with <%= name %>.
+- Control flow: use `if/else` and `for` loops. When producing HTML conditionally, wrap the control structure with <%= if (...) { %> ... <% } %> so that HTML is output correctly.
+- For loops: <%= for (i, v) in arr { %> ... <% } %>. Iterators from Go must implement Next().
+- Helpers: register Go functions on the context with ctx.Set("name", fn) and call them in templates. Block helpers accept a HelperContext to capture template blocks.
+- Maps become `map[string]interface{}` and arrays `[]interface{}` in Go. Append arrays with `a = a + value` (type compatible).
+- Partials: call `partial("dir/name")` which maps to templates/dir/_name.plush.html (do NOT include underscore or extension).
+- Security: never return unescaped HTML from helpers unless you have sanitized it. Prefer returning strings and let the template escape them.
+
+
+
 **CRITICAL: Always use Pico.css variables instead of custom CSS**
 
 - **For ALL styling changes**: Consult `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` FIRST
@@ -726,3 +742,20 @@ docs/
 5. **Keep it simple**: Straightforward language is more trustworthy
 
 ## General Guidelines
+
+## 🚨 CODE FORMATTING RULES 🚨
+
+**ALWAYS run `go fmt` before declaring victory on any Go code change.**
+
+- **Run locally:** Before marking a change as complete, run:
+
+```bash
+gofmt -w .
+```
+
+- **CI / review note:** If CI shows formatting issues, fix them locally and push a follow-up commit. Pull requests should not be merged with `gofmt` failures.
+
+- **Commit formatting changes:** If `gofmt` modifies files, commit those changes with a clear message, e.g. `chore: run gofmt`.
+
+- **Why:** Consistent formatting avoids noise in diffs and prevents style-related review comments. This rule applies to all contributors and automated agents working on the repository.
+

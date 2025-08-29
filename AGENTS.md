@@ -51,6 +51,31 @@
   - Use `novalidate` attribute to disable browser validation and rely on server validation
   - Handler functions should detect API vs form requests and respond appropriately (JSON vs template rendering)
 
+### Plush template syntax (agent guidance)
+
+- Output vs code:
+  - `<%= expression %>` — evaluate expression and insert the result into the template.
+  - `<% statement %>` — execute code without inserting output.
+  - `<%# comment %>` — template comment, not rendered.
+- Variables and context:
+  - Declare with `let`: `<% let x = 1 %>`.
+  - Set values from Go via `ctx.Set("name", value)` and access in templates with `<%= name %>`.
+  - Maps and arrays map to `map[string]interface{}` and `[]interface{}` in Go.
+- Control flow and output:
+  - Use `if/else` and `for` constructs. When controlling HTML output, wrap the flow with `<%= if (...) { %> ... <% } %>` so the HTML is emitted correctly.
+  - For loops: `<%= for (key, val) in expr { %> ... <% } %>`; iterators must implement `Next()` in Go.
+- Helpers and blocks:
+  - Register helpers in Go with `ctx.Set("name", fn)` and call them in templates.
+  - Block helpers accept a `HelperContext` to capture a template block; use `help.Block()` inside the helper to render it.
+- Partials:
+  - Call `partial("dir/name")` to render `templates/dir/_name.plush.html`.
+  - Do NOT include underscore or extension in `partial()` call.
+- Safety and best practices:
+  - Avoid putting business logic in templates; prefer helpers and Go.
+  - Return sanitized content. When returning `template.HTML`, ensure content is safe to avoid XSS.
+  - Use `<%= %>` intentionally — missing it silently suppresses output.
+
+
 ### Database & Migrations
 - Use `.fizz` migrations only (NOT .sql files)
 - Delete auto-generated `schema.sql` files immediately
