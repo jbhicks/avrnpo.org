@@ -1,33 +1,24 @@
-// Donation form functionality for AVR website
-// Minimal JavaScript - HTMX handles most interactions declaratively
-// Form validation handled server-side with Buffalo flash messages
-
+// HTMX-first donation helpers — keep behavior minimal and idempotent
 (function() {
-    'use strict';
+  'use strict';
 
-    // Initialize when DOM is ready
-    function initialize() {
-        // HTMX handles form submission and validation
-        // Buffalo flash messages handle error display
-        // CSRF tokens are handled by application.js
-        // No client-side validation needed - server handles everything
-        console.log('Donation form initialized - using server-side validation with Buffalo flash messages');
-    }
+  function initDonationContent(root) {
+    if (!root) return;
+    try {
+      const form = (root.querySelector) ? root.querySelector('#donation-form') : null;
+      if (!form) return;
 
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initialize);
-    } else {
-        initialize();
+      // Small accessibility helper: ensure numeric amount input has decimal inputmode
+      const amountInput = form.querySelector('#amount');
+      if (amountInput) amountInput.setAttribute('inputmode', 'decimal');
+    } catch (e) {
+      // swallow errors — this is a tiny helper
     }
+  }
 
-    // Re-initialize after HTMX loads new content
-    if (typeof htmx !== 'undefined') {
-        htmx.onLoad(function(content) {
-            // Check if the loaded content contains a donation form
-            if (content.querySelector && content.querySelector('#donation-form')) {
-                initialize();
-            }
-        });
-    }
+  // Run on initial load and after HTMX swaps
+  initDonationContent(document);
+  if (typeof htmx !== 'undefined') {
+    htmx.onLoad(function(elt) { initDonationContent(elt); });
+  }
 })();

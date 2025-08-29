@@ -761,8 +761,9 @@ textarea:invalid:not(:user-invalid) {
    DONATION AMOUNT BUTTON STYLES (from donate template)
    ============================================================================= */
 
-/* Amount button styling - Custom buttons without Pico.css conflicts */
-.amount-grid button.amount-btn {
+/* Amount button styling - Use flexbox layout for consistent sizing */
+.amount-grid button.amount-btn,
+.amount-btn {
     background-color: transparent !important;
     background: transparent !important;
     border: 2px solid #ffb627 !important;
@@ -774,8 +775,11 @@ textarea:invalid:not(:user-invalid) {
     font-size: 1rem !important;
     font-weight: 500 !important;
     text-decoration: none !important;
-    display: inline-block !important;
     text-align: center !important;
+    /* Use flexbox for uniform sizing */
+    flex: 0 1 calc(33.333% - 0.5rem) !important;
+    min-width: 100px !important;
+    max-width: 120px !important;
 }
 
 /* Active state - filled background - highest specificity */
@@ -813,6 +817,7 @@ textarea:invalid:not(:user-invalid) {
     margin-bottom: 1rem;
 }
 
+/* Amount button flexbox layout for consistent sizing */
 .amount-btn {
     flex: 0 1 calc(33.333% - 0.5rem);
     min-width: 100px;

@@ -1,8 +1,8 @@
 package grifts
 
 import (
-	"fmt"
 	"avrnpo.org/models"
+	"fmt"
 
 	"github.com/gobuffalo/grift/grift"
 	"github.com/gobuffalo/pop/v6"

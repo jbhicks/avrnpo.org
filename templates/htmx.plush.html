@@ -1,1 +1,5 @@
-<%= yield %>
+<%= partial("flash") %>
+<%= partial("nav") %>
+<!-- Keep the same main container as the full layout so HTMX swaps
+	that target or replace `#main-content` preserve site padding -->
+<main id="main-content" class="container"><%= yield %></main>

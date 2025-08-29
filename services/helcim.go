@@ -265,7 +265,7 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 	// Debug: Log the raw response to understand what Helcim is returning
 	fmt.Printf("[CreatePaymentPlan] HTTP Status: %d\n", resp.StatusCode)
 	fmt.Printf("[CreatePaymentPlan] Raw Helcim response: %s\n", string(body))
-	
+
 	// Force output to stderr which Buffalo should capture
 	fmt.Fprintf(os.Stderr, "[HELCIM DEBUG] Payment plan response status %d: %s\n", resp.StatusCode, string(body))
 
@@ -540,14 +540,14 @@ func (m *mockHelcimClient) CreatePaymentPlan(amount float64, planName string) (*
 
 func (m *mockHelcimClient) CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error) {
 	return &SubscriptionResponse{
-		ID:             int(time.Now().Unix() % 1000000),
-		CustomerID:     req.CustomerID,
-		PaymentPlanID:  req.PaymentPlanID,
-		Amount:         req.Amount,
-		Status:         "active",
-		ActivationDate: time.Now().Format("2006-01-02"),
+		ID:              int(time.Now().Unix() % 1000000),
+		CustomerID:      req.CustomerID,
+		PaymentPlanID:   req.PaymentPlanID,
+		Amount:          req.Amount,
+		Status:          "active",
+		ActivationDate:  time.Now().Format("2006-01-02"),
 		NextBillingDate: time.Now().AddDate(0, 1, 0),
-		PaymentMethod:  req.PaymentMethod,
+		PaymentMethod:   req.PaymentMethod,
 	}, nil
 }
 
@@ -555,14 +555,14 @@ func (m *mockHelcimClient) GetSubscription(subscriptionID string) (*Subscription
 	// Return a simulated active subscription
 	now := time.Now()
 	return &SubscriptionResponse{
-		ID:             123456,
-		CustomerID:     "dev_customer",
-		PaymentPlanID:  1111,
-		Amount:         10.00,
-		Status:         "active",
-		ActivationDate: now.Format("2006-01-02"),
+		ID:              123456,
+		CustomerID:      "dev_customer",
+		PaymentPlanID:   1111,
+		Amount:          10.00,
+		Status:          "active",
+		ActivationDate:  now.Format("2006-01-02"),
 		NextBillingDate: now.AddDate(0, 1, 0),
-		PaymentMethod:  "card",
+		PaymentMethod:   "card",
 	}, nil
 }
 
@@ -574,14 +574,14 @@ func (m *mockHelcimClient) CancelSubscription(subscriptionID string) error {
 func (m *mockHelcimClient) UpdateSubscription(subscriptionID string, updates map[string]interface{}) (*SubscriptionResponse, error) {
 	// Simulate returning an updated subscription
 	sub := &SubscriptionResponse{
-		ID:            123456,
-		CustomerID:    "dev_customer",
-		PaymentPlanID: 1111,
-		Amount:        10.00,
-		Status:        "active",
-		ActivationDate: time.Now().Format("2006-01-02"),
+		ID:              123456,
+		CustomerID:      "dev_customer",
+		PaymentPlanID:   1111,
+		Amount:          10.00,
+		Status:          "active",
+		ActivationDate:  time.Now().Format("2006-01-02"),
 		NextBillingDate: time.Now().AddDate(0, 1, 0),
-		PaymentMethod: "card",
+		PaymentMethod:   "card",
 	}
 	return sub, nil
 }
@@ -590,14 +590,14 @@ func (m *mockHelcimClient) ListSubscriptionsByCustomer(customerID string) ([]Sub
 	now := time.Now()
 	return []SubscriptionResponse{
 		{
-			ID:             123456,
-			CustomerID:     customerID,
-			PaymentPlanID:  1111,
-			Amount:         10.00,
-			Status:         "active",
-			ActivationDate: now.Format("2006-01-02"),
+			ID:              123456,
+			CustomerID:      customerID,
+			PaymentPlanID:   1111,
+			Amount:          10.00,
+			Status:          "active",
+			ActivationDate:  now.Format("2006-01-02"),
 			NextBillingDate: now.AddDate(0, 1, 0),
-			PaymentMethod:  "card",
+			PaymentMethod:   "card",
 		},
 	}, nil
 }

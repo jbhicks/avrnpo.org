@@ -108,7 +108,7 @@ func (as *ActionSuite) Test_AdminDashboard_Success() {
 }
 
 func (as *ActionSuite) Test_AdminUsers_Success() {
-	// Create and login admin user  
+	// Create and login admin user
 	_ = as.createAndLoginUser("admin@example.com", "admin")
 
 	// Create additional test user

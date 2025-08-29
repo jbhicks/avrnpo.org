@@ -90,7 +90,8 @@ func AuthCreate(c buffalo.Context) error {
 	// Always clear the redirect URL after use, even if empty
 	c.Session().Delete("redirectURL")
 
-	return c.Redirect(http.StatusFound, redirectURL)}
+	return c.Redirect(http.StatusFound, redirectURL)
+}
 
 // AuthDestroy clears the session and logs a user out
 func AuthDestroy(c buffalo.Context) error {

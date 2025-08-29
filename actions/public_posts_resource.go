@@ -1,9 +1,9 @@
 package actions
 
 import (
+	"avrnpo.org/models"
 	"fmt"
 	"net/http"
-	"avrnpo.org/models"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -28,7 +28,7 @@ func (ppr PublicPostsResource) List(c buffalo.Context) error {
 	}
 
 	c.Set("posts", posts)
-	
+
 	// Set base URL for social sharing
 	req := c.Request()
 	scheme := "http"
@@ -56,7 +56,7 @@ func (ppr PublicPostsResource) Show(c buffalo.Context) error {
 		return c.Error(http.StatusNotFound, err)
 	}
 	c.Set("post", post)
-	
+
 	// Set base URL for social sharing
 	req := c.Request()
 	scheme := "http"

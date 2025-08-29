@@ -1,4 +1,3 @@
-
 package actions
 
 import (
@@ -29,6 +28,11 @@ func getCurrency() string {
 		return "USD" // Default fallback
 	}
 	return currency
+}
+
+// isHTMX detects if the request is from HTMX
+func isHTMX(req *http.Request) bool {
+	return req.Header.Get("HX-Request") == "true"
 }
 
 // safeString ensures a value is a string, converting or defaulting as needed
@@ -182,9 +186,9 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			}))
 		}
 		// For form submissions, redirect back with error
-	c.Flash().Add("error", "Invalid form data submitted")
-	ensureDonateContext(c)
-	return c.Redirect(http.StatusSeeOther, "/donate")
+		c.Flash().Add("error", "Invalid form data submitted")
+		ensureDonateContext(c)
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
 	// Use Buffalo's validate.Errors for field-specific error collection
@@ -1284,31 +1288,34 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 
 	c.Logger().Debugf("DonateUpdateAmountHandler called with amount=%s, donationType=%s, source=%s", amount, donationType, source)
 
-	// Get current state from session with safe type checking
-	sessionAmount := ""
-	if sessionAmountInterface := c.Session().Get("donation_amount"); sessionAmountInterface != nil {
-		if str, ok := sessionAmountInterface.(string); ok {
-			sessionAmount = str
+	// Use form data and context instead of session for temporary state
+	sessionAmount := amount
+	if sessionAmount == "" {
+		// Fallback to existing session data if no amount provided
+		if sessionAmountInterface := c.Session().Get("donation_amount"); sessionAmountInterface != nil {
+			if str, ok := sessionAmountInterface.(string); ok {
+				sessionAmount = str
+			}
 		}
 	}
 
-	sessionDonationType := "one-time" // Default
-	if sessionDonationTypeInterface := c.Session().Get("donation_type"); sessionDonationTypeInterface != nil {
-		if str, ok := sessionDonationTypeInterface.(string); ok {
-			sessionDonationType = str
+	sessionDonationType := donationType
+	if sessionDonationType == "" {
+		sessionDonationType = "one-time" // Default
+		// Fallback to existing session data if no type provided
+		if sessionDonationTypeInterface := c.Session().Get("donation_type"); sessionDonationTypeInterface != nil {
+			if str, ok := sessionDonationTypeInterface.(string); ok {
+				sessionDonationType = str
+			}
 		}
 	}
 
-	// Update amount in session if a new amount is provided
+	// Update session only when we have new values
 	if amount != "" {
 		c.Session().Set("donation_amount", amount)
-		sessionAmount = amount
 	}
-
-	// Update donation type in session if provided
 	if donationType != "" {
 		c.Session().Set("donation_type", donationType)
-		sessionDonationType = donationType
 	}
 
 	// Use session values if not provided in request (e.g., radio button clicks)
@@ -1363,14 +1370,12 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 
-	// Ensure CSRF token is available for template
-	if token := c.Value("authenticity_token"); token != nil {
-		c.Set("authenticity_token", token)
-	} else {
-		c.Logger().Warn("CSRF token not available in DonateUpdateAmountHandler context")
-		c.Set("authenticity_token", "")
-	}
+	// Buffalo's CSRF middleware automatically provides authenticity_token
 
-	// Render the complete page - HTMX will extract content automatically
-	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+	// For HTMX requests, return just the form content without HTMX layout
+	if isHTMX(c.Request()) {
+		return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content.plush.html"))
+	}
+	// For regular requests, return the full page
+	return renderForRequest(c, http.StatusOK, "pages/donate.plush.html")
 }

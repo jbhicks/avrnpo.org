@@ -1,13 +1,17 @@
 <!-- Amount buttons section - only this gets updated -->
 <div class="amount-grid">
-    <%= for (preset) in presetAmounts { %>
+  <% if (!presetAmounts) { presetAmounts = []string{"25", "50", "100", "250", "500", "1000"} } %>
+  <% for (preset) in presetAmounts { %>
+      <% btnClass = "outline amount-btn" %>
+      <% if (amount == preset) { btnClass = btnClass + " active" } %>
+        <% hxVals = "{\"amount\":\"" + preset + "\",\"source\":\"preset\",\"authenticity_token\":\"" + safeToken + "\"}" %>
       <button type="button" 
-              class="outline amount-btn<%= if (amount == preset) { %> active<% } %>" 
-              hx-patch="/donate/update-amount"
-              hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
-              hx-include="closest form"
-              hx-target="#amount-buttons, #submit-button"
-              hx-swap="outerHTML">$<%= preset %></button>
+        class="<%= btnClass %>" 
+        hx-patch="/donate/update-amount"
+        hx-vals='<%= hxVals %>'
+        hx-include="closest form"
+        hx-target="#amount-buttons, #submit-button"
+        hx-swap="outerHTML">$<%= preset %></button>
     <% } %>
 </div>
 

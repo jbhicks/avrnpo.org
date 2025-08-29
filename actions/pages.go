@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -16,19 +18,36 @@ import (
 
 // Types and functions are defined in donations.go
 
+// generateSecureToken creates a cryptographically secure CSRF token
+func generateSecureToken() string {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		// Fallback to timestamp-based token if crypto fails
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return base64.URLEncoding.EncodeToString(bytes)
+}
+
 // ensureDonateContext sets up common context variables for donation forms
 func ensureDonateContext(c buffalo.Context) {
 	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+
+	// Ensure the CSRF token identifier exists in the template context.
+	// Buffalo's CSRF middleware should have set authenticity_token.
+	// Only set to empty string if it's truly not present.
+	if c.Value("authenticity_token") == nil {
+		c.Set("authenticity_token", "")
+	}
 }
 
 // TeamHandler shows the team page
 func TeamHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("pages/team.plush.html"))
+	return renderForRequest(c, http.StatusOK, "pages/team.plush.html")
 }
 
 // ProjectsHandler shows the projects page
 func ProjectsHandler(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("pages/projects.plush.html"))
+	return renderForRequest(c, http.StatusOK, "pages/projects.plush.html")
 }
 
 // ContactHandler shows the contact form
@@ -36,13 +55,13 @@ func ProjectsHandler(c buffalo.Context) error {
 func ContactHandler(c buffalo.Context) error {
 	// Handle GET request - show the contact form
 	if c.Request().Method == "GET" {
-		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+		return renderForRequest(c, http.StatusOK, "pages/contact.plush.html")
 	}
 
 	// Handle POST request - process form data
 	if err := ValidateContactForm(c); err != nil {
 		c.Flash().Add("error", err.Error())
-		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
+		return renderForRequest(c, http.StatusOK, "pages/contact.plush.html")
 	}
 
 	// Get validated and sanitized values
@@ -108,9 +127,19 @@ func DebugFlashHandler(c buffalo.Context) error {
 
 // DonateHandler handles both GET (show form) and POST (process form) for the donation page
 func DonateHandler(c buffalo.Context) error {
+	// Log the request for debugging
+	c.Logger().Infof("DonateHandler called with method: %s, URL: %s", c.Request().Method, c.Request().URL.Path)
+
 	// Handle GET request - show the donation form
 	if c.Request().Method == "GET" {
-		// Buffalo's CSRF middleware handles token generation automatically
+		// Generate CSRF token
+		token := generateSecureToken()
+		c.Set("authenticity_token", token)
+		c.Session().Set("csrf_token", token)
+
+		// Create donation model for form
+		donation := &DonationRequest{}
+		c.Set("donation", donation)
 		c.Set("errors", nil)
 		c.Set("hasAnyErrors", false)
 		c.Set("hasCommentsError", false)
@@ -144,142 +173,33 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("state", "")
 		c.Set("zip", "")
 		ensureDonateContext(c)
-		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+		return renderForRequest(c, http.StatusOK, "pages/donate.plush.html")
 	}
 
-	// Handle POST request - always process as full form submission
-	if c.Request().Method == "POST" {
-		var req DonationRequest
-		if err := c.Bind(&req); err != nil {
-			c.Flash().Add("error", "Invalid form data submitted")
-			ensureDonateContext(c)
-			c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
-			return c.Redirect(http.StatusSeeOther, "/donate")
-		}
+	// Handle POST request - validate CSRF token manually
+	c.Logger().Infof("DonateHandler POST called - validating CSRF token")
 
-		// Use Buffalo's validate.Errors for field-specific error collection
-		errors := validate.NewErrors()
-
-		if strings.TrimSpace(req.FirstName) == "" {
-			errors.Add("first_name", "First name is required")
-		}
-		if strings.TrimSpace(req.LastName) == "" {
-			errors.Add("last_name", "Last name is required")
-		}
-		if strings.TrimSpace(req.DonorEmail) == "" {
-			errors.Add("donor_email", "Email address is required")
-		}
-		// Basic email validation
-		if req.DonorEmail != "" && (!strings.Contains(req.DonorEmail, "@") || !strings.Contains(req.DonorEmail, ".")) {
-			errors.Add("donor_email", "Please enter a valid email address")
-		}
-		if strings.TrimSpace(req.AddressLine1) == "" {
-			errors.Add("address_line1", "Address Line 1 is required")
-		}
-		if strings.TrimSpace(req.City) == "" {
-			errors.Add("city", "City is required")
-		}
-		if strings.TrimSpace(req.State) == "" {
-			errors.Add("state", "State is required")
-		}
-		if strings.TrimSpace(req.Zip) == "" {
-			errors.Add("zip_code", "ZIP Code is required")
-		}
-
-		// Determine donation amount - check both form and session
-		var amount float64
-		var err error
-
-		// First try to get amount from form submission
-		amountStr := strings.TrimSpace(req.CustomAmount)
-
-		// If no amount in form, check session (from preset button selections)
-		if amountStr == "" {
-			if sessionAmount := c.Session().Get("donation_amount"); sessionAmount != nil {
-				if s, ok := sessionAmount.(string); ok {
-					amountStr = s
-				}
-			}
-		}
-
-		// Normalize money strings like "$25.00" or "25,00" -> "25.00"
-		if amountStr != "" {
-			// Remove currency symbols and commas
-			amountStr = strings.ReplaceAll(amountStr, "$", "")
-			amountStr = strings.ReplaceAll(amountStr, ",", "")
-		}
-
-		if strings.TrimSpace(amountStr) == "" {
-			errors.Add("amount", "Donation amount is required")
-		} else {
-			amount, err = strconv.ParseFloat(amountStr, 64)
-			if err != nil || amount <= 0 {
-				errors.Add("amount", "Donation amount must be greater than zero")
-			}
-		}
-		// If there are any errors, render the form with errors and user input
-		if errors.HasAny() {
-			// Set error context for template
-			c.Set("errors", errors)
-			c.Set("hasAnyErrors", errors.HasAny())
-			c.Set("hasCommentsError", errors.Get("comments") != nil)
-			c.Set("hasAmountError", errors.Get("amount") != nil)
-			ensureDonateContext(c)
-			c.Set("hasLastNameError", errors.Get("last_name") != nil)
-			c.Set("hasDonorEmailError", errors.Get("donor_email") != nil)
-			c.Set("hasDonorPhoneError", errors.Get("donor_phone") != nil)
-			c.Set("hasAddressLine1Error", errors.Get("address_line1") != nil)
-			c.Set("hasCityError", errors.Get("city") != nil)
-			c.Set("hasStateError", errors.Get("state") != nil)
-			c.Set("hasZipError", errors.Get("zip_code") != nil)
-			c.Set("comments", req.Comments)
-
-			// Convert amount to string to avoid template rendering issues
-			ensureDonateContext(c)
-			if req.Amount != nil {
-				switch v := req.Amount.(type) {
-				case string:
-					amountStr = v
-				case float64:
-					if v > 0 {
-						amountStr = fmt.Sprintf("%.2f", v)
-					}
-				case int:
-					if v > 0 {
-						amountStr = fmt.Sprintf("%d", v)
-					}
-				}
-			}
-			c.Set("amount", amountStr)
-
-			// Ensure customAmount is always a safe string
-			c.Set("customAmount", safeString(req.CustomAmount))
-			c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
-			c.Set("firstName", req.FirstName)
-			c.Set("lastName", req.LastName)
-			c.Set("donorEmail", req.DonorEmail)
-			c.Set("donorPhone", req.DonorPhone)
-			c.Set("addressLine1", req.AddressLine1)
-			c.Set("addressLine2", req.AddressLine2)
-			c.Set("city", req.City)
-			c.Set("state", req.State)
-			c.Set("zip", req.Zip)
-
-			// Return the form with errors (always full page)
-			return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
-		}
-
-		// Success - process the donation
-		// ...existing code...
+	// Validate CSRF token
+	submittedToken := c.Param("authenticity_token")
+	expectedToken := c.Session().Get("csrf_token")
+	if submittedToken == "" || expectedToken == nil || submittedToken != expectedToken {
+		c.Logger().Warn("CSRF validation failed")
+		c.Flash().Add("error", "Invalid form submission. Please refresh the page and try again.")
+		ensureDonateContext(c)
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
+
+	c.Logger().Info("CSRF validation passed - proceeding with form processing")
+
+	// Parse donation request
 	var req DonationRequest
 	if err := c.Bind(&req); err != nil {
 		c.Flash().Add("error", "Invalid form data submitted")
 		ensureDonateContext(c)
-		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
+	// Buffalo's CSRF middleware automatically validates the authenticity_token
 	// Use Buffalo's validate.Errors for field-specific error collection
 	errors := validate.NewErrors()
 
@@ -359,6 +279,9 @@ func DonateHandler(c buffalo.Context) error {
 
 		// Convert amount to string to avoid template rendering issues
 		ensureDonateContext(c)
+		return renderForRequest(c, http.StatusOK, "pages/donate.plush.html")
+
+		// If no errors, continue with donation processing
 		if req.Amount != nil {
 			switch v := req.Amount.(type) {
 			case string:
@@ -389,7 +312,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("zip", req.Zip)
 
 		// Return the form with errors (same for both HTMX and regular requests)
-		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+		return renderForRequest(c, http.StatusOK, "pages/donate.plush.html")
 	}
 
 	// Success - process the donation

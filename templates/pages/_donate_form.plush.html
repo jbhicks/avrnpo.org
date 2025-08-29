@@ -1,68 +1,122 @@
-<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate
-<form method="post" action="/donate"
-      hx-post="/donate" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-<div id="donation-form-content">
-        <!-- CSRF Protection -->
-        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-        <!-- Hidden field to store selected amount for form submission -->
-        <input type="hidden" name="custom_amount" value="<%= amount %>">
+<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+  <div id="donation-form-content">
+    <!-- CSRF token provided by Buffalo's middleware -->
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+    <!-- Hidden field to store selected amount for form submission -->
+    <input type="hidden" name="custom_amount" value="<%= amount %>">
 
         <h3>Make a Donation</h3>
 
-<%  hasAnyErrors = errors && errors.Count() > 0
-  hasCommentsError = errors && errors.Get("comments")
-  hasAmountError = errors && errors.Get("amount")
-  hasFirstNameError = errors && errors.Get("first_name")
-  hasLastNameError = errors && errors.Get("last_name")
-  hasDonorEmailError = errors && errors.Get("donor_email")
-  hasDonorPhoneError = errors && errors.Get("donor_phone")
-  hasAddressLine1Error = errors && errors.Get("address_line1")
-  hasCityError = errors && errors.Get("city")
-  hasStateError = errors && errors.Get("state")
-  hasZipError = errors && errors.Get("zip_code")
+        <%
+          hasAnyErrors = errors && errors.HasAny()
+          hasCommentsError = errors && errors.Get("comments")
+          hasAmountError = errors && errors.Get("amount")
+          hasFirstNameError = errors && errors.Get("first_name")
+          hasLastNameError = errors && errors.Get("last_name")
+          hasDonorEmailError = errors && errors.Get("donor_email")
+  %>
+<% hasDonorPhoneError = errors && errors.Get("donor_phone") %>
+<% hasAddressLine1Error = errors && errors.Get("address_line1") %>
+<% hasCityError = errors && errors.Get("city") %>
+<% hasStateError = errors && errors.Get("state") %>
+<% hasZipError = errors && errors.Get("zip_code") %>
+
+<%
+  // Build attribute-safe variables to avoid control tags inside attributes
+  customValue = ""
+  if (source == "custom") { customValue = amount }
+
+  customClass = ""
+  if (hasAmountError) { customClass = "invalid" }
+
+  donationOneChecked = ""
+  if (donationType == "one-time" || donationType == "" || donationType == false) { donationOneChecked = "checked" }
+
+  donationMonthlyChecked = ""
+  if (donationType == "monthly") { donationMonthlyChecked = "checked" }
+
+  firstNameValue = ""
+  if (firstName && firstName != false) { firstNameValue = firstName }
+  firstNameClass = ""
+  if (hasFirstNameError) { firstNameClass = "invalid" }
+
+  lastNameValue = ""
+  if (lastName && lastName != false) { lastNameValue = lastName }
+  lastNameClass = ""
+  if (hasLastNameError) { lastNameClass = "invalid" }
+
+  donorEmailValue = ""
+  if (donorEmail && donorEmail != false) { donorEmailValue = donorEmail }
+  donorEmailClass = ""
+  if (hasDonorEmailError) { donorEmailClass = "invalid" }
+
+  donorPhoneValue = ""
+  if (donorPhone && donorPhone != false) { donorPhoneValue = donorPhone }
+  donorPhoneClass = ""
+  if (hasDonorPhoneError) { donorPhoneClass = "invalid" }
+
+  addressLine1Value = ""
+  if (addressLine1 && addressLine1 != false) { addressLine1Value = addressLine1 }
+  addressLine1Class = ""
+  if (hasAddressLine1Error) { addressLine1Class = "invalid" }
+
+  cityValue = ""
+  if (city && city != false) { cityValue = city }
+  cityClass = ""
+  if (hasCityError) { cityClass = "invalid" }
+
+  zipValue = ""
+  if (zip && zip != false) { zipValue = zip }
+  zipClass = ""
+  if (hasZipError) { zipClass = "invalid" }
 %>
 
-<%= if (hasAnyErrors) { %>
-  <div class="error-summary">
-    <strong>Please correct the errors below:</strong>
-    <ul>
-<%= for (err) in errors.Errors { %>
-<li><%= err %></li>
+<% if (hasAnyErrors) { %>
+      <div class="error-summary">
+        <strong>Please correct the errors below:</strong>
+        <ul>
+<% if (errors && errors.Errors) { %>
+  <% for (key, messages) in errors { %>
+    <% for (message) in messages { %>
+      <li><%= message %></li>
+    <% } %>
+  <% } %>
 <% } %>
-    </ul>
-  </div>
-<% } %>
+        </ul>
+      </div>
+    <% } %>
 
-<p class="donation-subtitle">
-  Choose your donation amount or enter a custom amount. All donations are tax-deductible.
-</p>
+    <p class="donation-subtitle">
+      Choose your donation amount or enter a custom amount. All donations are tax-deductible.
+    </p>
+      <div class="donation-amounts">
+      <h4>Select Amount</h4>
+      <div id="amount-buttons" class="amount-grid">
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"25","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$25</button>
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"50","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$50</button>
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"100","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$100</button>
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"250","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$250</button>
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"500","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$500</button>
+  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"1000","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$1000</button>
+      </div>
 
-        <div class="donation-amounts">
-           <h4>Select Amount</h4>
-            <div id="amount-buttons" class="amount-grid">
-                            <%= for (preset) in presetAmounts { %>
-                <button type="button"
-                        class="outline amount-btn<%= if (amount == preset) { %> active<% } %>"
+  <div class="custom-amount-group">
+        <label for="amount">Or enter a custom amount</label>
+        <input type="number"
+                      id="amount"
+                      name="amount"
+                      autocomplete="transaction-amount"
+                      placeholder="Enter custom amount"
+                      step="any"
                         hx-patch="/donate/update-amount"
-                        hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
-                        hx-include="closest form">$<%= preset %></button>
-              <% } %>
-            </div>
-
-            <div class="custom-amount-group">
-              <label for="amount">Or enter a custom amount</label>
-              <input type="number"
-                     id="amount"
-                     name="amount"
-                     autocomplete="transaction-amount"
-                     placeholder="Enter custom amount"
-                     step="any"
-                      hx-patch="/donate/update-amount"
-                      hx-trigger="input changed delay:500ms"
-                      hx-vals='{"source": "custom"}'
-                      hx-include="closest form"
-                     value="<% if (source == "custom") { %><%= amount %><% } %>"
-                     <% if (hasAmountError) { %>class="invalid"<% } %>>
+                        hx-trigger="input changed delay:500ms"
+                        hx-vals='{"source": "custom"}'
+                        hx-include="closest form"
+                        hx-target="#donation-form-content"
+                        hx-swap="innerHTML"
+                        hx-push-url="false"
+                      value="<%= customValue %>"
+                      class="<%= customClass %>">
               <% if (hasAmountError) { %>
                 <small class="error"><%= errors.Get("amount") %></small>
               <% } %>
@@ -96,30 +150,34 @@
         <div class="donation-frequency">
           <fieldset>
             <legend>Donation Frequency</legend>
-            <label>
-              <input type="radio"
-                     name="donation_type"
-                     value="one-time"
-                      hx-patch="/donate/update-amount"
-                      hx-include="closest form"
-                     <%= if (donationType == "one-time" || donationType == "" || donationType == false) { %>checked<% } %>>
-              One-time donation
-            </label>
-            <label>
-              <input type="radio"
-                     name="donation_type"
-                     value="monthly"
-                      hx-patch="/donate/update-amount"
-                      hx-include="closest form"
-                     <%= if (donationType == "monthly") { %>checked<% } %>>
-              Monthly recurring
-            </label>
+             <label>
+             <input type="radio"
+                        name="donation_type"
+                        value="one-time"
+                         hx-patch="/donate/update-amount"
+                         hx-include="closest form"
+                         hx-target="#donation-form-content"
+                         hx-swap="innerHTML"
+                <%= donationOneChecked %>>
+               One-time donation
+             </label>
+             <label>
+           <input type="radio"
+                        name="donation_type"
+                        value="monthly"
+                         hx-patch="/donate/update-amount"
+                         hx-include="closest form"
+                         hx-target="#donation-form-content"
+                         hx-swap="innerHTML"
+                <%= donationMonthlyChecked %>>
+               Monthly recurring
+             </label>
           </fieldset>
         </div>
 
 <label for="comments">Comments (optional)
 </label>
-<%= if (hasCommentsError) { %>
+<% if (hasCommentsError) { %>
   <textarea id="comments"
             name="comments"
             rows="3"
@@ -154,8 +212,8 @@
              autocomplete="billing given-name"
              aria-required="true"
              required
-             value="<% if (firstName && firstName != false) { %><%= firstName %><% } %>"
-             <% if (hasFirstNameError) { %>class="invalid"<% } %>>
+        value="<%= firstNameValue %>"
+        class="<%= firstNameClass %>">
       <% if (hasFirstNameError) { %>
         <small class="error"><%= errors.Get("first_name") %></small>
       <% } %>
@@ -169,8 +227,8 @@
              autocomplete="billing family-name"
              aria-required="true"
              required
-             value="<% if (lastName && lastName != false) { %><%= lastName %><% } %>"
-             <% if (hasLastNameError) { %>class="invalid"<% } %>>
+        value="<%= lastNameValue %>"
+        class="<%= lastNameClass %>">
       <% if (hasLastNameError) { %>
         <small class="error"><%= errors.Get("last_name") %></small>
       <% } %>
@@ -187,8 +245,8 @@
          autocomplete="billing email"
          aria-required="true"
          required
-         value="<% if (donorEmail && donorEmail != false) { %><%= donorEmail %><% } %>"
-         <% if (hasDonorEmailError) { %>class="invalid"<% } %>>
+    value="<%= donorEmailValue %>"
+    class="<%= donorEmailClass %>">
   <% if (hasDonorEmailError) { %>
     <small class="error"><%= errors.Get("donor_email") %></small>
   <% } %>
@@ -198,8 +256,8 @@
          id="donor-phone"
          name="donor_phone"
          autocomplete="billing tel"
-         value="<% if (donorPhone && donorPhone != false) { %><%= donorPhone %><% } %>"
-         <% if (hasDonorPhoneError) { %>class="invalid"<% } %>>
+    value="<%= donorPhoneValue %>"
+    class="<%= donorPhoneClass %>">
   <% if (hasDonorPhoneError) { %>
     <small class="error"><%= errors.Get("donor_phone") %></small>
   <% } %>
@@ -211,30 +269,30 @@
          autocomplete="billing address-line1"
          aria-required="true"
          required
-         value="<% if (addressLine1 && addressLine1 != false) { %><%= addressLine1 %><% } %>"
-         <% if (hasAddressLine1Error) { %>class="invalid"<% } %>>
+    value="<%= addressLine1Value %>"
+    class="<%= addressLine1Class %>">
   <% if (hasAddressLine1Error) { %>
     <small class="error"><%= errors.Get("address_line1") %></small>
   <% } %>
 
   <label for="address_line2">Address Line 2 (optional)</label>
-  <input type="text"
+    <input type="text"
          id="address_line2"
          name="address_line2"
          autocomplete="billing address-line2"
-         value="<% if (addressLine2 && addressLine2 != false) { %><%= addressLine2 %><% } %>">
+      value="<%= addressLine2 %>">
 
   <div class="grid">
     <div>
       <label for="city">City *</label>
-      <input type="text"
+  <input type="text"
              id="city"
              name="city"
              autocomplete="billing address-level2"
              aria-required="true"
              required
-             value="<% if (city && city != false) { %><%= city %><% } %>"
-             <% if (hasCityError) { %>class="invalid"<% } %>>
+     value="<%= cityValue %>"
+     class="<%= cityClass %>">
       <% if (hasCityError) { %>
         <small class="error"><%= errors.Get("city") %></small>
       <% } %>
@@ -307,30 +365,31 @@
 
     <div>
       <label for="zip_code">ZIP Code *</label>
-      <input type="text"
+  <input type="text"
              id="zip_code"
              name="zip_code"
              autocomplete="billing postal-code"
              aria-required="true"
              required
-             value="<% if (zip && zip != false) { %><%= zip %><% } %>"
-             <% if (hasZipError) { %>class="invalid"<% } %>>
+     value="<%= zipValue %>"
+     class="<%= zipClass %>">
       <% if (hasZipError) { %>
         <small class="error"><%= errors.Get("zip_code") %></small>
       <% } %>
     </div>
   </div>
-</div>
 
-<div id="submit-button">
-  <button type="submit" class="contrast donation-submit">
-    <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
-  </button>
-</div>
+  <div id="submit-button">
+    <button type="submit" class="contrast donation-submit">
+      <% if (amount != "") { %>
+        <% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %>
+      <% } else { %>
+        <% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %>
+      <% } %>
+    </button>
+  </div>
 
-<small class="donation-note">
-  Your donation is secure and tax-deductible. You will receive a receipt for your records.
-</small>
-
-</div>
+  <small class="donation-note">
+    Your donation is secure and tax-deductible. You will receive a receipt for your records.
+  </small>
 </form>

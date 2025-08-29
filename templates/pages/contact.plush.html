@@ -6,7 +6,7 @@
   </hgroup>
 
   <!-- Debug Tools - Always visible in development -->
-  <%= if (ENV != "production") { %>
+  <% if (ENV != "production") { %>
     <div style="margin: 1rem 0; padding: 1rem; background: var(--pico-muted-background); border-radius: var(--pico-border-radius); border-left: 4px solid var(--pico-primary);">
       <h4 style="margin-bottom: 0.5rem; color: var(--pico-primary);">🔧 Debug Tools</h4>
       <p style="margin-bottom: 0.5rem;"><small>Test flash message system:</small></p>
@@ -24,36 +24,6 @@
 <!-- Contact Information -->
 <section class="grid">
 
-  <!-- Contact Form -->
-  <article>
-    <header>
-      <h2>Send us a Message</h2>
-    </header>
-
-    <form method="post" action="/contact" hx-post="/contact" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
-      <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-      <label for="name">
-        Name *
-        <input type="text" id="name" name="name" required />
-      </label>
-
-      <label for="email">
-        Email *
-        <input type="email" id="email" name="email" required />
-      </label>
-
-      <label for="subject">
-        Subject
-        <input type="text" id="subject" name="subject" />
-      </label>
-
-      <label for="message">
-        Message *
-        <textarea id="message" name="message" rows="6" required placeholder="Tell us how we can help or how you'd like to get involved..."></textarea>
-      </label>
-
-      <button type="submit" role="button">Send Message</button>
-    </form>
   </article>
 
   <!-- Contact Info -->
@@ -76,6 +46,33 @@
         <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" rel="noopener noreferrer" aria-label="Listen to our Spotify podcast">
           <img src="<%= assetPath("images/Spotify.svg") %>" alt="Spotify">
         </a>
+        <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
+          <img src="<%= assetPath("images/Facebook.svg") %>" alt="Facebook">
+        </a>
+        <a href="https://x.com/avrnpo" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X">
+          <img src="<%= assetPath("images/X.svg") %>" alt="X">
+        </a>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h4>For Veterans</h4>
+        <p style="font-size: 0.95rem; line-height: 1.5;">
+          If you're a veteran interested in our programs, please include your service information
+          and what type of support you're looking for in your message.
+        </p>
+      </div>
+
+      <div>
+        <h4>For Supporters</h4>
+        <p style="font-size: 0.95rem; line-height: 1.5;">
+          Interested in volunteering, donating, or partnering with us?
+          Let us know how you'd like to contribute to our mission.
+        </p>
+      </div>
+
+    </section>
+  </article>
+</section>
         <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
           <img src="<%= assetPath("images/Facebook.svg") %>" alt="Facebook">
         </a>

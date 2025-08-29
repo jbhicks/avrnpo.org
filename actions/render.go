@@ -4,16 +4,19 @@ import (
 	avrnpo "avrnpo.org"
 	"avrnpo.org/templates"
 	"html/template"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/helpers/forms"
 )
 
 var r *render.Engine
 var rNoLayout *render.Engine
+var rHTMX *render.Engine
 
 func init() {
 	// Common helpers
@@ -35,6 +38,14 @@ func init() {
 
 	// No-layout render engine for standalone pages like home
 	rNoLayout = render.New(render.Options{
+		TemplatesFS: templates.FS(),
+		AssetsFS:    avrnpo.FS(),
+		Helpers:     commonHelpers,
+	})
+
+	// HTMX render engine for HTMX requests (minimal layout)
+	rHTMX = render.New(render.Options{
+		HTMLLayout:  "htmx.plush.html",
 		TemplatesFS: templates.FS(),
 		AssetsFS:    avrnpo.FS(),
 		Helpers:     commonHelpers,
@@ -65,6 +76,20 @@ func stripTagsHelper(content string) string {
 // dateFormatHelper formats time.Time values for use in templates
 func dateFormatHelper(t time.Time, format string) string {
 	return t.Format(format)
+}
+
+// IsHTMX detects if the request is from HTMX
+func IsHTMX(req *http.Request) bool {
+	return req.Header.Get("HX-Request") == "true"
+}
+
+// renderForRequest chooses the HTMX render engine when the request
+// originates from HTMX, otherwise it uses the standard render engine.
+func renderForRequest(c buffalo.Context, status int, tmpl string) error {
+	if IsHTMX(c.Request()) {
+		return c.Render(status, rHTMX.HTML(tmpl))
+	}
+	return c.Render(status, r.HTML(tmpl))
 }
 
 // SanitizeString is a function that sanitizes a string for safe HTML display.

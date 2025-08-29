@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"fmt"
 	"avrnpo.org/models"
+	"fmt"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -22,7 +22,7 @@ func BlogIndex(c buffalo.Context) error {
 	}
 
 	c.Set("posts", posts)
-	
+
 	// Set base URL for social sharing
 	req := c.Request()
 	scheme := "http"
@@ -31,8 +31,7 @@ func BlogIndex(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	// Check if this is an HTMX request for partial content
-	return c.Render(200, r.HTML("blog/index.plush.html"))
+	return renderForRequest(c, 200, "blog/index.plush.html")
 }
 
 // BlogShow displays a single post by slug
@@ -50,7 +49,7 @@ func BlogShow(c buffalo.Context) error {
 		return c.Error(404, err)
 	}
 	c.Set("post", post)
-	
+
 	// Set base URL for social sharing
 	req := c.Request()
 	scheme := "http"
@@ -59,6 +58,5 @@ func BlogShow(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	// Always return full page - hx-boost will handle navigation
-	return c.Render(200, r.HTML("blog/show.plush.html"))
+	return renderForRequest(c, 200, "blog/show.plush.html")
 }

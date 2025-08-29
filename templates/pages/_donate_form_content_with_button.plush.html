@@ -1,27 +1,35 @@
+<!-- CSRF token fragment: required for HTMX swaps to preserve token -->
+<% if (authenticity_token) { %>
+  <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+<% } %>
 <!-- Hidden field to store selected amount for form submission -->
 <input type="hidden" name="custom_amount" value="<%= amount %>">
 
 <h3>Make a Donation</h3>
 
-<%  hasAnyErrors = errors && errors.Count() > 0
-  hasCommentsError = errors && errors.Get("comments")
-  hasAmountError = errors && errors.Get("amount")
-  hasFirstNameError = errors && errors.Get("first_name")
-  hasLastNameError = errors && errors.Get("last_name")
-  hasDonorEmailError = errors && errors.Get("donor_email")
-  hasDonorPhoneError = errors && errors.Get("donor_phone")
-  hasAddressLine1Error = errors && errors.Get("address_line1")
-  hasCityError = errors && errors.Get("city")
-  hasStateError = errors && errors.Get("state")
-  hasZipError = errors && errors.Get("zip_code")
-%>
+<% if (!errors) { errors = map[string]interface{}{} } %>
+<% hasAnyErrors = errors && errors.HasAny && errors.HasAny() %>
+<% hasCommentsError = errors && errors.Get && errors.Get("comments") %>
+<% hasAmountError = errors && errors.Get && errors.Get("amount") %>
+<% hasFirstNameError = errors && errors.Get && errors.Get("first_name") %>
+<% hasLastNameError = errors && errors.Get && errors.Get("last_name") %>
+<% hasDonorEmailError = errors && errors.Get && errors.Get("donor_email") %>
+<% hasDonorPhoneError = errors && errors.Get && errors.Get("donor_phone") %>
+<% hasAddressLine1Error = errors && errors.Get && errors.Get("address_line1") %>
+<% hasCityError = errors && errors.Get && errors.Get("city") %>
+<% hasStateError = errors && errors.Get && errors.Get("state") %>
+<% hasZipError = errors && errors.Get && errors.Get("zip_code") %>
 
-<%= if (hasAnyErrors) { %>
+<% if (hasAnyErrors) { %>
   <div class="error-summary" style="color:var(--pico-danger);margin-bottom:1em;">
     <strong>Please correct the errors below:</strong>
     <ul>
-<%= for (err) in errors.Errors { %>
-<li><%= err %></li>
+<% if (errors && errors.Errors) { %>
+  <% for (key, messages) in errors { %>
+    <% for (message) in messages { %>
+      <li><%= message %></li>
+    <% } %>
+  <% } %>
 <% } %>
     </ul>
   </div>
@@ -32,88 +40,86 @@
 </p>
 
 <div class="donation-amounts">
-   <h4>Select Amount</h4>
-    <div id="amount-buttons" class="amount-grid">
-                    <%= for (preset) in presetAmounts { %>
-        <button type="button" 
-                class="outline amount-btn<%= if (amount == preset) { %> active<% } %>" 
-                hx-patch="/donate/update-amount"
-                hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
-                hx-include="closest form"
-                hx-target="#donation-form-content"
-                hx-swap="innerHTML">$<%= preset %></button>
-      <% } %>
-    </div>
-    
-    <div class="custom-amount-group" style="margin-top:1em;">
-      <label for="amount">Or enter a custom amount</label>
-      <input type="number" 
-             id="amount" 
-             name="amount" 
-             autocomplete="transaction-amount" 
-             placeholder="Enter custom amount" 
-             step="any" 
-             hx-patch="/donate/update-amount"
-             hx-trigger="input changed delay:500ms"
-             hx-vals='{"source": "custom"}'
-             hx-include="closest form"
-             hx-target="#donation-form-content"
-             hx-swap="innerHTML"
-             value="<% if (source == "custom") { %><%= amount %><% } %>" 
-             <% if (hasAmountError) { %>class="invalid"<% } %>>
-      <% if (hasAmountError) { %>
-        <small class="error"><%= errors.Get("amount") %></small>
-      <% } %>
-    </div>
-    
-    <!-- Inline script removed; logic now lives in public/assets/js/donation.js -->
-    
-    <style>
-    /* Active state for amount buttons */
-    .amount-btn.active {
-      background-color: var(--pico-primary) !important;
-      border-color: var(--pico-primary) !important;
-      color: var(--pico-primary-inverse) !important;
-    }
-    
-    /* Ensure outline buttons have proper hover/focus states */
-    .amount-btn.outline:hover:not(.active) {
-      background-color: var(--pico-primary-hover);
-      border-color: var(--pico-primary-hover);
-      color: var(--pico-primary-inverse);
-    }
-    
-    /* Active state for custom amount input */
-    .active-custom {
-      border-color: var(--pico-primary) !important;
-      box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
-    }
-    </style>
-   </div>
-   
+  <h4>Select Amount</h4>
+  <div id="amount-buttons" class="amount-grid">
+    <% if (!presetAmounts) { %>
+      <% presetAmounts = []string{"25", "50", "100", "250", "500", "1000"} %>
+    <% } %>
+    <% for (preset) in presetAmounts { %>
+      <% btnClass = "outline amount-btn" %>
+      <% if (amount == preset) { btnClass = btnClass + " active" } %>
+      <% safeToken = "" %>
+      <% if (authenticity_token) { safeToken = authenticity_token } %>
+        <% hxVals = "{\"amount\":\"" + preset + "\",\"source\":\"preset\",\"authenticity_token\":\"" + safeToken + "\"}" %>
+      <button type="button"
+              class="<%= btnClass %>"
+              hx-patch="/donate/update-amount"
+              hx-vals='<%= hxVals %>'
+              hx-include="closest form"
+              hx-target="#donation-form-content"
+              hx-swap="innerHTML">$<%= preset %></button>
+    <% } %>
+  </div>
+
+  <div class="custom-amount-group" style="margin-top:1em;">
+    <label for="amount">Or enter a custom amount</label>
+    <% customValue = "" %>
+    <% if (source == 'custom') { customValue = amount } %>
+    <% customClass = "" %>
+    <% if (hasAmountError) { customClass = "invalid" } %>
+    <input type="number"
+           id="amount"
+           name="amount"
+           autocomplete="transaction-amount"
+           placeholder="Enter custom amount"
+           step="any"
+           hx-patch="/donate/update-amount"
+           hx-trigger="input changed delay:500ms"
+           hx-vals='{"source": "custom"}'
+           hx-include="closest form"
+           hx-target="#donation-form-content"
+           hx-swap="innerHTML"
+      value="<%= customValue %>"
+      class="<%= customClass %>">
+    <% if (hasAmountError) { %>
+      <small class="error"><%= errors.Get("amount") %></small>
+    <% } %>
+  </div>
+
+  <style>
+  .amount-btn.active { background-color: var(--pico-primary) !important; border-color: var(--pico-primary) !important; color: var(--pico-primary-inverse) !important; }
+  .amount-btn.outline:hover:not(.active) { background-color: var(--pico-primary-hover); border-color: var(--pico-primary-hover); color: var(--pico-primary-inverse); }
+  .active-custom { border-color: var(--pico-primary) !important; box-shadow: 0 0 0 2px var(--pico-primary-focus) !important; }
+  </style>
+</div>
+
 <div class="donation-frequency">
   <fieldset>
     <legend>Donation Frequency</legend>
     <label>
-      <input type="radio" 
-             name="donation_type" 
-             value="one-time" 
+      <% oneChecked = "" %>
+      <% if (donationType == "one-time" || donationType == "" || donationType == false) { oneChecked = "checked" } %>
+      <input type="radio"
+             name="donation_type"
+             value="one-time"
              hx-patch="/donate/update-amount"
              hx-include="closest form"
              hx-target="#donation-form-content"
              hx-swap="innerHTML"
-             <%= if (donationType == "one-time" || donationType == "" || donationType == false) { %>checked<% } %>>
+        <%= oneChecked %>>
       One-time donation
     </label>
     <label>
-      <input type="radio" 
-             name="donation_type" 
+      <% monthlyChecked = "" %>
+      <% if (donationType == "monthly") { monthlyChecked = "checked" } %>
+      <input type="radio"
+             name="donation_type"
              value="monthly"
              hx-patch="/donate/update-amount"
              hx-include="closest form"
              hx-target="#donation-form-content"
              hx-swap="innerHTML"
-             <%= if (donationType == "monthly") { %>checked<% } %>>
+        <%= monthlyChecked %>>
       Monthly recurring
     </label>
   </fieldset>
@@ -121,29 +127,22 @@
 
 <label for="comments">Comments (optional)
 </label>
-<%= if (hasCommentsError) { %>
-  <textarea id="comments" 
-            name="comments" 
-            rows="3" 
-            autocomplete="off" 
-            placeholder="Any special message or dedication..." 
-            class="invalid"><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
+<% if (hasCommentsError) { %>
+  <textarea id="comments" name="comments" rows="3" autocomplete="off" placeholder="Any special message or dedication..." class="invalid"><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
   <small class="error"><%= errors.Get("comments") %></small>
 <% } else { %>
-  <textarea id="comments" 
-            name="comments" 
-            rows="3" 
-            autocomplete="off" 
-            placeholder="Any special message or dedication..."><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
+  <textarea id="comments" name="comments" rows="3" autocomplete="off" placeholder="Any special message or dedication..."><% if (comments && comments != false) { %><%= comments %><% } %></textarea>
 <% } %>
 
-<small class="donation-note">
-  Your donation is secure and tax-deductible. You will receive a receipt for your records.
-</small>
+<small class="donation-note">Your donation is secure and tax-deductible. You will receive a receipt for your records.</small>
 
 <!-- Out-of-Band swap for the submit button at the end of the form -->
 <div id="submit-button" hx-swap-oob="true">
   <button role="button" class="contrast donation-submit">
-    <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+    <% if (amount != "") { %>
+      <% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %>
+    <% } else { %>
+      <% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %>
+    <% } %>
   </button>
 </div>

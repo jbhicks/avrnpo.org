@@ -1,8 +1,8 @@
 package actions
 
 import (
-	"fmt"
 	"avrnpo.org/models"
+	"fmt"
 	"net/http"
 
 	"github.com/gobuffalo/buffalo"

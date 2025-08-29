@@ -1,10 +1,14 @@
 <!-- Primary response: Amount buttons section -->
 <div id="amount-buttons" class="amount-grid">
-    <%= for (preset) in presetAmounts { %>
+  <% if (!presetAmounts) { presetAmounts = []string{"25", "50", "100", "250", "500", "1000"} } %>
+    <% for (preset) in presetAmounts { %>
+      <% btnClass = "outline amount-btn" %>
+      <% if (amount == preset) { btnClass = btnClass + " active" } %>
+      <% hxVals = "{\"amount\":\"" + preset + "\",\"source\":\"preset\"}" %>
       <button type="button" 
-              class="outline amount-btn<%= if (amount == preset) { %> active<% } %>" 
+              class="<%= btnClass %>" 
               hx-patch="/donate/update-amount"
-              hx-vals='{"amount": "<%= preset %>", "source": "preset"}'
+              hx-vals='<%= hxVals %>'
               hx-include="closest form"
               hx-target="#amount-buttons"
               hx-swap="outerHTML">$<%= preset %></button>
@@ -14,7 +18,7 @@
 <!-- Out-of-band swap: Submit button -->
 <div id="submit-button" hx-swap-oob="true">
   <button role="button" class="contrast donation-submit">
-    <%= if (amount != "") { %><%= if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><%= if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+    <% if (amount != "") { %><% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
   </button>
 </div>
 

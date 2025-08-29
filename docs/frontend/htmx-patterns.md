@@ -174,3 +174,7 @@ func PageHandler(c buffalo.Context) error {
 - Create separate partial templates
 - Use `hx-get` without `href` fallbacks
 - Assume JavaScript is enabled
+
+## Fragment Contract (Donation Form)
+
+Any fragment swapped into `#donation-form-content` must include a hidden `authenticity_token` input and be safe to `innerHTML` swap. This ensures CSRF protection is preserved across HTMX swaps and avoids relying on `hx-vals` to transmit the token. Prefer `hx-include="closest form"` and use the hidden input for form submissions.
