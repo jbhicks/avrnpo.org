@@ -247,6 +247,8 @@ func App() *buffalo.App {
 		api := app.Group("/api")
 		api.POST("/donations/initialize", DonationInitializeHandler)
 		api.POST("/donations/process", ProcessPaymentHandler)
+		// Test-only webhook receiver (Helcim and other payment callbacks expect CSRF skipped)
+		api.POST("/donations/webhook", HelcimWebhookHandler)
 
 		// Serve assets using Buffalo best practices
 		// ServeFiles should be LAST as it's a catch-all route

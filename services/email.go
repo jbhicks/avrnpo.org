@@ -36,6 +36,10 @@ type EmailService struct {
 
 // NewEmailService creates a new email service instance
 func NewEmailService() *EmailService {
+	// In test mode, return a service with EmailEnabled=false and a nil client to avoid network calls
+	if os.Getenv("GO_ENV") == "test" {
+		return &EmailService{EmailEnabled: false, FromEmail: "test@example.com", FromName: "AVRNPO Test", client: nil}
+	}
 	// Determine default for EMAIL_ENABLED based on GO_ENV
 	enabledStr := os.Getenv("EMAIL_ENABLED")
 	if enabledStr == "" {

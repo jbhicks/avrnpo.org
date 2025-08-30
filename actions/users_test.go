@@ -26,7 +26,13 @@ func (as *ActionSuite) Test_Users_Create() {
 		"accept_terms":         "on", // Add required terms acceptance
 	}
 
-	res := as.HTML("/users").Post(u)
+	// Fetch CSRF and session for signup
+	cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
+	form := u
+	form["authenticity_token"] = token
+	req := as.HTML("/users")
+	req.Headers["Cookie"] = cookie
+	res := req.Post(form)
 	as.Equal(http.StatusFound, res.Code)
 
 	// Verify the redirect location
@@ -58,7 +64,12 @@ func (as *ActionSuite) Test_ProfileSettings_LoggedIn() {
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	// Fetch CSRF and session for signup
+	signupCookie, signupToken := fetchCSRF(as.T(), as.App, "/users/new")
+	signupData["authenticity_token"] = signupToken
+	signupReq := as.HTML("/users")
+	signupReq.Headers["Cookie"] = signupCookie
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Now login with the same user using MockLogin to obtain session + CSRF
@@ -91,7 +102,12 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	// Fetch CSRF and session for signup
+	signupCookie, signupToken := fetchCSRF(as.T(), as.App, "/users/new")
+	signupData["authenticity_token"] = signupToken
+	signupReq := as.HTML("/users")
+	signupReq.Headers["Cookie"] = signupCookie
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Log in via MockLogin to obtain session+token
@@ -132,7 +148,12 @@ func (as *ActionSuite) Test_AccountSettings_LoggedIn() {
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	// Fetch CSRF and session for signup
+	signupCookie, signupToken := fetchCSRF(as.T(), as.App, "/users/new")
+	signupData["authenticity_token"] = signupToken
+	signupReq := as.HTML("/users")
+	signupReq.Headers["Cookie"] = signupCookie
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Login via MockLogin to obtain session cookie
@@ -165,7 +186,12 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 		"accept_terms":         "on", // Add required terms acceptance
 	}
 
-	signupRes := as.HTML("/users").Post(signupData)
+	// Fetch CSRF and session for signup
+	signupCookie, signupToken := fetchCSRF(as.T(), as.App, "/users/new")
+	signupData["authenticity_token"] = signupToken
+	signupReq := as.HTML("/users")
+	signupReq.Headers["Cookie"] = signupCookie
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Use MockLogin for session-backed requests
