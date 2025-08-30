@@ -33,9 +33,9 @@
                             <% } %>
                         </dd>
                         
-                        <% if (donation.Comments != nil && len(*donation.Comments) > 0) { %>
+                        <% if (donation.Comments != nil && len(donation.Comments) > 0) { %>
                             <dt>Comments</dt>
-                            <dd><%= *donation.Comments %></dd>
+                            <dd><%= donation.Comments %></dd>
                         <% } %>
                     </dl>
                 </section>
@@ -69,7 +69,7 @@
                                 <p><strong>⚠️ Are you sure?</strong></p>
                                 <p>Canceling your subscription will stop all future donations. This action cannot be undone.</p>
                                 
-                                <form method="POST" action="/account/subscriptions/<%= *donation.SubscriptionID %>/cancel">
+                                <form method="POST" action="/account/subscriptions/<%= donation.SubscriptionID %>/cancel">
                                     <% if (authenticity_token) { %>
                                       <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
                                     <% } %>

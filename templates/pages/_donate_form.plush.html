@@ -1,9 +1,31 @@
 <form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
   <div id="donation-form-content">
-    <!-- CSRF token provided by Buffalo's middleware -->
-    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+    <% if (!amount) { amount = "" } %>
+    <% if (!source) { source = "" } %>
+    <% if (!donationType) { donationType = "" } %>
+
+  <%# Initialize error flags and values so nested partials can read them %>
+  <% hasAnyErrors = false %>
+  <% hasCommentsError = false %>
+  <% hasAmountError = false %>
+  <% hasFirstNameError = false %>
+  <% hasLastNameError = false %>
+  <% hasDonorEmailError = false %>
+  <% hasDonorPhoneError = false %>
+  <% hasAddressLine1Error = false %>
+  <% hasCityError = false %>
+  <% hasStateError = false %>
+  <% hasZipError = false %>
+
+  <%# Ensure buttonText exists for inner partials -- compute once at parent level %>
+  <% buttonText = "" %>
+  <!-- CSRF token provided by Buffalo's middleware -->
+  <% partial("csrf_token") %>
     <!-- Hidden field to store selected amount for form submission -->
     <input type="hidden" name="custom_amount" value="<%= amount %>">
+
+  <% customValue = "" %>
+  <% if (source == "custom") { customValue = amount } %>
 
         <h3>Make a Donation</h3>
 
@@ -22,18 +44,13 @@
 <% hasZipError = errors && errors.Get("zip_code") %>
 
 <%
-  // Build attribute-safe variables to avoid control tags inside attributes
   customValue = ""
   if (source == "custom") { customValue = amount }
 
   customClass = ""
   if (hasAmountError) { customClass = "invalid" }
-
-  donationOneChecked = ""
-  if (donationType == "one-time" || donationType == "" || donationType == false) { donationOneChecked = "checked" }
-
-  donationMonthlyChecked = ""
-  if (donationType == "monthly") { donationMonthlyChecked = "checked" }
+  
+  if (!donationType) { donationType = "" }
 
   firstNameValue = ""
   if (firstName && firstName != false) { firstNameValue = firstName }
@@ -76,7 +93,7 @@
         <strong>Please correct the errors below:</strong>
         <ul>
 <% if (errors && errors.Errors) { %>
-  <% for (key, messages) in errors { %>
+  <% for (key, messages) in errors.Errors { %>
     <% for (message) in messages { %>
       <li><%= message %></li>
     <% } %>
@@ -92,12 +109,12 @@
       <div class="donation-amounts">
       <h4>Select Amount</h4>
       <div id="amount-buttons" class="amount-grid">
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"25","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$25</button>
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"50","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$50</button>
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"100","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$100</button>
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"250","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$250</button>
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"500","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$500</button>
-  <button type="button" class="outline amount-btn" hx-patch="/donate/update-amount" hx-vals='{"amount":"1000","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$1000</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"25","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$25</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"50","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$50</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"100","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$100</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"250","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$250</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"500","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$500</button>
+  <button type="button" class="outline amount-btn" hx-post="/donate/update_amount" hx-vals='{"amount":"1000","source":"preset"}' hx-include="closest form" hx-target="#donation-form-content" hx-swap="innerHTML" hx-push-url="false">$1000</button>
       </div>
 
   <div class="custom-amount-group">
@@ -108,16 +125,16 @@
                       autocomplete="transaction-amount"
                       placeholder="Enter custom amount"
                       step="any"
-                        hx-patch="/donate/update-amount"
+                        hx-post="/donate/update_amount"
                         hx-trigger="input changed delay:500ms"
-                        hx-vals='{"source": "custom"}'
+                        hx-vals='{"source":"custom"}'
                         hx-include="closest form"
                         hx-target="#donation-form-content"
                         hx-swap="innerHTML"
                         hx-push-url="false"
                       value="<%= customValue %>"
                       class="<%= customClass %>">
-              <% if (hasAmountError) { %>
+              <%= if (hasAmountError) { %>
                 <small class="error"><%= errors.Get("amount") %></small>
               <% } %>
             </div>
@@ -125,21 +142,21 @@
             <!-- Inline script removed; logic now lives in public/assets/js/donation.js -->
 
             <style>
-            /* Active state for amount buttons */
+            <%# Active state for amount buttons %>
             .amount-btn.active {
               background-color: var(--pico-primary) !important;
               border-color: var(--pico-primary) !important;
               color: var(--pico-primary-inverse) !important;
             }
 
-            /* Ensure outline buttons have proper hover/focus states */
+            <%# Ensure outline buttons have proper hover/focus states %>
             .amount-btn.outline:hover:not(.active) {
               background-color: var(--pico-primary-hover);
               border-color: var(--pico-primary-hover);
               color: var(--pico-primary-inverse);
             }
 
-            /* Active state for custom amount input */
+            <%# Active state for custom amount input %>
             .active-custom {
               border-color: var(--pico-primary) !important;
               box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
@@ -154,22 +171,22 @@
              <input type="radio"
                         name="donation_type"
                         value="one-time"
-                         hx-patch="/donate/update-amount"
+                         hx-post="/donate/update_amount"
                          hx-include="closest form"
                          hx-target="#donation-form-content"
                          hx-swap="innerHTML"
-                <%= donationOneChecked %>>
+                <%= if (donationType == "one-time" || donationType == "") { %>checked<% } %>>
                One-time donation
              </label>
              <label>
            <input type="radio"
                         name="donation_type"
                         value="monthly"
-                         hx-patch="/donate/update-amount"
+                         hx-post="/donate/update_amount"
                          hx-include="closest form"
                          hx-target="#donation-form-content"
                          hx-swap="innerHTML"
-                <%= donationMonthlyChecked %>>
+                <%= if (donationType == "monthly") { %>checked<% } %>>
                Monthly recurring
              </label>
           </fieldset>
@@ -177,7 +194,7 @@
 
 <label for="comments">Comments (optional)
 </label>
-<% if (hasCommentsError) { %>
+<%= if (hasCommentsError) { %>
   <textarea id="comments"
             name="comments"
             rows="3"
@@ -214,7 +231,7 @@
              required
         value="<%= firstNameValue %>"
         class="<%= firstNameClass %>">
-      <% if (hasFirstNameError) { %>
+      <%= if (hasFirstNameError) { %>
         <small class="error"><%= errors.Get("first_name") %></small>
       <% } %>
     </div>
@@ -229,7 +246,7 @@
              required
         value="<%= lastNameValue %>"
         class="<%= lastNameClass %>">
-      <% if (hasLastNameError) { %>
+      <%= if (hasLastNameError) { %>
         <small class="error"><%= errors.Get("last_name") %></small>
       <% } %>
     </div>
@@ -247,7 +264,7 @@
          required
     value="<%= donorEmailValue %>"
     class="<%= donorEmailClass %>">
-  <% if (hasDonorEmailError) { %>
+  <%= if (hasDonorEmailError) { %>
     <small class="error"><%= errors.Get("donor_email") %></small>
   <% } %>
 
@@ -258,7 +275,7 @@
          autocomplete="billing tel"
     value="<%= donorPhoneValue %>"
     class="<%= donorPhoneClass %>">
-  <% if (hasDonorPhoneError) { %>
+  <%= if (hasDonorPhoneError) { %>
     <small class="error"><%= errors.Get("donor_phone") %></small>
   <% } %>
 
@@ -271,7 +288,7 @@
          required
     value="<%= addressLine1Value %>"
     class="<%= addressLine1Class %>">
-  <% if (hasAddressLine1Error) { %>
+  <%= if (hasAddressLine1Error) { %>
     <small class="error"><%= errors.Get("address_line1") %></small>
   <% } %>
 
@@ -293,7 +310,7 @@
              required
      value="<%= cityValue %>"
      class="<%= cityClass %>">
-      <% if (hasCityError) { %>
+      <%= if (hasCityError) { %>
         <small class="error"><%= errors.Get("city") %></small>
       <% } %>
     </div>
@@ -305,58 +322,58 @@
               autocomplete="billing address-level1"
               aria-required="true"
               required
-              <%=if (hasStateError) {%>class="invalid"<% } %>>
+              <%= if (hasStateError) { %>class="invalid"<% } %>>
         <option value="">Select State</option>
-        <option value="AL" <%=if (state == "AL") {%>selected<% } %>>Alabama</option>
-        <option value="AK" <%=if (state == "AK") {%>selected<% } %>>Alaska</option>
-        <option value="AZ" <%=if (state == "AZ") {%>selected<% } %>>Arizona</option>
-        <option value="AR" <%=if (state == "AR") {%>selected<% } %>>Arkansas</option>
-        <option value="CA" <%=if (state == "CA") {%>selected<% } %>>California</option>
-        <option value="CO" <%=if (state == "CO") {%>selected<% } %>>Colorado</option>
-        <option value="CT" <%=if (state == "CT") {%>selected<% } %>>Connecticut</option>
-        <option value="DE" <%=if (state == "DE") {%>selected<% } %>>Delaware</option>
-        <option value="FL" <%=if (state == "FL") {%>selected<% } %>>Florida</option>
-        <option value="GA" <%=if (state == "GA") {%>selected<% } %>>Georgia</option>
-        <option value="HI" <%=if (state == "HI") {%>selected<% } %>>Hawaii</option>
-        <option value="ID" <%=if (state == "ID") {%>selected<% } %>>Idaho</option>
-        <option value="IL" <%=if (state == "IL") {%>selected<% } %>>Illinois</option>
-        <option value="IN" <%=if (state == "IN") {%>selected<% } %>>Indiana</option>
-        <option value="IA" <%=if (state == "IA") {%>selected<% } %>>Iowa</option>
-        <option value="KS" <%=if (state == "KS") {%>selected<% } %>>Kansas</option>
-        <option value="KY" <%=if (state == "KY") {%>selected<% } %>>Kentucky</option>
-        <option value="LA" <%=if (state == "LA") {%>selected<% } %>>Louisiana</option>
-        <option value="ME" <%=if (state == "ME") {%>selected<% } %>>Maine</option>
-        <option value="MD" <%=if (state == "MD") {%>selected<% } %>>Maryland</option>
-        <option value="MA" <%=if (state == "MA") {%>selected<% } %>>Massachusetts</option>
-        <option value="MI" <%=if (state == "MI") {%>selected<% } %>>Michigan</option>
-        <option value="MN" <%=if (state == "MN") {%>selected<% } %>>Minnesota</option>
-        <option value="MS" <%=if (state == "MS") {%>selected<% } %>>Mississippi</option>
-        <option value="MO" <%=if (state == "MO") {%>selected<% } %>>Missouri</option>
-        <option value="MT" <%=if (state == "MT") {%>selected<% } %>>Montana</option>
-        <option value="NE" <%=if (state == "NE") {%>selected<% } %>>Nebraska</option>
-        <option value="NV" <%=if (state == "NV") {%>selected<% } %>>Nevada</option>
-        <option value="NH" <%=if (state == "NH") {%>selected<% } %>>New Hampshire</option>
-        <option value="NJ" <%=if (state == "NJ") {%>selected<% } %>>New Jersey</option>
-        <option value="NM" <%=if (state == "NM") {%>selected<% } %>>New Mexico</option>
-        <option value="NY" <%=if (state == "NY") {%>selected<% } %>>New York</option>
-        <option value="NC" <%=if (state == "NC") {%>selected<% } %>>North Carolina</option>
-        <option value="ND" <%=if (state == "ND") {%>selected<% } %>>North Dakota</option>
-        <option value="OH" <%=if (state == "OH") {%>selected<% } %>>Ohio</option>
-        <option value="OK" <%=if (state == "OK") {%>selected<% } %>>Oklahoma</option>
-        <option value="OR" <%=if (state == "OR") {%>selected<% } %>>Oregon</option>
-        <option value="PA" <%=if (state == "PA") {%>selected<% } %>>Pennsylvania</option>
-        <option value="RI" <%=if (state == "RI") {%>selected<% } %>>Rhode Island</option>
-        <option value="SC" <%=if (state == "SC") {%>selected<% } %>>South Carolina</option>
-        <option value="SD" <%=if (state == "SD") {%>selected<% } %>>South Dakota</option>
-        <option value="TN" <%=if (state == "TN") {%>selected<% } %>>Tennessee</option>
-        <option value="TX" <%=if (state == "TX") {%>selected<% } %>>Texas</option>
-        <option value="UT" <%=if (state == "UT") {%>selected<% } %>>Utah</option>
-        <option value="VT" <%=if (state == "VT") {%>selected<% } %>>Vermont</option>
-        <option value="VA" <%=if (state == "VA") {%>selected<% } %>>Virginia</option>
-        <option value="WA" <%=if (state == "WA") {%>selected<% } %>>Washington</option>
-        <option value="WV" <%=if (state == "WV") {%>selected<% } %>>West Virginia</option>
-        <option value="WI" <%=if (state == "WI") {%>selected<% } %>>Wisconsin</option>
-        <option value="WY" <%=if (state == "WY") {%>selected<% } %>>Wyoming</option>
+        <option value="AL" <%= if (state == "AL") { %>selected<% } %>>Alabama</option>
+        <option value="AK" <%= if (state == "AK") { %>selected<% } %>>Alaska</option>
+        <option value="AZ" <%= if (state == "AZ") { %>selected<% } %>>Arizona</option>
+        <option value="AR" <%= if (state == "AR") { %>selected<% } %>>Arkansas</option>
+        <option value="CA" <%= if (state == "CA") { %>selected<% } %>>California</option>
+        <option value="CO" <%= if (state == "CO") { %>selected<% } %>>Colorado</option>
+        <option value="CT" <%= if (state == "CT") { %>selected<% } %>>Connecticut</option>
+        <option value="DE" <%= if (state == "DE") { %>selected<% } %>>Delaware</option>
+        <option value="FL" <%= if (state == "FL") { %>selected<% } %>>Florida</option>
+        <option value="GA" <%= if (state == "GA") { %>selected<% } %>>Georgia</option>
+        <option value="HI" <%= if (state == "HI") { %>selected<% } %>>Hawaii</option>
+        <option value="ID" <%= if (state == "ID") { %>selected<% } %>>Idaho</option>
+        <option value="IL" <%= if (state == "IL") { %>selected<% } %>>Illinois</option>
+        <option value="IN" <%= if (state == "IN") { %>selected<% } %>>Indiana</option>
+        <option value="IA" <%= if (state == "IA") { %>selected<% } %>>Iowa</option>
+        <option value="KS" <%= if (state == "KS") { %>selected<% } %>>Kansas</option>
+        <option value="KY" <%= if (state == "KY") { %>selected<% } %>>Kentucky</option>
+        <option value="LA" <%= if (state == "LA") { %>selected<% } %>>Louisiana</option>
+        <option value="ME" <%= if (state == "ME") { %>selected<% } %>>Maine</option>
+        <option value="MD" <%= if (state == "MD") { %>selected<% } %>>Maryland</option>
+        <option value="MA" <%= if (state == "MA") { %>selected<% } %>>Massachusetts</option>
+        <option value="MI" <%= if (state == "MI") { %>selected<% } %>>Michigan</option>
+        <option value="MN" <%= if (state == "MN") { %>selected<% } %>>Minnesota</option>
+        <option value="MS" <%= if (state == "MS") { %>selected<% } %>>Mississippi</option>
+        <option value="MO" <%= if (state == "MO") { %>selected<% } %>>Missouri</option>
+        <option value="MT" <%= if (state == "MT") { %>selected<% } %>>Montana</option>
+        <option value="NE" <%= if (state == "NE") { %>selected<% } %>>Nebraska</option>
+        <option value="NV" <%= if (state == "NV") { %>selected<% } %>>Nevada</option>
+        <option value="NH" <%= if (state == "NH") { %>selected<% } %>>New Hampshire</option>
+        <option value="NJ" <%= if (state == "NJ") { %>selected<% } %>>New Jersey</option>
+        <option value="NM" <%= if (state == "NM") { %>selected<% } %>>New Mexico</option>
+        <option value="NY" <%= if (state == "NY") { %>selected<% } %>>New York</option>
+        <option value="NC" <%= if (state == "NC") { %>selected<% } %>>North Carolina</option>
+        <option value="ND" <%= if (state == "ND") { %>selected<% } %>>North Dakota</option>
+        <option value="OH" <%= if (state == "OH") { %>selected<% } %>>Ohio</option>
+        <option value="OK" <%= if (state == "OK") { %>selected<% } %>>Oklahoma</option>
+        <option value="OR" <%= if (state == "OR") { %>selected<% } %>>Oregon</option>
+        <option value="PA" <%= if (state == "PA") { %>selected<% } %>>Pennsylvania</option>
+        <option value="RI" <%= if (state == "RI") { %>selected<% } %>>Rhode Island</option>
+        <option value="SC" <%= if (state == "SC") { %>selected<% } %>>South Carolina</option>
+        <option value="SD" <%= if (state == "SD") { %>selected<% } %>>South Dakota</option>
+        <option value="TN" <%= if (state == "TN") { %>selected<% } %>>Tennessee</option>
+        <option value="TX" <%= if (state == "TX") { %>selected<% } %>>Texas</option>
+        <option value="UT" <%= if (state == "UT") { %>selected<% } %>>Utah</option>
+        <option value="VT" <%= if (state == "VT") { %>selected<% } %>>Vermont</option>
+        <option value="VA" <%= if (state == "VA") { %>selected<% } %>>Virginia</option>
+        <option value="WA" <%= if (state == "WA") { %>selected<% } %>>Washington</option>
+        <option value="WV" <%= if (state == "WV") { %>selected<% } %>>West Virginia</option>
+        <option value="WI" <%= if (state == "WI") { %>selected<% } %>>Wisconsin</option>
+        <option value="WY" <%= if (state == "WY") { %>selected<% } %>>Wyoming</option>
       </select>
       <% if (hasStateError) { %>
         <small class="error"><%= errors.Get("state") %></small>
@@ -373,7 +390,7 @@
              required
      value="<%= zipValue %>"
      class="<%= zipClass %>">
-      <% if (hasZipError) { %>
+      <%= if (hasZipError) { %>
         <small class="error"><%= errors.Get("zip_code") %></small>
       <% } %>
     </div>
@@ -381,11 +398,21 @@
 
   <div id="submit-button">
     <button type="submit" class="contrast donation-submit">
+        <% buttonText = "" %>
       <% if (amount != "") { %>
-        <% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %>
+        <% if (donationType == "monthly") { %>
+          <% buttonText = fmt.Sprintf("Donate $%s Monthly", amount) %>
+        <% } else { %>
+          <% buttonText = fmt.Sprintf("Donate $%s Now", amount) %>
+        <% } %>
       <% } else { %>
-        <% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %>
+        <% if (donationType == "monthly") { %>
+          <% buttonText = "Donate Monthly" %>
+        <% } else { %>
+          <% buttonText = "Donate Now" %>
+        <% } %>
       <% } %>
+      <%= buttonText %>
     </button>
   </div>
 

@@ -131,9 +131,15 @@ func (as *ActionSuite) Test_Donate_HTMX_CSRF_Roundtrip() {
 	as.True(token != "", "Should find an authenticity_token in fragment")
 
 	// Step 2: Submit full donate POST with HX-Request true and the token included
+	// Use MockLogin to ensure a session cookie exists (some CSRF implementations tie tokens to session)
+	cookie, _ := MockLogin(as.T(), as.App, "user@test.com", "password")
+
 	submitReq := as.HTML("/donate")
 	submitReq.Headers["HX-Request"] = "true"
 	submitReq.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	if cookie != "" {
+		submitReq.Headers["Cookie"] = cookie
+	}
 
 	postData := map[string]interface{}{
 		"first_name":         "Test",

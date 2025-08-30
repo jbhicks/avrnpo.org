@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+// SMTPClient defines an interface for sending mail. This allows injecting
+// a mock client in tests to prevent network calls.
+type SMTPClient interface {
+	SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error
+}
+
+// realSMTPClient wraps the standard library smtp.SendMail
+type realSMTPClient struct{}
+
+func (r *realSMTPClient) SendMail(addr string, a smtp.Auth, from string, to []string, msg []byte) error {
+	return smtp.SendMail(addr, a, from, to, msg)
+}
+
 // EmailService handles sending emails
 type EmailService struct {
 	SMTPHost     string
@@ -18,6 +31,7 @@ type EmailService struct {
 	FromEmail    string
 	FromName     string
 	EmailEnabled bool // controls whether emails are actually sent
+	client       SMTPClient
 }
 
 // NewEmailService creates a new email service instance
@@ -34,7 +48,7 @@ func NewEmailService() *EmailService {
 	}
 	emailEnabled := enabledStr == "true" || enabledStr == "1" || enabledStr == "yes"
 
-	return &EmailService{
+	svc := &EmailService{
 		SMTPHost:     os.Getenv("SMTP_HOST"),
 		SMTPPort:     os.Getenv("SMTP_PORT"),
 		SMTPUsername: os.Getenv("SMTP_USERNAME"),
@@ -42,7 +56,9 @@ func NewEmailService() *EmailService {
 		FromEmail:    os.Getenv("FROM_EMAIL"),
 		FromName:     os.Getenv("FROM_NAME"),
 		EmailEnabled: emailEnabled,
+		client:       &realSMTPClient{},
 	}
+	return svc
 }
 
 // DonationReceiptData contains data for donation receipt emails
@@ -401,8 +417,12 @@ Content-Type: text/html; charset=UTF-8
 		recipients = append(recipients, bccEmails...)
 	}
 
-	// Send email
-	err := smtp.SendMail(addr, auth, e.FromEmail, recipients, []byte(message))
+	// Send email using injected client
+	if e.client == nil {
+		// fallback to real client
+		e.client = &realSMTPClient{}
+	}
+	err := e.client.SendMail(addr, auth, e.FromEmail, recipients, []byte(message))
 	if err != nil {
 		return fmt.Errorf("failed to send email: %v", err)
 	}

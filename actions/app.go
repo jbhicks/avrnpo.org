@@ -169,6 +169,15 @@ func App() *buffalo.App {
 		})
 		app.Logger = buffaloLogger
 
+		// In development and test, pre-parse Plush templates to fail fast on syntax errors
+		if ENV != "production" {
+			if err := prewarmTemplates(); err != nil {
+				// Fatal on template parse errors to surface issues immediately during development
+				fmt.Fprintf(os.Stderr, "Template prewarm failed: %v\n", err)
+				os.Exit(1)
+			}
+		}
+
 		// Inject DB transaction middleware for all requests
 		app.Use(popmw.Transaction(models.DB))
 
@@ -178,6 +187,11 @@ func App() *buffalo.App {
 		// Use Buffalo's built-in CSRF middleware for robust protection
 		// Middleware should be enabled in development and production; tests can opt-out explicitly.
 		app.Use(csrf.New)
+
+		// Ensure current_user is set on every request before handlers run
+		// This prevents handlers that assume a non-nil current_user from panicking.
+		app.Use(SetCurrentUser)
+
 		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks)
 		// Use app.Middleware.Skip regardless of ENV so tests that construct apps with CSRF
 		// enabled will still skip middleware for these handlers when appropriate.
@@ -195,6 +209,44 @@ func App() *buffalo.App {
 		app.GET("/donations", func(c buffalo.Context) error {
 			return c.Redirect(http.StatusMovedPermanently, "/donate")
 		})
+
+		// Public site routes
+		app.GET("/", HomeHandler)
+		app.GET("/team", TeamHandler)
+		app.GET("/projects", ProjectsHandler)
+		app.GET("/contact", ContactHandler)
+		app.POST("/contact", ContactHandler)
+
+		// Public blog resource
+		// Use Buffalo resource routing to wire index and show
+		app.Resource("/blog", PublicPostsResource{})
+
+		// User registration, authentication, and account routes
+		app.GET("/users/new", UsersNew)
+		app.POST("/users", UsersCreate)
+		app.GET("/profile", ProfileSettings)
+		app.POST("/profile", ProfileUpdate)
+		app.GET("/account", AccountSettings)
+		app.POST("/account", AccountUpdate)
+		app.GET("/account/subscriptions", SubscriptionsList)
+		app.GET("/account/subscriptions/{subscriptionId}", SubscriptionDetails)
+		app.POST("/account/subscriptions/{subscriptionId}/cancel", CancelSubscription)
+
+		// Authentication endpoints
+		app.GET("/auth/new", AuthNew)
+		app.POST("/auth", AuthCreate)
+		app.GET("/auth", AuthLanding)
+
+		// Admin routes
+		// Admin landing (reuses AdminDashboard when available)
+		app.GET("/admin", AdminDashboard)
+		app.GET("/admin/dashboard", AdminDashboard)
+		app.Resource("/admin/users", AdminUsersResource{})
+
+		// API namespace for donation-related endpoints
+		api := app.Group("/api")
+		api.POST("/donations/initialize", DonationInitializeHandler)
+		api.POST("/donations/process", ProcessPaymentHandler)
 
 		// Serve assets using Buffalo best practices
 		// ServeFiles should be LAST as it's a catch-all route

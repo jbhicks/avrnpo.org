@@ -8,7 +8,7 @@
                 <p>Manage your recurring donations</p>
             </header>
 
-            <% if (len(subscriptions) == 0) { %>
+            <%= if (len(subscriptions) == 0) { %>
                 <main class="text-center">
                     <p>💡 You don't have any active subscriptions.</p>
                     <p><a href="/donate" class="outline">Make a recurring donation</a></p>
@@ -26,7 +26,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <% for (subscription) in subscriptions { %>
+                            <%= for (subscription) in subscriptions { %>
                                 <tr>
                                     <td><strong>$<%= subscription.Amount %></strong></td>
                                     <td><%= capitalize(subscription.DonationType) %></td>

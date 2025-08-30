@@ -31,7 +31,7 @@ func (aur AdminUsersResource) List(c buffalo.Context) error {
 	c.Set("users", users)
 	c.Set("pagination", q.Paginator)
 
-	return renderForRequest(c, http.StatusOK, "admin/users/index.plush.html")
+	return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
 }
 
 // Show displays a specific user for admin editing (GET /admin/users/{user_id})
@@ -52,7 +52,7 @@ func (aur AdminUsersResource) Show(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	return renderForRequest(c, http.StatusOK, "admin/users/show.plush.html")
+	return c.Render(http.StatusOK, r.HTML("admin/users/show.plush.html"))
 }
 
 // New displays the form for creating a new user (GET /admin/users/new)
@@ -67,7 +67,7 @@ func (aur AdminUsersResource) New(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	return renderForRequest(c, http.StatusOK, "admin/users/new.plush.html")
+	return c.Render(http.StatusOK, r.HTML("admin/users/new.plush.html"))
 }
 
 // Create handles creation of new users by admin (POST /admin/users)
@@ -132,7 +132,7 @@ func (aur AdminUsersResource) Edit(c buffalo.Context) error {
 	}
 	c.Set("roleOptions", roleOptions)
 
-	return renderForRequest(c, http.StatusOK, "admin/users/edit.plush.html")
+	return c.Render(http.StatusOK, r.HTML("admin/users/edit.plush.html"))
 }
 
 // Update handles updating users by admin (PUT /admin/users/{user_id})

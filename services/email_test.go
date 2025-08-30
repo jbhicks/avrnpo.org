@@ -9,7 +9,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestEmailService_SendDonationReceipt_Gmail is an optional integration test that
+// is intentionally skipped by default to prevent sending real emails during
+// development or CI. To run it locally you must set SMTP_USERNAME and
+// SMTP_PASSWORD in a local .env and enable EMAIL_INTEGRATION_TESTS=true.
 func TestEmailService_SendDonationReceipt_Gmail(t *testing.T) {
+	if os.Getenv("EMAIL_INTEGRATION_TESTS") != "true" {
+		t.Skip("Skipping external SMTP integration test. Set EMAIL_INTEGRATION_TESTS=true to enable locally.")
+	}
+
 	// Load environment variables from .env file
 	_ = godotenv.Load("../.env")
 
@@ -55,10 +63,10 @@ func TestEmailService_SendDonationReceipt_Gmail(t *testing.T) {
 	}
 
 	// Send test email
-	err := emailService.SendDonationReceipt("joshua.brock.hicks@gmail.com", testData)
+	err := emailService.SendDonationReceipt(os.Getenv("TEST_EMAIL_RECIPIENT"), testData)
 	require.NoError(t, err, "Failed to send test email")
 
-	t.Logf("Test email sent successfully to joshua.brock.hicks@gmail.com with transaction ID: %s", testData.TransactionID)
+	t.Logf("Test email sent successfully to %s with transaction ID: %s", os.Getenv("TEST_EMAIL_RECIPIENT"), testData.TransactionID)
 }
 
 func TestEmailService_isConfigured(t *testing.T) {

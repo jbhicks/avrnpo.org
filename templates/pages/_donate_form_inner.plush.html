@@ -2,14 +2,14 @@
 <div class="donation-amounts" id="amount-selection">
    <h4>Select Amount</h4>
     <div class="amount-grid">
-      <% if (!presetAmounts) { presetAmounts = []string{"25", "50", "100", "250", "500", "1000"} } %>
+  <% if (!presetAmounts) { presetAmounts = ["25", "50", "100", "250", "500", "1000"] } %>
       <% for (preset) in presetAmounts { %>
         <% btnClass = "outline amount-btn" %>
-        <% if (amount == preset) { btnClass = btnClass + " active" } %>
-        <% hxVals = `{"amount":"` + preset + `","source":"preset"}` %>
+        <% if (amount == preset) { btnClass = fmt.Sprintf("%s active", btnClass) } %>
+        <% hxVals = fmt.Sprintf("{\"amount\":\"%s\",\"source\":\"preset\"}", preset) %>
         <button type="button" 
                 class="<%= btnClass %>" 
-                hx-patch="/donate/update-amount"
+                hx-post="/donate/update_amount"
                 hx-vals='<%= hxVals %>'
                 hx-include="closest form"
                 hx-target="#amount-selection"
@@ -25,7 +25,7 @@
              autocomplete="transaction-amount" 
              placeholder="Enter custom amount" 
              step="any" 
-             hx-patch="/donate/update-amount"
+             hx-post="/donate/update_amount"
              hx-trigger="input changed delay:500ms"
              hx-include="closest form"
              hx-target="#amount-selection"
@@ -34,21 +34,21 @@
     </div>
     
     <style>
-    /* Active state for amount buttons */
+    <%# Active state for amount buttons %>
     .amount-btn.active {
       background-color: var(--pico-primary) !important;
       border-color: var(--pico-primary) !important;
       color: var(--pico-primary-inverse) !important;
     }
     
-    /* Ensure outline buttons have proper hover/focus states */
+    <%# Ensure outline buttons have proper hover/focus states %>
     .amount-btn.outline:hover:not(.active) {
       background-color: var(--pico-primary-hover);
       border-color: var(--pico-primary-hover);
       color: var(--pico-primary-inverse);
     }
     
-    /* Active state for custom amount input */
+    <%# Active state for custom amount input %>
     .active-custom {
       border-color: var(--pico-primary) !important;
       box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
@@ -59,6 +59,23 @@
 <!-- Button text update section -->
 <div id="donation-button-container">
   <button role="button" class="contrast donation-submit">
-    <% if (amount != "") { %><% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+    <%# Button text is computed in parent template; fall back if missing %>
+    <% if (!buttonText) { %>
+      <% buttonText = "" %>
+      <% if (amount != "") { %>
+        <% if (donationType == "monthly") { %>
+          <% buttonText = fmt.Sprintf("Donate $%s Monthly", amount) %>
+        <% } else { %>
+          <% buttonText = fmt.Sprintf("Donate $%s Now", amount) %>
+        <% } %>
+      <% } else { %>
+        <% if (donationType == "monthly") { %>
+          <% buttonText = "Donate Monthly" %>
+        <% } else { %>
+          <% buttonText = "Donate Now" %>
+        <% } %>
+      <% } %>
+    <% } %>
+    <%= buttonText %>
   </button>
 </div>

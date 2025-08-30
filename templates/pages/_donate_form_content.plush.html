@@ -1,28 +1,45 @@
 <!-- CSRF token fragment: required for HTMX swaps to preserve token -->
-<% if (authenticity_token) { %>
-  <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-<% } %>
+<%= partial("csrf_token") %>
 <!-- Hidden field to store selected amount for form submission -->
 <input type="hidden" name="custom_amount" value="<%= amount %>">
+
+<% if (!amount) { amount = "" } %>
+<% if (!source) { source = "" } %>
+<% if (!donationType) { donationType = "" } %>
 
 <h3>Make a Donation</h3>
 
 <%
-  let hasAnyErrors = errors && errors.HasAny()
-  let hasCommentsError = errors && errors.Get("comments")
-  let hasAmountError = errors && errors.Get("amount")
-  let hasFirstNameError = errors && errors.Get("first_name")
-  let hasLastNameError = errors && errors.Get("last_name")
-  let hasDonorEmailError = errors && errors.Get("donor_email")
-  let hasDonorPhoneError = errors && errors.Get("donor_phone")
-  let hasAddressLine1Error = errors && errors.Get("address_line1")
-  let hasCityError = errors && errors.Get("city")
-  let hasStateError = errors && errors.Get("state")
-  let hasZipError = errors && errors.Get("zip_code")
-    let donationOneChecked = ""
-    if (donationType == "one-time" || donationType == "" || donationType == false) { donationOneChecked = "checked" }
-    let donationMonthlyChecked = ""
-    if (donationType == "monthly") { donationMonthlyChecked = "checked" }
+  <%# Defensive assignment of error flags using Buffalo validate.Errors API %>
+  <%# Initialize flags to ensure availability to parent/partials %>
+  <% hasAnyErrors = false %>
+  <% hasCommentsError = false %>
+  <% hasAmountError = false %>
+  <% hasFirstNameError = false %>
+  <% hasLastNameError = false %>
+  <% hasDonorEmailError = false %>
+  <% hasDonorPhoneError = false %>
+  <% hasAddressLine1Error = false %>
+  <% hasCityError = false %>
+  <% hasStateError = false %>
+  <% hasZipError = false %>
+
+  <% if (errors) { %>
+    <% hasAnyErrors = errors.HasAny() %>
+    <% hasCommentsError = errors.Get("comments") != nil %>
+    <% hasAmountError = errors.Get("amount") != nil %>
+    <% hasFirstNameError = errors.Get("first_name") != nil %>
+    <% hasLastNameError = errors.Get("last_name") != nil %>
+    <% hasDonorEmailError = errors.Get("donor_email") != nil %>
+    <% hasDonorPhoneError = errors.Get("donor_phone") != nil %>
+    <% hasAddressLine1Error = errors.Get("address_line1") != nil %>
+    <% hasCityError = errors.Get("city") != nil %>
+    <% hasStateError = errors.Get("state") != nil %>
+    <% hasZipError = errors.Get("zip_code") != nil %>
+  <% } %>
+
+  <%# Donation type default %>
+  <% if (!donationType) { donationType = "" } %>
 %>
 
 <% if (hasAnyErrors) { %>
@@ -30,7 +47,7 @@
     <strong>Please correct the errors below:</strong>
     <ul>
 <% if (errors && errors.Errors) { %>
-  <% for (key, messages) in errors { %>
+  <% for (key, messages) in errors.Errors { %>
     <% for (message) in messages { %>
       <li><%= message %></li>
     <% } %>
@@ -47,17 +64,18 @@
 <div class="donation-amounts">
   <h4>Select Amount</h4>
   <div id="amount-buttons" class="amount-grid">
-    <% let presets = ["25", "50", "100", "250", "500", "1000"] %>
+  <% if (!presets) { presets = ["25", "50", "100", "250", "500", "1000"] } %>
     <% for (preset) in presets { %>
-        <% let btnClass = "outline amount-btn" %>
-      <% if (amount == preset) { btnClass = btnClass + " active" } %>
-        <% let safeToken = "" %>
-        <% if (authenticity_token) { safeToken = authenticity_token } %>
+        <% btnClass = "outline amount-btn" %>
+      <% if (amount == preset) { btnClass = fmt.Sprintf("%s active", btnClass) } %>
+  <% safeToken = "" %>
+  <% if (authenticity_token) { safeToken = authenticity_token } %>
       <button type="button"
               class="<%= btnClass %>"
-              hx-patch="/donate/update-amount"
-              hx-vals='{"amount":"<%= preset %>","source":"preset","authenticity_token":"<%= safeToken %>"}'
-              hx-target="#donation-form-content"
+              hx-post="/donate/update_amount"
+              hx-vals='{"amount":"<%= preset %>","source":"preset"}'
+              hx-include="closest form"
+              hx-target="#amount-buttons, #submit-button"
               hx-swap="innerHTML"
               hx-push-url="false">$<%= preset %></button>
     <% } %>
@@ -65,9 +83,9 @@
 
   <div class="custom-amount-group" style="margin-top:1em;">
     <label for="amount">Or enter a custom amount</label>
-  <% let customValue = "" %>
+  <% customValue = "" %>
   <% if (source == "custom") { customValue = amount } %>
-  <% let customClass = "" %>
+  <% customClass = "" %>
   <% if (hasAmountError) { customClass = "invalid" } %>
     <input type="number"
            id="amount"
@@ -75,7 +93,7 @@
            autocomplete="transaction-amount"
            placeholder="Enter custom amount"
            step="any"
-           hx-patch="/donate/update-amount"
+           hx-post="/donate/update_amount"
            hx-trigger="input changed delay:500ms"
            hx-vals='{"source": "custom"}'
            hx-include="closest form"
@@ -84,7 +102,7 @@
            hx-push-url="false"
            value="<%= customValue %>"
            class="<%= customClass %>">
-    <% if (hasAmountError) { %>
+    <%= if (hasAmountError) { %>
       <small class="error"><%= errors.Get("amount") %></small>
     <% } %>
   </div>
@@ -92,21 +110,21 @@
   <!-- Inline script removed; logic now lives in public/assets/js/donation.js -->
 
   <style>
-  /* Active state for amount buttons */
+  <%# Active state for amount buttons %>
   .amount-btn.active {
     background-color: var(--pico-primary) !important;
     border-color: var(--pico-primary) !important;
     color: var(--pico-primary-inverse) !important;
   }
 
-  /* Ensure outline buttons have proper hover/focus states */
+  <%# Ensure outline buttons have proper hover/focus states %>
   .amount-btn.outline:hover:not(.active) {
     background-color: var(--pico-primary-hover);
     border-color: var(--pico-primary-hover);
     color: var(--pico-primary-inverse);
   }
 
-  /* Active state for custom amount input */
+  <%# Active state for custom amount input %>
   .active-custom {
     border-color: var(--pico-primary) !important;
     box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
@@ -121,24 +139,24 @@
       <input type="radio"
              name="donation_type"
              value="one-time"
-             hx-patch="/donate/update-amount"
+             hx-post="/donate/update_amount"
              hx-include="closest form"
              hx-target="#donation-form-content"
              hx-swap="innerHTML"
              hx-push-url="false"
-               <%= donationOneChecked %>>
+              <% if (donationType == "one-time" || donationType == "") { %>checked<% } %>>
       One-time donation
     </label>
     <label>
       <input type="radio"
              name="donation_type"
              value="monthly"
-             hx-patch="/donate/update-amount"
+             hx-post="/donate/update_amount"
              hx-include="closest form"
              hx-target="#donation-form-content"
              hx-swap="innerHTML"
              hx-push-url="false"
-               <%= donationMonthlyChecked %>>
+              <% if (donationType == "monthly") { %>checked<% } %>>
       Monthly recurring
     </label>
   </fieldset>
@@ -146,9 +164,9 @@
 
 <label for="comments">Comments (optional)
 </label>
-  <% let commentContent = "" %>
-  <% if (comments && comments != false) { commentContent = comments } %>
-  <% if (hasCommentsError) { %>
+  <% commentContent = "" %>
+  <%= if (comments && comments != false) { commentContent = comments } %>
+  <%= if (hasCommentsError) { %>
     <textarea id="comments"
               name="comments"
               rows="3"

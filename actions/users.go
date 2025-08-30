@@ -334,8 +334,10 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 				c.Set("current_user", u)
 			}
 		} else {
-			// Explicitly set current_user to nil when no session
-			c.Set("current_user", nil)
+			// Explicitly set current_user to a typed nil when no session to
+			// avoid panics from handlers performing direct type assertions.
+			var nu *models.User = nil
+			c.Set("current_user", nu)
 		}
 		return next(c)
 	}

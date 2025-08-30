@@ -31,7 +31,7 @@ func BlogIndex(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	return renderForRequest(c, 200, "blog/index.plush.html")
+	return c.Render(200, r.HTML("blog/index.plush.html"))
 }
 
 // BlogShow displays a single post by slug
@@ -58,5 +58,5 @@ func BlogShow(c buffalo.Context) error {
 	}
 	c.Set("baseURL", scheme+"://"+req.Host)
 
-	return renderForRequest(c, 200, "blog/show.plush.html")
+	return c.Render(200, r.HTML("blog/show.plush.html"))
 }

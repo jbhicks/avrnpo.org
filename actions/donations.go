@@ -1377,5 +1377,5 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 		return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content.plush.html"))
 	}
 	// For regular requests, return the full page
-	return renderForRequest(c, http.StatusOK, "pages/donate.plush.html")
+	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }
