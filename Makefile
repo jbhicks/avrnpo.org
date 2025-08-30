@@ -29,7 +29,8 @@ help:
 	@echo "  test-fast       - ⚡ Run Buffalo tests without database setup"
 	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
 	@echo "  test-integration - 🔒 Run CSRF integration tests (tests real middleware)"
-	@echo "  validate-templates - 🎨 Validate admin template structure"
+	@echo "  validate-templates - 🔍 Enhanced template validation with variable checking"
+	@echo "  validate-templates-enhanced - 🔍 Enhanced template validation with variable checking"
 	@echo "  build           - 🔨 Build the application for production"
 	@echo "  health          - 🏥 Check system health (dependencies, database, etc.)"
 	@echo "  clean           - 🧹 Stop all services and clean up containers"
@@ -90,7 +91,7 @@ install-deps:
 	@echo "✅ Dependency installation complete. Run 'make check-deps' to verify."
 
 # Start database and development server with improved resilience
-dev: check-deps
+dev: check-deps validate-templates
 	@echo "🏃 Starting development environment..."
 	@echo "🔍 Checking database status..."
 	@# Check if database is already running and ready
@@ -410,10 +411,20 @@ test-integration: check-deps db-up
 		exit 1; \
 	fi
 
-# Template validation
+# Template validation with variable checking
 validate-templates:
-	@echo "🎨 Validating admin template structure..."
-	@./scripts/validate-templates.sh
+	@echo "🔍 Running enhanced template validation..."
+	@./scripts/validate-templates-enhanced.sh
+
+# Build the application for production with validation
+build: validate-templates
+	@echo "🔨 Building application for production..."
+	@if buffalo build; then \
+		echo "✅ Build completed successfully!"; \
+	else \
+		echo "❌ Build failed. Check the output above for errors."; \
+		exit 1; \
+	fi
 
 # Clear Go build, module, and gopls caches
 clean-caches:

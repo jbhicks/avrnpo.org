@@ -81,4 +81,28 @@ func (as *ActionSuite) Test_CSRF_GET_Requests_WORK() {
 	require.Equal(as.T(), http.StatusOK, res.Code)
 }
 
+func (as *ActionSuite) Test_CSRF_Donation_API_MissingToken() {
+	// Test that donation API requires CSRF token
+	res := as.JSON("/api/donations/initialize").Post(map[string]interface{}{
+		"amount": "100",
+	})
+	as.Equal(http.StatusForbidden, res.Code)
+}
+
+func (as *ActionSuite) Test_CSRF_Donation_API_ValidToken() {
+	// Test that donation API works with valid CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	req := as.JSON("/api/donations/initialize")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	req.Headers["X-CSRF-Token"] = token // For JSON API, use header
+
+	res := req.Post(map[string]interface{}{
+		"amount": "100",
+	})
+	as.NotEqual(http.StatusForbidden, res.Code) // Should not be 403
+}
+
 func init() {}

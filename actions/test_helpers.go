@@ -151,3 +151,30 @@ func MockLogin(t *testing.T, app http.Handler, email, password string) (string, 
 	}
 	return finalCookie, finalToken
 }
+
+// includeCSRF adds the CSRF token to a request, either as a form field or header, and sets the cookie.
+func includeCSRF(req *http.Request, token, cookie string) {
+	if cookie != "" {
+		req.Header.Set("Cookie", cookie)
+	}
+	if token != "" {
+		// For HTMX or AJAX requests, use header
+		if req.Header.Get("HX-Request") == "true" || req.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+			req.Header.Set("X-CSRF-Token", token)
+		} else {
+			// For form requests, add to form data if it's a POST with form encoding
+			if req.Method == "POST" && req.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
+				body := req.Body
+				if body != nil {
+					data, _ := io.ReadAll(body)
+					form := string(data)
+					if form != "" && !strings.Contains(form, "authenticity_token=") {
+						form += "&authenticity_token=" + url.QueryEscape(token)
+						req.Body = io.NopCloser(strings.NewReader(form))
+						req.ContentLength = int64(len(form))
+					}
+				}
+			}
+		}
+	}
+}

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"avrnpo.org/models"
 )
 
 func (as *ActionSuite) Test_Auth_Signin() {
@@ -23,6 +21,9 @@ func (as *ActionSuite) Test_Auth_New() {
 func (as *ActionSuite) Test_Auth_Create() {
 	timestamp := time.Now().UnixNano()
 
+	// Fetch CSRF token from signup page
+	cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
+
 	// Create a user through the signup endpoint (which works)
 	signupData := map[string]interface{}{
 		"Email":                fmt.Sprintf("mark-%d@example.com", timestamp),
@@ -31,10 +32,15 @@ func (as *ActionSuite) Test_Auth_Create() {
 		"FirstName":            "Mark",
 		"LastName":             "Smith",
 		"accept_terms":         "on", // Add required terms acceptance
+		"authenticity_token":   token,
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	signupReq := as.HTML("/users")
+	if cookie != "" {
+		signupReq.Headers["Cookie"] = cookie
+	}
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Extract email for auth tests
@@ -55,9 +61,13 @@ func (as *ActionSuite) Test_Auth_Create() {
 
 	for _, tcase := range tcases {
 		as.Run(tcase.Identifier, func() {
-			res := as.HTML("/auth").Post(&models.User{
-				Email:    tcase.Email,
-				Password: tcase.Password,
+			// Fetch token for login
+			_, loginToken := fetchCSRF(as.T(), as.App, "/auth/new")
+
+			res := as.HTML("/auth").Post(map[string]interface{}{
+				"Email":             tcase.Email,
+				"Password":          tcase.Password,
+				"authenticity_token": loginToken,
 			})
 
 			as.Equal(tcase.Status, res.Code)
@@ -69,6 +79,9 @@ func (as *ActionSuite) Test_Auth_Create() {
 func (as *ActionSuite) Test_Auth_Redirect() {
 	timestamp := time.Now().UnixNano()
 
+	// Fetch CSRF token for signup
+	cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
+
 	// Create a user through the signup endpoint (which works)
 	signupData := map[string]interface{}{
 		"Email":                fmt.Sprintf("redirect-%d@example.com", timestamp),
@@ -77,17 +90,22 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 		"FirstName":            "Redirect",
 		"LastName":             "Test",
 		"accept_terms":         "on", // Add required terms acceptance
+		"authenticity_token":   token,
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	signupReq := as.HTML("/users")
+	if cookie != "" {
+		signupReq.Headers["Cookie"] = cookie
+	}
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Create auth data for login attempts
 	userEmail := fmt.Sprintf("redirect-%d@example.com", timestamp)
-	authData := &models.User{
-		Email:    userEmail,
-		Password: "password",
+	authData := map[string]interface{}{
+		"Email":    userEmail,
+		"Password": "password",
 	}
 
 	tcases := []struct {
@@ -105,7 +123,15 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 		as.Run(tcase.identifier, func() {
 			as.Session.Set("redirectURL", tcase.redirectURL)
 
-			res := as.HTML("/auth").Post(authData)
+			// Fetch token for login
+			_, loginToken := fetchCSRF(as.T(), as.App, "/auth/new")
+
+			req := as.HTML("/auth")
+			res := req.Post(map[string]interface{}{
+				"Email":             authData["Email"],
+				"Password":          authData["Password"],
+				"authenticity_token": loginToken,
+			})
 
 			as.Equal(http.StatusFound, res.Code)
 			as.Equal(res.Location(), tcase.resultLocation)
@@ -116,7 +142,11 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 		as.Run(tcase.identifier, func() {
 			as.Session.Set("redirectURL", tcase.redirectURL)
 
-			res := as.HTML("/auth").Post(signupData)
+			// Fetch token for signup (but this is login test, so use login token)
+			_, _ = fetchCSRF(as.T(), as.App, "/auth/new")
+
+			req := as.HTML("/auth")
+			res := req.Post(signupData)
 
 			as.Equal(http.StatusFound, res.Code)
 			as.Equal(res.Location(), tcase.resultLocation)
@@ -126,6 +156,9 @@ func (as *ActionSuite) Test_Auth_Redirect() {
 
 func (as *ActionSuite) Test_Auth_Create_Password_Preservation() {
 	timestamp := time.Now().UnixNano()
+
+	// Fetch CSRF token for signup
+	cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
 
 	// This test specifically verifies that the plaintext password is preserved
 	// during the authentication process and not overwritten by the database query.
@@ -139,20 +172,33 @@ func (as *ActionSuite) Test_Auth_Create_Password_Preservation() {
 		"FirstName":            "Test",
 		"LastName":             "User",
 		"accept_terms":         "on", // Add required terms acceptance
+		"authenticity_token":   token,
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	signupReq := as.HTML("/users")
+	if cookie != "" {
+		signupReq.Headers["Cookie"] = cookie
+	}
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Now attempt to login with the correct password
 	// This should succeed if the password is properly preserved during auth
-	loginUser := &models.User{
-		Email:    fmt.Sprintf("test.password.preservation-%d@example.com", timestamp),
-		Password: "secretpassword123", // Same password used during creation
-	}
+	userEmail := fmt.Sprintf("test.password.preservation-%d@example.com", timestamp)
 
-	res := as.HTML("/auth").Post(loginUser)
+	// Fetch token for login
+	loginCookie, loginToken := fetchCSRF(as.T(), as.App, "/auth/new")
+
+	loginReq := as.HTML("/auth")
+	if loginCookie != "" {
+		loginReq.Headers["Cookie"] = loginCookie
+	}
+	res := loginReq.Post(map[string]interface{}{
+		"Email":             userEmail,
+		"Password":          "secretpassword123", // Same password used during creation
+		"authenticity_token": loginToken,
+	})
 
 	// Should redirect to home page on successful authentication
 	as.Equal(http.StatusFound, res.Code, "Authentication should succeed with correct password")

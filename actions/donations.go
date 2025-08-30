@@ -30,11 +30,6 @@ func getCurrency() string {
 	return currency
 }
 
-// isHTMX detects if the request is from HTMX
-func isHTMX(req *http.Request) bool {
-	return req.Header.Get("HX-Request") == "true"
-}
-
 // safeString ensures a value is a string, converting or defaulting as needed
 func safeString(val interface{}) string {
 	if val == nil {
@@ -1380,10 +1375,7 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 
 	// Buffalo's CSRF middleware automatically provides authenticity_token
 
-	// For HTMX requests, return just the form content without HTMX layout
-	if isHTMX(c.Request()) {
-		return c.Render(http.StatusOK, rNoLayout.HTML("pages/_donate_form_content.plush.html"))
-	}
-	// For regular requests, return the full page
+	// Always return the full page for progressive enhancement
+	// HTMX will swap the content as needed for enhanced UX
 	return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 }

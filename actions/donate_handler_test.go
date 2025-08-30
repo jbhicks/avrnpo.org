@@ -7,7 +7,7 @@ import (
 )
 
 func (as *ActionSuite) Test_DonateHandler_GET() {
-	// Test GET request - should show the donation form
+	// Test GET request to donation form
 	res := as.HTML("/donate").Get()
 
 	as.Equal(http.StatusOK, res.Code)
@@ -16,23 +16,33 @@ func (as *ActionSuite) Test_DonateHandler_GET() {
 	as.Contains(res.Body.String(), `method="post"`)
 	as.Contains(res.Body.String(), `action="/donate"`)
 	as.Contains(res.Body.String(), `hx-post="/donate"`)
-	// Note: authenticity_token is not present in test environment (CSRF disabled)
+	// CSRF is enabled in test environment
+	as.Contains(res.Body.String(), `name="authenticity_token"`)
 }
 
 func (as *ActionSuite) Test_DonateHandler_POST_Success() {
-	// Test successful POST request with valid data (no CSRF needed in test env)
-	res := as.HTML("/donate").Post(map[string]interface{}{
-		"custom_amount": "25.00",
-		"donation_type": "one-time",
-		"first_name":    "John",
-		"last_name":     "Doe",
-		"donor_email":   "john@example.com",
-		"donor_phone":   "555-0123",
-		"address_line1": "123 Main St",
-		"city":          "Anytown",
-		"state":         "CA",
-		"zip_code":      "12345",
-		"comments":      "Test donation",
+	// Fetch CSRF token from donate page
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Test successful POST request with valid data and CSRF token
+	req := as.HTML("/donate")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+
+	res := req.Post(map[string]interface{}{
+		"custom_amount":      "25.00",
+		"donation_type":      "one-time",
+		"first_name":         "John",
+		"last_name":          "Doe",
+		"donor_email":        "john@example.com",
+		"donor_phone":        "555-0123",
+		"address_line1":      "123 Main St",
+		"city":               "Anytown",
+		"state":              "CA",
+		"zip_code":           "12345",
+		"comments":           "Test donation",
+		"authenticity_token": token,
 	})
 
 	// Should redirect to payment page or render payment page for HTMX
@@ -47,20 +57,27 @@ func (as *ActionSuite) Test_DonateHandler_POST_Success() {
 }
 
 func (as *ActionSuite) Test_DonateHandler_POST_HTMX_Success() {
-	// Test HTMX POST request (no CSRF needed in test env)
+	// Fetch CSRF token from donate page
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Test HTMX POST request with CSRF token
 	req := as.HTML("/donate")
 	req.Headers["HX-Request"] = "true"
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
 	res := req.Post(map[string]interface{}{
-		"custom_amount": "50.00",
-		"donation_type": "monthly",
-		"first_name":    "Jane",
-		"last_name":     "Smith",
-		"donor_email":   "jane@example.com",
-		"donor_phone":   "555-0456",
-		"address_line1": "456 Oak Ave",
-		"city":          "Somewhere",
-		"state":         "NY",
-		"zip_code":      "67890",
+		"custom_amount":      "50.00",
+		"donation_type":      "monthly",
+		"first_name":         "Jane",
+		"last_name":          "Smith",
+		"donor_email":        "jane@example.com",
+		"donor_phone":        "555-0456",
+		"address_line1":      "456 Oak Ave",
+		"city":               "Somewhere",
+		"state":              "NY",
+		"zip_code":           "67890",
+		"authenticity_token": token,
 	})
 
 	// HTMX should return rendered page directly
@@ -69,12 +86,20 @@ func (as *ActionSuite) Test_DonateHandler_POST_HTMX_Success() {
 }
 
 func (as *ActionSuite) Test_DonateHandler_POST_ValidationErrors() {
-	// Test POST with validation errors (no CSRF needed in test env)
-	res := as.HTML("/donate").Post(map[string]interface{}{
-		"custom_amount": "invalid", // Invalid amount
-		"first_name":    "John",
-		"last_name":     "Doe",
-		"donor_email":   "", // Missing email
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Test POST with validation errors
+	req := as.HTML("/donate")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	res := req.Post(map[string]interface{}{
+		"custom_amount":      "invalid", // Invalid amount
+		"first_name":         "John",
+		"last_name":          "Doe",
+		"donor_email":        "", // Missing email
+		"authenticity_token": token,
 	})
 
 	// Should return to form with errors
@@ -83,15 +108,22 @@ func (as *ActionSuite) Test_DonateHandler_POST_ValidationErrors() {
 }
 
 func (as *ActionSuite) Test_DonateHandler_POST_HTMX_ValidationErrors() {
-	// Test HTMX POST with validation errors (no CSRF needed in test env)
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Test HTMX POST with validation errors
 	req := as.HTML("/donate")
 	req.Headers["HX-Request"] = "true"
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
 	res := req.Post(map[string]interface{}{
-		"custom_amount": "invalid", // Invalid amount
-		"donation_type": "one-time",
-		"first_name":    "John",
-		"last_name":     "Doe",
-		"donor_email":   "invalid-email", // Invalid email
+		"custom_amount":      "invalid", // Invalid amount
+		"donation_type":      "one-time",
+		"first_name":         "John",
+		"last_name":          "Doe",
+		"donor_email":        "invalid-email", // Invalid email
+		"authenticity_token": token,
 	})
 
 	// HTMX should return form with errors
@@ -126,18 +158,26 @@ func (as *ActionSuite) Test_DonateHandler_URL_Behavior() {
 	getRes := as.HTML("/donate").Get()
 	as.Equal(http.StatusOK, getRes.Code)
 
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
 	// POST should not leave user stuck on POST URL
-	postRes := as.HTML("/donate").Post(map[string]interface{}{
-		"custom_amount": "25.00",
-		"donation_type": "one-time",
-		"first_name":    "URL",
-		"last_name":     "Test",
-		"donor_email":   "url@example.com",
-		"donor_phone":   "555-9999",
-		"address_line1": "999 URL St",
-		"city":          "URLtown",
-		"state":         "WA",
-		"zip_code":      "99999",
+	req := as.HTML("/donate")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	postRes := req.Post(map[string]interface{}{
+		"custom_amount":      "25.00",
+		"donation_type":      "one-time",
+		"first_name":         "URL",
+		"last_name":          "Test",
+		"donor_email":        "url@example.com",
+		"donor_phone":        "555-9999",
+		"address_line1":      "999 URL St",
+		"city":               "URLtown",
+		"state":              "WA",
+		"zip_code":           "99999",
+		"authenticity_token": token,
 	})
 
 	// Should either redirect (regular) or return OK (HTMX)

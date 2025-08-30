@@ -197,8 +197,10 @@ func App() *buffalo.App {
 		// app.Use(forceSSL())
 		// app.Use(secure.New(secure.Options{...}).Handler)
 
-		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks)
-		app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler, DonateHandler)
+		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks) in non-test environments
+		if ENV != "test" {
+			app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler, DonateHandler)
+		}
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Public routes

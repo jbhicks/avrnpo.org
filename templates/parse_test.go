@@ -34,6 +34,8 @@ func TestParseAllTemplates(t *testing.T) {
 			return err
 		}
 		if _, err := plush.Parse(string(data)); err != nil {
+			t.Logf("Failed to parse template: %s", path)
+			t.Logf("Template content around error:\n%s", string(data))
 			return err
 		}
 		return nil

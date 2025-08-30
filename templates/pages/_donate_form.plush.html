@@ -1,11 +1,419 @@
 <form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
   <div id="donation-form-content">
-    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-    <input type="hidden" name="custom_amount" value="<%= amount %>">
+
 
     <h3>Make a Donation</h3>
-    <p>This is a simplified donation form for testing.</p>
+    <p class="donation-subtitle">
+      Choose your donation amount or enter a custom amount. All donations are tax-deductible.
+    </p>
 
-    <button type="submit">Test Donate</button>
+    <!-- Amount Selection -->
+    <div class="donation-amounts">
+      <h4>Select Amount</h4>
+      <div id="amount-buttons" class="amount-grid">
+        <button type="button" class="outline amount-btn" data-amount="25">$25</button>
+        <button type="button" class="outline amount-btn" data-amount="50">$50</button>
+        <button type="button" class="outline amount-btn" data-amount="100">$100</button>
+        <button type="button" class="outline amount-btn" data-amount="250">$250</button>
+        <button type="button" class="outline amount-btn" data-amount="500">$500</button>
+        <button type="button" class="outline amount-btn" data-amount="1000">$1000</button>
+      </div>
+
+      <div class="custom-amount-group">
+        <label for="custom_amount">Or enter a custom amount</label>
+        <input type="number"
+               id="custom_amount"
+               name="custom_amount"
+               autocomplete="transaction-amount"
+               placeholder="Enter custom amount"
+               step="0.01"
+               min="1"
+                 value="<%= amount %>"
+               required>
+      </div>
+    </div>
+
+    <!-- Donation Type -->
+    <div class="donation-frequency">
+      <fieldset>
+        <legend>Donation Frequency</legend>
+        <label>
+          <input type="radio"
+                 name="donation_type"
+                 value="one-time"<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>>
+          One-time donation
+        </label>
+        <label>
+          <input type="radio"
+                 name="donation_type"
+                 value="monthly"<% if (c.Value("donationType") == "monthly") { %> checked<% } %>>
+          Monthly recurring
+        </label>
+      </fieldset>
+    </div>
+
+    <!-- Donor Information -->
+    <div class="donor-info">
+      <h4>Donor Information</h4>
+      <p><small>Required for payment processing and tax receipt</small></p>
+
+      <div class="grid">
+        <div>
+          <label for="first_name">First Name *</label>
+          <input type="text"
+                 id="first_name"
+                 name="first_name"
+                 autocomplete="billing given-name"
+                 aria-required="true"
+                 required
+                 value="<%= firstName %>">
+        </div>
+
+        <div>
+          <label for="last_name">Last Name *</label>
+          <input type="text"
+                 id="last_name"
+                 name="last_name"
+                 autocomplete="billing family-name"
+                 aria-required="true"
+                 required
+                 value="<%= lastName %>">
+        </div>
+      </div>
+
+      <label for="donor_email">Email Address *</label>
+      <input type="email"
+             id="donor_email"
+             name="donor_email"
+             autocomplete="billing email"
+             aria-required="true"
+             required
+             value="<%= donorEmail %>">
+
+      <label for="donor_phone">Phone Number (optional)</label>
+      <input type="tel"
+             id="donor_phone"
+             name="donor_phone"
+             autocomplete="billing tel"
+             value="<%= donorPhone %>">
+    </div>
+
+    <!-- Address Information -->
+    <div class="address-info">
+      <h4>Billing Address</h4>
+      <p><small>Required for payment processing</small></p>
+
+      <label for="address_line1">Address Line 1 *</label>
+      <input type="text"
+             id="address_line1"
+             name="address_line1"
+             autocomplete="billing address-line1"
+             aria-required="true"
+             required
+             value="<%= addressLine1 %>">
+
+      <label for="address_line2">Address Line 2 (optional)</label>
+      <input type="text"
+             id="address_line2"
+             name="address_line2"
+             autocomplete="billing address-line2"
+             value="<%= addressLine2 %>">
+
+      <div class="grid">
+        <div>
+          <label for="city">City *</label>
+          <input type="text"
+                 id="city"
+                 name="city"
+                 autocomplete="billing address-level2"
+                 aria-required="true"
+                 required
+                 value="<%= city %>">
+        </div>
+
+        <div>
+          <label for="state">State *</label>
+          <select id="state"
+                  name="state"
+                  autocomplete="billing address-level1"
+                  aria-required="true"
+                  required>
+            <option value="">Select State</option>
+            <option value="AL"<% if (c.Value("state") == "AL") { %> selected<% } %>>Alabama</option>
+            <option value="AK"<% if (c.Value("state") == "AK") { %> selected<% } %>>Alaska</option>
+            <option value="AZ"<% if (c.Value("state") == "AZ") { %> selected<% } %>>Arizona</option>
+            <option value="AR"<% if (c.Value("state") == "AR") { %> selected<% } %>>Arkansas</option>
+            <option value="CA"<% if (c.Value("state") == "CA") { %> selected<% } %>>California</option>
+            <option value="CO"<% if (c.Value("state") == "CO") { %> selected<% } %>>Colorado</option>
+            <option value="CT"<% if (c.Value("state") == "CT") { %> selected<% } %>>Connecticut</option>
+            <option value="DE"<% if (c.Value("state") == "DE") { %> selected<% } %>>Delaware</option>
+            <option value="FL"<% if (c.Value("state") == "FL") { %> selected<% } %>>Florida</option>
+            <option value="GA"<% if (c.Value("state") == "GA") { %> selected<% } %>>Georgia</option>
+            <option value="HI"<% if (c.Value("state") == "HI") { %> selected<% } %>>Hawaii</option>
+            <option value="ID"<% if (c.Value("state") == "ID") { %> selected<% } %>>Idaho</option>
+            <option value="IL"<% if (c.Value("state") == "IL") { %> selected<% } %>>Illinois</option>
+            <option value="IN"<% if (c.Value("state") == "IN") { %> selected<% } %>>Indiana</option>
+            <option value="IA"<% if (c.Value("state") == "IA") { %> selected<% } %>>Iowa</option>
+            <option value="KS"<% if (c.Value("state") == "KS") { %> selected<% } %>>Kansas</option>
+            <option value="KY"<% if (c.Value("state") == "KY") { %> selected<% } %>>Kentucky</option>
+            <option value="LA"<% if (c.Value("state") == "LA") { %> selected<% } %>>Louisiana</option>
+            <option value="ME"<% if (c.Value("state") == "ME") { %> selected<% } %>>Maine</option>
+            <option value="MD"<% if (c.Value("state") == "MD") { %> selected<% } %>>Maryland</option>
+            <option value="MA"<% if (c.Value("state") == "MA") { %> selected<% } %>>Massachusetts</option>
+            <option value="MI"<% if (c.Value("state") == "MI") { %> selected<% } %>>Michigan</option>
+            <option value="MN"<% if (c.Value("state") == "MN") { %> selected<% } %>>Minnesota</option>
+            <option value="MS"<% if (c.Value("state") == "MS") { %> selected<% } %>>Mississippi</option>
+            <option value="MO"<% if (c.Value("state") == "MO") { %> selected<% } %>>Missouri</option>
+            <option value="MT"<% if (c.Value("state") == "MT") { %> selected<% } %>>Montana</option>
+            <option value="NE"<% if (c.Value("state") == "NE") { %> selected<% } %>>Nebraska</option>
+            <option value="NV"<% if (c.Value("state") == "NV") { %> selected<% } %>>Nevada</option>
+            <option value="NH"<% if (c.Value("state") == "NH") { %> selected<% } %>>New Hampshire</option>
+            <option value="NJ"<% if (c.Value("state") == "NJ") { %> selected<% } %>>New Jersey</option>
+            <option value="NM"<% if (c.Value("state") == "NM") { %> selected<% } %>>New Mexico</option>
+            <option value="NY"<% if (c.Value("state") == "NY") { %> selected<% } %>>New York</option>
+            <option value="NC"<% if (c.Value("state") == "NC") { %> selected<% } %>>North Carolina</option>
+            <option value="ND"<% if (c.Value("state") == "ND") { %> selected<% } %>>North Dakota</option>
+            <option value="OH"<% if (c.Value("state") == "OH") { %> selected<% } %>>Ohio</option>
+            <option value="OK"<% if (c.Value("state") == "OK") { %> selected<% } %>>Oklahoma</option>
+            <option value="OR"<% if (c.Value("state") == "OR") { %> selected<% } %>>Oregon</option>
+            <option value="PA"<% if (c.Value("state") == "PA") { %> selected<% } %>>Pennsylvania</option>
+            <option value="RI"<% if (c.Value("state") == "RI") { %> selected<% } %>>Rhode Island</option>
+            <option value="SC"<% if (c.Value("state") == "SC") { %> selected<% } %>>South Carolina</option>
+            <option value="SD"<% if (c.Value("state") == "SD") { %> selected<% } %>>South Dakota</option>
+            <option value="TN"<% if (c.Value("state") == "TN") { %> selected<% } %>>Tennessee</option>
+            <option value="TX"<% if (c.Value("state") == "TX") { %> selected<% } %>>Texas</option>
+            <option value="UT"<% if (c.Value("state") == "UT") { %> selected<% } %>>Utah</option>
+            <option value="VT"<% if (c.Value("state") == "VT") { %> selected<% } %>>Vermont</option>
+            <option value="VA"<% if (c.Value("state") == "VA") { %> selected<% } %>>Virginia</option>
+            <option value="WA"<% if (c.Value("state") == "WA") { %> selected<% } %>>Washington</option>
+            <option value="WV"<% if (c.Value("state") == "WV") { %> selected<% } %>>West Virginia</option>
+            <option value="WI"<% if (c.Value("state") == "WI") { %> selected<% } %>>Wisconsin</option>
+            <option value="WY"<% if (c.Value("state") == "WY") { %> selected<% } %>>Wyoming</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="zip_code">ZIP Code *</label>
+          <input type="text"
+                 id="zip_code"
+                 name="zip_code"
+                 autocomplete="billing postal-code"
+                 aria-required="true"
+                 required
+                 pattern="[0-9]{5}(-[0-9]{4})?"
+                 value="<%= c.Value("zip") %>">
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <label for="comments">Comments (optional)</label>
+    <textarea id="comments"
+              name="comments"
+              rows="3"
+              autocomplete="off"
+              placeholder="Any special message or dedication..."><%= c.Value("comments") %></textarea>
+
+    <!-- Submit Button -->
+    <div id="submit-button">
+      <button type="submit" class="contrast donation-submit">
+        <%= getDonateButtonText(c.Value("amount"), c.Value("donationType")) %>
+      </button>
+    </div>
+
+    <small class="donation-note">
+      Your donation is secure and tax-deductible. You will receive a receipt for your records.
+    </small>
   </div>
 </form>
+
+<style>
+/* Donation Form Styles */
+.donation-subtitle {
+  color: var(--pico-muted-color);
+  margin-bottom: var(--pico-spacing);
+}
+
+.donation-amounts {
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: var(--pico-spacing);
+}
+
+.amount-btn {
+  padding: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.amount-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.amount-btn.active {
+  background-color: var(--pico-primary);
+  border-color: var(--pico-primary);
+  color: var(--pico-primary-inverse);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-amount-group {
+  margin-top: var(--pico-spacing);
+}
+
+.donation-frequency {
+  margin-bottom: var(--pico-spacing);
+}
+
+.donation-frequency fieldset {
+  border: 1px solid var(--pico-border-color);
+  border-radius: var(--pico-border-radius);
+  padding: var(--pico-spacing);
+}
+
+.donation-frequency legend {
+  font-weight: 600;
+  color: var(--pico-color);
+  padding: 0 0.5rem;
+}
+
+.donation-frequency label {
+  display: block;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+.donation-frequency input[type="radio"] {
+  margin-right: 0.5rem;
+}
+
+.donor-info, .address-info {
+  margin-bottom: var(--pico-spacing);
+}
+
+.donor-info h4, .address-info h4 {
+  color: var(--pico-color);
+  margin-bottom: 0.25rem;
+}
+
+.donor-info p, .address-info p {
+  color: var(--pico-muted-color);
+  font-size: 0.875rem;
+  margin-bottom: var(--pico-spacing);
+}
+
+.donation-submit {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: var(--pico-spacing);
+}
+
+.donation-note {
+  display: block;
+  text-align: center;
+  color: var(--pico-muted-color);
+  font-size: 0.875rem;
+  margin-top: var(--pico-spacing);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .amount-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid {
+    gap: var(--pico-spacing);
+  }
+
+  .grid > div {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .amount-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .donation-submit {
+    font-size: 1rem;
+    padding: 0.875rem;
+  }
+}
+</style>
+
+<script>
+// Amount button selection functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const amountButtons = document.querySelectorAll('.amount-btn');
+  const customAmountInput = document.getElementById('custom_amount');
+
+  // Handle amount button clicks
+  amountButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Remove active class from all buttons
+      amountButtons.forEach(btn => btn.classList.remove('active'));
+
+      // Add active class to clicked button
+      this.classList.add('active');
+
+      // Set the custom amount input to the selected value
+      const amount = this.dataset.amount;
+      customAmountInput.value = amount;
+
+      // Update submit button text
+      updateSubmitButton();
+    });
+  });
+
+  // Handle custom amount input changes
+  customAmountInput.addEventListener('input', function() {
+    // Remove active class from all buttons when custom amount is entered
+    amountButtons.forEach(btn => btn.classList.remove('active'));
+
+    // Update submit button text
+    updateSubmitButton();
+  });
+
+  // Handle donation type changes
+  const donationTypeInputs = document.querySelectorAll('input[name="donation_type"]');
+  donationTypeInputs.forEach(input => {
+    input.addEventListener('change', updateSubmitButton);
+  });
+
+  function updateSubmitButton() {
+    const amount = customAmountInput.value;
+    const donationType = document.querySelector('input[name="donation_type"]:checked')?.value || 'one-time';
+
+    let buttonText = 'Donate Now';
+    if (amount && parseFloat(amount) > 0) {
+      const formattedAmount = parseFloat(amount).toFixed(2);
+      if (donationType === 'monthly') {
+        buttonText = `Donate $${formattedAmount} Monthly`;
+      } else {
+        buttonText = `Donate $${formattedAmount} Now`;
+      }
+    } else if (donationType === 'monthly') {
+      buttonText = 'Donate Monthly';
+    }
+
+    const submitButton = document.querySelector('.donation-submit');
+    if (submitButton) {
+      submitButton.textContent = buttonText;
+    }
+  }
+
+  // Initialize submit button text on page load
+  updateSubmitButton();
+});
+</script>

@@ -142,11 +142,17 @@ func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 }
 
 func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
 	// Simulate clicking a preset amount button using HTMX headers and values
 	req := as.HTML("/donate")
 	req.Headers["HX-Request"] = "true"
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
 	// HTMX sends values as form-encoded; simulate preset button sending custom_amount
-	res := req.Post("custom_amount=25&amount_source=preset")
+	res := req.Post("custom_amount=25&amount_source=preset&authenticity_token=" + token)
 
 	// We expect a 200 and the donation form partial or full page (no 500)
 	as.Equal(http.StatusOK, res.Code)

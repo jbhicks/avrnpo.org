@@ -222,6 +222,45 @@ func DonateHandler(c buffalo.Context) error {
 	if c.Request().Method == "GET" {
 		// Set up all context variables for the donation form
 		setupDonateFormContext(c)
+
+		// Set default values for form fields if not already set
+		if c.Value("amount") == nil || c.Value("amount") == "" {
+			c.Set("amount", "")
+		}
+		if c.Value("donationType") == nil || c.Value("donationType") == "" {
+			c.Set("donationType", "one-time")
+		}
+		if c.Value("firstName") == nil {
+			c.Set("firstName", "")
+		}
+		if c.Value("lastName") == nil {
+			c.Set("lastName", "")
+		}
+		if c.Value("donorEmail") == nil {
+			c.Set("donorEmail", "")
+		}
+		if c.Value("donorPhone") == nil {
+			c.Set("donorPhone", "")
+		}
+		if c.Value("addressLine1") == nil {
+			c.Set("addressLine1", "")
+		}
+		if c.Value("addressLine2") == nil {
+			c.Set("addressLine2", "")
+		}
+		if c.Value("city") == nil {
+			c.Set("city", "")
+		}
+		if c.Value("state") == nil {
+			c.Set("state", "")
+		}
+		if c.Value("zip") == nil {
+			c.Set("zip", "")
+		}
+		if c.Value("comments") == nil {
+			c.Set("comments", "")
+		}
+
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
 
@@ -309,7 +348,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("hasAnyErrors", errors.HasAny())
 		c.Set("hasCommentsError", errors.Get("comments") != nil)
 		c.Set("hasAmountError", errors.Get("amount") != nil)
-		ensureDonateContext(c)
+		c.Set("hasFirstNameError", errors.Get("first_name") != nil)
 		c.Set("hasLastNameError", errors.Get("last_name") != nil)
 		c.Set("hasDonorEmailError", errors.Get("donor_email") != nil)
 		c.Set("hasDonorPhoneError", errors.Get("donor_phone") != nil)
@@ -317,20 +356,26 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("hasCityError", errors.Get("city") != nil)
 		c.Set("hasStateError", errors.Get("state") != nil)
 		c.Set("hasZipError", errors.Get("zip_code") != nil)
+
+		// Preserve all submitted form data for template re-rendering
+		c.Set("amount", amountStr)
+		c.Set("donationType", req.DonationType)
+		c.Set("firstName", req.FirstName)
+		c.Set("lastName", req.LastName)
+		c.Set("donorEmail", req.DonorEmail)
+		c.Set("donorPhone", req.DonorPhone)
+		c.Set("addressLine1", req.AddressLine1)
+		c.Set("addressLine2", req.AddressLine2)
+		c.Set("city", req.City)
+		c.Set("state", req.State)
+		c.Set("zip", req.Zip)
 		c.Set("comments", req.Comments)
 
-		// Preserve the submitted amount for template rendering
-		if amountStr != "" {
-			c.Set("amount", amountStr)
-		} else {
-			c.Set("amount", "")
-		}
-
-		// Convert amount to string to avoid template rendering issues
+		// Set up additional context variables
 		ensureDonateContext(c)
 		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
-		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 
+		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
 
 	// Success - process the donation

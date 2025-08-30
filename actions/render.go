@@ -4,7 +4,6 @@ import (
 	avrnpo "avrnpo.org"
 	"avrnpo.org/templates"
 	"html/template"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -14,7 +13,6 @@ import (
 )
 
 var r *render.Engine
-var rNoLayout *render.Engine
 
 func init() {
 	// Common helpers
@@ -34,17 +32,6 @@ func init() {
 		AssetsFS:    avrnpo.FS(),
 		Helpers:     commonHelpers,
 	})
-
-	// No-layout render engine for standalone pages like home
-	rNoLayout = render.New(render.Options{
-		TemplatesFS: templates.FS(),
-		AssetsFS:    avrnpo.FS(),
-		Helpers:     commonHelpers,
-	})
-
-	// Note: HTMX-specific minimal layout removed — HTMX requests will receive the
-	// standard application layout to simplify rendering and keep a single template
-	// strategy.
 }
 
 // getCurrentURL returns the current request URL for use in templates
@@ -71,12 +58,6 @@ func stripTagsHelper(content string) string {
 // dateFormatHelper formats time.Time values for use in templates
 func dateFormatHelper(t time.Time, format string) string {
 	return t.Format(format)
-}
-
-// IsHTMX detects if the request is from HTMX. It's retained for optional
-// use elsewhere but we will no longer branch rendering engines on it.
-func IsHTMX(req *http.Request) bool {
-	return req.Header.Get("HX-Request") == "true"
 }
 
 // renderForRequest was removed in favor of a single render strategy (use r.HTML).
