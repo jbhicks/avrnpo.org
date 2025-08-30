@@ -61,18 +61,13 @@ func (as *ActionSuite) Test_ProfileSettings_LoggedIn() {
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
-	// Now login with the same user
-	loginData := &models.User{
-		Email:    fmt.Sprintf("profile-test-%d@example.com", timestamp),
-		Password: "password",
-	}
-
-	// Login via auth endpoint
-	loginRes := as.HTML("/auth").Post(loginData)
-	as.Equal(http.StatusFound, loginRes.Code)
+	// Now login with the same user using MockLogin to obtain session + CSRF
+	cookie, _ := MockLogin(as.T(), as.App, fmt.Sprintf("profile-test-%d@example.com", timestamp), "password")
 
 	// Access profile settings while logged in
-	res := as.HTML("/profile").Get()
+	req := as.HTML("/profile")
+	req.Headers["Cookie"] = cookie
+	res := req.Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "Profile Settings")
 }
@@ -105,21 +100,24 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 		Password: "password",
 	}
 
-	// Login via auth endpoint
-	loginRes := as.HTML("/auth").Post(loginData)
-	as.Equal(http.StatusFound, loginRes.Code)
+	// Login via auth endpoint using MockLogin
+	cookie, token := MockLogin(as.T(), as.App, fmt.Sprintf("profile-update-%d@example.com", timestamp), "password")
 
-	// Update profile data
-	updateData := &models.User{
-		FirstName: "UpdatedFirst",
-		LastName:  "UpdatedLast",
+	// Update profile data (include authenticity_token and session cookie)
+	form := map[string]interface{}{
+		"FirstName":          "UpdatedFirst",
+		"LastName":           "UpdatedLast",
+		"authenticity_token": token,
 	}
-
-	res := as.HTML("/profile").Post(updateData)
+	req := as.HTML("/profile")
+	req.Headers["Cookie"] = cookie
+	res := req.Post(form)
 	as.Equal(http.StatusFound, res.Code) // Should redirect after successful update
 
 	// Verify the profile was updated by checking the profile page
-	profileRes := as.HTML("/profile").Get()
+	profileReq := as.HTML("/profile")
+	profileReq.Headers["Cookie"] = cookie
+	profileRes := profileReq.Get()
 	as.Equal(http.StatusOK, profileRes.Code)
 	as.Contains(profileRes.Body.String(), "UpdatedFirst")
 	as.Contains(profileRes.Body.String(), "UpdatedLast")
@@ -143,18 +141,13 @@ func (as *ActionSuite) Test_AccountSettings_LoggedIn() {
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
-	// Now login with the same user
-	loginData := &models.User{
-		Email:    userEmail,
-		Password: "password",
-	}
-
-	// Login via auth endpoint
-	loginRes := as.HTML("/auth").Post(loginData)
-	as.Equal(http.StatusFound, loginRes.Code)
+	// Login via MockLogin to obtain session cookie
+	cookie, _ := MockLogin(as.T(), as.App, userEmail, "password")
 
 	// Assert we can see the account settings page with user data
-	res := as.HTML("/account").Get()
+	req := as.HTML("/account")
+	req.Headers["Cookie"] = cookie
+	res := req.Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "Account Settings")
 	as.Contains(res.Body.String(), userEmail)
