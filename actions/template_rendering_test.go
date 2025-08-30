@@ -117,7 +117,7 @@ func Test_DonateTemplateWithErrors(t *testing.T) {
 
 		// Set error context
 		c.Set("errors", map[string][]string{
-			"first_name": {"First name is required"},
+			"first_name":  {"First name is required"},
 			"donor_email": {"Email address is required"},
 		})
 		c.Set("hasAnyErrors", true)
@@ -139,8 +139,6 @@ func Test_DonateTemplateWithErrors(t *testing.T) {
 	req.Contains(body, "donation-form", "Template should contain donation form")
 	// Note: Error display is handled by Buffalo's flash system, not direct template rendering
 }
-
-
 
 // Test_TemplateConsistencyValidation tests that templates use consistent variable access patterns
 func Test_TemplateConsistencyValidation(t *testing.T) {

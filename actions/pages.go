@@ -84,6 +84,11 @@ func setupDonateFormContext(c buffalo.Context) {
 func ensureDonateContext(c buffalo.Context) {
 	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 
+	// Ensure donationType is set for template compatibility
+	if c.Value("donationType") == nil {
+		c.Set("donationType", "one-time")
+	}
+
 	// Ensure the CSRF token identifier exists in the template context.
 	// Buffalo's CSRF middleware should have set authenticity_token.
 	// Only set to empty string if it's truly not present.

@@ -466,28 +466,27 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	app := buffalo.New(buffalo.Options{Env: "development"})
 	app.Use(csrf.New)
 
+	// GET endpoint to get form with token
+	app.GET("/contact-form", func(c buffalo.Context) error {
+		responseToken := c.Value("authenticity_token")
+		html := fmt.Sprintf(`<form method="post" action="/contact-test" hx-post="/contact-test" hx-target="#result" hx-swap="innerHTML">
+			<input type="hidden" name="authenticity_token" value="%s" />
+			<input type="email" name="email" required />
+			<button type="submit">Submit</button>
+			<div id="result"></div>
+		</form>`, responseToken)
+		return c.Render(200, r.String(html))
+	})
+
 	app.POST("/contact-test", func(c buffalo.Context) error {
 		email := c.Param("email")
-		token := c.Param("authenticity_token")
-
-		if token == "" {
-			responseToken := c.Value("authenticity_token")
-			html := fmt.Sprintf(`<form method="post" action="/contact-test" hx-post="/contact-test" hx-target="#result" hx-swap="innerHTML">
-				<input type="hidden" name="authenticity_token" value="%s" />
-				<input type="email" name="email" required />
-				<button type="submit">Submit</button>
-				<div id="result"></div>
-			</form>`, responseToken)
-			return c.Render(200, r.String(html))
-		}
-
 		// Always return full page, regardless of HX-Request
 		return c.Render(200, r.String(fmt.Sprintf("Form Success: %s", email)))
 	})
 
-	// Get form with token
+	// Get form with token via GET request
 	w1 := httptest.NewRecorder()
-	req1, _ := http.NewRequest("POST", "/contact-test", nil)
+	req1, _ := http.NewRequest("GET", "/contact-form", nil)
 	app.ServeHTTP(w1, req1)
 
 	require.Equal(t, 200, w1.Code)
@@ -495,8 +494,9 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	tokenStart := strings.Index(bodyString, `value="`) + 7
 	tokenEnd := strings.Index(bodyString[tokenStart:], `"`) + tokenStart
 	token := bodyString[tokenStart:tokenEnd]
+	require.NotEmpty(t, token, "Should find CSRF token in form")
 
-	// Submit regular form
+	// Submit regular form with token and cookies
 	formData := url.Values{
 		"authenticity_token": {token},
 		"email":              {"test@example.com"},
@@ -506,15 +506,29 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	req2, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
+	// Copy cookies from GET response to POST request
+	if res := w1.Result(); res != nil {
+		for _, c := range res.Cookies() {
+			req2.AddCookie(c)
+		}
+	}
+
 	app.ServeHTTP(w2, req2)
 	require.Equal(t, 200, w2.Code)
 	require.Contains(t, w2.Body.String(), "Form Success")
 
-	// Submit HTMX request
+	// Submit HTMX request with token and cookies
 	w3 := httptest.NewRecorder()
 	req3, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
 	req3.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req3.Header.Set("HX-Request", "true")
+
+	// Copy cookies from GET response to HTMX POST request
+	if res := w1.Result(); res != nil {
+		for _, c := range res.Cookies() {
+			req3.AddCookie(c)
+		}
+	}
 
 	app.ServeHTTP(w3, req3)
 	require.Equal(t, 200, w3.Code)
@@ -523,29 +537,30 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	t.Logf("✅ HTMX progressive enhancement always returns full page")
 }
 
-// TestCSRFTokenExpiration tests token validation scenarios
+// TestCSRFTokenValidation tests token validation scenarios
 func TestCSRFTokenValidation(t *testing.T) {
 	os.Setenv("GO_ENV", "test") // Ensure CSRF middleware runs in test mode
 	app := buffalo.New(buffalo.Options{Env: "development"})
 	app.Use(csrf.New)
 
+	// GET endpoint to get form with token
+	app.GET("/test-form", func(c buffalo.Context) error {
+		responseToken := c.Value("authenticity_token")
+		html := fmt.Sprintf(`<form method="post" action="/test-submit">
+			<input type="hidden" name="authenticity_token" value="%s" />
+			<input type="text" name="data" value="test" />
+			<button type="submit">Submit</button>
+		</form>`, responseToken)
+		return c.Render(200, r.String(html))
+	})
+
 	app.POST("/test-submit", func(c buffalo.Context) error {
-		token := c.Param("authenticity_token")
-		if token == "" {
-			responseToken := c.Value("authenticity_token")
-			html := fmt.Sprintf(`<form method="post" action="/test-submit">
-				<input type="hidden" name="authenticity_token" value="%s" />
-				<input type="text" name="data" value="test" />
-				<button type="submit">Submit</button>
-			</form>`, responseToken)
-			return c.Render(200, r.String(html))
-		}
 		return c.Render(200, r.String("Success"))
 	})
 
-	// Get form with token
+	// Get form with token via GET request
 	w1 := httptest.NewRecorder()
-	req1, _ := http.NewRequest("POST", "/test-submit", nil)
+	req1, _ := http.NewRequest("GET", "/test-form", nil)
 	app.ServeHTTP(w1, req1)
 
 	require.Equal(t, 200, w1.Code)
@@ -553,8 +568,9 @@ func TestCSRFTokenValidation(t *testing.T) {
 	tokenStart := strings.Index(bodyString, `value="`) + 7
 	tokenEnd := strings.Index(bodyString[tokenStart:], `"`) + tokenStart
 	token := bodyString[tokenStart:tokenEnd]
+	require.NotEmpty(t, token, "Should find CSRF token in form")
 
-	// Use token - should work
+	// Use token with cookies - should work
 	formData := url.Values{
 		"authenticity_token": {token},
 		"data":               {"test"},
@@ -563,6 +579,13 @@ func TestCSRFTokenValidation(t *testing.T) {
 	w2 := httptest.NewRecorder()
 	req2, _ := http.NewRequest("POST", "/test-submit", strings.NewReader(formData.Encode()))
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Copy cookies from GET response to POST request
+	if res := w1.Result(); res != nil {
+		for _, c := range res.Cookies() {
+			req2.AddCookie(c)
+		}
+	}
 
 	app.ServeHTTP(w2, req2)
 	require.Equal(t, 200, w2.Code, "Valid token should work")
