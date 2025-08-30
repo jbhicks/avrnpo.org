@@ -73,14 +73,14 @@
         />
         <link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=2" />
         <!-- Pico.css - Minimal CSS Framework -->
-        <link rel="stylesheet" href="/assets/css/pico.min.css" />
+        <%= stylesheetTag("css/pico.min.css") %>
 
         <!-- Custom CSS -->
-        <link rel="stylesheet" href="/assets/css/custom.css" />
+        <%= stylesheetTag("css/custom.css") %>
 
         <!-- Quill Rich Text Editor -->
-        <link rel="stylesheet" href="/assets/css/quill.snow.css" />
-        <link rel="stylesheet" href="/assets/css/quill-custom.css" />
+        <%= stylesheetTag("css/quill.snow.css") %>
+        <%= stylesheetTag("css/quill-custom.css") %>
 
         <!-- Structured Data for Organization -->
         <script type="application/ld+json">
@@ -104,23 +104,23 @@
         </script>
 
         <!-- Heroicons helper for SVG icons -->
-        <script src="/assets/js/icons.js"></script>
+        <%= javascriptTag("js/icons.js") %>
 
         <!-- Quill Rich Text Editor -->
-        <script src="/assets/js/quill.min.js"></script>
-        <script src="/assets/js/quill-editor.js"></script>
+        <%= javascriptTag("js/quill.min.js") %>
+        <%= javascriptTag("js/quill-editor.js") %>
 
         <!-- Theme switching functionality -->
-        <script src="/assets/js/theme.js"></script>
+        <%= javascriptTag("js/theme.js") %>
 
         <!-- HTMX Library -->
-        <script src="/assets/js/htmx.min.js"></script>
+        <%= javascriptTag("js/htmx.min.js") %>
 
         <!-- Donation System JavaScript -->
-        <script src="/assets/js/donation.js"></script>
+        <%= javascriptTag("js/donation.js") %>
 
         <!-- Main Application JavaScript -->
-        <script src="/assets/js/application.js"></script>
+        <%= javascriptTag("js/application.js") %>
 
         <% if (authenticity_token) { %>
         <meta name="csrf-param" content="authenticity_token" />

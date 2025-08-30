@@ -23,7 +23,37 @@
 
 <!-- Contact Information -->
 <section class="grid">
+  <!-- Contact Form -->
+  <article>
+    <header>
+      <h2>Send us a Message</h2>
+    </header>
 
+    <form method="post" action="/contact">
+      <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
+
+      <label for="name">
+        Name *
+        <input type="text" id="name" name="name" required>
+      </label>
+
+      <label for="email">
+        Email *
+        <input type="email" id="email" name="email" required>
+      </label>
+
+      <label for="subject">
+        Subject *
+        <input type="text" id="subject" name="subject" required>
+      </label>
+
+      <label for="message">
+        Message *
+        <textarea id="message" name="message" required></textarea>
+      </label>
+
+      <button type="submit">Send Message</button>
+    </form>
   </article>
 
   <!-- Contact Info -->
@@ -69,38 +99,6 @@
           Let us know how you'd like to contribute to our mission.
         </p>
       </div>
-
     </section>
   </article>
-</section>
-        <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
-          <img src="<%= assetPath("images/Facebook.svg") %>" alt="Facebook">
-        </a>
-        <a href="https://x.com/avrnpo" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X">
-          <img src="<%= assetPath("images/X.svg") %>" alt="X">
-              </a>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 2rem;">
-            <h4>For Veterans</h4>
-            <p style="font-size: 0.95rem; line-height: 1.5;">
-              If you're a veteran interested in our programs, please include your service information
-              and what type of support you're looking for in your message.
-            </p>
-          </div>
-
-          <div>
-            <h4>For Supporters</h4>
-            <p style="font-size: 0.95rem; line-height: 1.5;">
-              Interested in volunteering, donating, or partnering with us?
-              Let us know how you'd like to contribute to our mission.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </div>
 </section>

@@ -4,9 +4,9 @@
     <p>Latest updates and insights from American Veterans Rebuilding</p>
   </header>
 
-  <%= if (len(posts) > 0) { %>
+  <% if (len(posts) > 0) { %>
     <section class="posts-grid">
-      <%= for (post) in posts { %>
+      <% for (post) in posts { %>
         <article>
           <h3><%= post.Title %></h3>
           <p><%= post.Content %></p>

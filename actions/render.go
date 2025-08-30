@@ -19,11 +19,12 @@ var rNoLayout *render.Engine
 func init() {
 	// Common helpers
 	commonHelpers := render.Helpers{
-		forms.FormKey:    forms.Form,
-		forms.FormForKey: forms.FormFor,
-		"getCurrentURL":  getCurrentURL,
-		"stripTags":      stripTagsHelper,
-		"dateFormat":     dateFormatHelper,
+		forms.FormKey:         forms.Form,
+		forms.FormForKey:      forms.FormFor,
+		"getCurrentURL":       getCurrentURL,
+		"stripTags":           stripTagsHelper,
+		"dateFormat":          dateFormatHelper,
+		"getDonateButtonText": getDonateButtonText,
 	}
 
 	// Standard render engine with layout

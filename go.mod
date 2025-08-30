@@ -10,6 +10,8 @@ require (
 	github.com/gobuffalo/helpers v0.6.10
 	github.com/gobuffalo/logger v1.0.7
 	github.com/gobuffalo/middleware v1.0.0
+	github.com/gobuffalo/mw-csrf v1.0.2
+	github.com/gobuffalo/plush/v4 v4.1.18
 	github.com/gobuffalo/pop/v6 v6.1.1
 	github.com/gobuffalo/suite/v4 v4.0.4
 	github.com/gobuffalo/validate v2.0.4+incompatible
@@ -27,8 +29,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
-	github.com/PuerkitoBio/goquery v1.10.3 // indirect
-	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -43,9 +43,7 @@ require (
 	github.com/gobuffalo/github_flavored_markdown v1.1.3 // indirect
 	github.com/gobuffalo/httptest v1.5.2 // indirect
 	github.com/gobuffalo/meta v0.3.3 // indirect
-	github.com/gobuffalo/mw-csrf v1.0.2 // indirect
 	github.com/gobuffalo/nulls v0.4.2 // indirect
-	github.com/gobuffalo/plush/v4 v4.1.18 // indirect
 	github.com/gobuffalo/plush/v5 v5.0.4 // indirect
 	github.com/gobuffalo/refresh v1.13.3 // indirect
 	github.com/gobuffalo/tags/v3 v3.1.4 // indirect

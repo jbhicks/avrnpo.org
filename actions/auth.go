@@ -17,7 +17,12 @@ import (
 
 // AuthLanding shows a landing page to login
 func AuthLanding(c buffalo.Context) error {
-	return c.Render(http.StatusOK, r.HTML("auth/landing.plush.html"))
+	// If user is already logged in, show the landing page
+	if c.Session().Get("current_user_id") != nil {
+		return c.Render(http.StatusOK, r.HTML("auth/landing.plush.html"))
+	}
+	// Otherwise, redirect to the sign in page
+	return c.Redirect(http.StatusFound, "/auth/new")
 }
 
 // AuthNew loads the signin page

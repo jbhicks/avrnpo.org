@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"avrnpo.org/services"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
+	"github.com/gobuffalo/validate/v3"
 )
 
 // Types and functions are defined in donations.go
@@ -26,157 +28,104 @@ func generateSecureToken() string {
 	return base64.URLEncoding.EncodeToString(bytes)
 }
 
-// ensureDonateContext sets up common context variables for donation forms
-func ensureDonateContext(c buffalo.Context) {
-	// Provide the preset amounts under the name templates expect.
-	c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
+// setupDonateFormContext sets up all context variables needed for the donation form
+func setupDonateFormContext(c buffalo.Context) {
+	// Page metadata
+	c.Set("title", "Make a Donation")
+	c.Set("description", "Support American Veterans Rebuilding with your tax-deductible donation")
+	c.Set("current_path", c.Request().URL.Path)
 
-	// Also provide alternate name used in some partials.
+	// Form model and errors
+	donation := &DonationRequest{}
+	c.Set("donation", donation)
+	c.Set("errors", nil)
+	c.Set("hasAnyErrors", false)
+	c.Set("hasCommentsError", false)
+	c.Set("hasAmountError", false)
+	c.Set("hasFirstNameError", false)
+	c.Set("hasLastNameError", false)
+	c.Set("hasDonorEmailError", false)
+	c.Set("hasDonorPhoneError", false)
+	c.Set("hasAddressLine1Error", false)
+	c.Set("hasCityError", false)
+	c.Set("hasStateError", false)
+	c.Set("hasZipError", false)
+	c.Set("comments", "")
+
+	// Amount and donation type
+	c.Set("amount", "")
+	c.Set("customAmount", "")
+	c.Set("donationType", "one-time")
+	c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
 	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 
-	// Ensure donation-related variables are present so Plush templates
-	// don't hit "unknown identifier" when rendering partials.
-	if c.Value("amount") == nil {
-		c.Set("amount", "")
+	// Donor information fields
+	c.Set("firstName", "")
+	c.Set("lastName", "")
+	c.Set("donorEmail", "")
+	c.Set("donorPhone", "")
+	c.Set("addressLine1", "")
+	c.Set("addressLine2", "")
+	c.Set("city", "")
+	c.Set("state", "")
+	c.Set("zip", "")
+
+	// Session defaults
+	c.Session().Set("donation_amount", "")
+	c.Session().Set("donation_type", "one-time")
+
+	// Ensure CSRF token
+	if c.Value("authenticity_token") == nil {
+		c.Set("authenticity_token", "")
 	}
-	if c.Value("source") == nil {
-		c.Set("source", "")
+}
+
+// ensureDonateContext sets up common context variables for donation forms (legacy function)
+func ensureDonateContext(c buffalo.Context) {
+	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+
+	// Ensure the CSRF token identifier exists in the template context.
+	// Buffalo's CSRF middleware should have set authenticity_token.
+	// Only set to empty string if it's truly not present.
+	if c.Value("authenticity_token") == nil {
+		c.Set("authenticity_token", "")
 	}
-	if c.Value("donationType") == nil {
-		c.Set("donationType", "one-time")
+}
+
+// getDonateButtonText generates the appropriate button text based on amount and donation type
+func getDonateButtonText(amount interface{}, donationType string) string {
+	// Handle nil or empty amount
+	if amount == nil {
+		return "Donate Now"
 	}
 
-	// Button label defaults
-	if c.Value("buttonText") == nil {
-		c.Set("buttonText", "Donate")
+	amountStr := ""
+	switch v := amount.(type) {
+	case string:
+		amountStr = v
+	case float64:
+		if v > 0 {
+			amountStr = fmt.Sprintf("%.0f", v)
+		}
+	case int:
+		if v > 0 {
+			amountStr = fmt.Sprintf("%d", v)
+		}
 	}
 
-	// Error flags (server-side single source of truth)
-	if c.Value("errors") == nil {
-		c.Set("errors", nil)
-	}
-	if c.Value("hasAnyErrors") == nil {
-		c.Set("hasAnyErrors", false)
-	}
-	if c.Value("hasCommentsError") == nil {
-		c.Set("hasCommentsError", false)
-	}
-	if c.Value("hasAmountError") == nil {
-		c.Set("hasAmountError", false)
-	}
-	if c.Value("hasFirstNameError") == nil {
-		c.Set("hasFirstNameError", false)
-	}
-	if c.Value("hasLastNameError") == nil {
-		c.Set("hasLastNameError", false)
-	}
-	if c.Value("hasDonorEmailError") == nil {
-		c.Set("hasDonorEmailError", false)
-	}
-	if c.Value("hasDonorPhoneError") == nil {
-		c.Set("hasDonorPhoneError", false)
-	}
-	if c.Value("hasAddressLine1Error") == nil {
-		c.Set("hasAddressLine1Error", false)
-	}
-	if c.Value("hasCityError") == nil {
-		c.Set("hasCityError", false)
-	}
-	if c.Value("hasStateError") == nil {
-		c.Set("hasStateError", false)
-	}
-	if c.Value("hasZipError") == nil {
-		c.Set("hasZipError", false)
+	// If no valid amount, return default
+	if amountStr == "" {
+		if donationType == "monthly" {
+			return "Donate Monthly"
+		}
+		return "Donate Now"
 	}
 
-	// Provide empty strings for donor fields
-	if c.Value("firstName") == nil {
-		c.Set("firstName", "")
+	// Return formatted text based on donation type
+	if donationType == "monthly" {
+		return fmt.Sprintf("Donate $%s Monthly", amountStr)
 	}
-	if c.Value("lastName") == nil {
-		c.Set("lastName", "")
-	}
-	if c.Value("donorEmail") == nil {
-		c.Set("donorEmail", "")
-	}
-	if c.Value("donorPhone") == nil {
-		c.Set("donorPhone", "")
-	}
-	if c.Value("addressLine1") == nil {
-		c.Set("addressLine1", "")
-	}
-	if c.Value("addressLine2") == nil {
-		c.Set("addressLine2", "")
-	}
-	if c.Value("city") == nil {
-		c.Set("city", "")
-	}
-	if c.Value("state") == nil {
-		c.Set("state", "")
-	}
-	if c.Value("zip") == nil {
-		c.Set("zip", "")
-	}
-	if c.Value("comments") == nil {
-		c.Set("comments", "")
-	}
-
-	// Defensive defaults for template-local variables that some partials
-	// assign dynamically. Providing them here avoids "unknown identifier"
-	// errors from the Plush renderer in tests.
-	if c.Value("customValue") == nil {
-		c.Set("customValue", "")
-	}
-	if c.Value("customClass") == nil {
-		c.Set("customClass", "")
-	}
-	if c.Value("btnClass") == nil {
-		c.Set("btnClass", "outline amount-btn")
-	}
-
-	// Defensive defaults for donor info values/classes used in templates
-	if c.Value("firstNameValue") == nil {
-		c.Set("firstNameValue", "")
-	}
-	if c.Value("firstNameClass") == nil {
-		c.Set("firstNameClass", "")
-	}
-	if c.Value("lastNameValue") == nil {
-		c.Set("lastNameValue", "")
-	}
-	if c.Value("lastNameClass") == nil {
-		c.Set("lastNameClass", "")
-	}
-	if c.Value("donorEmailValue") == nil {
-		c.Set("donorEmailValue", "")
-	}
-	if c.Value("donorEmailClass") == nil {
-		c.Set("donorEmailClass", "")
-	}
-	if c.Value("donorPhoneValue") == nil {
-		c.Set("donorPhoneValue", "")
-	}
-	if c.Value("donorPhoneClass") == nil {
-		c.Set("donorPhoneClass", "")
-	}
-	if c.Value("addressLine1Value") == nil {
-		c.Set("addressLine1Value", "")
-	}
-	if c.Value("addressLine1Class") == nil {
-		c.Set("addressLine1Class", "")
-	}
-	if c.Value("cityValue") == nil {
-		c.Set("cityValue", "")
-	}
-	if c.Value("cityClass") == nil {
-		c.Set("cityClass", "")
-	}
-	if c.Value("zipValue") == nil {
-		c.Set("zipValue", "")
-	}
-	if c.Value("zipClass") == nil {
-		c.Set("zipClass", "")
-	}
+	return fmt.Sprintf("Donate $%s Now", amountStr)
 }
 
 // TeamHandler shows the team page
@@ -271,112 +220,106 @@ func DonateHandler(c buffalo.Context) error {
 
 	// Handle GET request - show the donation form
 	if c.Request().Method == "GET" {
-		// Rely on Buffalo's CSRF middleware to set authenticity_token
-
-		// Create donation model for form
-		donation := &DonationRequest{}
-		c.Set("donation", donation)
-		c.Set("errors", nil)
-		c.Set("hasAnyErrors", false)
-		c.Set("hasCommentsError", false)
-		c.Set("hasAmountError", false)
-		c.Set("hasFirstNameError", false)
-		c.Set("hasLastNameError", false)
-		c.Set("hasDonorEmailError", false)
-		c.Set("hasDonorPhoneError", false)
-		c.Set("hasAddressLine1Error", false)
-		c.Set("hasCityError", false)
-		c.Set("hasStateError", false)
-		c.Set("hasZipError", false)
-		c.Set("comments", "")
-
-		// Initialize session defaults
-		c.Session().Set("donation_amount", "")
-		c.Session().Set("donation_type", "one-time")
-
-		// Ensure amount fields are explicitly empty strings
-		c.Set("amount", "")
-		c.Set("customAmount", "")
-		c.Set("donationType", "one-time")
-
-		// Provide presets for templates
-		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
-
-		c.Set("firstName", "")
-		c.Set("lastName", "")
-		c.Set("donorEmail", "")
-		c.Set("donorPhone", "")
-		c.Set("addressLine1", "")
-		c.Set("addressLine2", "")
-		c.Set("city", "")
-		c.Set("state", "")
-		c.Set("zip", "")
-		ensureDonateContext(c)
-		// Ensure authenticity_token is present in the template context without
-		// calling renderer methods that may not exist in this codebase.
-		if c.Value("authenticity_token") == nil {
-			// Try to read from context where middleware may have placed it.
-			if v := c.Value("authenticity_token"); v != nil {
-				c.Set("authenticity_token", v)
-			} else {
-				// As a safe fallback for rendering (so templates don't crash),
-				// provide a generated token. Real validation will rely on the
-				// CSRF middleware and session; this fallback prevents Plush
-				// unknown identifier errors during rendering and tests.
-				c.Set("authenticity_token", generateSecureToken())
-			}
-		}
-
+		// Set up all context variables for the donation form
+		setupDonateFormContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
-
 	}
 
-	// Parse form/request into DonationRequest (defined in donations.go)
+	// Handle POST request - Buffalo's CSRF middleware will validate authenticity_token
+	c.Logger().Infof("DonateHandler POST called - relying on Buffalo CSRF middleware")
+
+	// Parse donation request
 	var req DonationRequest
 	if err := c.Bind(&req); err != nil {
-		c.Logger().Warnf("Failed to bind donation request: %v", err)
-		// If binding fails, show form again with defaults
+		c.Flash().Add("error", "Invalid form data submitted")
 		ensureDonateContext(c)
-		c.Flash().Add("error", "Invalid form submission. Please try again.")
-		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
 
-	// Normalize amount into a string and numeric value
-	amountStr := ""
+	// Buffalo's CSRF middleware automatically validates the authenticity_token
+	// Use Buffalo's validate.Errors for field-specific error collection
+	errors := validate.NewErrors()
+
+	if strings.TrimSpace(req.FirstName) == "" {
+		errors.Add("first_name", "First name is required")
+	}
+	if strings.TrimSpace(req.LastName) == "" {
+		errors.Add("last_name", "Last name is required")
+	}
+	if strings.TrimSpace(req.DonorEmail) == "" {
+		errors.Add("donor_email", "Email address is required")
+	}
+	// Basic email validation
+	if req.DonorEmail != "" && (!strings.Contains(req.DonorEmail, "@") || !strings.Contains(req.DonorEmail, ".")) {
+		errors.Add("donor_email", "Please enter a valid email address")
+	}
+	if strings.TrimSpace(req.AddressLine1) == "" {
+		errors.Add("address_line1", "Address Line 1 is required")
+	}
+	if strings.TrimSpace(req.City) == "" {
+		errors.Add("city", "City is required")
+	}
+	if strings.TrimSpace(req.State) == "" {
+		errors.Add("state", "State is required")
+	}
+	if strings.TrimSpace(req.Zip) == "" {
+		errors.Add("zip_code", "ZIP Code is required")
+	}
+
+	// Determine donation amount - check both form and session
 	var amount float64
-	if req.Amount != nil {
-		switch v := req.Amount.(type) {
-		case string:
-			amountStr = v
-			fmt.Sscanf(v, "%f", &amount)
-		case float64:
-			if v > 0 {
-				amount = v
-				amountStr = fmt.Sprintf("%.2f", v)
-			}
-		case int:
-			if v > 0 {
-				amount = float64(v)
-				amountStr = fmt.Sprintf("%d", v)
+	var err error
+
+	// First try to get amount from form submission
+	amountStr := strings.TrimSpace(req.CustomAmount)
+
+	// If no amount in form, check session (from preset button selections)
+	if amountStr == "" {
+		if sessionAmount := c.Session().Get("donation_amount"); sessionAmount != nil {
+			if s, ok := sessionAmount.(string); ok {
+				amountStr = s
 			}
 		}
 	}
-	c.Set("amount", amountStr)
 
-	// Ensure customAmount is always a safe string
-	c.Set("customAmount", safeString(req.CustomAmount))
-	c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
-	c.Set("firstName", req.FirstName)
-	c.Set("lastName", req.LastName)
-	c.Set("donorEmail", req.DonorEmail)
-	c.Set("donorPhone", req.DonorPhone)
-	c.Set("addressLine1", req.AddressLine1)
-	c.Set("addressLine2", req.AddressLine2)
-	c.Set("city", req.City)
-	c.Set("state", req.State)
-	c.Set("zip", req.Zip)
+	// Normalize money strings like "$25.00" or "25,00" -> "25.00"
+	if amountStr != "" {
+		// Remove currency symbols and commas
+		amountStr = strings.ReplaceAll(amountStr, "$", "")
+		amountStr = strings.ReplaceAll(amountStr, ",", "")
+	}
 
-	// Continue processing after normalizing amount and setting context
+	if strings.TrimSpace(amountStr) == "" {
+		errors.Add("amount", "Donation amount is required")
+	} else {
+		amount, err = strconv.ParseFloat(amountStr, 64)
+		if err != nil || amount <= 0 {
+			errors.Add("amount", "Donation amount must be greater than zero")
+		}
+	}
+	// If there are any errors, render the form with errors and user input
+	if errors.HasAny() {
+		// Set error context for template
+		c.Set("errors", errors)
+		c.Set("hasAnyErrors", errors.HasAny())
+		c.Set("hasCommentsError", errors.Get("comments") != nil)
+		c.Set("hasAmountError", errors.Get("amount") != nil)
+		ensureDonateContext(c)
+		c.Set("hasLastNameError", errors.Get("last_name") != nil)
+		c.Set("hasDonorEmailError", errors.Get("donor_email") != nil)
+		c.Set("hasDonorPhoneError", errors.Get("donor_phone") != nil)
+		c.Set("hasAddressLine1Error", errors.Get("address_line1") != nil)
+		c.Set("hasCityError", errors.Get("city") != nil)
+		c.Set("hasStateError", errors.Get("state") != nil)
+		c.Set("hasZipError", errors.Get("zip_code") != nil)
+		c.Set("comments", req.Comments)
+
+		// Convert amount to string to avoid template rendering issues
+		ensureDonateContext(c)
+		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
+		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+
+	}
 
 	// Success - process the donation
 	donorName := strings.TrimSpace(req.FirstName + " " + req.LastName)
@@ -425,6 +368,7 @@ func DonateHandler(c buffalo.Context) error {
 	if amount <= 0 {
 		c.Flash().Add("error", "Invalid donation amount. Please try again.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
@@ -434,6 +378,7 @@ func DonateHandler(c buffalo.Context) error {
 	if err := tx.Create(donation); err != nil {
 		c.Flash().Add("error", "System error occurred. Please try again.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
@@ -445,6 +390,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Logger().Errorf("Helcim API error: %v", err)
 		c.Flash().Add("error", "Payment system unavailable. Please try again later.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}

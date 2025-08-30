@@ -26,6 +26,43 @@
 - `soda migrate up` - Run database migrations (NOT `buffalo pop migrate`)
 - `make db-reset` - Reset database (drop, create, migrate)
 
+
+## Test-only signature bypass: policy and safe-guards
+
+Rationale
+- Webhook signature verification uses secrets and precise hashing timing; this makes integration tests brittle if they rely on production signing flows. To keep integration tests focused on handler behavior, tests must have a deterministic way to provide valid signatures or a safe bypass.
+
+Policy
+- Any bypass for signature verification must be strictly limited to the test environment.
+  - Detect test environment via GO_ENV == "test" or a dedicated env var such as HELCIM_TEST_BYPASS.
+  - Never allow bypass to be set in non-test environments.
+- Prefer generating valid signatures in tests using the real signing algorithm and a test-only secret:
+  - Use AttachHelcimSignature helper which uses HELCIM_SECRET from environment (set in CI/test runs).
+- Only use the bypass for high-level handler tests where signature verification is orthogonal to the behavior being tested.
+- Always include unit tests that exercise the verification logic (positive and negative cases) so bypassing does not hide verification regressions.
+
+Implementation guidelines
+- In signature verification code:
+  - Add a clear, minimal guard:
+    - if os.Getenv("GO_ENV") == "test" && os.Getenv("HEL_CIM_TEST_BYPASS") == "true" { return true }
+  - Keep this guard short and obvious; add a comment linking to AGENTS.md and the test helper.
+- CI setup:
+  - By default, prefer using HELCIM_SECRET in CI and generate valid signatures for webhook tests.
+  - If bypass is used, document why and for which tests in the commit message and feature tracking docs.
+
+Audit and review
+- Any PR that introduces or modifies a test bypass must:
+  - Include rationale in the PR description.
+  - Add unit tests for the verification function to demonstrate coverage.
+  - Add a line in CURRENT_FEATURE.md noting the bypass and its acceptance criteria.
+
+
+- Agents **should** test direct asset links (e.g., `/css/custom.css`, `/js/application.js`, `/images/logo.avif`, `/favicon.svg`) using HTTP requests to verify asset serving, as long as the server is already running.
+- `make test` - Run all tests with database setup (recommended)
+- `make test-fast` - Run tests without database setup
+- `soda migrate up` - Run database migrations (NOT `buffalo pop migrate`)
+- `make db-reset` - Reset database (drop, create, migrate)
+
 ## Code Style Guidelines
 
 ### Go Code Style

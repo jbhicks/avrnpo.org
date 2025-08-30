@@ -117,9 +117,12 @@ func SanitizeInput(input string) string {
 var ENV = envy.Get("GO_ENV", "development")
 
 var (
-	app     *buffalo.App
-	appOnce sync.Once
-	T       *i18n.Translator
+	app                *buffalo.App
+	appOnce            sync.Once
+	T                  *i18n.Translator
+	blogResource       = &PublicPostsResource{}
+	postsResource      = &PostsResource{}
+	adminUsersResource = &AdminUsersResource{}
 )
 
 // isStaticAsset checks if the path is for a static asset that should not be cached in development
@@ -158,97 +161,96 @@ func App() *buffalo.App {
 			println("Warning: Failed to open log file:", err.Error())
 		}
 		multiWriter := io.MultiWriter(os.Stdout, logFile)
-		buffaloLogger := logger.NewLogger("debug")
+		// Set log level based on environment: debug for dev, warn for test/prod
+		logLevel := "debug"
+		if ENV == "test" || ENV == "production" {
+			logLevel = "warn"
+		}
+		buffaloLogger := logger.NewLogger(logLevel)
 		if outableLogger, ok := buffaloLogger.(logger.Outable); ok {
 			outableLogger.SetOutput(multiWriter)
 		}
 
 		app = buffalo.New(buffalo.Options{
-			Env:         ENV,
-			SessionName: "_avrnpo.org_session",
+			Env:           ENV,
+			SessionName:   "_avrnpo.org_session",
+			CompressFiles: true, // Enable gzip compression for static files
 		})
 		app.Logger = buffaloLogger
 
-		// In development and test, pre-parse Plush templates to fail fast on syntax errors
-		if ENV != "production" {
-			if err := prewarmTemplates(); err != nil {
-				// Fatal on template parse errors to surface issues immediately during development
-				fmt.Fprintf(os.Stderr, "Template prewarm failed: %v\n", err)
-				os.Exit(1)
-			}
-		}
+		// Use Buffalo's built-in request logging middleware
+		app.Use(buffalo.RequestLoggerFunc)
+
+		// Inject i18n translations middleware for all requests (early in stack)
+		app.Use(translations())
 
 		// Inject DB transaction middleware for all requests
 		app.Use(popmw.Transaction(models.DB))
 
-		// Inject i18n translations middleware for all requests
-		app.Use(translations())
-
-		// Use Buffalo's built-in CSRF middleware for robust protection
-		// Middleware should be enabled in development and production; tests can opt-out explicitly.
-		app.Use(csrf.New)
-
-		// Ensure current_user is set on every request before handlers run
-		// This prevents handlers that assume a non-nil current_user from panicking.
+		// Set current user for all requests (after DB transactions)
 		app.Use(SetCurrentUser)
 
+		// Use Buffalo's built-in CSRF middleware for robust protection
+		app.Use(csrf.New)
+
+		// Additional middleware can be added here. Examples:
+		// app.Use(forceSSL())
+		// app.Use(secure.New(secure.Options{...}).Handler)
+
 		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks)
-		// Use app.Middleware.Skip regardless of ENV so tests that construct apps with CSRF
-		// enabled will still skip middleware for these handlers when appropriate.
 		app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler)
-		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthLanding, AuthNew, AuthCreate, TeamHandler, ProjectsHandler, ContactHandler, DonateHandler, DonateUpdateAmountHandler, DonatePaymentHandler, DonationSuccessHandler, DonationFailedHandler, DonationInitializeHandler, ProcessPaymentHandler, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
-		// Register page routes (donation pages, aliases)
-		// These must be registered before ServeFiles (the catch-all static handler)
-		app.GET("/donate", DonateHandler)
-		app.POST("/donate", DonateHandler)
-		// HTMX endpoint for updating amounts (used by JS/partials)
-		app.POST("/donate/update_amount", DonateUpdateAmountHandler)
-		// Aliases/redirects for common variations
-		app.GET("/donations", func(c buffalo.Context) error {
-			return c.Redirect(http.StatusMovedPermanently, "/donate")
-		})
-
-		// Public site routes
+		// Public routes
 		app.GET("/", HomeHandler)
-		app.GET("/team", TeamHandler)
-		app.GET("/projects", ProjectsHandler)
 		app.GET("/contact", ContactHandler)
 		app.POST("/contact", ContactHandler)
-
-		// Public blog resource
-		// Use Buffalo resource routing to wire index and show
-		app.Resource("/blog", PublicPostsResource{})
-
-		// User registration, authentication, and account routes
+		app.GET("/team", TeamHandler)
+		app.GET("/projects", ProjectsHandler)
+		app.GET("/donate", DonateHandler)
+		app.POST("/donate", DonateHandler)
+		app.POST("/donate/update-amount", DonateUpdateAmountHandler)
+				app.POST("/donate/payment", DonatePaymentHandler)
+		app.POST("/donate/success", DonationSuccessHandler)
+		app.POST("/donate/failed", DonationFailedHandler)
+		app.POST("/api/donations/initialize", DonationInitializeHandler)
+		app.POST("/api/donations/process", ProcessPaymentHandler)
+		app.POST("/api/donations/webhook", HelcimWebhookHandler)
 		app.GET("/users/new", UsersNew)
 		app.POST("/users", UsersCreate)
-		app.GET("/profile", ProfileSettings)
-		app.POST("/profile", ProfileUpdate)
-		app.GET("/account", AccountSettings)
-		app.POST("/account", AccountUpdate)
-		app.GET("/account/subscriptions", SubscriptionsList)
-		app.GET("/account/subscriptions/{subscriptionId}", SubscriptionDetails)
-		app.POST("/account/subscriptions/{subscriptionId}/cancel", CancelSubscription)
-
-		// Authentication endpoints
+		app.GET("/auth", AuthLanding)
 		app.GET("/auth/new", AuthNew)
 		app.POST("/auth", AuthCreate)
-		app.GET("/auth", AuthLanding)
-
-		// Admin routes
-		// Admin landing (reuses AdminDashboard when available)
-		app.GET("/admin", AdminDashboard)
-		app.GET("/admin/dashboard", AdminDashboard)
-		app.Resource("/admin/users", AdminUsersResource{})
-
-		// API namespace for donation-related endpoints
-		api := app.Group("/api")
-		api.POST("/donations/initialize", DonationInitializeHandler)
-		api.POST("/donations/process", ProcessPaymentHandler)
-		// Test-only webhook receiver (Helcim and other payment callbacks expect CSRF skipped)
-		api.POST("/donations/webhook", HelcimWebhookHandler)
+		app.DELETE("/auth", AuthDestroy)
+		app.GET("/dashboard", Authorize(DashboardHandler))
+		app.GET("/profile", Authorize(ProfileSettings))
+		app.POST("/profile", Authorize(ProfileUpdate))
+		app.GET("/account", Authorize(AccountSettings))
+		app.POST("/account", Authorize(AccountUpdate))
+		app.GET("/account/subscriptions", Authorize(SubscriptionsList))
+		app.GET("/account/subscriptions/{subscriptionId}", Authorize(SubscriptionDetails))
+		app.POST("/account/subscriptions/{subscriptionId}/cancel", Authorize(CancelSubscription))
+		app.Resource("/blog", blogResource)		// Admin routes
+		adminGroup := app.Group("/admin")
+		adminGroup.Use(AdminRequired)
+		adminGroup.GET("/", AdminDashboard)
+		adminGroup.GET("/dashboard", AdminDashboard)
+		adminGroup.GET("/users", AdminUsers)
+		adminGroup.GET("/users/{user_id}", AdminUserShow)
+		adminGroup.POST("/users/{user_id}", AdminUserUpdate)
+		adminGroup.DELETE("/users/{user_id}", AdminUserDelete)
+		adminGroup.Resource("/users", adminUsersResource)
+		adminGroup.GET("/posts", AdminPostsIndex)
+		adminGroup.GET("/posts/new", AdminPostsNew)
+		adminGroup.POST("/posts", AdminPostsCreate)
+		adminGroup.GET("/posts/{post_id}", AdminPostsShow)
+		adminGroup.GET("/posts/{post_id}/edit", AdminPostsEdit)
+		adminGroup.POST("/posts/{post_id}", AdminPostsUpdate)
+		adminGroup.DELETE("/posts/{post_id}", AdminPostsDestroy)
+		adminGroup.POST("/posts/bulk", AdminPostsBulk)
+		adminGroup.Resource("/posts", postsResource)
+		adminGroup.GET("/donations", AdminDonationsIndex)
+		adminGroup.GET("/donations/{donation_id}", AdminDonationShow)
 
 		// Serve assets using Buffalo best practices
 		// ServeFiles should be LAST as it's a catch-all route
@@ -264,9 +266,9 @@ func App() *buffalo.App {
 	return app
 }
 
-// debugFilesHandler is a small handler that lists debug information about embedded templates.
+// debugFilesHandler serves debug files for development
 func debugFilesHandler(c buffalo.Context) error {
-	return c.Render(200, r.String("ok"))
+	return c.Render(http.StatusOK, r.String("Debug files endpoint"))
 }
 
 // translations will load locale files, set up the translator `actions.T`,

@@ -20,18 +20,9 @@ func (as *ActionSuite) Test_BlogShow() {
 	as.NoError(err)
 	as.False(verrs.HasAny())
 
-	// Create a published test post
-	post := &models.Post{
-		Title:     "Test Blog Post",
-		Slug:      "test-blog-post",
-		Content:   "This is a test blog post content with more details.",
-		Excerpt:   "This is a test excerpt.",
-		Published: true,
-		AuthorID:  user.ID,
-	}
-	verrs, err = as.DB.ValidateAndCreate(post)
+	// Create a published test post via helper
+	post, err := CreatePostForTest(as.DB, "Test Blog Post", "test-blog-post", "This is a test blog post content with more details.", user.ID)
 	as.NoError(err)
-	as.False(verrs.HasAny())
 
 	res := as.HTML("/blog/%s", post.Slug).Get()
 	as.Equal(200, res.Code)
@@ -178,18 +169,9 @@ func (as *ActionSuite) Test_AdminPostPagesHaveNavigation() {
 	sess := as.Session
 	sess.Set("current_user_id", user.ID)
 
-	// Create a test post for show/edit pages
-	post := &models.Post{
-		Title:     "Test Post",
-		Slug:      "test-post",
-		Content:   "Test content",
-		Excerpt:   "Test excerpt",
-		Published: true,
-		AuthorID:  user.ID,
-	}
-	verrs, err = as.DB.ValidateAndCreate(post)
+	// Create a test post for show/edit pages via helper
+	post, err := CreatePostForTest(as.DB, "Test Post", "test-post", "Test content", user.ID)
 	as.NoError(err)
-	as.False(verrs.HasAny())
 
 	// Test admin posts index page
 	res := as.HTML("/admin/posts").Get()

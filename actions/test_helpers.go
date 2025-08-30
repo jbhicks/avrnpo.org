@@ -8,7 +8,33 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/gobuffalo/pop/v6"
+	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+
+	"avrnpo.org/models"
 )
+
+// CreatePostForTest creates and saves a published post with the given attributes and returns it.
+func CreatePostForTest(db *pop.Connection, title, slug, content string, authorID uuid.UUID) (*models.Post, error) {
+	post := &models.Post{
+		Title:     title,
+		Slug:      slug,
+		Content:   content,
+		Excerpt:   content,
+		Published: true,
+		AuthorID:  authorID,
+	}
+	verrs, err := db.ValidateAndCreate(post)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	if verrs.HasAny() {
+		return nil, errors.New("validation errors creating post")
+	}
+	return post, nil
+}
 
 // fetchCSRF performs a GET to the given path using the app and returns the session cookie and authenticity_token value found in the response body.
 func fetchCSRF(t *testing.T, app http.Handler, path string) (string, string) {

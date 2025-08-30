@@ -229,8 +229,7 @@ func TestContactFormHandler(t *testing.T) {
 		app.GET("/contact", func(c buffalo.Context) error {
 			// Set CSRF token for template
 			c.Set("authenticity_token", "test-token")
-			// Use r.String to render raw HTML rather than looking up a template name
-			return c.Render(200, r.String("<form><input name='authenticity_token' value='test-token'></form>"))
+			return c.Render(200, r.HTML("<form><input name='authenticity_token' value='test-token'></form>"))
 		})
 
 		w := httptest.NewRecorder()

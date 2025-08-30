@@ -35,6 +35,9 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	timestamp := time.Now().UnixNano()
 	email := fmt.Sprintf("mark-%d@example.com", timestamp)
 
+	// First, get CSRF token from signup page
+	cookie, token := fetchCSRF(as.T(), App(), "/users/new")
+
 	signupData := map[string]interface{}{
 		"Email":                email,
 		"Password":             "password",
@@ -42,48 +45,91 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 		"FirstName":            "Mark",
 		"LastName":             "Smith",
 		"accept_terms":         "on", // Add required terms acceptance
+		"authenticity_token":   token,
 	}
 
 	// Create user via web interface to ensure it's properly committed
-	signupRes := as.HTML("/users").Post(signupData)
+	signupReq := as.HTML("/users")
+	if cookie != "" {
+		signupReq.Headers["Cookie"] = cookie
+	}
+	signupRes := signupReq.Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
-	// Instead of manually setting session, simulate actual login
+	// Extract session cookie from signup response
+	sessionCookie := ""
+	for _, c := range signupRes.Result().Cookies() {
+		if strings.Contains(c.Name, "session") || c.Name == "_avrnpo.org_session" {
+			sessionCookie = c.String()
+			break
+		}
+	}
+
+	// Get new CSRF token for login using the session cookie
+	loginCookie, loginToken := fetchCSRF(as.T(), App(), "/auth/new")
+
+	// Combine cookies if we have both
+	combinedCookie := sessionCookie
+	if loginCookie != "" && sessionCookie != "" && !strings.Contains(sessionCookie, loginCookie) {
+		combinedCookie = sessionCookie + "; " + loginCookie
+	} else if loginCookie != "" {
+		combinedCookie = loginCookie
+	}
+
 	loginData := map[string]interface{}{
-		"Email":    email,
-		"Password": "password",
+		"Email":              email,
+		"Password":           "password",
+		"authenticity_token": loginToken,
 	}
 
 	// POST to login endpoint to get proper session
-	loginRes := as.HTML("/auth").Post(loginData)
+	loginReq := as.HTML("/auth")
+	if combinedCookie != "" {
+		loginReq.Headers["Cookie"] = combinedCookie
+	}
+	loginRes := loginReq.Post(loginData)
 	as.Equal(http.StatusFound, loginRes.Code)
 
+	// Extract final session cookie from login response
+	finalSessionCookie := sessionCookie
+	for _, c := range loginRes.Result().Cookies() {
+		if strings.Contains(c.Name, "session") || c.Name == "_avrnpo.org_session" {
+			finalSessionCookie = c.String()
+			break
+		}
+	}
+
 	// Test that logged in users see the main shell with authenticated nav
-	res := as.HTML("/").Get()
+	homeReq := as.HTML("/")
+	if finalSessionCookie != "" {
+		homeReq.Headers["Cookie"] = finalSessionCookie
+	}
+	res := homeReq.Get()
 	as.Equal(http.StatusOK, res.Code)
 
-	// Debug: Let's check what we actually get
+	// Check that we get the basic content
 	body := res.Body.String()
-	as.T().Logf("Home page HTML length: %d", len(body))
-	as.T().Logf("Contains Dashboard: %v", strings.Contains(body, "Dashboard"))
-	as.T().Logf("Contains Account: %v", strings.Contains(body, "Account"))
-	as.T().Logf("Contains Sign Out: %v", strings.Contains(body, "Sign Out"))
-
-	// For now, just check that we get a 200 response and basic content
 	as.Contains(body, "THE AVR MISSION") // Main content should be there
 
 	// Test HTMX content for logged in user
-	req := as.HTML("/")
-	req.Headers["HX-Request"] = "true"
-	htmxRes := req.Get()
+	htmxReq := as.HTML("/")
+	htmxReq.Headers["HX-Request"] = "true"
+	if finalSessionCookie != "" {
+		htmxReq.Headers["Cookie"] = finalSessionCookie
+	}
+	htmxRes := htmxReq.Get()
 	as.Equal(http.StatusOK, htmxRes.Code)
-	// The template doesn't seem to show the conditional content properly
-	// Just verify the basic template content is there
+	// Verify the basic template content is there
 	as.Contains(htmxRes.Body.String(), "THE AVR MISSION")
 	as.Contains(htmxRes.Body.String(), "Technical Training")
 
-	// Test that the dashboard is accessible
-	res = as.HTML("/dashboard").Get()
+	// Test that the dashboard is accessible (this proves authentication works)
+	dashboardReq := as.HTML("/dashboard")
+	if finalSessionCookie != "" {
+		dashboardReq.Headers["Cookie"] = finalSessionCookie
+	}
+	res = dashboardReq.Get()
 	as.Equal(http.StatusOK, res.Code)
 	as.Contains(res.Body.String(), "Dashboard")
+	as.Contains(res.Body.String(), "Welcome back") // Dashboard-specific content
 }

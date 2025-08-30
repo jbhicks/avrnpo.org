@@ -334,11 +334,8 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 				c.Set("current_user", u)
 			}
 		} else {
-			// When no session user, set a zero-value models.User pointer.
-			// Templates often expect a struct with exported fields; provide
-			// an empty typed user to avoid template lookup errors.
-			nu := &models.User{}
-			c.Set("current_user", nu)
+			// When no session user, set current_user to nil
+			c.Set("current_user", nil)
 		}
 		return next(c)
 	}

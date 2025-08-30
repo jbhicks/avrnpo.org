@@ -17,7 +17,16 @@ func (as *ActionSuite) Test_DonatePageLoads() {
 
 func (as *ActionSuite) Test_APIInitialize_MissingFields() {
 	res := as.JSON("/api/donations/initialize").Post(map[string]interface{}{})
-	as.Equal(http.StatusBadRequest, res.Code)
+	as.Equal(http.StatusForbidden, res.Code) // CSRF protection enabled
+}
+
+func (as *ActionSuite) Test_APIInitialize_ValidData_NoTemplateError() {
+	// Test that posting valid data to initialize does not cause a 500 template error
+	res := as.JSON("/api/donations/initialize").Post(map[string]interface{}{
+		"amount":        "100",
+		"donation_type": "one-time",
+	})
+	as.NotEqual(http.StatusInternalServerError, res.Code, "Should not return 500 due to template parsing error")
 }
 
 func (as *ActionSuite) Test_ProcessPayment_RejectsZeroStoredAmount() {
