@@ -1,0 +1,45 @@
+<!-- Primary response: Amount buttons section -->
+<div id="amount-buttons" class="amount-grid">
+  <% if (!presetAmounts) { presetAmounts = ["25", "50", "100", "250", "500", "1000"] } %>
+    <% for (preset) in presetAmounts { %>
+      <% btnClass = "outline amount-btn" %>
+      <% if (amount == preset) { btnClass = btnClass + " active" } %>
+      <% hxVals = "{\"amount\":\"" + preset + "\",\"source\":\"preset\"}" %>
+      <button type="button" 
+              class="<%= btnClass %>" 
+              hx-patch="/donate/update-amount"
+              hx-vals='<%= hxVals %>'
+              hx-include="closest form"
+              hx-target="#amount-buttons"
+              hx-swap="outerHTML">$<%= preset %></button>
+    <% } %>
+</div>
+
+<!-- Out-of-band swap: Submit button -->
+<div id="submit-button" hx-swap-oob="true">
+  <button role="button" class="contrast donation-submit">
+    <% if (amount != "") { %><% if (donationType == "monthly") { %>Donate $<%= amount %> Monthly<% } else { %>Donate $<%= amount %> Now<% } %><% } else { %><% if (donationType == "monthly") { %>Donate Monthly<% } else { %>Donate Now<% } %><% } %>
+  </button>
+</div>
+
+<style>
+/* Active state for amount buttons */
+.amount-btn.active {
+  background-color: var(--pico-primary) !important;
+  border-color: var(--pico-primary) !important;
+  color: var(--pico-primary-inverse) !important;
+}
+
+/* Ensure outline buttons have proper hover/focus states */
+.amount-btn.outline:hover:not(.active) {
+  background-color: var(--pico-primary-hover);
+  border-color: var(--pico-primary-hover);
+  color: var(--pico-primary-inverse);
+}
+
+/* Active state for custom amount input */
+.active-custom {
+  border-color: var(--pico-primary) !important;
+  box-shadow: 0 0 0 2px var(--pico-primary-focus) !important;
+}
+</style>

@@ -520,6 +520,16 @@ func DonatePaymentHandler(c buffalo.Context) error {
 	c.Set("donationType", donation.DonationType) // "one-time" or "recurring"
 	c.Set("donorEmail", donation.DonorEmail)
 
+	// Set next billing date for monthly donations
+	if donation.DonationType == "monthly" {
+		// Calculate next billing date (1 month from now)
+		nextBilling := time.Now().AddDate(0, 1, 0)
+		c.Set("nextBillingDate", nextBilling.Format("January 2, 2006"))
+	}
+
+	// Set payment method (default to credit card for now)
+	c.Set("paymentMethod", "Credit Card")
+
 	return c.Render(http.StatusOK, r.HTML("pages/donate_payment.plush.html"))
 }
 

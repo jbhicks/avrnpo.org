@@ -21,6 +21,7 @@
 
 ## Build/Test Commands
 - Agents **should** test direct asset links (e.g., `/css/custom.css`, `/js/application.js`, `/images/logo.avif`, `/favicon.svg`) using HTTP requests to verify asset serving, as long as the server is already running.
+- `make build` - Run build to validate templates and catch issues after template changes
 - `make test` - Run all tests with database setup (recommended)
 - `make test-fast` - Run tests without database setup
 - `soda migrate up` - Run database migrations (NOT `buffalo pop migrate`)

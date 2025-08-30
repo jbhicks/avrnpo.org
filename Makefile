@@ -30,7 +30,7 @@ help:
 	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
 	@echo "  test-integration - 🔒 Run CSRF integration tests (tests real middleware)"
 	@echo "  validate-templates - 🔍 Enhanced template validation with variable checking"
-	@echo "  validate-templates-enhanced - 🔍 Enhanced template validation with variable checking"
+	@echo "  validate-templates-verbose - 🔍 Enhanced template validation with detailed output"
 	@echo "  build           - 🔨 Build the application for production"
 	@echo "  health          - 🏥 Check system health (dependencies, database, etc.)"
 	@echo "  clean           - 🧹 Stop all services and clean up containers"
@@ -414,7 +414,12 @@ test-integration: check-deps db-up
 # Template validation with variable checking
 validate-templates:
 	@echo "🔍 Running enhanced template validation..."
-	@./scripts/validate-templates-enhanced.sh
+	@go run scripts/validate-templates-fast.go
+
+# Template validation with verbose output
+validate-templates-verbose:
+	@echo "🔍 Running enhanced template validation (verbose)..."
+	@go run scripts/validate-templates-fast.go --verbose
 
 # Build the application for production with validation
 build: validate-templates

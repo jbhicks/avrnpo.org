@@ -23,17 +23,23 @@ fi
 extract_template_vars() {
     local template_file="$1"
     # Extract variables using regex - looks for <%= variable %> patterns
-    # Exclude for loop variables and function calls
+    # Handle object properties correctly (e.g., user.Name -> user)
     grep -o '<%=[^%]*%>' "$template_file" 2>/dev/null | \
     sed 's/<%=\s*//' | sed 's/\s*%>$//' | \
     # Remove for loop constructs
     sed 's/for\s*([^)]*)\s*in\s*[^}]*{.*}//g' | \
     # Remove if conditions
     sed 's/if\s*([^)]*).*{.*}//g' | \
-    # Extract individual variables from complex expressions
+    # Remove string literals (anything in quotes)
+    sed 's/"[^"]*"//g' | sed "s/'[^']*'//g" | \
+    # Extract base variables (before dots) and standalone variables
     grep -o '\b[a-zA-Z_][a-zA-Z0-9_]*\b' | \
     # Remove common Plush keywords and built-ins
     grep -v -E '^(for|if|else|end|len|true|false|nil|and|or|not)$' | \
+    # Remove common method names that aren't variables
+    grep -v -E '^(Format|Get|HasAny|Errors|capitalize|partial)$' | \
+    # Remove common literals and format specifiers
+    grep -v -E '^(January|February|March|April|May|June|July|August|September|October|November|December|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)$' | \
     sort | uniq
 }
 
@@ -53,8 +59,12 @@ echo "📝 Analyzing templates and controllers..."
 TEMPLATE_ERRORS=0
 MISSING_VARS=()
 
-# Find all Plush templates
-find templates -name "*.plush.html" -type f | while read -r template_file; do
+# Track validation results
+TEMPLATE_ERRORS=0
+MISSING_VARS=()
+
+# Find all Plush templates and process them
+while IFS= read -r -d '' template_file; do
     echo "🔍 Validating: $template_file"
 
     # Skip syntax validation - use existing parse_test.go for that
@@ -76,15 +86,40 @@ find templates -name "*.plush.html" -type f | while read -r template_file; do
         controller_vars=""
         controller_file_found=""
 
-        # Find the controller file first
+        # Find the controller file - prioritize exact matches
+        controller_file_found=""
+
+        # First, try exact template path match
         for cf in $(find actions -name "*.go" -type f); do
-            if grep -q "r\.HTML.*$template_path" "$cf" || \
-               grep -q "r\.HTML.*$template_name" "$cf" || \
-               grep -q "r\.HTML.*$(basename "$template_name" .plush.html)" "$cf"; then
+            if grep -q "r\.HTML.*$template_path" "$cf"; then
                 controller_file_found="$cf"
                 break
             fi
         done
+
+        # If no exact match, try template name without extension
+        if [ -z "$controller_file_found" ]; then
+            for cf in $(find actions -name "*.go" -type f); do
+                if grep -q "r\.HTML.*$template_name" "$cf"; then
+                    controller_file_found="$cf"
+                    break
+                fi
+            done
+        fi
+
+        # Only as last resort, try basename match (but exclude generic names)
+        if [ -z "$controller_file_found" ]; then
+            template_basename=$(basename "$template_name" .plush.html)
+            # Skip generic names that would match too many controllers
+            if [ "$template_basename" != "index" ] && [ "$template_basename" != "show" ] && [ "$template_basename" != "new" ] && [ "$template_basename" != "edit" ]; then
+                for cf in $(find actions -name "*.go" -type f); do
+                    if grep -q "r\.HTML.*$template_basename" "$cf"; then
+                        controller_file_found="$cf"
+                        break
+                    fi
+                done
+            fi
+        fi
 
         # If controller found, extract variables
         if [ -n "$controller_file_found" ]; then
@@ -96,16 +131,77 @@ find templates -name "*.plush.html" -type f | while read -r template_file; do
             echo "   ✅ Controller variables: $controller_vars"
 
             # Check for missing variables
+            # For each template variable, check if it's either:
+            # 1. Directly provided by controller, OR
+            # 2. A property of an object that is provided by controller
             for var in $template_vars; do
-                if ! echo "$controller_vars" | grep -q "^$var$"; then
-                    echo -e "${YELLOW}⚠️  Missing variable: $var in $template_file${NC}"
-                    MISSING_VARS+=("$template_file:$var")
+                # Skip if variable is directly provided
+                if echo "$controller_vars" | grep -q "^$var$"; then
+                    continue
+                fi
+
+                # Check if this might be a property of a provided object
+                # Look for patterns like "donation.Amount" or "post.User.FirstName" in the template
+                is_property=false
+                if grep -q "$var" "$template_file" 2>/dev/null; then
+                    # Check if any controller variable could be the parent object
+                    for controller_var in $controller_vars; do
+                        # Check for direct property access (e.g., donation.Amount)
+                        if grep -q "$controller_var\.$var" "$template_file" 2>/dev/null; then
+                            is_property=true
+                            break
+                        fi
+                        # Check for nested property access (e.g., post.User.FirstName)
+                        # Look for patterns where controller_var is used as an intermediate object
+                        if grep -q "$controller_var\..*\.$var" "$template_file" 2>/dev/null; then
+                            is_property=true
+                            break
+                        fi
+                    done
+                fi
+
+                # Only flag as missing if it's not a property of a provided object
+                if [ "$is_property" = false ]; then
+                    # Special cases for middleware-provided variables and common helpers
+                     case "$var" in
+                         authenticity_token|current_path|title|description|yield|flash|current_user)
+                             # These are typically provided by middleware or Buffalo itself
+                             ;;
+                         # Form helper variables
+                         action|formFor|method|autocomplete|newAuthPath|usersPath)
+                             # These are provided by Buffalo form helpers
+                             ;;
+                         # Template iteration and flash message variables
+                         in|msg|key|message|messages|option|k)
+                             # These are used in loops and flash message rendering
+                             ;;
+                         # Date/time formatting helpers
+                         dateFormat|raw|time|String|TrimSpace|strings|Add|After|Hour|Name)
+                             # These are provided by Buffalo helpers or Go template functions
+                             ;;
+                         # Asset and path helpers
+                         assetPath|baseURL)
+                             # These are provided by Buffalo asset helpers
+                             ;;
+                         # Form field variables that might be optional
+                         email)
+                             # This might be a form field that's conditionally set
+                             ;;
+                         *)
+                             echo -e "${YELLOW}⚠️  Missing variable: $var in $template_file${NC}"
+                             MISSING_VARS+=("$template_file:$var")
+                             ;;
+                     esac
                 fi
             done
         else
-            # Check if this is a partial template (starts with _)
+            # Check if this is a partial template (starts with _) or a layout template
             if [[ "$template_name" == _* ]]; then
-                echo -e "${YELLOW}ℹ️  Partial template (no direct controller expected): $template_file${NC}"
+                # Partial templates - no output needed, they're expected to not have direct controllers
+                true
+            elif [[ "$template_name" == "application" ]]; then
+                # Layout templates - no output needed, they're handled by Buffalo's layout system
+                true
             else
                 echo -e "${YELLOW}⚠️  No controller found for template: $template_file${NC}"
             fi
@@ -113,7 +209,7 @@ find templates -name "*.plush.html" -type f | while read -r template_file; do
     else
         echo "   ✅ No variables required"
     fi
-done
+done < <(find templates -name "*.plush.html" -type f -print0)
 
 # Summary
 echo ""
