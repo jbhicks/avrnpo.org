@@ -33,6 +33,7 @@ func TestEmailService_SendDonationReceipt_Gmail(t *testing.T) {
 		SMTPPassword: gmailAppPassword,
 		FromEmail:    fromEmail,
 		FromName:     fromName,
+		EmailEnabled: true, // explicitly enable for this integration test
 	}
 
 	// Create test donation receipt data

@@ -17,10 +17,23 @@ type EmailService struct {
 	SMTPPassword string
 	FromEmail    string
 	FromName     string
+	EmailEnabled bool // controls whether emails are actually sent
 }
 
 // NewEmailService creates a new email service instance
 func NewEmailService() *EmailService {
+	// Determine default for EMAIL_ENABLED based on GO_ENV
+	enabledStr := os.Getenv("EMAIL_ENABLED")
+	if enabledStr == "" {
+		goEnv := os.Getenv("GO_ENV")
+		if goEnv == "production" {
+			enabledStr = "true"
+		} else {
+			enabledStr = "false"
+		}
+	}
+	emailEnabled := enabledStr == "true" || enabledStr == "1" || enabledStr == "yes"
+
 	return &EmailService{
 		SMTPHost:     os.Getenv("SMTP_HOST"),
 		SMTPPort:     os.Getenv("SMTP_PORT"),
@@ -28,6 +41,7 @@ func NewEmailService() *EmailService {
 		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		FromEmail:    os.Getenv("FROM_EMAIL"),
 		FromName:     os.Getenv("FROM_NAME"),
+		EmailEnabled: emailEnabled,
 	}
 }
 
@@ -369,6 +383,13 @@ Content-Type: text/html; charset=UTF-8
 
 --boundary123--
 `, toEmail, e.FromName, e.FromEmail, subject, textBody, htmlBody)
+
+	// If email sending is disabled, log and return without sending
+	if !e.EmailEnabled {
+		// Write a short log to stdout so developers can inspect locally
+		fmt.Printf("[EMAIL_DISABLED] To: %s Subject: %s\nPreview: %.200s\n", toEmail, subject, textBody)
+		return nil
+	}
 
 	// Connect to SMTP server
 	auth := smtp.PlainAuth("", e.SMTPUsername, e.SMTPPassword, e.SMTPHost)
