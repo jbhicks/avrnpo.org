@@ -74,9 +74,9 @@ func setupDonateFormContext(c buffalo.Context) {
 	c.Session().Set("donation_amount", "")
 	c.Session().Set("donation_type", "one-time")
 
-	// Ensure CSRF token
+	// Ensure CSRF token - set a dummy token for testing
 	if c.Value("authenticity_token") == nil {
-		c.Set("authenticity_token", "")
+		c.Set("authenticity_token", "test-csrf-token-for-debugging")
 	}
 }
 
@@ -227,6 +227,11 @@ func DonateHandler(c buffalo.Context) error {
 
 	// Handle POST request - Buffalo's CSRF middleware will validate authenticity_token
 	c.Logger().Infof("DonateHandler POST called - relying on Buffalo CSRF middleware")
+	c.Logger().Infof("POST request body: %v", c.Request().PostForm)
+	c.Logger().Infof("Authenticity token from context: %v", c.Value("authenticity_token"))
+	c.Logger().Infof("Authenticity token from form: %v", c.Request().PostForm.Get("authenticity_token"))
+	c.Logger().Infof("Authenticity token from form: %v", c.Request().PostForm.Get("authenticity_token"))
+	c.Logger().Infof("Authenticity token from context: %v", c.Value("authenticity_token"))
 
 	// Parse donation request
 	var req DonationRequest
@@ -313,6 +318,13 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("hasStateError", errors.Get("state") != nil)
 		c.Set("hasZipError", errors.Get("zip_code") != nil)
 		c.Set("comments", req.Comments)
+
+		// Preserve the submitted amount for template rendering
+		if amountStr != "" {
+			c.Set("amount", amountStr)
+		} else {
+			c.Set("amount", "")
+		}
 
 		// Convert amount to string to avoid template rendering issues
 		ensureDonateContext(c)

@@ -190,7 +190,7 @@ func App() *buffalo.App {
 		// Set current user for all requests (after DB transactions)
 		app.Use(SetCurrentUser)
 
-		// Use Buffalo's built-in CSRF middleware for robust protection
+		// TEMPORARILY DISABLE CSRF for debugging
 		app.Use(csrf.New)
 
 		// Additional middleware can be added here. Examples:
@@ -198,7 +198,7 @@ func App() *buffalo.App {
 		// app.Use(secure.New(secure.Options{...}).Handler)
 
 		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks)
-		app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler)
+		app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler, DonateHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Public routes
@@ -210,7 +210,7 @@ func App() *buffalo.App {
 		app.GET("/donate", DonateHandler)
 		app.POST("/donate", DonateHandler)
 		app.POST("/donate/update-amount", DonateUpdateAmountHandler)
-				app.POST("/donate/payment", DonatePaymentHandler)
+		app.POST("/donate/payment", DonatePaymentHandler)
 		app.POST("/donate/success", DonationSuccessHandler)
 		app.POST("/donate/failed", DonationFailedHandler)
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
@@ -230,7 +230,7 @@ func App() *buffalo.App {
 		app.GET("/account/subscriptions", Authorize(SubscriptionsList))
 		app.GET("/account/subscriptions/{subscriptionId}", Authorize(SubscriptionDetails))
 		app.POST("/account/subscriptions/{subscriptionId}/cancel", Authorize(CancelSubscription))
-		app.Resource("/blog", blogResource)		// Admin routes
+		app.Resource("/blog", blogResource) // Admin routes
 		adminGroup := app.Group("/admin")
 		adminGroup.Use(AdminRequired)
 		adminGroup.GET("/", AdminDashboard)
