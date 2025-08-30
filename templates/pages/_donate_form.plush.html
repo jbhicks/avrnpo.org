@@ -1,4 +1,5 @@
 <form id="donation-form" method="post" action="<%= "/donate" %>" autocomplete="on" novalidate hx-boost="false">
+<form id="donation-form" method="post" action="<%= "/donate" %>" autocomplete="on" novalidate hx-boost="false">
   <div id="donation-form-content">
 
 
@@ -30,6 +31,11 @@
                min="1"
                  value="<%= amount %>"
                required>
+        <%= if (errors) { %>
+          <%= if (errors.Get("amount")) { %>
+            <small style="color: red;"><%= errors.Get("amount") %></small>
+          <% } %>
+        <% } %>
       </div>
     </div>
 
@@ -67,6 +73,11 @@
                  aria-required="true"
                  required
                  value="<%= firstName %>">
+          <%= if (errors) { %>
+            <%= if (errors.Get("first_name")) { %>
+              <small style="color: red;"><%= errors.Get("first_name") %></small>
+            <% } %>
+          <% } %>
         </div>
 
         <div>
@@ -78,6 +89,11 @@
                  aria-required="true"
                  required
                  value="<%= lastName %>">
+          <%= if (errors) { %>
+            <%= if (errors.Get("last_name")) { %>
+              <small style="color: red;"><%= errors.Get("last_name") %></small>
+            <% } %>
+          <% } %>
         </div>
       </div>
 
@@ -89,6 +105,11 @@
              aria-required="true"
              required
              value="<%= donorEmail %>">
+      <%= if (errors) { %>
+        <%= if (errors.Get("donor_email")) { %>
+          <small style="color: red;"><%= errors.Get("donor_email") %></small>
+        <% } %>
+      <% } %>
 
       <label for="donor_phone">Phone Number (optional)</label>
       <input type="tel"
@@ -111,6 +132,11 @@
              aria-required="true"
              required
              value="<%= addressLine1 %>">
+      <%= if (errors) { %>
+        <%= if (errors.Get("address_line1")) { %>
+          <small style="color: red;"><%= errors.Get("address_line1") %></small>
+        <% } %>
+      <% } %>
 
       <label for="address_line2">Address Line 2 (optional)</label>
       <input type="text"
@@ -129,6 +155,11 @@
                  aria-required="true"
                  required
                  value="<%= city %>">
+          <%= if (errors) { %>
+            <%= if (errors.Get("city")) { %>
+              <small style="color: red;"><%= errors.Get("city") %></small>
+            <% } %>
+          <% } %>
         </div>
 
         <div>
@@ -190,6 +221,11 @@
             <option value="WI"<% if (state == "WI") { %> selected<% } %>>Wisconsin</option>
             <option value="WY"<% if (state == "WY") { %> selected<% } %>>Wyoming</option>
           </select>
+          <%= if (errors) { %>
+            <%= if (errors.Get("state")) { %>
+              <small style="color: red;"><%= errors.Get("state") %></small>
+            <% } %>
+          <% } %>
         </div>
 
         <div>
@@ -202,6 +238,11 @@
                  required
                  pattern="[0-9]{5}(-[0-9]{4})?"
                  value="<%= zip %>">
+          <%= if (errors) { %>
+            <%= if (errors.Get("zip_code")) { %>
+              <small style="color: red;"><%= errors.Get("zip_code") %></small>
+            <% } %>
+          <% } %>
         </div>
       </div>
     </div>

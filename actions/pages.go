@@ -431,6 +431,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Flash().Add("error", "Invalid donation amount. Please try again.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("amount", amountStr) // Set amount for template
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
@@ -453,6 +454,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Flash().Add("error", "Payment system unavailable. Please try again later.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
 		c.Set("presets", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("amount", amountStr) // Set amount for template
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
@@ -465,6 +467,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Logger().Errorf("Database error updating donation: %v", err)
 		c.Flash().Add("error", "System error occurred. Please try again.")
 		c.Set("presetAmounts", []string{"25", "50", "100", "250", "500", "1000"})
+		c.Set("amount", amountStr) // Set amount for template
 		ensureDonateContext(c)
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}

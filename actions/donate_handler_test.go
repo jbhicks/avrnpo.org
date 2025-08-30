@@ -15,7 +15,7 @@ func (as *ActionSuite) Test_DonateHandler_GET() {
 	as.Contains(res.Body.String(), "Make a Donation")
 	as.Contains(res.Body.String(), `method="post"`)
 	as.Contains(res.Body.String(), `action="/donate"`)
-	as.Contains(res.Body.String(), `hx-post="/donate"`)
+	as.Contains(res.Body.String(), `hx-boost="false"`)
 	// CSRF is enabled in test environment
 	as.Contains(res.Body.String(), `name="authenticity_token"`)
 }
@@ -80,9 +80,8 @@ func (as *ActionSuite) Test_DonateHandler_POST_HTMX_Success() {
 		"authenticity_token": token,
 	})
 
-	// HTMX should return rendered page directly
-	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "<!doctype html>")
+	// With hx-boost="false", form should redirect on success
+	as.Equal(http.StatusSeeOther, res.Code)
 }
 
 func (as *ActionSuite) Test_DonateHandler_POST_ValidationErrors() {
@@ -182,4 +181,46 @@ func (as *ActionSuite) Test_DonateHandler_URL_Behavior() {
 
 	// Should either redirect (regular) or return OK (HTMX)
 	as.True(postRes.Code == http.StatusSeeOther || postRes.Code == http.StatusOK)
+}
+
+// Test that validation error messages are properly displayed in the HTML response
+func (as *ActionSuite) Test_DonateForm_ValidationErrors_Display() {
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Submit form with missing required fields
+	req := as.HTML("/donate")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	res := req.Post(map[string]interface{}{
+		"custom_amount":      "", // Missing amount
+		"first_name":         "", // Missing first name
+		"last_name":          "", // Missing last name
+		"donor_email":        "", // Missing email
+		"address_line1":      "", // Missing address
+		"city":               "", // Missing city
+		"state":              "", // Missing state
+		"zip_code":           "", // Missing zip
+		"authenticity_token": token,
+	})
+
+	// Should return form with validation errors
+	as.Equal(http.StatusOK, res.Code)
+	as.Contains(res.Body.String(), "Make a Donation")
+
+	responseBody := res.Body.String()
+
+	// Verify that validation error messages are displayed
+	as.Contains(responseBody, "First name is required", "First name validation error should be displayed")
+	as.Contains(responseBody, "Last name is required", "Last name validation error should be displayed")
+	as.Contains(responseBody, "Email address is required", "Email validation error should be displayed")
+	as.Contains(responseBody, "Address Line 1 is required", "Address validation error should be displayed")
+	as.Contains(responseBody, "City is required", "City validation error should be displayed")
+	as.Contains(responseBody, "State is required", "State validation error should be displayed")
+	as.Contains(responseBody, "ZIP Code is required", "ZIP validation error should be displayed")
+	as.Contains(responseBody, "Donation amount is required", "Amount validation error should be displayed")
+
+	// Verify that error messages are properly formatted with red styling
+	as.Contains(responseBody, `style="color: red;"`, "Error messages should have red styling")
 }
