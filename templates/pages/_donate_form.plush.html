@@ -1,5 +1,4 @@
-<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
-<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+<form id="donation-form" method="post" action="<%= "/donate" %>" autocomplete="on" novalidate>
   <div id="donation-form-content">
 
 
@@ -47,7 +46,7 @@
         <label>
           <input type="radio"
                  name="donation_type"
-                 value="monthly"<% if (c.Value("donationType") == "monthly") { %> checked<% } %>>
+                 value="monthly"<% if (donationType == "monthly") { %> checked<% } %>>
           Monthly recurring
         </label>
       </fieldset>
@@ -140,56 +139,56 @@
                   aria-required="true"
                   required>
             <option value="">Select State</option>
-            <option value="AL"<% if (c.Value("state") == "AL") { %> selected<% } %>>Alabama</option>
-            <option value="AK"<% if (c.Value("state") == "AK") { %> selected<% } %>>Alaska</option>
-            <option value="AZ"<% if (c.Value("state") == "AZ") { %> selected<% } %>>Arizona</option>
-            <option value="AR"<% if (c.Value("state") == "AR") { %> selected<% } %>>Arkansas</option>
-            <option value="CA"<% if (c.Value("state") == "CA") { %> selected<% } %>>California</option>
-            <option value="CO"<% if (c.Value("state") == "CO") { %> selected<% } %>>Colorado</option>
-            <option value="CT"<% if (c.Value("state") == "CT") { %> selected<% } %>>Connecticut</option>
-            <option value="DE"<% if (c.Value("state") == "DE") { %> selected<% } %>>Delaware</option>
-            <option value="FL"<% if (c.Value("state") == "FL") { %> selected<% } %>>Florida</option>
-            <option value="GA"<% if (c.Value("state") == "GA") { %> selected<% } %>>Georgia</option>
-            <option value="HI"<% if (c.Value("state") == "HI") { %> selected<% } %>>Hawaii</option>
-            <option value="ID"<% if (c.Value("state") == "ID") { %> selected<% } %>>Idaho</option>
-            <option value="IL"<% if (c.Value("state") == "IL") { %> selected<% } %>>Illinois</option>
-            <option value="IN"<% if (c.Value("state") == "IN") { %> selected<% } %>>Indiana</option>
-            <option value="IA"<% if (c.Value("state") == "IA") { %> selected<% } %>>Iowa</option>
-            <option value="KS"<% if (c.Value("state") == "KS") { %> selected<% } %>>Kansas</option>
-            <option value="KY"<% if (c.Value("state") == "KY") { %> selected<% } %>>Kentucky</option>
-            <option value="LA"<% if (c.Value("state") == "LA") { %> selected<% } %>>Louisiana</option>
-            <option value="ME"<% if (c.Value("state") == "ME") { %> selected<% } %>>Maine</option>
-            <option value="MD"<% if (c.Value("state") == "MD") { %> selected<% } %>>Maryland</option>
-            <option value="MA"<% if (c.Value("state") == "MA") { %> selected<% } %>>Massachusetts</option>
-            <option value="MI"<% if (c.Value("state") == "MI") { %> selected<% } %>>Michigan</option>
-            <option value="MN"<% if (c.Value("state") == "MN") { %> selected<% } %>>Minnesota</option>
-            <option value="MS"<% if (c.Value("state") == "MS") { %> selected<% } %>>Mississippi</option>
-            <option value="MO"<% if (c.Value("state") == "MO") { %> selected<% } %>>Missouri</option>
-            <option value="MT"<% if (c.Value("state") == "MT") { %> selected<% } %>>Montana</option>
-            <option value="NE"<% if (c.Value("state") == "NE") { %> selected<% } %>>Nebraska</option>
-            <option value="NV"<% if (c.Value("state") == "NV") { %> selected<% } %>>Nevada</option>
-            <option value="NH"<% if (c.Value("state") == "NH") { %> selected<% } %>>New Hampshire</option>
-            <option value="NJ"<% if (c.Value("state") == "NJ") { %> selected<% } %>>New Jersey</option>
-            <option value="NM"<% if (c.Value("state") == "NM") { %> selected<% } %>>New Mexico</option>
-            <option value="NY"<% if (c.Value("state") == "NY") { %> selected<% } %>>New York</option>
-            <option value="NC"<% if (c.Value("state") == "NC") { %> selected<% } %>>North Carolina</option>
-            <option value="ND"<% if (c.Value("state") == "ND") { %> selected<% } %>>North Dakota</option>
-            <option value="OH"<% if (c.Value("state") == "OH") { %> selected<% } %>>Ohio</option>
-            <option value="OK"<% if (c.Value("state") == "OK") { %> selected<% } %>>Oklahoma</option>
-            <option value="OR"<% if (c.Value("state") == "OR") { %> selected<% } %>>Oregon</option>
-            <option value="PA"<% if (c.Value("state") == "PA") { %> selected<% } %>>Pennsylvania</option>
-            <option value="RI"<% if (c.Value("state") == "RI") { %> selected<% } %>>Rhode Island</option>
-            <option value="SC"<% if (c.Value("state") == "SC") { %> selected<% } %>>South Carolina</option>
-            <option value="SD"<% if (c.Value("state") == "SD") { %> selected<% } %>>South Dakota</option>
-            <option value="TN"<% if (c.Value("state") == "TN") { %> selected<% } %>>Tennessee</option>
-            <option value="TX"<% if (c.Value("state") == "TX") { %> selected<% } %>>Texas</option>
-            <option value="UT"<% if (c.Value("state") == "UT") { %> selected<% } %>>Utah</option>
-            <option value="VT"<% if (c.Value("state") == "VT") { %> selected<% } %>>Vermont</option>
-            <option value="VA"<% if (c.Value("state") == "VA") { %> selected<% } %>>Virginia</option>
-            <option value="WA"<% if (c.Value("state") == "WA") { %> selected<% } %>>Washington</option>
-            <option value="WV"<% if (c.Value("state") == "WV") { %> selected<% } %>>West Virginia</option>
-            <option value="WI"<% if (c.Value("state") == "WI") { %> selected<% } %>>Wisconsin</option>
-            <option value="WY"<% if (c.Value("state") == "WY") { %> selected<% } %>>Wyoming</option>
+            <option value="AL"<% if (state == "AL") { %> selected<% } %>>Alabama</option>
+            <option value="AK"<% if (state == "AK") { %> selected<% } %>>Alaska</option>
+            <option value="AZ"<% if (state == "AZ") { %> selected<% } %>>Arizona</option>
+            <option value="AR"<% if (state == "AR") { %> selected<% } %>>Arkansas</option>
+            <option value="CA"<% if (state == "CA") { %> selected<% } %>>California</option>
+            <option value="CO"<% if (state == "CO") { %> selected<% } %>>Colorado</option>
+            <option value="CT"<% if (state == "CT") { %> selected<% } %>>Connecticut</option>
+            <option value="DE"<% if (state == "DE") { %> selected<% } %>>Delaware</option>
+            <option value="FL"<% if (state == "FL") { %> selected<% } %>>Florida</option>
+            <option value="GA"<% if (state == "GA") { %> selected<% } %>>Georgia</option>
+            <option value="HI"<% if (state == "HI") { %> selected<% } %>>Hawaii</option>
+            <option value="ID"<% if (state == "ID") { %> selected<% } %>>Idaho</option>
+            <option value="IL"<% if (state == "IL") { %> selected<% } %>>Illinois</option>
+            <option value="IN"<% if (state == "IN") { %> selected<% } %>>Indiana</option>
+            <option value="IA"<% if (state == "IA") { %> selected<% } %>>Iowa</option>
+            <option value="KS"<% if (state == "KS") { %> selected<% } %>>Kansas</option>
+            <option value="KY"<% if (state == "KY") { %> selected<% } %>>Kentucky</option>
+            <option value="LA"<% if (state == "LA") { %> selected<% } %>>Louisiana</option>
+            <option value="ME"<% if (state == "ME") { %> selected<% } %>>Maine</option>
+            <option value="MD"<% if (state == "MD") { %> selected<% } %>>Maryland</option>
+            <option value="MA"<% if (state == "MA") { %> selected<% } %>>Massachusetts</option>
+            <option value="MI"<% if (state == "MI") { %> selected<% } %>>Michigan</option>
+            <option value="MN"<% if (state == "MN") { %> selected<% } %>>Minnesota</option>
+            <option value="MS"<% if (state == "MS") { %> selected<% } %>>Mississippi</option>
+            <option value="MO"<% if (state == "MO") { %> selected<% } %>>Missouri</option>
+            <option value="MT"<% if (state == "MT") { %> selected<% } %>>Montana</option>
+            <option value="NE"<% if (state == "NE") { %> selected<% } %>>Nebraska</option>
+            <option value="NV"<% if (state == "NV") { %> selected<% } %>>Nevada</option>
+            <option value="NH"<% if (state == "NH") { %> selected<% } %>>New Hampshire</option>
+            <option value="NJ"<% if (state == "NJ") { %> selected<% } %>>New Jersey</option>
+            <option value="NM"<% if (state == "NM") { %> selected<% } %>>New Mexico</option>
+            <option value="NY"<% if (state == "NY") { %> selected<% } %>>New York</option>
+            <option value="NC"<% if (state == "NC") { %> selected<% } %>>North Carolina</option>
+            <option value="ND"<% if (state == "ND") { %> selected<% } %>>North Dakota</option>
+            <option value="OH"<% if (state == "OH") { %> selected<% } %>>Ohio</option>
+            <option value="OK"<% if (state == "OK") { %> selected<% } %>>Oklahoma</option>
+            <option value="OR"<% if (state == "OR") { %> selected<% } %>>Oregon</option>
+            <option value="PA"<% if (state == "PA") { %> selected<% } %>>Pennsylvania</option>
+            <option value="RI"<% if (state == "RI") { %> selected<% } %>>Rhode Island</option>
+            <option value="SC"<% if (state == "SC") { %> selected<% } %>>South Carolina</option>
+            <option value="SD"<% if (state == "SD") { %> selected<% } %>>South Dakota</option>
+            <option value="TN"<% if (state == "TN") { %> selected<% } %>>Tennessee</option>
+            <option value="TX"<% if (state == "TX") { %> selected<% } %>>Texas</option>
+            <option value="UT"<% if (state == "UT") { %> selected<% } %>>Utah</option>
+            <option value="VT"<% if (state == "VT") { %> selected<% } %>>Vermont</option>
+            <option value="VA"<% if (state == "VA") { %> selected<% } %>>Virginia</option>
+            <option value="WA"<% if (state == "WA") { %> selected<% } %>>Washington</option>
+            <option value="WV"<% if (state == "WV") { %> selected<% } %>>West Virginia</option>
+            <option value="WI"<% if (state == "WI") { %> selected<% } %>>Wisconsin</option>
+            <option value="WY"<% if (state == "WY") { %> selected<% } %>>Wyoming</option>
           </select>
         </div>
 
@@ -202,7 +201,7 @@
                  aria-required="true"
                  required
                  pattern="[0-9]{5}(-[0-9]{4})?"
-                 value="<%= c.Value("zip") %>">
+                 value="<%= zip %>">
         </div>
       </div>
     </div>
@@ -213,12 +212,12 @@
               name="comments"
               rows="3"
               autocomplete="off"
-              placeholder="Any special message or dedication..."><%= c.Value("comments") %></textarea>
+              placeholder="Any special message or dedication..."><%= comments %></textarea>
 
     <!-- Submit Button -->
     <div id="submit-button">
       <button type="submit" class="contrast donation-submit">
-        <%= getDonateButtonText(c.Value("amount"), c.Value("donationType")) %>
+        <%= getDonateButtonText(amount, donationType) %>
       </button>
     </div>
 
