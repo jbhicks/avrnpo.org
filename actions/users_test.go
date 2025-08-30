@@ -94,13 +94,7 @@ func (as *ActionSuite) Test_ProfileUpdate_LoggedIn() {
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
-	// Now login with the same user
-	loginData := &models.User{
-		Email:    fmt.Sprintf("profile-update-%d@example.com", timestamp),
-		Password: "password",
-	}
-
-	// Login via auth endpoint using MockLogin
+	// Log in via MockLogin to obtain session+token
 	cookie, token := MockLogin(as.T(), as.App, fmt.Sprintf("profile-update-%d@example.com", timestamp), "password")
 
 	// Update profile data (include authenticity_token and session cookie)
@@ -174,13 +168,8 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 	signupRes := as.HTML("/users").Post(signupData)
 	as.Equal(http.StatusFound, signupRes.Code)
 
-	loginData := &models.User{
-		Email:    fmt.Sprintf("htmx-test-%d@example.com", timestamp),
-		Password: "password",
-	}
-
-	loginRes := as.HTML("/auth").Post(loginData)
-	as.Equal(http.StatusFound, loginRes.Code)
+	// Use MockLogin for session-backed requests
+	_, _ = MockLogin(as.T(), as.App, fmt.Sprintf("htmx-test-%d@example.com", timestamp), "password")
 
 	// Test HTMX request (now returns full page with progressive enhancement)
 	req := as.HTML("/account")
