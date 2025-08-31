@@ -15,7 +15,7 @@ func (as *ActionSuite) Test_DonateHandler_GET() {
 	as.Contains(res.Body.String(), "Make a Donation")
 	as.Contains(res.Body.String(), `method="post"`)
 	as.Contains(res.Body.String(), `action="/donate"`)
-	as.Contains(res.Body.String(), `hx-boost="false"`)
+	as.Contains(res.Body.String(), `novalidate`)
 	// CSRF is enabled in test environment
 	as.Contains(res.Body.String(), `name="authenticity_token"`)
 }

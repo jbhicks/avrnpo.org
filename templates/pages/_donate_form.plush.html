@@ -1,5 +1,8 @@
-<form id="donation-form" method="post" action="<%= "/donate" %>" autocomplete="on" novalidate hx-boost="false">
-<form id="donation-form" method="post" action="<%= "/donate" %>" autocomplete="on" novalidate hx-boost="false">
+<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+  <% if (authenticity_token) { %>
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+  <% } %>
   <div id="donation-form-content">
 
 
@@ -73,10 +76,8 @@
                  aria-required="true"
                  required
                  value="<%= firstName %>">
-          <%= if (errors) { %>
-            <%= if (errors.Get("first_name")) { %>
-              <small style="color: red;"><%= errors.Get("first_name") %></small>
-            <% } %>
+          <%= if (errors != nil && errors.Get("first_name") != nil) { %>
+            <small style="color: red;"><%= errors.Get("first_name") %></small>
           <% } %>
         </div>
 
@@ -89,10 +90,8 @@
                  aria-required="true"
                  required
                  value="<%= lastName %>">
-          <%= if (errors) { %>
-            <%= if (errors.Get("last_name")) { %>
-              <small style="color: red;"><%= errors.Get("last_name") %></small>
-            <% } %>
+          <%= if (errors != nil && errors.Get("last_name") != nil) { %>
+            <small style="color: red;"><%= errors.Get("last_name") %></small>
           <% } %>
         </div>
       </div>
@@ -258,7 +257,7 @@
     <!-- Submit Button -->
     <div id="submit-button">
       <button type="submit" class="contrast donation-submit">
-        <%= getDonateButtonText(amount, donationType) %>
+        Donate Now
       </button>
     </div>
 
@@ -398,9 +397,35 @@ document.addEventListener('DOMContentLoaded', function() {
   const amountButtons = document.querySelectorAll('.amount-btn');
   const customAmountInput = document.getElementById('custom_amount');
 
+  // Function to restore button selection from sessionStorage
+  function restoreButtonSelection() {
+    const selectedAmount = sessionStorage.getItem('selectedDonationAmount');
+    if (selectedAmount) {
+      // Find and activate the button with the stored amount
+      amountButtons.forEach(button => {
+        if (button.dataset.amount === selectedAmount) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
+        }
+      });
+      // Set the input value
+      customAmountInput.value = selectedAmount;
+      updateSubmitButton();
+    }
+  }
+
+  // Function to save button selection to sessionStorage
+  function saveButtonSelection(amount) {
+    sessionStorage.setItem('selectedDonationAmount', amount);
+  }
+
   // Handle amount button clicks
   amountButtons.forEach(button => {
-    button.addEventListener('click', function() {
+    button.addEventListener('click', function(event) {
+      // Prevent event bubbling to avoid HTMX interference
+      event.stopPropagation();
+
       // Remove active class from all buttons
       amountButtons.forEach(btn => btn.classList.remove('active'));
 
@@ -411,6 +436,9 @@ document.addEventListener('DOMContentLoaded', function() {
       const amount = this.dataset.amount;
       customAmountInput.value = amount;
 
+      // Save selection to sessionStorage
+      saveButtonSelection(amount);
+
       // Update submit button text
       updateSubmitButton();
     });
@@ -420,6 +448,9 @@ document.addEventListener('DOMContentLoaded', function() {
   customAmountInput.addEventListener('input', function() {
     // Remove active class from all buttons when custom amount is entered
     amountButtons.forEach(btn => btn.classList.remove('active'));
+
+    // Clear stored selection when custom amount is entered
+    sessionStorage.removeItem('selectedDonationAmount');
 
     // Update submit button text
     updateSubmitButton();
@@ -455,5 +486,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Initialize submit button text on page load
   updateSubmitButton();
+
+  // Check if there's a server-set amount and activate the corresponding button
+  const serverAmount = customAmountInput.value;
+  if (serverAmount && serverAmount !== '') {
+    amountButtons.forEach(button => {
+      if (button.dataset.amount === serverAmount) {
+        button.classList.add('active');
+        saveButtonSelection(serverAmount);
+      }
+    });
+  }
+
+  // Restore button selection on page load (in case of HTMX updates)
+  restoreButtonSelection();
+
+  // Also restore selection after HTMX content updates
+  document.addEventListener('htmx:afterSwap', function() {
+    restoreButtonSelection();
+  });
 });
 </script>

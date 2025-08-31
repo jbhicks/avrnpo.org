@@ -9,6 +9,7 @@ import (
 
 	"avrnpo.org/templates"
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/validate"
 	"github.com/stretchr/testify/require"
 )
 
@@ -115,11 +116,11 @@ func Test_DonateTemplateWithErrors(t *testing.T) {
 		c.Set("zip", "")
 		c.Set("comments", "")
 
-		// Set error context
-		c.Set("errors", map[string][]string{
-			"first_name":  {"First name is required"},
-			"donor_email": {"Email address is required"},
-		})
+		// Set error context using Buffalo's validate.Errors
+		errs := validate.NewErrors()
+		errs.Add("first_name", "First name is required")
+		errs.Add("donor_email", "Email address is required")
+		c.Set("errors", errs)
 		c.Set("hasAnyErrors", true)
 		c.Set("hasFirstNameError", true)
 		c.Set("hasDonorEmailError", true)
