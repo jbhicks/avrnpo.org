@@ -29,7 +29,7 @@
       <h2>Send us a Message</h2>
     </header>
 
-    <form method="post" action="/contact">
+    <form hx-post="/contact" hx-target="body" hx-swap="outerHTML" method="post" action="/contact">
       <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
 
       <label for="name">

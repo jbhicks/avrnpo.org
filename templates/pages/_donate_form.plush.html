@@ -1,5 +1,4 @@
-<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
-<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+<form id="donation-form" hx-post="/donate" hx-target="body" hx-swap="outerHTML" method="post" action="/donate" autocomplete="on" novalidate>
   <% if (authenticity_token) { %>
     <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
   <% } %>
@@ -392,77 +391,20 @@
 </style>
 
 <script>
-// Amount button selection functionality
-document.addEventListener('DOMContentLoaded', function() {
-  const amountButtons = document.querySelectorAll('.amount-btn');
-  const customAmountInput = document.getElementById('custom_amount');
-
-  // Function to restore button selection from sessionStorage
-  function restoreButtonSelection() {
-    const selectedAmount = sessionStorage.getItem('selectedDonationAmount');
-    if (selectedAmount) {
-      // Find and activate the button with the stored amount
-      amountButtons.forEach(button => {
-        if (button.dataset.amount === selectedAmount) {
-          button.classList.add('active');
-        } else {
-          button.classList.remove('active');
-        }
-      });
-      // Set the input value
-      customAmountInput.value = selectedAmount;
-      updateSubmitButton();
-    }
-  }
+// Amount button selection functionality - HTMX compatible
+(function() {
+  'use strict';
 
   // Function to save button selection to sessionStorage
   function saveButtonSelection(amount) {
     sessionStorage.setItem('selectedDonationAmount', amount);
   }
 
-  // Handle amount button clicks
-  amountButtons.forEach(button => {
-    button.addEventListener('click', function(event) {
-      // Prevent event bubbling to avoid HTMX interference
-      event.stopPropagation();
-
-      // Remove active class from all buttons
-      amountButtons.forEach(btn => btn.classList.remove('active'));
-
-      // Add active class to clicked button
-      this.classList.add('active');
-
-      // Set the custom amount input to the selected value
-      const amount = this.dataset.amount;
-      customAmountInput.value = amount;
-
-      // Save selection to sessionStorage
-      saveButtonSelection(amount);
-
-      // Update submit button text
-      updateSubmitButton();
-    });
-  });
-
-  // Handle custom amount input changes
-  customAmountInput.addEventListener('input', function() {
-    // Remove active class from all buttons when custom amount is entered
-    amountButtons.forEach(btn => btn.classList.remove('active'));
-
-    // Clear stored selection when custom amount is entered
-    sessionStorage.removeItem('selectedDonationAmount');
-
-    // Update submit button text
-    updateSubmitButton();
-  });
-
-  // Handle donation type changes
-  const donationTypeInputs = document.querySelectorAll('input[name="donation_type"]');
-  donationTypeInputs.forEach(input => {
-    input.addEventListener('change', updateSubmitButton);
-  });
-
+  // Function to update submit button text
   function updateSubmitButton() {
+    const customAmountInput = document.getElementById('custom_amount');
+    if (!customAmountInput) return;
+
     const amount = customAmountInput.value;
     const donationType = document.querySelector('input[name="donation_type"]:checked')?.value || 'one-time';
 
@@ -484,26 +426,124 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Initialize submit button text on page load
-  updateSubmitButton();
+  // Function to restore button selection from sessionStorage
+  function restoreButtonSelection() {
+    const selectedAmount = sessionStorage.getItem('selectedDonationAmount');
+    if (!selectedAmount) return;
 
-  // Check if there's a server-set amount and activate the corresponding button
-  const serverAmount = customAmountInput.value;
-  if (serverAmount && serverAmount !== '') {
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const customAmountInput = document.getElementById('custom_amount');
+
+    if (amountButtons.length > 0 && customAmountInput) {
+      // Find and activate the button with the stored amount
+      amountButtons.forEach(button => {
+        if (button.dataset.amount === selectedAmount) {
+          button.classList.add('active');
+        } else {
+          button.classList.remove('active');
+        }
+      });
+      // Set the input value
+      customAmountInput.value = selectedAmount;
+      updateSubmitButton();
+    }
+  }
+
+  // Function to initialize donation form behavior - can be called multiple times
+  function initializeDonationForm() {
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const customAmountInput = document.getElementById('custom_amount');
+
+    if (!customAmountInput) return; // Not on donation page
+
+    // Remove existing event listeners by cloning elements (prevents duplicates)
     amountButtons.forEach(button => {
-      if (button.dataset.amount === serverAmount) {
-        button.classList.add('active');
-        saveButtonSelection(serverAmount);
+      const newButton = button.cloneNode(true);
+      button.parentNode.replaceChild(newButton, button);
+    });
+
+    const customInputClone = customAmountInput.cloneNode(true);
+    customAmountInput.parentNode.replaceChild(customInputClone, customAmountInput);
+
+    // Get fresh references after cloning
+    const freshAmountButtons = document.querySelectorAll('.amount-btn');
+    const freshCustomAmountInput = document.getElementById('custom_amount');
+
+    // Handle amount button clicks
+    freshAmountButtons.forEach(button => {
+      button.addEventListener('click', function(event) {
+        // Prevent event bubbling to avoid HTMX interference
+        event.stopPropagation();
+
+        // Remove active class from all buttons
+        freshAmountButtons.forEach(btn => btn.classList.remove('active'));
+
+        // Add active class to clicked button
+        this.classList.add('active');
+
+        // Set the custom amount input to the selected value
+        const amount = this.dataset.amount;
+        freshCustomAmountInput.value = amount;
+
+        // Save selection to sessionStorage
+        saveButtonSelection(amount);
+
+        // Update submit button text
+        updateSubmitButton();
+      });
+    });
+
+    // Handle custom amount input changes
+    if (freshCustomAmountInput) {
+      freshCustomAmountInput.addEventListener('input', function() {
+        // Remove active class from all buttons when custom amount is entered
+        freshAmountButtons.forEach(btn => btn.classList.remove('active'));
+
+        // Clear stored selection when custom amount is entered
+        sessionStorage.removeItem('selectedDonationAmount');
+
+        // Update submit button text
+        updateSubmitButton();
+      });
+    }
+
+    // Handle donation type changes
+    const donationTypeInputs = document.querySelectorAll('input[name="donation_type"]');
+    donationTypeInputs.forEach(input => {
+      input.addEventListener('change', updateSubmitButton);
+    });
+
+    // Initialize submit button text
+    updateSubmitButton();
+
+    // Check if there's a server-set amount and activate the corresponding button
+    const serverAmount = freshCustomAmountInput.value;
+    if (serverAmount && serverAmount !== '') {
+      freshAmountButtons.forEach(button => {
+        if (button.dataset.amount === serverAmount) {
+          button.classList.add('active');
+          saveButtonSelection(serverAmount);
+        }
+      });
+    }
+
+    // Restore button selection from sessionStorage
+    restoreButtonSelection();
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initializeDonationForm);
+
+  // Re-initialize after HTMX content updates
+  document.addEventListener('htmx:afterSwap', initializeDonationForm);
+
+  // Also handle htmx:load event for more comprehensive coverage
+  if (typeof htmx !== 'undefined') {
+    htmx.onLoad(function(elt) {
+      if (elt.querySelector && (elt.querySelector('.amount-btn') || elt.querySelector('#custom_amount'))) {
+        initializeDonationForm();
       }
     });
   }
-
-  // Restore button selection on page load (in case of HTMX updates)
-  restoreButtonSelection();
-
-  // Also restore selection after HTMX content updates
-  document.addEventListener('htmx:afterSwap', function() {
-    restoreButtonSelection();
-  });
-});
+})();
 </script>

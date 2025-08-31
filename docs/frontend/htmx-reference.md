@@ -48,88 +48,73 @@ This document contains key HTMX concepts and best practices for the AVR NPO proj
 - `hx-indicator="#loading"` - Show loading indicator
 - `hx-disabled-elt="this"` - Disable element during request
 
-## Best Practices for Buffalo/Go Backend
+## Backend Best Practices
+
+Our application uses `hx-boost` for navigation, which simplifies our backend logic considerably.
 
 ### Response Patterns
 
-#### Partial Templates
-Return HTML fragments that match your target element:
+#### Full Page Responses
+For most requests, including navigation and form submissions, handlers should return a full HTML page. `hx-boost` will automatically extract the `<body>` content to update the page. This is the standard and recommended approach.
 
-```html
-<!-- For hx-target="#content" hx-swap="innerHTML" -->
-<article>
-    <h2>New Content</h2>
-    <p>This replaces the innerHTML of #content</p>
-</article>
+```go
+// Standard handler for a boosted link or form
+func MyPageHandler(c buffalo.Context) error {
+    // ... logic to fetch data ...
+    return c.Render(http.StatusOK, r.HTML("pages/my_page.plush.html"))
+}
 ```
 
-#### Full Page Responses
-For `hx-push-url`, return complete page HTML or partial that includes navigation updates.
+#### Partial Page Responses (for specific components)
+In some cases, you may want to update only a small part of a page (e.g., a search results container, a dynamic chart). In these situations, you can use explicit `hx-` attributes (`hx-get`, `hx-post`, etc.) and return an HTML fragment.
+
+```html
+<!-- Requesting a partial update -->
+<div hx-get="/search-results?query=htmx" hx-target="#results" hx-swap="innerHTML">
+    Search
+</div>
+<div id="results"></div>
+```
+
+The handler for this would return just the HTML for the results:
+
+```go
+// Handler for a partial update
+func SearchResultsHandler(c buffalo.Context) error {
+    // ... logic to fetch search results ...
+    return c.Render(http.StatusOK, r.HTML("partials/_search_results.plush.html"))
+}
+```
 
 #### Error Handling
 Return appropriate HTTP status codes:
 - 200: Success with content
-- 204: Success with no content
-- 400: Client error
+- 204: Success with no content (e.g., for a `hx-swap="delete"`)
+- 400: Client error (e.g., validation failure)
 - 500: Server error
 
-### Buffalo Action Patterns
-
-```go
-// Handle both HTMX and regular requests
-func (app *App) SomeAction(c buffalo.Context) error {
-    // Your logic here
-    
-    if c.Request().Header.Get("HX-Request") == "true" {
-        // HTMX request - return partial
-        return c.Render(http.StatusOK, r.HTML("partial.plush.html"))
-    }
-    
-    // Regular request - return full page
-    return c.Render(http.StatusOK, r.HTML("full_page.plush.html"))
-}
-```
+When a form submission fails validation, re-render the full page containing the form, including the validation errors. `hx-boost` will handle swapping the body and showing the errors to the user.
 
 ## Common Patterns
 
-### Navigation with History
-```html
-<nav>
-    <a href="/home" hx-get="/home" hx-target="#main-content" hx-push-url="true">Home</a>
-    <a href="/about" hx-get="/about" hx-target="#main-content" hx-push-url="true">About</a>
-    <a href="/donate" hx-get="/donate" hx-target="#main-content" hx-push-url="true">Donate</a>
-</nav>
-
-<main id="main-content">
-    <!-- Content swapped here -->
-</main>
-```
-
-### Forms with HTMX
-```html
-<form hx-post="/api/contact" hx-target="#form-result">
-    <input type="text" name="name" required>
-    <input type="email" name="email" required>
-    <button type="submit">Submit</button>
-</form>
-<div id="form-result"></div>
-```
-
 ### Progressive Enhancement
-Always include proper `href` attributes as fallbacks:
+Always include proper `href` and `action` attributes as fallbacks. This is the foundation of our `hx-boost` strategy.
 
 ```html
 <!-- Works with and without JavaScript -->
-<a href="/donate" 
-   hx-get="/donate" 
-   hx-target="#main-content" 
-   hx-push-url="true">
-   Donate Now
-</a>
-```
+<a href="/donate">Donate Now</a>
 
-### Loading States
+<form action="/contact" method="post">
+    <!-- Form fields -->
+</form>
+```
+`hx-boost` will automatically enhance these standard HTML elements.
+
+### Explicit HTMX for Components
+For interactions that don't involve a full page navigation, use explicit `hx-` attributes.
+
 ```html
+<!-- Good for components like modals, inline editing, etc. -->
 <button hx-post="/api/action" 
         hx-target="#result" 
         hx-indicator="#spinner"
@@ -142,23 +127,13 @@ Always include proper `href` attributes as fallbacks:
 ## Event Handling
 
 ### HTMX Events
-Listen for HTMX events in JavaScript:
+Listen for HTMX events in JavaScript to re-initialize components after a swap.
 
 ```javascript
-// Before request
-document.addEventListener('htmx:beforeRequest', function(event) {
-    console.log('Request starting:', event.detail);
-});
-
-// After request
-document.addEventListener('htmx:afterRequest', function(event) {
-    console.log('Request completed:', event.detail);
-});
-
 // After content swap
 document.addEventListener('htmx:afterSwap', function(event) {
     console.log('Content swapped:', event.detail);
-    // Re-initialize JavaScript components
+    // Re-initialize JavaScript components like charts, maps, etc.
 });
 
 // After settle (animations complete)
@@ -167,101 +142,42 @@ document.addEventListener('htmx:afterSettle', function(event) {
 });
 ```
 
-### Custom Events
-Trigger custom events from server responses:
-
-```html
-<!-- Server response -->
-<div hx-trigger="customEvent from:body">
-    <!-- Content -->
-</div>
-
-<script>
-// Trigger from JavaScript
-document.body.dispatchEvent(new CustomEvent('customEvent'));
-</script>
-```
-
 ## Debugging
 
 ### HTMX Headers
 HTMX sends these headers with requests:
 - `HX-Request: true` - Indicates HTMX request
 - `HX-Current-URL` - Current page URL
-- `HX-Target` - ID of target element
-- `HX-Trigger` - ID of triggered element
+- `HX-Target` - ID of target element (if specified)
+- `HX-Trigger` - ID of triggered element (if specified)
 
 ### Browser DevTools
-- Network tab shows HTMX requests
-- Look for `HX-Request` header
-- Response should contain HTML fragments
+- The Network tab shows HTMX requests.
+- Look for the `HX-Request: true` header.
+- The response should be a full HTML document for boosted links/forms, or an HTML fragment for partial swaps.
 
 ### Logging
-Enable HTMX logging:
+Enable HTMX logging in your main JavaScript file for detailed console output:
 
 ```javascript
-// Add to your main JavaScript
 htmx.logAll();
 ```
 
 ## Security Considerations
 
 ### CSRF Protection
-Include CSRF tokens in forms:
-
-```html
-<form hx-post="/api/action">
-    <input type="hidden" name="csrf_token" value="{{ .CSRFToken }}">
-    <!-- Other fields -->
-</form>
-```
-
-### Content Security Policy
-Allow HTMX inline handlers if needed:
-
-```
-Content-Security-Policy: script-src 'self' 'unsafe-inline';
-```
+Buffalo's `formFor` helper automatically includes a CSRF token. For manual forms or AJAX requests with `hx-post`, ensure the token is included. `hx-boost` automatically handles this for forms.
 
 ### Validation
-Always validate on server side, HTMX is just transport:
-
-```go
-func (app *App) APIAction(c buffalo.Context) error {
-    // Validate request
-    if c.Request().Header.Get("HX-Request") != "true" {
-        return c.Error(http.StatusBadRequest, errors.New("invalid request"))
-    }
-    
-    // Process request
-    // Return response
-}
-```
+Always validate data on the server side. HTMX is just a transport mechanism.
 
 ## Performance Tips
 
-### Minimize Response Size
-Return only necessary HTML:
-
-```html
-<!-- Good: Minimal response -->
-<article class="post">
-    <h2>{{ .Title }}</h2>
-    <p>{{ .Content }}</p>
-</article>
-
-<!-- Avoid: Unnecessary wrapper elements -->
-```
-
-### Cache Static Assets
-Cache JavaScript and CSS:
-
-```html
-<script src="/js/htmx.min.js" cache-control="max-age=31536000"></script>
-```
+### Minimize Response Size for Partials
+When returning partials, return only the necessary HTML.
 
 ### Lazy Loading
-Load content when needed:
+Load content only when it's needed or becomes visible.
 
 ```html
 <div hx-get="/api/comments" hx-trigger="intersect">
@@ -271,53 +187,7 @@ Load content when needed:
 
 ## Common Issues and Solutions
 
-### Navigation Not Working
-Check for:
-- Missing `hx-push-url="true"`
-- Wrong `hx-target` selector
-- Server not returning appropriate content
-
-### Content Not Swapping
-Verify:
-- Target element exists
-- Server returns 200 status
-- Response contains valid HTML
-
-### History Issues
-Ensure:
-- URLs are properly pushed with `hx-push-url`
-- Server handles direct URL access
-- Back button returns correct content
-
 ### JavaScript Not Working After Swap
-Re-initialize after content changes:
-
-```javascript
-document.addEventListener('htmx:afterSwap', function() {
-    // Re-bind event listeners
-    // Re-initialize components
-});
-```
-
-## Integration with Buffalo
-
-### Template Structure
-```
-templates/
-├── application.plush.html    # Main layout
-├── pages/
-│   ├── home.plush.html      # Full page
-│   └── _home_partial.plush.html  # Partial for HTMX
-```
-
-### Action Pattern
-```go
-func (app *App) HomePage(c buffalo.Context) error {
-    if c.Request().Header.Get("HX-Request") == "true" {
-        return c.Render(http.StatusOK, r.HTML("pages/_home_partial.plush.html"))
-    }
-    return c.Render(http.StatusOK, r.HTML("pages/home.plush.html"))
-}
-```
+This is a common issue. Use an `htmx:afterSwap` event listener to re-initialize any JavaScript components within the newly loaded content.
 
 This reference covers the essential HTMX concepts needed for the AVR NPO project. For complete documentation, visit https://htmx.org/docs/.
