@@ -48,16 +48,21 @@
         <label>
           <input type="radio"
                  name="donation_type"
-                 value="one-time"<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>>
+                 value="one-time"
+                 required<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>>
           One-time donation
         </label>
         <label>
           <input type="radio"
                  name="donation_type"
-                 value="monthly"<% if (donationType == "monthly") { %> checked<% } %>>
+                 value="monthly"
+                 required<% if (donationType == "monthly") { %> checked<% } %>>
           Monthly recurring
         </label>
       </fieldset>
+      <%= if (errors != nil && errors.Get("donation_type") != nil) { %>
+        <small style="color: red;"><%= errors.Get("donation_type") %></small>
+      <% } %>
     </div>
 
     <!-- Donor Information -->

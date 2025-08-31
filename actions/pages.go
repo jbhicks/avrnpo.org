@@ -315,6 +315,13 @@ func DonateHandler(c buffalo.Context) error {
 		errors.Add("zip_code", "ZIP Code is required")
 	}
 
+	// Validate donation type
+	if strings.TrimSpace(req.DonationType) == "" {
+		errors.Add("donation_type", "Please select a donation frequency")
+	} else if req.DonationType != "one-time" && req.DonationType != "monthly" {
+		errors.Add("donation_type", "Invalid donation frequency selected")
+	}
+
 	// Determine donation amount - check both form and session
 	var amount float64
 	var err error
@@ -361,6 +368,7 @@ func DonateHandler(c buffalo.Context) error {
 		c.Set("hasCityError", errors.Get("city") != nil)
 		c.Set("hasStateError", errors.Get("state") != nil)
 		c.Set("hasZipError", errors.Get("zip_code") != nil)
+		c.Set("hasDonationTypeError", errors.Get("donation_type") != nil)
 
 		// Preserve all submitted form data for template re-rendering
 		c.Set("amount", amountStr)

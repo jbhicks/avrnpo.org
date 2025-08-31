@@ -131,6 +131,55 @@ func (as *ActionSuite) Test_DonateHandler_POST_HTMX_ValidationErrors() {
 	as.Contains(res.Body.String(), "Make a Donation")
 }
 
+func (as *ActionSuite) Test_DonateHandler_POST_DonationTypeValidation() {
+	// Fetch CSRF token
+	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
+
+	// Test POST with missing donation_type
+	req := as.HTML("/donate")
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	res := req.Post(map[string]interface{}{
+		"custom_amount": "25.00",
+		"first_name":    "John",
+		"last_name":     "Doe",
+		"donor_email":   "john@example.com",
+		"address_line1": "123 Main St",
+		"city":          "Anytown",
+		"state":         "CA",
+		"zip_code":      "12345",
+		// donation_type intentionally missing
+		"authenticity_token": token,
+	})
+
+	// Should return form with validation error
+	as.Equal(http.StatusOK, res.Code)
+	as.Contains(res.Body.String(), "Please select a donation frequency")
+
+	// Test POST with invalid donation_type
+	req2 := as.HTML("/donate")
+	if cookie != "" {
+		req2.Headers["Cookie"] = cookie
+	}
+	res2 := req2.Post(map[string]interface{}{
+		"custom_amount":      "25.00",
+		"donation_type":      "invalid-type", // Invalid value
+		"first_name":         "John",
+		"last_name":          "Doe",
+		"donor_email":        "john@example.com",
+		"address_line1":      "123 Main St",
+		"city":               "Anytown",
+		"state":              "CA",
+		"zip_code":           "12345",
+		"authenticity_token": token,
+	})
+
+	// Should return form with validation error
+	as.Equal(http.StatusOK, res2.Code)
+	as.Contains(res2.Body.String(), "Invalid donation frequency selected")
+}
+
 func (as *ActionSuite) Test_DonateHandler_ProgressiveEnhancement() {
 	// Test that form works without HTMX (progressive enhancement)
 	res := as.HTML("/donate").Post(map[string]interface{}{
