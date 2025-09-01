@@ -65,15 +65,25 @@ type HelcimClient struct {
 
 // Payment API structures
 type PaymentAPIRequest struct {
-	PaymentType  string  `json:"paymentType"`
-	Amount       float64 `json:"amount"`
-	Currency     string  `json:"currency"`
-	CustomerCode string  `json:"customerCode"`
-	CardToken    string  `json:"cardToken"`
+	PaymentType    string          `json:"paymentType"`
+	Amount         float64         `json:"amount"`
+	Currency       string          `json:"currency"`
+	CustomerCode   string          `json:"customerCode"`
+	CardData       CardData        `json:"cardData"`
+	IPAddress      string          `json:"ipAddress"`
+	InvoiceNumber  string          `json:"invoiceNumber,omitempty"`
+	Description    string          `json:"description,omitempty"`
+	BillingAddress *BillingAddress `json:"billingAddress,omitempty"`
+	CustomerEmail  string          `json:"customerEmail,omitempty"`
+	CustomerName   string          `json:"customerName,omitempty"`
+}
+
+type CardData struct {
+	CardToken string `json:"cardToken"`
 }
 
 type PaymentAPIResponse struct {
-	TransactionID string  `json:"transactionId"`
+	TransactionID int     `json:"transactionId"`
 	Status        string  `json:"status"`
 	Amount        float64 `json:"amount"`
 	Currency      string  `json:"currency"`
@@ -135,14 +145,14 @@ func NewHelcimClient() HelcimAPI {
 	goEnv := os.Getenv("GO_ENV")
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
 
-	// In development, prefer a safe fallback rather than panicking (unless live testing enabled)
+	// In development or test environments, prefer a safe fallback rather than panicking (unless live testing enabled)
 	if apiKey == "" {
-		if goEnv == "development" && !useLivePayments {
-			fmt.Printf("[Helcim] Development mode: HELCIM_PRIVATE_API_KEY not set — returning mockHelcimClient\n")
+		if (goEnv == "development" || goEnv == "test") && !useLivePayments {
+			fmt.Printf("[Helcim] %s mode: HELCIM_PRIVATE_API_KEY not set — returning mockHelcimClient\n", goEnv)
 			return &mockHelcimClient{}
 		}
 
-		// Non-development environments must provide an API key
+		// Non-development/test environments must provide an API key
 		panic("[Helcim] FATAL: HELCIM_PRIVATE_API_KEY is not set or empty! Test runner did not load .env or environment variable.")
 	}
 
@@ -547,7 +557,7 @@ type mockHelcimClient struct{}
 func (m *mockHelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error) {
 	// Simulate an approved transaction
 	return &PaymentAPIResponse{
-		TransactionID: fmt.Sprintf("dev_txn_%d", time.Now().UnixNano()),
+		TransactionID: int(time.Now().UnixNano() % 1000000000), // Generate a mock integer ID
 		Status:        "APPROVED",
 		Amount:        req.Amount,
 		Currency:      req.Currency,

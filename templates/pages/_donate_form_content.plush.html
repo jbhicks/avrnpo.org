@@ -232,6 +232,7 @@
          hx-trigger="donation-amount-updated from:body"
          hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
          hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
+         hx-target="#submit-button"
          hx-select="button"
          hx-swap="innerHTML">
       <%= partial("pages/submit_button") %>

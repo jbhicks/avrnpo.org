@@ -93,6 +93,31 @@ func isAPIRequest(c buffalo.Context) bool {
 	return false
 }
 
+// getClientIP extracts the client's IP address from the request
+func getClientIP(c buffalo.Context) string {
+	// Check X-Forwarded-For header first (for proxy/load balancer scenarios)
+	xff := c.Request().Header.Get("X-Forwarded-For")
+	if xff != "" {
+		// X-Forwarded-For can contain multiple IPs, take the first one
+		ips := strings.Split(xff, ",")
+		return strings.TrimSpace(ips[0])
+	}
+
+	// Check X-Real-IP header (for nginx proxy)
+	xri := c.Request().Header.Get("X-Real-IP")
+	if xri != "" {
+		return xri
+	}
+
+	// Fall back to RemoteAddr
+	ip := c.Request().RemoteAddr
+	// Remove port if present
+	if strings.Contains(ip, ":") {
+		ip, _, _ = strings.Cut(ip, ":")
+	}
+	return ip
+}
+
 // HelcimPayRequest represents the request to initialize a Helcim payment
 // This corresponds to the HelcimPay.js initialize API endpoint:
 // POST https://api.helcim.com/v2/helcim-pay/initialize
@@ -1058,28 +1083,43 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 		Amount:       donation.Amount,
 		Currency:     getCurrency(),
 		CustomerCode: req.CustomerCode,
-		CardToken:    req.CardToken,
+		CardData: services.CardData{
+			CardToken: req.CardToken,
+		},
+		IPAddress:     getClientIP(c),
+		Description:   "Donation to American Veterans Rebuilding",
+		CustomerEmail: donation.DonorEmail,
+		CustomerName:  donation.DonorName,
+		BillingAddress: &services.BillingAddress{
+			Name:       donation.DonorName,
+			Street1:    stringOrEmpty(donation.AddressLine1),
+			City:       stringOrEmpty(donation.City),
+			Province:   stringOrEmpty(donation.State),
+			Country:    "USA", // Helcim expects 3-letter country codes
+			PostalCode: stringOrEmpty(donation.Zip),
+		},
 	}
 
 	c.Logger().Debugf("[OneTimePayment] Payment request - Amount: $%.2f, Currency: %s, CustomerCode: %s, CardToken: %s",
-		paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardToken, 8)+"...")
+		paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardData.CardToken, 8)+"...")
 
 	transaction, err := helcimClient.ProcessPayment(paymentReq)
 	if err != nil {
 		c.Logger().Errorf("[OneTimePayment] Payment processing failed for donation %s: %v", donation.ID.String(), err)
 		c.Logger().Errorf("[OneTimePayment] Payment request data: Amount=$%.2f, Currency=%s, CustomerCode=%s, CardToken=%s",
-			paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardToken, 8)+"...")
+			paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardData.CardToken, 8)+"...")
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
 			"success": false,
 			"error":   "Payment processing failed: " + err.Error(),
 		}))
 	}
 
+	transactionIDStr := fmt.Sprintf("%d", transaction.TransactionID)
 	c.Logger().Infof("[OneTimePayment] Payment successful - TransactionID: %s, Status: %s",
-		transaction.TransactionID, transaction.Status)
+		transactionIDStr, transaction.Status)
 
 	// Update donation record
-	donation.TransactionID = &transaction.TransactionID
+	donation.TransactionID = &transactionIDStr
 	donation.CustomerID = &req.CustomerCode
 	donation.Status = "completed"
 

@@ -259,7 +259,14 @@
               placeholder="Any special message or dedication..."><%= comments %></textarea>
 
     <!-- Submit Button -->
-    <div id="submit-button">
+    <div id="submit-button"
+         hx-post="/donate/update-submit"
+         hx-trigger="donation-amount-updated from:body"
+         hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
+         hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
+         hx-target="#submit-button"
+         hx-select="button"
+         hx-swap="innerHTML">
       <button type="submit" class="contrast donation-submit">
         Donate Now
       </button>

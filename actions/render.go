@@ -13,6 +13,7 @@ import (
 )
 
 var r *render.Engine
+var rFrag *render.Engine
 
 func init() {
 	// Common helpers
@@ -28,6 +29,14 @@ func init() {
 	// Standard render engine with layout
 	r = render.New(render.Options{
 		HTMLLayout:  "application.plush.html",
+		TemplatesFS: templates.FS(),
+		AssetsFS:    avrnpo.FS(),
+		Helpers:     commonHelpers,
+	})
+
+	// Fragment render engine without layout (for HTMX partials)
+	rFrag = render.New(render.Options{
+		HTMLLayout:  "", // no layout
 		TemplatesFS: templates.FS(),
 		AssetsFS:    avrnpo.FS(),
 		Helpers:     commonHelpers,

@@ -104,7 +104,7 @@ func TestProcessPayment_IdempotencyKeyGeneration(t *testing.T) {
 
 		// Return successful response
 		response := PaymentAPIResponse{
-			TransactionID: "test-txn-123",
+			TransactionID: 123456,
 			Status:        "APPROVED",
 			Amount:        100.0,
 			Currency:      "USD",
@@ -128,14 +128,27 @@ func TestProcessPayment_IdempotencyKeyGeneration(t *testing.T) {
 		Amount:       100.0,
 		Currency:     "USD",
 		CustomerCode: "test-customer",
-		CardToken:    "test-card-token",
-		IPAddress:    "127.0.0.1",
+		CardData: CardData{
+			CardToken: "test-card-token",
+		},
+		IPAddress:     "127.0.0.1",
+		Description:   "Test payment",
+		CustomerEmail: "test@example.com",
+		CustomerName:  "Test User",
+		BillingAddress: &BillingAddress{
+			Name:       "Test User",
+			Street1:    "123 Test St",
+			City:       "Test City",
+			Province:   "Test State",
+			Country:    "USA",
+			PostalCode: "12345",
+		},
 	}
 
 	response, err := client.ProcessPayment(req)
 	require.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.Equal(t, "test-txn-123", response.TransactionID)
+	assert.Equal(t, 123456, response.TransactionID)
 	assert.Equal(t, "APPROVED", response.Status)
 }
 
@@ -328,8 +341,21 @@ func TestPaymentAPIRequest_NoIdempotencyKeyField(t *testing.T) {
 		Amount:       100.0,
 		Currency:     "USD",
 		CustomerCode: "test-customer",
-		CardToken:    "test-token",
-		IPAddress:    "127.0.0.1",
+		CardData: CardData{
+			CardToken: "test-token",
+		},
+		IPAddress:     "127.0.0.1",
+		Description:   "Test payment validation",
+		CustomerEmail: "test@example.com",
+		CustomerName:  "Test User",
+		BillingAddress: &BillingAddress{
+			Name:       "Test User",
+			Street1:    "123 Test St",
+			City:       "Test City",
+			Province:   "Test State",
+			Country:    "USA",
+			PostalCode: "12345",
+		},
 	}
 
 	// Marshal to JSON
@@ -350,7 +376,13 @@ func TestPaymentAPIRequest_NoIdempotencyKeyField(t *testing.T) {
 	assert.Equal(t, 100.0, parsed["amount"])
 	assert.Equal(t, "USD", parsed["currency"])
 	assert.Equal(t, "test-customer", parsed["customerCode"])
-	assert.Equal(t, "test-token", parsed["cardToken"])
+
+	// Check cardToken inside cardData object
+	if cardData, ok := parsed["cardData"].(map[string]interface{}); ok {
+		assert.Equal(t, "test-token", cardData["cardToken"])
+	} else {
+		t.Error("cardData should be a map")
+	}
 }
 
 func TestMockHelcimClient_ProcessPayment(t *testing.T) {
@@ -361,7 +393,21 @@ func TestMockHelcimClient_ProcessPayment(t *testing.T) {
 		Amount:       100.0,
 		Currency:     "USD",
 		CustomerCode: "test-customer",
-		CardToken:    "test-token",
+		CardData: CardData{
+			CardToken: "test-token",
+		},
+		IPAddress:     "127.0.0.1",
+		Description:   "Mock payment",
+		CustomerEmail: "mock@example.com",
+		CustomerName:  "Mock User",
+		BillingAddress: &BillingAddress{
+			Name:       "Mock User",
+			Street1:    "123 Mock St",
+			City:       "Mock City",
+			Province:   "Mock State",
+			Country:    "USA",
+			PostalCode: "67890",
+		},
 	}
 
 	response, err := client.ProcessPayment(req)
@@ -371,7 +417,7 @@ func TestMockHelcimClient_ProcessPayment(t *testing.T) {
 	assert.Equal(t, 100.0, response.Amount)
 	assert.Equal(t, "USD", response.Currency)
 	assert.Equal(t, "test-customer", response.CustomerCode)
-	assert.Contains(t, response.TransactionID, "dev_txn_")
+	assert.Greater(t, response.TransactionID, 0)
 }
 
 func TestMockHelcimClient_CreatePaymentPlan(t *testing.T) {

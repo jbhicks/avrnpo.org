@@ -158,8 +158,35 @@
      console.info('[DonatePayment] Processing successful payment for donation:', donationId);
      console.debug('[DonatePayment] Payment response:', paymentResponse);
 
-     // Extract data from official HelcimPay.js response format
-     const data = paymentResponse.data || paymentResponse;
+      // Extract data from official HelcimPay.js response format
+      // Handle multiple possible response structures
+      let data = paymentResponse;
+      if (paymentResponse.data && typeof paymentResponse.data === 'object') {
+        // Check if the actual data is nested under data.data (HelcimPay.js structure)
+        if (paymentResponse.data.data && typeof paymentResponse.data.data === 'object') {
+          data = paymentResponse.data.data;
+        } else {
+          data = paymentResponse.data;
+        }
+      }
+
+      // Debug logging to see response structure
+      console.debug('[DonatePayment] Raw payment response:', paymentResponse);
+      console.debug('[DonatePayment] Extracted data:', data);
+      console.debug('[DonatePayment] All keys in data:', Object.keys(data));
+      console.debug('[DonatePayment] customerCode in data:', data.customerCode);
+      console.debug('[DonatePayment] cardToken in data:', data.cardToken);
+      console.debug('[DonatePayment] bankToken in data:', data.bankToken);
+      console.debug('[DonatePayment] transactionId in data:', data.transactionId);
+      console.debug('[DonatePayment] Full data object:', JSON.stringify(data, null, 2));
+
+      // Ensure we have a customerCode (generate if missing)
+      if (!data.customerCode) {
+        data.customerCode = 'DON_' + donationId + '_' + Date.now();
+        console.warn('[DonatePayment] Generated fallback customerCode:', data.customerCode);
+      } else {
+        console.info('[DonatePayment] Using Helcim customerCode:', data.customerCode);
+      }
 
       // Get CSRF token with better error handling
       let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -183,19 +210,23 @@
         return;
       }
 
-     fetch('/api/donations/process', {
+      // Log the data being sent to backend
+      const requestData = {
+        customerCode: data.customerCode,
+        cardToken: data.cardToken || data.bankToken,
+        transactionId: data.transactionId,
+        donationId: donationId,
+        amount: '<%= amount %>'
+      };
+      console.info('[DonatePayment] Sending to backend:', requestData);
+
+      fetch('/api/donations/process', {
        method: 'POST',
        headers: {
          'Content-Type': 'application/json',
          'X-CSRF-Token': csrfToken
        },
-       body: JSON.stringify({
-         customerCode: data.customerCode,
-         cardToken: data.cardToken || data.bankToken, // Support both credit card and ACH
-         transactionId: data.transactionId,
-         donationId: donationId,
-         amount: '<%= amount %>'
-       })
+        body: JSON.stringify(requestData)
      })
      .then(response => {
        console.info('[DonatePayment] Process API response status:', response.status);

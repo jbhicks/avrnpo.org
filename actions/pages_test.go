@@ -13,20 +13,20 @@ func (as *ActionSuite) Test_DonateHandler_TraditionalForm() {
 
 	// Should contain donation form content
 	body := res.Body.String()
-	AssertBodyContains(as.T(), body, "donation-form")
-	AssertBodyContains(as.T(), body, "Make a Donation")
-	AssertBodyContains(as.T(), body, "donor-info")
+	as.Contains(body, "donation-form")
+	as.Contains(body, "Make a Donation")
+	as.Contains(body, "donor-info")
 
 	// Should contain consolidated HTMX amount buttons
-	AssertBodyContains(as.T(), body, "donation-amounts")
-	AssertBodyContains(as.T(), body, "amount-grid")
-	AssertBodyContains(as.T(), body, "hx-patch=\"/donate/update-amount\"")
+	as.Contains(body, "donation-amounts")
+	as.Contains(body, "amount-grid")
+	as.Contains(body, "hx-patch=\"/donate/update-amount\"")
 
 	// Should return full HTML structure
-	AssertBodyContains(as.T(), body, "<!doctype")       // Full HTML document
-	AssertBodyContains(as.T(), body, "<html")           // HTML tag present
-	AssertBodyContains(as.T(), body, "<head>")          // Head section present
-	AssertBodyContains(as.T(), body, "Make a Donation") // Main donate content
+	as.Contains(body, "<!doctype")       // Full HTML document
+	as.Contains(body, "<html")           // HTML tag present
+	as.Contains(body, "<head>")          // Head section present
+	as.Contains(body, "Make a Donation") // Main donate content
 }
 
 func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
@@ -36,26 +36,26 @@ func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
 	res := as.HTML("/team").Get()
 	as.Equal(http.StatusOK, res.Code)
 	body := res.Body.String()
-	AssertBodyContains(as.T(), body, "team")
-	AssertBodyContains(as.T(), body, "<!doctype html>")
-	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
+	as.Contains(body, "team")
+	as.Contains(body, "<!doctype html>")
+	as.Contains(body, "<html lang=\"en\">")
 
 	// Test projects page
 	res = as.HTML("/projects").Get()
 	as.Equal(http.StatusOK, res.Code)
 	body = res.Body.String()
-	AssertBodyContains(as.T(), body, "projects")
-	AssertBodyContains(as.T(), body, "<!doctype html>")
-	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
+	as.Contains(body, "projects")
+	as.Contains(body, "<!doctype html>")
+	as.Contains(body, "<html lang=\"en\">")
 	as.NotContains(body, "htmx-content")
 
 	// Test contact page
 	res = as.HTML("/contact").Get()
 	as.Equal(http.StatusOK, res.Code)
 	body = res.Body.String()
-	AssertBodyContains(as.T(), body, "contact")
-	AssertBodyContains(as.T(), body, "<!doctype html>")
-	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
+	as.Contains(body, "contact")
+	as.Contains(body, "<!doctype html>")
+	as.Contains(body, "<html lang=\"en\">")
 	as.NotContains(body, "htmx-content")
 }
 
@@ -66,10 +66,10 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
 	body := res.Body.String()
-	AssertBodyContains(as.T(), body, "<!doctype html>")
-	AssertBodyContains(as.T(), body, "<html")
-	AssertBodyContains(as.T(), body, "THE AVR MISSION") // Actual home content
-	AssertBodyContains(as.T(), body, "American Veterans Rebuilding")
+	as.Contains(body, "<!doctype html>")
+	as.Contains(body, "<html")
+	as.Contains(body, "THE AVR MISSION") // Actual home content
+	as.Contains(body, "American Veterans Rebuilding")
 
 	// Test HTMX access - now also returns full page (progressive enhancement)
 	req := as.HTML("/")
@@ -77,9 +77,9 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	res2 := req.Get()
 	as.Equal(http.StatusOK, res2.Code)
 	body2 := res2.Body.String()
-	AssertBodyContains(as.T(), body2, "THE AVR MISSION")
-	AssertBodyContains(as.T(), body2, "<!doctype html>") // Now also returns full page
-	AssertBodyContains(as.T(), body2, "<html")           // Single-template architecture
+	as.Contains(body2, "THE AVR MISSION")
+	as.Contains(body2, "<!doctype html>") // Now also returns full page
+	as.Contains(body2, "<html")           // Single-template architecture
 }
 
 func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
@@ -111,9 +111,9 @@ func (as *ActionSuite) Test_Donation_Amount_Buttons_Render() {
 	as.Equal(http.StatusOK, res.Code)
 
 	body := res.Body.String()
-	AssertBodyContains(as.T(), body, "donation-amounts")
-	AssertBodyContains(as.T(), body, "amount-grid")
-	AssertBodyContains(as.T(), body, "hx-patch=\"/donate/update-amount\"")
+	as.Contains(body, "donation-amounts")
+	as.Contains(body, "amount-grid")
+	as.Contains(body, "hx-patch=\"/donate/update-amount\"")
 }
 func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 	// Test that main page loads JavaScript properly for progressive enhancement
@@ -122,9 +122,9 @@ func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 
 	// Check for JavaScript includes in main page (updated paths)
 	body := res.Body.String()
-	AssertBodyContains(as.T(), body, "/assets/js/htmx.min.js")
-	AssertBodyContains(as.T(), body, "/assets/js/theme.js")
-	AssertBodyContains(as.T(), body, "/assets/js/application.js")
+	as.Contains(body, "/assets/js/htmx.min.js")
+	as.Contains(body, "/assets/js/theme.js")
+	as.Contains(body, "/assets/js/application.js")
 }
 
 func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
