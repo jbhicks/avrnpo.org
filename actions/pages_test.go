@@ -12,27 +12,21 @@ func (as *ActionSuite) Test_DonateHandler_TraditionalForm() {
 	as.Equal(http.StatusOK, res.Code)
 
 	// Should contain donation form content
-	as.Contains(res.Body.String(), "donation-form")
-	as.Contains(res.Body.String(), "Make a Donation")
-	as.Contains(res.Body.String(), "donor-info")
+	body := res.Body.String()
+	AssertBodyContains(as.T(), body, "donation-form")
+	AssertBodyContains(as.T(), body, "Make a Donation")
+	AssertBodyContains(as.T(), body, "donor-info")
 
-	// Should contain radio buttons for amount selection
-	as.Contains(res.Body.String(), "name=\"amount\"")
-	as.Contains(res.Body.String(), "value=\"25\"")
-	as.Contains(res.Body.String(), "value=\"50\"")
-	as.Contains(res.Body.String(), "value=\"100\"")
-	as.Contains(res.Body.String(), "value=\"custom\"")
-
-	// Should NOT contain HTMX attributes
-	as.NotContains(res.Body.String(), "hx-vals")
-	as.NotContains(res.Body.String(), "hx-patch")
-	as.NotContains(res.Body.String(), "hx-target")
+	// Should contain consolidated HTMX amount buttons
+	AssertBodyContains(as.T(), body, "donation-amounts")
+	AssertBodyContains(as.T(), body, "amount-grid")
+	AssertBodyContains(as.T(), body, "hx-patch=\"/donate/update-amount\"")
 
 	// Should return full HTML structure
-	as.Contains(res.Body.String(), "<!doctype")       // Full HTML document
-	as.Contains(res.Body.String(), "<html")           // HTML tag present
-	as.Contains(res.Body.String(), "<head>")          // Head section present
-	as.Contains(res.Body.String(), "Make a Donation") // Main donate content
+	AssertBodyContains(as.T(), body, "<!doctype")       // Full HTML document
+	AssertBodyContains(as.T(), body, "<html")           // HTML tag present
+	AssertBodyContains(as.T(), body, "<head>")          // Head section present
+	AssertBodyContains(as.T(), body, "Make a Donation") // Main donate content
 }
 
 func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
@@ -41,25 +35,28 @@ func (as *ActionSuite) Test_AllPageHandlers_SingleTemplate() {
 	// Test team page
 	res := as.HTML("/team").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "team")
-	as.Contains(res.Body.String(), "<!doctype html>")
-	as.Contains(res.Body.String(), "<html lang=\"en\">")
+	body := res.Body.String()
+	AssertBodyContains(as.T(), body, "team")
+	AssertBodyContains(as.T(), body, "<!doctype html>")
+	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
 
 	// Test projects page
 	res = as.HTML("/projects").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "projects")
-	as.Contains(res.Body.String(), "<!doctype html>")
-	as.Contains(res.Body.String(), "<html lang=\"en\">")
-	as.NotContains(res.Body.String(), "htmx-content")
+	body = res.Body.String()
+	AssertBodyContains(as.T(), body, "projects")
+	AssertBodyContains(as.T(), body, "<!doctype html>")
+	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
+	as.NotContains(body, "htmx-content")
 
 	// Test contact page
 	res = as.HTML("/contact").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "contact")
-	as.Contains(res.Body.String(), "<!doctype html>")
-	as.Contains(res.Body.String(), "<html lang=\"en\">")
-	as.NotContains(res.Body.String(), "htmx-content")
+	body = res.Body.String()
+	AssertBodyContains(as.T(), body, "contact")
+	AssertBodyContains(as.T(), body, "<!doctype html>")
+	AssertBodyContains(as.T(), body, "<html lang=\"en\">")
+	as.NotContains(body, "htmx-content")
 }
 
 func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
@@ -68,19 +65,21 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	// Test direct access - should return full page
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
-	as.Contains(res.Body.String(), "<!doctype html>")
-	as.Contains(res.Body.String(), "<html")
-	as.Contains(res.Body.String(), "THE AVR MISSION") // Actual home content
-	as.Contains(res.Body.String(), "American Veterans Rebuilding")
+	body := res.Body.String()
+	AssertBodyContains(as.T(), body, "<!doctype html>")
+	AssertBodyContains(as.T(), body, "<html")
+	AssertBodyContains(as.T(), body, "THE AVR MISSION") // Actual home content
+	AssertBodyContains(as.T(), body, "American Veterans Rebuilding")
 
 	// Test HTMX access - now also returns full page (progressive enhancement)
 	req := as.HTML("/")
 	req.Headers["HX-Request"] = "true"
 	res2 := req.Get()
 	as.Equal(http.StatusOK, res2.Code)
-	as.Contains(res2.Body.String(), "THE AVR MISSION")
-	as.Contains(res2.Body.String(), "<!doctype html>") // Now also returns full page
-	as.Contains(res2.Body.String(), "<html")           // Single-template architecture
+	body2 := res2.Body.String()
+	AssertBodyContains(as.T(), body2, "THE AVR MISSION")
+	AssertBodyContains(as.T(), body2, "<!doctype html>") // Now also returns full page
+	AssertBodyContains(as.T(), body2, "<html")           // Single-template architecture
 }
 
 func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
@@ -104,41 +103,28 @@ func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
 	as.Contains(body2, "<!doctype html>")
 }
 
-func (as *ActionSuite) Test_Donation_Amount_RadioButtons() {
-	// Test that donation amount radio buttons are properly structured
+func (as *ActionSuite) Test_Donation_Amount_Buttons_Render() {
+	// Test that consolidated HTMX amount buttons render on /donate
 	req := as.HTML("/donate")
 	res := req.Get()
 
 	as.Equal(http.StatusOK, res.Code)
 
-	// Check for proper radio button structure (no HTMX attributes)
-	as.Contains(res.Body.String(), "name=\"amount\"")
-	as.Contains(res.Body.String(), "type=\"radio\"")
-	as.Contains(res.Body.String(), "value=\"25\"")
-	as.Contains(res.Body.String(), "value=\"50\"")
-	as.Contains(res.Body.String(), "value=\"100\"")
-	as.Contains(res.Body.String(), "value=\"custom\"")
-
-	// Should NOT contain HTMX attributes
-	as.NotContains(res.Body.String(), "hx-patch")
-	as.NotContains(res.Body.String(), "hx-vals")
-	as.NotContains(res.Body.String(), "amount-btn")
-
-	// Check for fieldset structure for proper form semantics
 	body := res.Body.String()
-	as.Contains(body, "<fieldset>")
-	as.Contains(body, "<legend>Select Amount</legend>")
+	AssertBodyContains(as.T(), body, "donation-amounts")
+	AssertBodyContains(as.T(), body, "amount-grid")
+	AssertBodyContains(as.T(), body, "hx-patch=\"/donate/update-amount\"")
 }
-
 func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 	// Test that main page loads JavaScript properly for progressive enhancement
 	res := as.HTML("/").Get()
 	as.Equal(http.StatusOK, res.Code)
 
 	// Check for JavaScript includes in main page (updated paths)
-	as.Contains(res.Body.String(), "/assets/js/htmx.min.js")
-	as.Contains(res.Body.String(), "/assets/js/theme.js")
-	as.Contains(res.Body.String(), "/assets/js/application.js")
+	body := res.Body.String()
+	AssertBodyContains(as.T(), body, "/assets/js/htmx.min.js")
+	AssertBodyContains(as.T(), body, "/assets/js/theme.js")
+	AssertBodyContains(as.T(), body, "/assets/js/application.js")
 }
 
 func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
@@ -152,14 +138,36 @@ func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
 		req.Headers["Cookie"] = cookie
 	}
 	// HTMX sends values as form-encoded; simulate preset button sending custom_amount
-	res := req.Post("custom_amount=25&amount_source=preset&authenticity_token=" + token)
+	// For preset amount clicks, the HTMX endpoint is /donate/update-amount
+	req = as.HTML("/donate/update-amount")
+	if req.Headers == nil {
+		req.Headers = map[string]string{}
+	}
+	req.Headers["HX-Request"] = "true"
+	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
+	if cookie != "" {
+		req.Headers["Cookie"] = cookie
+	}
+	// Prefer header for HTMX CSRF
+	if token != "" {
+		req.Headers["X-CSRF-Token"] = token
+	}
+	formData := map[string]interface{}{
+		"amount":        "25",
+		"source":        "preset",
+		"donation_type": "one-time",
+	}
+	res := req.Post(formData)
 
-	// We expect a 200 and the donation form partial or full page (no 500)
+	// We expect a 200 and the amount-selection fragment (no layout)
 	as.Equal(http.StatusOK, res.Code)
 	body := res.Body.String()
-	as.Contains(body, "donation-form")
-	// Ensure preset amounts are present so template did not panic
+	// Fragment wrapper id and selected value
+	as.Contains(body, "<div id=\"amount-selection\"")
 	as.Contains(body, "value=\"25\"")
+	// Ensure no full layout leaked
+	as.NotContains(body, "<html")
+	as.NotContains(body, "<nav")
 }
 
 // Test that static asset endpoints return 200 OK and non-empty body
