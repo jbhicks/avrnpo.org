@@ -703,7 +703,7 @@ func getDonationStats(tx *pop.Connection) (DonationStats, error) {
 	}
 
 	// Recurring donations count
-	recurringCount, _ := tx.Where("donation_type = ?", "recurring").Count(&models.Donation{})
+	recurringCount, _ := tx.Where("donation_type = ?", "monthly").Count(&models.Donation{})
 	stats.RecurringCount = recurringCount
 
 	return stats, nil

@@ -6,13 +6,13 @@
 <% } %>
 <div class="payment-container">
   <section>
-    <h1>Processing Your <%= if (donationType == "monthly") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
-    <p>Thank you for your generous <%= if (donationType == "monthly") { %>monthly recurring<% } else { %>one-time<% } %> donation to American Veterans Rebuilding!</p>
+    <h1>Processing Your <%= if (donationType == "monthly" || donationType == "recurring") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
+    <p>Thank you for your generous <%= if (donationType == "monthly" || donationType == "recurring") { %>monthly recurring<% } else { %>one-time<% } %> donation to American Veterans Rebuilding!</p>
 
     <div class="payment-details">
-      <p><strong>Donation Amount:</strong> $<%= amount %><%= if (donationType == "monthly") { %> per month<% } %></p>
+      <p><strong>Donation Amount:</strong> $<%= amount %><%= if (donationType == "monthly" || donationType == "recurring") { %> per month<% } %></p>
       <p><strong>Donor:</strong> <%= donorName %></p>
-      <%= if (donationType == "monthly") { %>
+      <%= if (donationType == "monthly" || donationType == "recurring") { %>
         <p><strong>Billing Cycle:</strong> Monthly recurring</p>
         <%= if (nextBillingDate) { %>
           <p><strong>Next Payment:</strong> <%= nextBillingDate %></p>
@@ -45,11 +45,12 @@
 
 <script>
   console.log('[DonatePayment] SCRIPT LOADED - Starting payment page initialization');
-   console.log('[DonatePayment] Template variables - checkoutToken:', '<%= checkoutToken %>' ? 'PRESENT' : 'MISSING');
-   console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
-   console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
-   console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
-   console.log('[DonatePayment] Authenticity token value:', '<%= authenticity_token %>');
+    console.log('[DonatePayment] Template variables - checkoutToken:', '<%= checkoutToken %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
+    console.log('[DonatePayment] Template variables - donationType:', '<%= donationType %>');
+    console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Authenticity token value:', '<%= authenticity_token %>');
    console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
 
    // Test if basic JavaScript is working
