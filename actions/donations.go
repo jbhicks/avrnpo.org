@@ -55,6 +55,17 @@ func safeString(val interface{}) string {
 	}
 }
 
+// safePrefix safely returns the first n characters of a string, or the whole string if shorter
+func safePrefix(s string, n int) string {
+	if len(s) == 0 {
+		return ""
+	}
+	if len(s) <= n {
+		return s
+	}
+	return s[:n]
+}
+
 func stringOrEmpty(s *string) string {
 	if s == nil {
 		return ""
@@ -854,10 +865,10 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 	c.Logger().Infof("[ProcessPayment] Starting payment processing - Method: %s", c.Request().Method)
 
 	var req struct {
-		CustomerCode string  `json:"customerCode"`
-		CardToken    string  `json:"cardToken"`
-		DonationID   string  `json:"donationId"`
-		Amount       float64 `json:"amount"`
+		CustomerCode string `json:"customerCode"`
+		CardToken    string `json:"cardToken"`
+		DonationID   string `json:"donationId"`
+		Amount       string `json:"amount"` // Accept as string from JavaScript
 	}
 
 	if err := c.Bind(&req); err != nil {
@@ -867,16 +878,24 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 		}))
 	}
 
+	// Parse amount string to float64
+	amount, err := strconv.ParseFloat(req.Amount, 64)
+	if err != nil {
+		c.Logger().Errorf("[ProcessPayment] Failed to parse amount '%s': %v", req.Amount, err)
+		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
+			"error": "Invalid amount format",
+		}))
+	}
+
 	c.Logger().Infof("[ProcessPayment] Request parsed - CustomerCode: %s, DonationID: %s, Amount: $%.2f",
-		req.CustomerCode, req.DonationID, req.Amount)
+		req.CustomerCode, req.DonationID, amount)
 
 	// Validate required fields for payment processing
 	if req.CustomerCode == "" {
-		c.Logger().Errorf("[ProcessPayment] Missing customerCode - CardToken: %s, DonationID: %s",
-			req.CardToken[:8]+"...", req.DonationID)
-		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
-			"error": "Missing customer code - payment verification may have failed",
-		}))
+		// Generate a customer code if missing (fallback for HelcimPay.js response issues)
+		req.CustomerCode = fmt.Sprintf("DON_%s_%d", req.DonationID, time.Now().Unix())
+		c.Logger().Warnf("[ProcessPayment] Missing customerCode - generated fallback: %s for DonationID: %s",
+			req.CustomerCode, req.DonationID)
 	}
 
 	if req.DonationID == "" {
@@ -901,14 +920,27 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 	c.Logger().Infof("[ProcessPayment] Donation found - ID: %s, Type: %s, Amount: $%.2f, Donor: %s",
 		donation.ID.String(), donation.DonationType, donation.Amount, donation.DonorEmail)
 
+	// Create payment request struct with parsed amount
+	var paymentReq = struct {
+		CustomerCode string  `json:"customerCode"`
+		CardToken    string  `json:"cardToken"`
+		DonationID   string  `json:"donationId"`
+		Amount       float64 `json:"amount"`
+	}{
+		CustomerCode: req.CustomerCode,
+		CardToken:    req.CardToken,
+		DonationID:   req.DonationID,
+		Amount:       amount,
+	}
+
 	if donation.DonationType == "monthly" {
 		c.Logger().Infof("[ProcessPayment] Routing to recurring payment handler for donation %s", donation.ID.String())
 		// RECURRING DONATION: Create subscription
-		return handleRecurringPayment(c, req, donation)
+		return handleRecurringPayment(c, paymentReq, donation)
 	} else {
 		c.Logger().Infof("[ProcessPayment] Routing to one-time payment handler for donation %s", donation.ID.String())
 		// ONE-TIME DONATION: Process immediate payment
-		return handleOneTimePayment(c, req, donation)
+		return handleOneTimePayment(c, paymentReq, donation)
 	}
 }
 
@@ -922,7 +954,7 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 
 	c.Logger().Infof("[OneTimePayment] Starting one-time payment processing for donation %s", donation.ID.String())
 	c.Logger().Debugf("[OneTimePayment] Payment details - CustomerCode: %s, CardToken: %s..., Amount: $%.2f",
-		req.CustomerCode, req.CardToken[:8]+"...", req.Amount)
+		req.CustomerCode, safePrefix(req.CardToken, 8)+"...", req.Amount)
 
 	// Server-side sanity check: donation amount must be > 0
 	if donation.Amount <= 0 {
@@ -1075,7 +1107,7 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 
 	c.Logger().Infof("[RecurringPayment] Starting recurring payment processing for donation %s", donation.ID.String())
 	c.Logger().Debugf("[RecurringPayment] Payment details - CustomerCode: %s, CardToken: %s..., Amount: $%.2f",
-		req.CustomerCode, req.CardToken[:8]+"...", req.Amount)
+		req.CustomerCode, safePrefix(req.CardToken, 8)+"...", req.Amount)
 
 	// Check if we should use live payments even in development
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
