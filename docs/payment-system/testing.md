@@ -179,7 +179,7 @@ curl -X POST http://localhost:3000/api/webhooks/helcim \
 
 #### "Payment modal doesn't open"
 - **Check**: Browser console for JavaScript errors
-- **Check**: HelcimPay.js is loaded (`/js/helcim-pay.min.js`)
+- **Check**: Official HelcimPay.js is loaded (`https://secure.helcim.app/helcim-pay/services/start.js`)
 - **Solution**: Ensure Buffalo is serving static files
 
 #### "Invalid signature" webhook errors  

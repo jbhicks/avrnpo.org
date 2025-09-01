@@ -72,6 +72,39 @@ make admin
 - **Authentication**: Session-based with role management
 - **Deployment**: Container-ready with Docker/Podman
 
+## 💳 Helcim Integration Quickstart
+
+The donation system uses Helcim's official payment integration. For development and testing:
+
+### Official Integration Pattern
+- **Script URL**: `https://secure.helcim.app/helcim-pay/services/start.js`
+- **API Endpoint**: `POST /v2/helcim-pay/initialize`
+- **Modal Function**: `appendHelcimPayIframe(checkoutToken)`
+- **Events**: PostMessage events (SUCCESS, ABORTED, HIDE)
+
+### Development Setup
+```bash
+# Validate Helcim URLs in codebase
+./scripts/validate-helcim-urls.sh
+
+# Test donation flow
+make dev
+# Visit: http://127.0.0.1:3000/donate
+```
+
+### Key Files
+- **Template**: `templates/pages/donate_payment.plush.html`
+- **Backend**: `actions/donations.go`
+- **Validation**: `scripts/validate-helcim-urls.sh`
+- **Docs**: `docs/payment-system/`
+
+### Testing
+- Use official Helcim test cards: `4124939999999990` (CVV: 100)
+- Check browser console for Helcim script loading
+- Monitor Buffalo logs for payment processing
+
+See [Payment System Documentation](./docs/payment-system/) for complete details.
+
 ## 📚 Documentation
 
 For detailed development information, see the [comprehensive documentation](./docs/):

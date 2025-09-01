@@ -83,6 +83,9 @@ func isAPIRequest(c buffalo.Context) bool {
 }
 
 // HelcimPayRequest represents the request to initialize a Helcim payment
+// This corresponds to the HelcimPay.js initialize API endpoint:
+// POST https://api.helcim.com/v2/helcim-pay/initialize
+// See: https://devdocs.helcim.com/docs/initialize-helcimpayjs
 type HelcimPayRequest struct {
 	PaymentType string  `json:"paymentType"`
 	Amount      float64 `json:"amount"`
@@ -96,6 +99,10 @@ type HelcimPayRequest struct {
 }
 
 // HelcimPayResponse represents the response from Helcim payment initialization
+// Contains tokens required for frontend HelcimPay.js integration:
+// - checkoutToken: Used by appendHelcimPayIframe() to render payment modal
+// - secretToken: Used for transaction validation and webhook verification
+// Tokens expire after 60 minutes per Helcim documentation
 type HelcimPayResponse struct {
 	CheckoutToken string `json:"checkoutToken"`
 	SecretToken   string `json:"secretToken"`
@@ -171,9 +178,12 @@ type HelcimWebhookCustomer struct {
 
 // DonationInitializeHandler initializes a Helcim payment session (UNIFIED APPROACH)
 func DonationInitializeHandler(c buffalo.Context) error {
+	c.Logger().Infof("[DonationInitialize] Starting donation initialization - Method: %s, Path: %s", c.Request().Method, c.Request().URL.Path)
+
 	// Parse donation request
 	var req DonationRequest
 	if err := c.Bind(&req); err != nil {
+		c.Logger().Errorf("[DonationInitialize] Failed to bind request: %v", err)
 		// If CSRF token is missing/invalid, mw-csrf will already have returned 403 before reaching here.
 		// For API requests with malformed JSON, return 400.
 		if isAPIRequest(c) {
@@ -186,6 +196,9 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		setDonateContext(c, nil)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
+
+	c.Logger().Infof("[DonationInitialize] Request parsed - Type: %s, Amount: %s, Email: %s, Name: %s %s",
+		req.DonationType, req.CustomAmount, req.DonorEmail, req.FirstName, req.LastName)
 
 	// Use Buffalo's validate.Errors for field-specific error collection
 	errors := validate.NewErrors()
@@ -257,6 +270,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 
 	// If there are any errors, render the form with errors and user input
 	if errors.HasAny() {
+		c.Logger().Warnf("[DonationInitialize] Validation failed - Errors: %v", errors.Errors)
 		c.Set("errors", errors)
 		c.Set("hasAnyErrors", errors.HasAny())
 		c.Set("hasCommentsError", errors.Get("comments") != nil)
@@ -306,18 +320,23 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		// Check if this is an HTMX request
 		isHTMX := c.Request().Header.Get("HX-Request") == "true"
 		if isHTMX {
+			c.Logger().Infof("[DonationInitialize] Returning HTMX form fragment due to validation errors")
 			// For HTMX requests, return only the form content
 			return c.Render(http.StatusOK, r.HTML("pages/_donate_form.plush.html"))
 		}
 
+		c.Logger().Infof("[DonationInitialize] Returning full donate page due to validation errors")
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
 
 	// Always process as full form submission, never partial
+	c.Logger().Infof("[DonationInitialize] Validation passed - proceeding with donation creation")
 
 	// UNIFIED APPROACH: Always use verify mode for payment collection
 	// This creates a consistent flow for both one-time and recurring donations
 	donorName := strings.TrimSpace(req.FirstName + " " + req.LastName)
+	c.Logger().Infof("[DonationInitialize] Creating donation record - Name: %s, Amount: $%.2f, Type: %s",
+		donorName, amount, req.DonationType)
 
 	helcimReq := HelcimPayVerifyRequest{
 		PaymentType: "verify", // Always verify first, charge later via API
@@ -336,6 +355,9 @@ func DonationInitializeHandler(c buffalo.Context) error {
 			},
 		},
 	}
+
+	c.Logger().Debugf("[DonationInitialize] Helcim verify request prepared - Customer: %s, Email: %s, Address: %s, %s, %s %s",
+		donorName, req.DonorEmail, req.AddressLine1, req.City, req.State, req.Zip)
 
 	// Store donation details for later processing
 	donation := &models.Donation{
@@ -370,8 +392,10 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	}
 
 	// Save to database
+	c.Logger().Infof("[DonationInitialize] Saving donation to database - ID will be generated")
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Create(donation); err != nil {
+		c.Logger().Errorf("[DonationInitialize] Failed to create donation record: %v", err)
 		if isAPIRequest(c) {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 				"error": "Failed to create donation record",
@@ -381,12 +405,13 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
+	c.Logger().Infof("[DonationInitialize] Donation record created successfully - ID: %s", donation.ID.String())
 
 	// Call Helcim API with verify request
+	c.Logger().Infof("[DonationInitialize] Calling Helcim verify API for donation %s", donation.ID.String())
 	helcimResponse, err := callHelcimVerifyAPI(helcimReq)
 	if err != nil {
-		// Log error for debugging
-		c.Logger().Errorf("Helcim API error: %v", err)
+		c.Logger().Errorf("[DonationInitialize] Helcim API error for donation %s: %v", donation.ID.String(), err)
 		if isAPIRequest(c) {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 				"error": "Payment system unavailable. Please try again later.",
@@ -396,13 +421,16 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
+	c.Logger().Infof("[DonationInitialize] Helcim verify successful - CheckoutToken: %s, SecretToken: %s",
+		helcimResponse.CheckoutToken[:8]+"...", helcimResponse.SecretToken[:8]+"...")
 
 	// Update donation record with Helcim tokens
+	c.Logger().Infof("[DonationInitialize] Updating donation %s with Helcim tokens", donation.ID.String())
 	donation.CheckoutToken = helcimResponse.CheckoutToken
 	donation.SecretToken = helcimResponse.SecretToken
 
 	if err := tx.Update(donation); err != nil {
-		c.Logger().Errorf("Database error updating donation: %v", err)
+		c.Logger().Errorf("[DonationInitialize] Database error updating donation %s: %v", donation.ID.String(), err)
 		if isAPIRequest(c) {
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 				"error": "Failed to update donation record",
@@ -412,9 +440,11 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		ensureDonateContext(c)
 		return c.Redirect(http.StatusSeeOther, "/donate")
 	}
+	c.Logger().Infof("[DonationInitialize] Donation %s updated successfully with tokens", donation.ID.String())
 
 	// Return success with checkout token and donation ID
 	if isAPIRequest(c) {
+		c.Logger().Infof("[DonationInitialize] Returning API response for donation %s", donation.ID.String())
 		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 			"success":       true,
 			"checkoutToken": helcimResponse.CheckoutToken,
@@ -426,6 +456,7 @@ func DonationInitializeHandler(c buffalo.Context) error {
 	}
 
 	// For form submissions, redirect to payment processing page
+	c.Logger().Infof("[DonationInitialize] Redirecting to payment page for donation %s", donation.ID.String())
 	// Store checkout data in session for the payment page
 	// Store amount as formatted string to avoid template rendering issues
 	c.Session().Set("donation_id", donation.ID.String())
@@ -559,30 +590,43 @@ func DonationStatusHandler(c buffalo.Context) error {
 
 // HelcimWebhookHandler processes webhook notifications from Helcim
 func HelcimWebhookHandler(c buffalo.Context) error {
+	c.Logger().Infof("[Webhook] Received Helcim webhook - Method: %s, Content-Type: %s",
+		c.Request().Method, c.Request().Header.Get("Content-Type"))
+
 	// Get the raw body for signature verification
 	body, err := io.ReadAll(c.Request().Body)
 	if err != nil {
-		c.Logger().Errorf("Failed to read webhook body: %v", err)
+		c.Logger().Errorf("[Webhook] Failed to read webhook body: %v", err)
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid request body"}))
 	}
 
+	c.Logger().Debugf("[Webhook] Raw body length: %d bytes", len(body))
+
 	// Verify webhook signature
 	signature := c.Request().Header.Get("X-Helcim-Signature")
+	signaturePreview := signature
+	if len(signature) > 16 {
+		signaturePreview = signature[:16] + "..."
+	}
+	c.Logger().Debugf("[Webhook] Verifying signature: %s", signaturePreview)
+
 	if !verifyWebhookSignature(body, signature) {
-		c.Logger().Errorf("Invalid webhook signature")
+		c.Logger().Errorf("[Webhook] Invalid webhook signature - rejecting request")
 		return c.Render(http.StatusUnauthorized, r.JSON(map[string]string{"error": "Invalid signature"}))
 	}
+
+	c.Logger().Infof("[Webhook] Signature verification successful")
 
 	// Parse webhook event
 	var event HelcimWebhookEvent
 	if err := json.Unmarshal(body, &event); err != nil {
-		c.Logger().Errorf("Failed to parse webhook event: %v", err)
+		c.Logger().Errorf("[Webhook] Failed to parse webhook event: %v", err)
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid JSON"}))
 	}
 
 	// Log the webhook event for debugging (signature verified)
-	c.Logger().Infof("Received Helcim webhook: type=%s, id=%s", event.Type, event.ID)
-	c.Logger().Debugf("Helcim webhook raw payload: %s", string(body))
+	c.Logger().Infof("[Webhook] Parsed webhook event - Type: %s, ID: %s", event.Type, event.ID)
+	c.Logger().Debugf("[Webhook] Full event data: %+v", event)
 
 	// Get database connection
 	tx, ok := c.Value("tx").(*pop.Connection)
@@ -644,29 +688,31 @@ func generateHMACSignature(body []byte, secret string) string {
 
 // handleCardTransaction processes cardTransaction webhook events from Helcim
 func handleCardTransaction(tx *pop.Connection, transactionID string, c buffalo.Context) error {
-	c.Logger().Infof("Processing cardTransaction webhook for transaction ID: %s", transactionID)
+	c.Logger().Infof("[Webhook] Processing cardTransaction webhook for transaction ID: %s", transactionID)
 
 	// Find the donation record by Helcim transaction ID
 	donation := &models.Donation{}
 	err := tx.Where("helcim_transaction_id = ?", transactionID).First(donation)
 	if err != nil {
+		c.Logger().Debugf("[Webhook] Donation not found by helcim_transaction_id, trying transaction_id")
 		// Try finding by transaction_id field as well
 		err2 := tx.Where("transaction_id = ?", transactionID).First(donation)
 		if err2 != nil {
 			// If we can't find the donation, log it but don't fail the webhook
-			c.Logger().Warnf("Could not find donation for transaction ID: %s - may be external transaction", transactionID)
+			c.Logger().Warnf("[Webhook] Could not find donation for transaction ID: %s - may be external transaction", transactionID)
 			return nil
 		}
 	}
 
-	c.Logger().Infof("Found donation record for transaction %s - donor: %s, amount: $%.2f, type: %s",
-		transactionID, donation.DonorEmail, donation.Amount, donation.DonationType)
+	c.Logger().Infof("[Webhook] Found donation record for transaction %s - ID: %s, Donor: %s, Amount: $%.2f, Type: %s",
+		transactionID, donation.ID.String(), donation.DonorEmail, donation.Amount, donation.DonationType)
 
 	// For webhook events, we need to fetch the full transaction details from Helcim API
 	// to determine if it was successful, declined, etc.
 	// For now, we'll assume success since Helcim sends webhooks for both success and failure
 
 	// Update donation status to completed (webhooks typically indicate successful processing)
+	c.Logger().Infof("[Webhook] Updating donation %s status to completed", donation.ID.String())
 	donation.Status = "completed"
 	if donation.HelcimTransactionID == nil {
 		donation.HelcimTransactionID = &transactionID
@@ -677,9 +723,11 @@ func handleCardTransaction(tx *pop.Connection, transactionID string, c buffalo.C
 	donation.UpdatedAt = time.Now()
 
 	if err := tx.Save(donation); err != nil {
-		c.Logger().Errorf("Failed to update donation status for transaction %s: %v", transactionID, err)
+		c.Logger().Errorf("[Webhook] Failed to update donation %s status for transaction %s: %v",
+			donation.ID.String(), transactionID, err)
 		return fmt.Errorf("failed to update donation status: %v", err)
 	}
+	c.Logger().Infof("[Webhook] Donation %s status updated successfully", donation.ID.String())
 
 	// Send receipt email for completed payments
 	emailService := services.NewEmailService()
@@ -726,16 +774,23 @@ func handleCardTransaction(tx *pop.Connection, transactionID string, c buffalo.C
 }
 
 // callHelcimVerifyAPI calls the Helcim API with verify mode for unified payment collection
+// Uses the official HelcimPay.js initialize endpoint:
+// POST https://api.helcim.com/v2/helcim-pay/initialize
+// See: docs/payment-system/helcim-integration.md for complete API documentation
 func callHelcimVerifyAPI(req HelcimPayVerifyRequest) (*HelcimPayResponse, error) {
 	// Check if we're in test environment - return mock data instead of calling real API
 	if os.Getenv("GO_ENV") == "test" {
 		// Return mock success response for tests
 		timestamp := fmt.Sprintf("%d", time.Now().UnixNano())
+		fmt.Printf("[HelcimVerify] Test environment detected - returning mock tokens\n")
 		return &HelcimPayResponse{
 			CheckoutToken: "test_checkout_token_" + timestamp,
 			SecretToken:   "test_secret_token_" + timestamp,
 		}, nil
 	}
+
+	fmt.Printf("[HelcimVerify] Calling Helcim verify API - PaymentType: %s, Amount: %.2f, Currency: %s\n",
+		req.PaymentType, req.Amount, req.Currency)
 
 	// Get API token from environment
 	apiToken := os.Getenv("HELCIM_PRIVATE_API_KEY")
@@ -775,20 +830,29 @@ func callHelcimVerifyAPI(req HelcimPayVerifyRequest) (*HelcimPayResponse, error)
 
 	// Check for HTTP errors
 	if resp.StatusCode != http.StatusOK {
+		fmt.Printf("[HelcimVerify] API error - Status: %d, Response: %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("Helcim API error %d: %s", resp.StatusCode, string(body))
 	}
+
+	fmt.Printf("[HelcimVerify] API call successful - Status: %d\n", resp.StatusCode)
 
 	// Parse response
 	var helcimResp HelcimPayResponse
 	if err := json.Unmarshal(body, &helcimResp); err != nil {
+		fmt.Printf("[HelcimVerify] Failed to parse response: %v\n", err)
 		return nil, fmt.Errorf("error parsing response: %v", err)
 	}
+
+	fmt.Printf("[HelcimVerify] Response parsed successfully - CheckoutToken: %s..., SecretToken: %s...\n",
+		helcimResp.CheckoutToken[:8], helcimResp.SecretToken[:8])
 
 	return &helcimResp, nil
 }
 
 // ProcessPaymentHandler handles payment processing after verification (UNIFIED APPROACH)
 func ProcessPaymentHandler(c buffalo.Context) error {
+	c.Logger().Infof("[ProcessPayment] Starting payment processing - Method: %s", c.Request().Method)
+
 	var req struct {
 		CustomerCode string  `json:"customerCode"`
 		CardToken    string  `json:"cardToken"`
@@ -797,41 +861,52 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 	}
 
 	if err := c.Bind(&req); err != nil {
+		c.Logger().Errorf("[ProcessPayment] Failed to bind request: %v", err)
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
 			"error": "Invalid request data",
 		}))
 	}
 
+	c.Logger().Infof("[ProcessPayment] Request parsed - CustomerCode: %s, DonationID: %s, Amount: $%.2f",
+		req.CustomerCode, req.DonationID, req.Amount)
+
 	// Validate required fields for payment processing
 	if req.CustomerCode == "" {
-		c.Logger().Errorf("ProcessPaymentHandler: missing customerCode - req=%+v", req)
+		c.Logger().Errorf("[ProcessPayment] Missing customerCode - CardToken: %s, DonationID: %s",
+			req.CardToken[:8]+"...", req.DonationID)
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
 			"error": "Missing customer code - payment verification may have failed",
 		}))
 	}
 
 	if req.DonationID == "" {
+		c.Logger().Errorf("[ProcessPayment] Missing donation ID")
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]string{
 			"error": "Missing donation ID",
 		}))
 	}
 
-	c.Logger().Infof("ProcessPaymentHandler: customerCode=%s, donationId=%s, amount=%.2f",
-		req.CustomerCode, req.DonationID, req.Amount)
+	c.Logger().Infof("[ProcessPayment] Validation passed - proceeding with payment for donation %s", req.DonationID)
 
 	// Get donation record
 	tx := c.Value("tx").(*pop.Connection)
 	donation := &models.Donation{}
 	if err := tx.Find(donation, req.DonationID); err != nil {
+		c.Logger().Errorf("[ProcessPayment] Donation not found: %s - Error: %v", req.DonationID, err)
 		return c.Render(http.StatusNotFound, r.JSON(map[string]string{
 			"error": "Donation not found",
 		}))
 	}
 
+	c.Logger().Infof("[ProcessPayment] Donation found - ID: %s, Type: %s, Amount: $%.2f, Donor: %s",
+		donation.ID.String(), donation.DonationType, donation.Amount, donation.DonorEmail)
+
 	if donation.DonationType == "monthly" {
+		c.Logger().Infof("[ProcessPayment] Routing to recurring payment handler for donation %s", donation.ID.String())
 		// RECURRING DONATION: Create subscription
 		return handleRecurringPayment(c, req, donation)
 	} else {
+		c.Logger().Infof("[ProcessPayment] Routing to one-time payment handler for donation %s", donation.ID.String())
 		// ONE-TIME DONATION: Process immediate payment
 		return handleOneTimePayment(c, req, donation)
 	}
@@ -845,9 +920,14 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	Amount       float64 `json:"amount"`
 }, donation *models.Donation) error {
 
+	c.Logger().Infof("[OneTimePayment] Starting one-time payment processing for donation %s", donation.ID.String())
+	c.Logger().Debugf("[OneTimePayment] Payment details - CustomerCode: %s, CardToken: %s..., Amount: $%.2f",
+		req.CustomerCode, req.CardToken[:8]+"...", req.Amount)
+
 	// Server-side sanity check: donation amount must be > 0
 	if donation.Amount <= 0 {
-		c.Logger().Errorf("Refusing to process payment: stored donation amount invalid (%.2f). req.Amount=%.2f donation.ID=%s", donation.Amount, req.Amount, donation.ID.String())
+		c.Logger().Errorf("[OneTimePayment] Refusing to process payment: stored donation amount invalid (%.2f). req.Amount=%.2f donation.ID=%s",
+			donation.Amount, req.Amount, donation.ID.String())
 		return c.Render(http.StatusBadRequest, r.JSON(map[string]interface{}{
 			"success": false,
 			"error":   "Invalid donation amount on server",
@@ -856,18 +936,24 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 
 	// Log a mismatch if client-supplied amount differs significantly from stored amount
 	if req.Amount > 0 && (fmt.Sprintf("%.2f", req.Amount) != fmt.Sprintf("%.2f", donation.Amount)) {
-		c.Logger().Warnf("Client amount (%.2f) differs from stored donation amount (%.2f) for donation ID %s", req.Amount, donation.Amount, donation.ID.String())
+		c.Logger().Warnf("[OneTimePayment] Client amount (%.2f) differs from stored donation amount (%.2f) for donation ID %s",
+			req.Amount, donation.Amount, donation.ID.String())
 	}
+
+	c.Logger().Infof("[OneTimePayment] Amount validation passed - proceeding with payment for $%.2f", donation.Amount)
 
 	// Check if we should use live payments even in development
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
+	c.Logger().Debugf("[OneTimePayment] Environment check - GO_ENV: %s, HELCIM_LIVE_TESTING: %s, useLivePayments: %t",
+		os.Getenv("GO_ENV"), os.Getenv("HELCIM_LIVE_TESTING"), useLivePayments)
 
 	// TEMPORARY: For development, simulate successful payment (unless live testing enabled)
 	if os.Getenv("GO_ENV") == "development" && !useLivePayments {
-		c.Logger().Info("Development mode: Simulating successful payment")
+		c.Logger().Infof("[OneTimePayment] Development mode: Simulating successful payment for donation %s", donation.ID.String())
 
 		// Generate a fake transaction ID
 		transactionID := fmt.Sprintf("dev_txn_%d", time.Now().Unix())
+		c.Logger().Debugf("[OneTimePayment] Generated dev transaction ID: %s", transactionID)
 
 		// Update donation record
 		donation.TransactionID = &transactionID
@@ -876,12 +962,13 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 
 		tx := c.Value("tx").(*pop.Connection)
 		if err := tx.Update(donation); err != nil {
-			c.Logger().Errorf("Failed to update donation: %v", err)
+			c.Logger().Errorf("[OneTimePayment] Failed to update donation %s: %v", donation.ID.String(), err)
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
 				"success": false,
 				"error":   "Failed to update donation",
 			}))
 		}
+		c.Logger().Infof("[OneTimePayment] Donation %s updated successfully with dev transaction", donation.ID.String())
 
 		// Send donation receipt email in development
 		emailService := services.NewEmailService()
@@ -911,11 +998,12 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 		}
 
 		if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
-			c.Logger().Errorf("Failed to send donation receipt email: %v", err)
+			c.Logger().Errorf("[OneTimePayment] Failed to send donation receipt email for %s: %v", donation.DonorEmail, err)
 		} else {
-			c.Logger().Infof("Development: Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionID)
+			c.Logger().Infof("[OneTimePayment] Development: Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionID)
 		}
 
+		c.Logger().Infof("[OneTimePayment] Development simulation completed successfully for donation %s", donation.ID.String())
 		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 			"success":       true,
 			"transactionId": transactionID,
@@ -925,6 +1013,7 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	}
 
 	// Production: Use real Helcim API
+	c.Logger().Infof("[OneTimePayment] Production mode: Calling Helcim Payment API for donation %s", donation.ID.String())
 	helcimClient := services.NewHelcimClient()
 
 	// Use Payment API to charge the card token
@@ -937,15 +1026,21 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 		},
 	}
 
+	c.Logger().Debugf("[OneTimePayment] Payment request - Amount: $%.2f, Currency: %s, CustomerCode: %s",
+		paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode)
+
 	transaction, err := helcimClient.ProcessPayment(paymentReq)
 	if err != nil {
-		c.Logger().Errorf("Payment processing failed: %v", err)
-		c.Logger().Errorf("Payment request data: %+v", paymentReq)
+		c.Logger().Errorf("[OneTimePayment] Payment processing failed for donation %s: %v", donation.ID.String(), err)
+		c.Logger().Errorf("[OneTimePayment] Payment request data: %+v", paymentReq)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
 			"success": false,
 			"error":   "Payment processing failed: " + err.Error(),
 		}))
 	}
+
+	c.Logger().Infof("[OneTimePayment] Payment successful - TransactionID: %s, Status: %s",
+		transaction.TransactionID, transaction.Status)
 
 	// Update donation record
 	donation.TransactionID = &transaction.TransactionID
@@ -954,11 +1049,14 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Update(donation); err != nil {
-		c.Logger().Errorf("Failed to update donation: %v", err)
+		c.Logger().Errorf("[OneTimePayment] Failed to update donation %s: %v", donation.ID.String(), err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to update donation",
 		}))
 	}
+
+	c.Logger().Infof("[OneTimePayment] Donation %s completed successfully - TransactionID: %s",
+		donation.ID.String(), transaction.TransactionID)
 
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"success":       true,
@@ -974,12 +1072,19 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	DonationID   string  `json:"donationId"`
 	Amount       float64 `json:"amount"`
 }, donation *models.Donation) error {
+
+	c.Logger().Infof("[RecurringPayment] Starting recurring payment processing for donation %s", donation.ID.String())
+	c.Logger().Debugf("[RecurringPayment] Payment details - CustomerCode: %s, CardToken: %s..., Amount: $%.2f",
+		req.CustomerCode, req.CardToken[:8]+"...", req.Amount)
+
 	// Check if we should use live payments even in development
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
+	c.Logger().Debugf("[RecurringPayment] Environment check - GO_ENV: %s, HELCIM_LIVE_TESTING: %s, useLivePayments: %t",
+		os.Getenv("GO_ENV"), os.Getenv("HELCIM_LIVE_TESTING"), useLivePayments)
 
 	// DEVELOPMENT-SAFE PATH: Simulate subscription creation when in development (unless live testing enabled)
 	if os.Getenv("GO_ENV") == "development" && !useLivePayments {
-		c.Logger().Infof("Development mode: Simulating recurring subscription creation - donation_id=%s, amount=%.2f, donor=%s",
+		c.Logger().Infof("[RecurringPayment] Development mode: Simulating recurring subscription creation - donation_id=%s, amount=%.2f, donor=%s",
 			donation.ID.String(), donation.Amount, donation.DonorEmail)
 
 		// Create fake IDs and next billing date
@@ -987,7 +1092,7 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		paymentPlanID := fmt.Sprintf("dev_plan_%.0f", donation.Amount)
 		nextBilling := time.Now().AddDate(0, 1, 0)
 
-		c.Logger().Infof("Generated development subscription: subscription_id=%s, plan_id=%s, next_billing=%s",
+		c.Logger().Infof("[RecurringPayment] Generated development subscription: subscription_id=%s, plan_id=%s, next_billing=%s",
 			subscriptionID, paymentPlanID, nextBilling.Format("2006-01-02"))
 
 		// Update donation record
@@ -998,11 +1103,12 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 
 		tx := c.Value("tx").(*pop.Connection)
 		if err := tx.Update(donation); err != nil {
-			c.Logger().Errorf("Failed to update donation: %v", err)
+			c.Logger().Errorf("[RecurringPayment] Failed to update donation %s: %v", donation.ID.String(), err)
 			return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 				"error": "Failed to update donation",
 			}))
 		}
+		c.Logger().Infof("[RecurringPayment] Donation %s updated successfully with dev subscription", donation.ID.String())
 
 		// Send simulated receipt email for subscription creation
 		emailService := services.NewEmailService()
@@ -1026,11 +1132,12 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		}
 
 		if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
-			c.Logger().Errorf("Failed to send subscription receipt email: %v", err)
+			c.Logger().Errorf("[RecurringPayment] Failed to send subscription receipt email for %s: %v", donation.DonorEmail, err)
 		} else {
-			c.Logger().Infof("Development: Subscription receipt sent to %s for subscription %s", donation.DonorEmail, subscriptionID)
+			c.Logger().Infof("[RecurringPayment] Development: Subscription receipt sent to %s for subscription %s", donation.DonorEmail, subscriptionID)
 		}
 
+		c.Logger().Infof("[RecurringPayment] Development simulation completed successfully for donation %s", donation.ID.String())
 		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 			"success":        true,
 			"subscriptionId": subscriptionID,
@@ -1040,23 +1147,24 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	}
 
 	// Create Helcim client
+	c.Logger().Infof("[RecurringPayment] Production mode: Creating Helcim client for donation %s", donation.ID.String())
 	helcimClient := services.NewHelcimClient()
 
 	// Create or get payment plan
-	c.Logger().Infof("Creating payment plan for recurring donation - donation_id=%s, amount=%.2f, donor=%s",
+	c.Logger().Infof("[RecurringPayment] Creating payment plan for recurring donation - donation_id=%s, amount=%.2f, donor=%s",
 		donation.ID.String(), donation.Amount, donation.DonorEmail)
 	paymentPlanID, err := getOrCreateMonthlyDonationPlan(helcimClient, donation.Amount)
 	if err != nil {
-		c.Logger().Errorf("Failed to setup payment plan for donation_id=%s, amount=%.2f: %v",
+		c.Logger().Errorf("[RecurringPayment] Failed to setup payment plan for donation_id=%s, amount=%.2f: %v",
 			donation.ID.String(), donation.Amount, err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to setup payment plan",
 		}))
 	}
-	c.Logger().Infof("Payment plan created successfully - plan_id=%d, donation_id=%s", paymentPlanID, donation.ID.String())
+	c.Logger().Infof("[RecurringPayment] Payment plan created successfully - plan_id=%d, donation_id=%s", paymentPlanID, donation.ID.String())
 
 	// Create subscription using Recurring API
-	c.Logger().Infof("Creating Helcim subscription - customer_code=%s, plan_id=%d, amount=%.2f",
+	c.Logger().Infof("[RecurringPayment] Creating Helcim subscription - customer_code=%s, plan_id=%d, amount=%.2f",
 		req.CustomerCode, paymentPlanID, donation.Amount)
 	subscription, err := helcimClient.CreateSubscription(services.SubscriptionRequest{
 		CustomerID:    req.CustomerCode,
@@ -1065,18 +1173,21 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 		PaymentMethod: "card",
 	})
 	if err != nil {
-		c.Logger().Errorf("Failed to create Helcim subscription - donation_id=%s, customer_code=%s, plan_id=%d: %v",
+		c.Logger().Errorf("[RecurringPayment] Failed to create Helcim subscription - donation_id=%s, customer_code=%s, plan_id=%d: %v",
 			donation.ID.String(), req.CustomerCode, paymentPlanID, err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to create subscription",
 		}))
 	}
-	c.Logger().Infof("Helcim subscription created successfully - subscription_id=%d, next_billing=%s, donation_id=%s",
+	c.Logger().Infof("[RecurringPayment] Helcim subscription created successfully - subscription_id=%d, next_billing=%s, donation_id=%s",
 		subscription.ID, subscription.NextBillingDate.Format("2006-01-02"), donation.ID.String())
 
 	// Update donation record - convert int IDs to strings for storage
 	subscriptionIDStr := fmt.Sprintf("%d", subscription.ID)
 	paymentPlanIDStr := fmt.Sprintf("%d", paymentPlanID)
+
+	c.Logger().Infof("[RecurringPayment] Updating donation %s with subscription details - SubscriptionID: %s, PaymentPlanID: %s",
+		donation.ID.String(), subscriptionIDStr, paymentPlanIDStr)
 
 	donation.SubscriptionID = &subscriptionIDStr
 	donation.CustomerID = &req.CustomerCode
@@ -1085,13 +1196,15 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 
 	tx := c.Value("tx").(*pop.Connection)
 	if err := tx.Update(donation); err != nil {
-		c.Logger().Errorf("Failed to update donation: %v", err)
+		c.Logger().Errorf("[RecurringPayment] Failed to update donation %s: %v", donation.ID.String(), err)
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]string{
 			"error": "Failed to update donation",
 		}))
 	}
+	c.Logger().Infof("[RecurringPayment] Donation %s updated successfully with subscription details", donation.ID.String())
 
 	// Send receipt email for subscription creation (recurring donation)
+	c.Logger().Infof("[RecurringPayment] Sending subscription receipt email to %s", donation.DonorEmail)
 	emailService := services.NewEmailService()
 	receiptData := services.DonationReceiptData{
 		DonorName:           donation.DonorName,
@@ -1113,10 +1226,13 @@ func handleRecurringPayment(c buffalo.Context, req struct {
 	}
 
 	if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
-		c.Logger().Errorf("Failed to send subscription receipt email: %v", err)
+		c.Logger().Errorf("[RecurringPayment] Failed to send subscription receipt email to %s: %v", donation.DonorEmail, err)
 	} else {
-		c.Logger().Infof("Subscription receipt sent to %s for subscription %s", donation.DonorEmail, subscriptionIDStr)
+		c.Logger().Infof("[RecurringPayment] Subscription receipt sent successfully to %s for subscription %s", donation.DonorEmail, subscriptionIDStr)
 	}
+
+	c.Logger().Infof("[RecurringPayment] Recurring payment processing completed successfully for donation %s - SubscriptionID: %s",
+		donation.ID.String(), subscriptionIDStr)
 
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"success":        true,

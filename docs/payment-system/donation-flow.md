@@ -58,7 +58,8 @@ removeHelcimPayIframe() cleans up
 ```
 
 **Key Changes Made:**
-- Uses official Helcim iframe instead of custom modal
+- Uses official HelcimPay.js from `https://secure.helcim.app/helcim-pay/services/start.js`
+- Implements `appendHelcimPayIframe()` function per official documentation
 - Secure payment collection handled entirely by Helcim
 - PCI compliant - no card data touches our servers
 - Official postMessage protocol for event handling

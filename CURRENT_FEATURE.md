@@ -162,21 +162,26 @@ func ValidateDonationForm(req DonationRequest) *validate.Errors {
 ```html
 <!-- donate_payment.plush.html -->
 <div id="helcim-payment-form">
-  <!-- Helcim provides their own JavaScript SDK -->
-  <script src="https://gateway.helcim.com/js/helcim.js"></script>
-  <div id="helcim-checkout"></div>
+  <!-- Official HelcimPay.js from Helcim documentation -->
+  <script type="text/javascript" src="https://secure.helcim.app/helcim-pay/services/start.js"></script>
 </div>
 
 <script>
-  // Helcim SDK integration (provided by Helcim service)
-  Helcim.Checkout({
-    token: "<%= checkoutToken %>",
-    onSuccess: function(result) {
-      // Server-side redirect handling
-      window.location.href = "/donate/success";
-    },
-    onError: function(error) {
-      window.location.href = "/donate/failed";
+  // Official HelcimPay.js integration using appendHelcimPayIframe
+  appendHelcimPayIframe("<%= checkoutToken %>");
+
+  // Listen for postMessage events from HelcimPay.js iframe
+  window.addEventListener('message', (event) => {
+    const helcimPayJsIdentifierKey = 'helcim-pay-js-' + "<%= checkoutToken %>";
+    if(event.data.eventName === helcimPayJsIdentifierKey){
+      if(event.data.eventStatus === 'SUCCESS'){
+        // Handle successful payment
+        window.location.href = "/donate/success";
+      }
+      if(event.data.eventStatus === 'ABORTED'){
+        // Handle payment failure
+        window.location.href = "/donate/failed";
+      }
     }
   });
 </script>
