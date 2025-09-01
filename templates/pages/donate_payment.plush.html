@@ -26,9 +26,75 @@
   </section>
 </div>
 
+<script src="https://secure.myhelcim.com/js/version2.js"></script>
 <script>
-// Payment processing logic would go here
-// This is a simplified version for the payment page
-console.log('Donation payment page loaded');
+  document.addEventListener('DOMContentLoaded', function () {
+    // Configuration for Helcim.js
+    const config = {
+      token: '<%= checkoutToken %>', // Server-generated checkout token
+      page: 'card-entry',
+      container: 'helcim-pay-container',
+      events: {
+        onComplete: function(response) {
+          // This function is called after the user completes the card entry form
+          // and Helcim has processed the card details.
+          console.log('Helcim.js onComplete response:', response);
+
+          if (response.status === 'APPROVED') {
+            // Card was successfully verified (or charged, depending on paymentType)
+            // Now, send the necessary data to our backend to finalize the donation
+            fetch('/api/donations/process', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                // Include CSRF token if your app requires it for API endpoints
+                'X-CSRF-Token': '<%= authenticity_token %>'
+              },
+              body: JSON.stringify({
+                customerCode: response.customerCode,
+                cardToken: response.cardToken,
+                donationId: '<%= donationId %>',
+                amount: parseFloat('<%= amount %>')
+              })
+            })
+            .then(backendResponse => backendResponse.json())
+            .then(backendData => {
+              console.log('Backend response:', backendData);
+              if (backendData.success) {
+                // The backend has successfully processed the donation (simulated in dev)
+                // Redirect to the success page
+                window.location.href = '/donate/success';
+              } else {
+                // The backend reported an error
+                console.error('Backend processing failed:', backendData.error);
+                window.location.href = '/donate/failed';
+              }
+            })
+            .catch(error => {
+              console.error('Error calling backend:', error);
+              window.location.href = '/donate/failed';
+            });
+          } else {
+            // The card was declined or there was an error
+            console.error('Helcim.js payment failed:', response.status);
+            window.location.href = '/donate/failed';
+          }
+        }
+      }
+    };
+
+    // Initialize Helcim.js
+    try {
+      const helcim = new Helcim(config);
+      helcim.create();
+    } catch (error) {
+      console.error('Failed to initialize Helcim.js:', error);
+      // You might want to display an error message to the user here
+      const container = document.getElementById('helcim-pay-container');
+      if (container) {
+        container.innerHTML = '<p style="color: red;">There was an error loading the payment form. Please try again later.</p>';
+      }
+    }
+  });
 </script>
 </section>

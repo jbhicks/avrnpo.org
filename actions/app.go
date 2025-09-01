@@ -212,7 +212,7 @@ func App() *buffalo.App {
 		app.GET("/donate", DonateHandler)
 		app.POST("/donate", DonateHandler)
 		app.POST("/donate/update-amount", DonateUpdateAmountHandler)
-		app.POST("/donate/payment", DonatePaymentHandler)
+		app.GET("/donate/payment", DonatePaymentHandler)
 		app.POST("/donate/success", DonationSuccessHandler)
 		app.POST("/donate/failed", DonationFailedHandler)
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
