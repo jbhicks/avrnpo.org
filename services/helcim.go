@@ -9,6 +9,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
 // PaymentPlanCache provides thread-safe in-memory caching for payment plans
@@ -63,14 +65,11 @@ type HelcimClient struct {
 
 // Payment API structures
 type PaymentAPIRequest struct {
-	Amount       float64  `json:"amount"`
-	Currency     string   `json:"currency"`
-	CustomerCode string   `json:"customerCode"`
-	CardData     CardData `json:"cardData"`
-}
-
-type CardData struct {
-	CardToken string `json:"cardToken"`
+	PaymentType  string  `json:"paymentType"`
+	Amount       float64 `json:"amount"`
+	Currency     string  `json:"currency"`
+	CustomerCode string  `json:"customerCode"`
+	CardToken    string  `json:"cardToken"`
 }
 
 type PaymentAPIResponse struct {
@@ -172,10 +171,25 @@ func NewHelcimClient() HelcimAPI {
 func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error) {
 	url := fmt.Sprintf("%s/payment/purchase", h.BaseURL)
 
+	// Generate UUID v4 idempotency key as required by Helcim API
+	idempotencyUUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate idempotency key: %w", err)
+	}
+	idempotencyKey := idempotencyUUID.String()
+
+	// Debug: log the API token (masked)
+	if len(h.APIToken) > 8 {
+		fmt.Printf("[Helcim] Using API token: %s...%s\n", h.APIToken[:4], h.APIToken[len(h.APIToken)-4:])
+	}
+
 	jsonData, err := json.Marshal(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
+
+	// Debug: log the JSON being sent to Helcim
+	fmt.Printf("[Helcim] Payment API request JSON: %s\n", string(jsonData))
 
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -184,6 +198,7 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {
@@ -192,6 +207,9 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		// Debug: read and log the error response
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] Payment API error response: %s\n", string(body))
 		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
 	}
 
@@ -206,6 +224,13 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 // CreatePaymentPlan creates a new payment plan for recurring donations
 func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*PaymentPlan, error) {
 	url := fmt.Sprintf("%s/payment-plans", h.BaseURL) // BaseURL already includes v2
+
+	// Generate UUID v4 idempotency key as required by Helcim API
+	idempotencyUUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate idempotency key: %w", err)
+	}
+	idempotencyKey := idempotencyUUID.String()
 
 	// Create payment plan request according to Helcim API docs
 	request := map[string]interface{}{
@@ -229,7 +254,7 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 
 	// Log the request for debugging
 	requestJSON, _ := json.Marshal(request)
-	fmt.Printf("[Helcim] Payment plan request to %s: %s\n", url, string(requestJSON))
+	fmt.Printf("[Helcim] Payment plan request to %s with idempotency key %s: %s\n", url, idempotencyKey, string(requestJSON))
 
 	jsonData, err := json.Marshal(request)
 	if err != nil {
@@ -243,6 +268,7 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {
@@ -297,8 +323,12 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error) {
 	url := fmt.Sprintf("%s/subscriptions", h.BaseURL) // BaseURL already includes v2
 
-	// Generate unique idempotency key for this subscription request
-	idempotencyKey := fmt.Sprintf("sub_%s_%d", req.CustomerID, time.Now().Unix())
+	// Generate UUID v4 idempotency key as required by Helcim API
+	idempotencyUUID, err := uuid.NewV4()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate idempotency key: %w", err)
+	}
+	idempotencyKey := idempotencyUUID.String()
 
 	// Create subscription request according to Helcim API docs
 	request := map[string]interface{}{
@@ -329,7 +359,7 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
-	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Add idempotency key as header
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {

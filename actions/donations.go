@@ -865,10 +865,11 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 	c.Logger().Infof("[ProcessPayment] Starting payment processing - Method: %s", c.Request().Method)
 
 	var req struct {
-		CustomerCode string `json:"customerCode"`
-		CardToken    string `json:"cardToken"`
-		DonationID   string `json:"donationId"`
-		Amount       string `json:"amount"` // Accept as string from JavaScript
+		CustomerCode  string `json:"customerCode"`
+		CardToken     string `json:"cardToken"`
+		DonationID    string `json:"donationId"`
+		TransactionID string `json:"transactionId"`
+		Amount        string `json:"amount"` // Accept as string from JavaScript
 	}
 
 	if err := c.Bind(&req); err != nil {
@@ -889,6 +890,8 @@ func ProcessPaymentHandler(c buffalo.Context) error {
 
 	c.Logger().Infof("[ProcessPayment] Request parsed - CustomerCode: %s, DonationID: %s, Amount: $%.2f",
 		req.CustomerCode, req.DonationID, amount)
+	c.Logger().Debugf("[ProcessPayment] Full request data - CardToken: %s, TransactionID: %s",
+		safePrefix(req.CardToken, 8)+"...", req.TransactionID)
 
 	// Validate required fields for payment processing
 	if req.CustomerCode == "" {
@@ -1048,23 +1051,24 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	c.Logger().Infof("[OneTimePayment] Production mode: Calling Helcim Payment API for donation %s", donation.ID.String())
 	helcimClient := services.NewHelcimClient()
 
+	// Generate unique idempotency key for this payment (UUID format)
 	// Use Payment API to charge the card token
 	paymentReq := services.PaymentAPIRequest{
+		PaymentType:  "purchase",
 		Amount:       donation.Amount,
 		Currency:     getCurrency(),
 		CustomerCode: req.CustomerCode,
-		CardData: services.CardData{
-			CardToken: req.CardToken,
-		},
+		CardToken:    req.CardToken,
 	}
 
-	c.Logger().Debugf("[OneTimePayment] Payment request - Amount: $%.2f, Currency: %s, CustomerCode: %s",
-		paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode)
+	c.Logger().Debugf("[OneTimePayment] Payment request - Amount: $%.2f, Currency: %s, CustomerCode: %s, CardToken: %s",
+		paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardToken, 8)+"...")
 
 	transaction, err := helcimClient.ProcessPayment(paymentReq)
 	if err != nil {
 		c.Logger().Errorf("[OneTimePayment] Payment processing failed for donation %s: %v", donation.ID.String(), err)
-		c.Logger().Errorf("[OneTimePayment] Payment request data: %+v", paymentReq)
+		c.Logger().Errorf("[OneTimePayment] Payment request data: Amount=$%.2f, Currency=%s, CustomerCode=%s, CardToken=%s",
+			paymentReq.Amount, paymentReq.Currency, paymentReq.CustomerCode, safePrefix(paymentReq.CardToken, 8)+"...")
 		return c.Render(http.StatusInternalServerError, r.JSON(map[string]interface{}{
 			"success": false,
 			"error":   "Payment processing failed: " + err.Error(),
