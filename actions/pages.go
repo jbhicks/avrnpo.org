@@ -18,6 +18,37 @@ import (
 
 // Types and functions are defined in donations.go
 
+// Preset amounts for donation form
+var presetAmounts = []string{"25", "50", "100", "250", "500", "1000"}
+
+// DonateContextOptions holds options for setting up donation form context
+type DonateContextOptions struct {
+	Amount               string
+	DonationType         string
+	FirstName            string
+	LastName             string
+	DonorEmail           string
+	DonorPhone           string
+	AddressLine1         string
+	AddressLine2         string
+	City                 string
+	State                string
+	Zip                  string
+	Comments             string
+	Errors               *validate.Errors
+	HasAnyErrors         bool
+	HasAmountError       bool
+	HasFirstNameError    bool
+	HasLastNameError     bool
+	HasDonorEmailError   bool
+	HasDonorPhoneError   bool
+	HasAddressLine1Error bool
+	HasCityError         bool
+	HasStateError        bool
+	HasZipError          bool
+	HasCommentsError     bool
+}
+
 // generateSecureToken creates a cryptographically secure CSRF token
 func generateSecureToken() string {
 	bytes := make([]byte, 32)
@@ -97,36 +128,132 @@ func ensureDonateContext(c buffalo.Context) {
 	}
 }
 
+// setDonateContext sets up all context variables needed for the donation form
+func setDonateContext(c buffalo.Context, opts *DonateContextOptions) {
+	// Page metadata
+	c.Set("title", "Make a Donation")
+	c.Set("description", "Support American Veterans Rebuilding with your tax-deductible donation")
+	c.Set("current_path", c.Request().URL.Path)
+
+	// Form model
+	donation := &DonationRequest{}
+	c.Set("donation", donation)
+
+	// Amount and donation type - use provided values or defaults
+	amount := ""
+	if opts != nil && opts.Amount != "" {
+		amount = opts.Amount
+	}
+	c.Set("amount", amount)
+	c.Set("customAmount", amount)
+
+	donationType := "one-time"
+	if opts != nil && opts.DonationType != "" {
+		donationType = opts.DonationType
+	}
+	c.Set("donationType", donationType)
+
+	// Preset amounts
+	c.Set("presets", presetAmounts)
+	c.Set("presetAmounts", presetAmounts)
+
+	// Donor information fields - use provided values or defaults
+	firstName := ""
+	if opts != nil && opts.FirstName != "" {
+		firstName = opts.FirstName
+	}
+	c.Set("firstName", firstName)
+
+	lastName := ""
+	if opts != nil && opts.LastName != "" {
+		lastName = opts.LastName
+	}
+	c.Set("lastName", lastName)
+
+	donorEmail := ""
+	if opts != nil && opts.DonorEmail != "" {
+		donorEmail = opts.DonorEmail
+	}
+	c.Set("donorEmail", donorEmail)
+
+	donorPhone := ""
+	if opts != nil && opts.DonorPhone != "" {
+		donorPhone = opts.DonorPhone
+	}
+	c.Set("donorPhone", donorPhone)
+
+	addressLine1 := ""
+	if opts != nil && opts.AddressLine1 != "" {
+		addressLine1 = opts.AddressLine1
+	}
+	c.Set("addressLine1", addressLine1)
+
+	addressLine2 := ""
+	if opts != nil && opts.AddressLine2 != "" {
+		addressLine2 = opts.AddressLine2
+	}
+	c.Set("addressLine2", addressLine2)
+
+	city := ""
+	if opts != nil && opts.City != "" {
+		city = opts.City
+	}
+	c.Set("city", city)
+
+	state := ""
+	if opts != nil && opts.State != "" {
+		state = opts.State
+	}
+	c.Set("state", state)
+
+	zip := ""
+	if opts != nil && opts.Zip != "" {
+		zip = opts.Zip
+	}
+	c.Set("zip", zip)
+
+	comments := ""
+	if opts != nil && opts.Comments != "" {
+		comments = opts.Comments
+	}
+	c.Set("comments", comments)
+
+	// Error handling
+	if opts != nil && opts.Errors != nil {
+		c.Set("errors", opts.Errors)
+		c.Set("hasAnyErrors", opts.HasAnyErrors)
+		c.Set("hasAmountError", opts.HasAmountError)
+		c.Set("hasFirstNameError", opts.HasFirstNameError)
+		c.Set("hasLastNameError", opts.HasLastNameError)
+		c.Set("hasDonorEmailError", opts.HasDonorEmailError)
+		c.Set("hasDonorPhoneError", opts.HasDonorPhoneError)
+		c.Set("hasAddressLine1Error", opts.HasAddressLine1Error)
+		c.Set("hasCityError", opts.HasCityError)
+		c.Set("hasStateError", opts.HasStateError)
+		c.Set("hasZipError", opts.HasZipError)
+		c.Set("hasCommentsError", opts.HasCommentsError)
+	} else {
+		// Default error states
+		c.Set("errors", nil)
+		c.Set("hasAnyErrors", false)
+		c.Set("hasCommentsError", false)
+		c.Set("hasAmountError", false)
+		c.Set("hasFirstNameError", false)
+		c.Set("hasLastNameError", false)
+		c.Set("hasDonorEmailError", false)
+		c.Set("hasDonorPhoneError", false)
+		c.Set("hasAddressLine1Error", false)
+		c.Set("hasCityError", false)
+		c.Set("hasStateError", false)
+		c.Set("hasZipError", false)
+	}
+
+	// CSRF token should be provided by Buffalo's CSRF middleware
+	// Don't override it if it's already set
+}
+
 // getDonateButtonText generates the appropriate button text based on amount and donation type
-func getDonateButtonText(amount interface{}, donationType string) string {
-	// Handle nil or empty amount
-	if amount == nil {
-		return "Donate Now"
-	}
-
-	amountStr := ""
-	switch v := amount.(type) {
-	case string:
-		amountStr = v
-	case float64:
-		if v > 0 {
-			amountStr = fmt.Sprintf("%.0f", v)
-		}
-	case int:
-		if v > 0 {
-			amountStr = fmt.Sprintf("%d", v)
-		}
-	}
-
-	// If no valid amount, return default
-	if amountStr == "" {
-		if donationType == "monthly" {
-			return "Donate Monthly"
-		}
-		return "Donate Now"
-	}
-
-	// Return formatted text based on donation type
+func getDonateButtonText(amountStr, donationType string) string {
 	if donationType == "monthly" {
 		return fmt.Sprintf("Donate $%s Monthly", amountStr)
 	}
@@ -493,6 +620,9 @@ func DonateHandler(c buffalo.Context) error {
 
 // DonatePaymentHandler shows the payment processing page after form submission
 func DonatePaymentHandler(c buffalo.Context) error {
+	// Ensure CSRF token is available for the template
+	ensureDonateContext(c)
+
 	// Get session data from the donation initialization
 	donationID := c.Session().Get("donation_id")
 	checkoutToken := c.Session().Get("checkout_token")
@@ -545,6 +675,10 @@ func DonatePaymentHandler(c buffalo.Context) error {
 
 	// Set payment method (default to credit card for now)
 	c.Set("paymentMethod", "Credit Card")
+
+	// Debug logging for payment page variables
+	c.Logger().Infof("DonatePayment vars: donationID=%T:%v, checkoutToken=%T:%v, amount=%T:%v, donorName=%T:%v, donationType=%s",
+		donationID, donationID, checkoutToken, checkoutToken, amount, amount, donorName, donorName, donation.DonationType)
 
 	return c.Render(http.StatusOK, r.HTML("pages/donate_payment.plush.html"))
 }

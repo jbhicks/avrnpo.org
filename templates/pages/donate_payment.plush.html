@@ -40,17 +40,25 @@
 
 <script>
   console.log('[DonatePayment] SCRIPT LOADED - Starting payment page initialization');
-  console.log('[DonatePayment] Template variables - checkoutToken:', '<%= checkoutToken %>' ? 'PRESENT' : 'MISSING');
-  console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
-  console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
-  console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
+   console.log('[DonatePayment] Template variables - checkoutToken:', '<%= checkoutToken %>' ? 'PRESENT' : 'MISSING');
+   console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
+   console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
+   console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
+   console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
 
-  // Test if basic JavaScript is working
-  try {
-    console.log('[DonatePayment] JavaScript execution test - OK');
-  } catch (e) {
-    console.error('[DonatePayment] JavaScript execution test failed:', e);
-  }
+   // Test if basic JavaScript is working
+   try {
+     console.log('[DonatePayment] JavaScript execution test - OK');
+
+     // Check CSRF token availability
+     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+     console.log('[DonatePayment] CSRF meta tag found:', csrfMeta ? 'YES' : 'NO');
+     if (csrfMeta) {
+       console.log('[DonatePayment] CSRF token value:', csrfMeta.getAttribute('content') ? 'PRESENT' : 'EMPTY');
+     }
+   } catch (e) {
+     console.error('[DonatePayment] JavaScript execution test failed:', e);
+   }
 
   // Load HelcimPay.js script dynamically using official Helcim URL
    function loadHelcimPayScript() {
@@ -147,11 +155,21 @@
      // Extract data from official HelcimPay.js response format
      const data = paymentResponse.data || paymentResponse;
 
+     // Get CSRF token with better error handling
+     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+     console.info('[DonatePayment] CSRF token retrieved:', csrfToken ? 'PRESENT' : 'MISSING');
+
+     if (!csrfToken) {
+       console.error('[DonatePayment] CSRF token not found in meta tag');
+       alert('Security token missing. Please refresh the page and try again.');
+       return;
+     }
+
      fetch('/api/donations/process', {
        method: 'POST',
        headers: {
          'Content-Type': 'application/json',
-         'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+         'X-CSRF-Token': csrfToken
        },
        body: JSON.stringify({
          customerCode: data.customerCode,
