@@ -1,4 +1,9 @@
 <!-- Payment Processing Page Content -->
+<% if (authenticity_token) { %>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="<%= authenticity_token %>" />
+<input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+<% } %>
 <div class="payment-container">
   <section>
     <h1>Processing Your <%= if (donationType == "monthly") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
@@ -44,6 +49,7 @@
    console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
    console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
    console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
+   console.log('[DonatePayment] Authenticity token value:', '<%= authenticity_token %>');
    console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
 
    // Test if basic JavaScript is working
@@ -155,15 +161,27 @@
      // Extract data from official HelcimPay.js response format
      const data = paymentResponse.data || paymentResponse;
 
-     // Get CSRF token with better error handling
-     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-     console.info('[DonatePayment] CSRF token retrieved:', csrfToken ? 'PRESENT' : 'MISSING');
+      // Get CSRF token with better error handling
+      let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      console.info('[DonatePayment] CSRF token from meta tag:', csrfToken ? 'PRESENT' : 'MISSING');
 
-     if (!csrfToken) {
-       console.error('[DonatePayment] CSRF token not found in meta tag');
-       alert('Security token missing. Please refresh the page and try again.');
-       return;
-     }
+      // Fallback: try to get from hidden input if meta tag fails
+      if (!csrfToken) {
+        csrfToken = document.querySelector('input[name="authenticity_token"]')?.value;
+        console.info('[DonatePayment] CSRF token from hidden input:', csrfToken ? 'PRESENT' : 'MISSING');
+      }
+
+      // Final fallback: use the template variable directly
+      if (!csrfToken && '<%= authenticity_token %>') {
+        csrfToken = '<%= authenticity_token %>';
+        console.info('[DonatePayment] CSRF token from template variable: PRESENT');
+      }
+
+      if (!csrfToken) {
+        console.error('[DonatePayment] CSRF token not found in any location');
+        alert('Security token missing. Please refresh the page and try again.');
+        return;
+      }
 
      fetch('/api/donations/process', {
        method: 'POST',
