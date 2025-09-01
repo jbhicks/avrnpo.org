@@ -344,11 +344,11 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 	request := map[string]interface{}{
 		"subscriptions": []map[string]interface{}{
 			{
-				"customerId":     req.CustomerID,
-				"paymentPlanId":  req.PaymentPlanID,
-				"amount":         req.Amount,
-				"paymentMethod":  req.PaymentMethod,
-				"activationDate": time.Now().Format("2006-01-02"), // Activate immediately
+				"customerCode":    req.CustomerID,
+				"paymentPlanId":   req.PaymentPlanID,
+				"recurringAmount": req.Amount,
+				"paymentMethod":   req.PaymentMethod,
+				"dateActivated":   time.Now().Format("2006-01-02"), // Activate immediately
 			},
 		},
 	}
