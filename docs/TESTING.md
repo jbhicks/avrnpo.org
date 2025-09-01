@@ -41,11 +41,22 @@ Test helpers (new)
 
 Test-mode signature bypass (optional)
 - For higher-level webhook handler tests (not unit tests of verification), you may choose to bypass signature verification when GO_ENV=test:
-  - Guard in production code: only bypass when GO_ENV == "test" or when a dedicated env var is set.
-  - Prefer using a signer helper (AttachHelcimSignature) when you want to test verification logic itself.
+- Guard in production code: only bypass when GO_ENV == "test" or when a dedicated env var is set.
+- Prefer using a signer helper (AttachHelcimSignature) when you want to test verification logic itself.
+
+Idempotency key testing
+- New comprehensive test suite in `services/helcim_test.go`:
+  - `TestIdempotencyKey_UUIDFormat`: Verifies UUID v4 format (36 chars, hyphens)
+  - `TestIdempotencyKey_Uniqueness`: Ensures 1000 generated UUIDs are unique
+  - `TestProcessPayment_IdempotencyKeyGeneration`: Tests header presence and body exclusion
+  - `TestCreatePaymentPlan_IdempotencyKeyGeneration`: Tests payment plan idempotency
+  - `TestCreateSubscription_IdempotencyKeyGeneration`: Tests subscription idempotency
+  - `TestPaymentAPIRequest_NoIdempotencyKeyField`: Ensures struct doesn't have body field
+- All tests verify Helcim API compliance: header-based UUID v4 keys, no body inclusion
 
 Unit tests to add
 - Signature verification: valid signature, invalid signature, missing header, test-bypass case.
+- Idempotency key implementation: UUID generation, header presence, body exclusion, uniqueness.
 - Template prewarm: fails if partials missing.
 
 Best practices

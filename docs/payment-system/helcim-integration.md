@@ -64,6 +64,80 @@ HELCIM_ERROR_URL=https://yourdomain.com/donation/error
 api-token: your-api-token-here
 Content-Type: application/json
 Accept: application/json
+Idempotency-Key: uuid-v4-here  # Required for Payment API endpoints
+```
+
+## 🔑 Idempotency Keys
+
+### What are Idempotency Keys?
+Idempotency keys prevent duplicate transactions when network issues or retries occur. Helcim requires an idempotency key for all Payment API requests.
+
+**Key Requirements:**
+- **Format**: UUID v4 (36 characters: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+- **Header**: `Idempotency-Key` (not in request body)
+- **Expiration**: Keys are cleared after 5 minutes
+- **Uniqueness**: Each key can only be used once
+
+### Implementation in Our Codebase
+
+**✅ Correct Implementation:**
+```go
+// Generate UUID v4 idempotency key
+idempotencyUUID, err := uuid.NewV4()
+if err != nil {
+    return fmt.Errorf("failed to generate idempotency key: %w", err)
+}
+idempotencyKey := idempotencyUUID.String()
+
+// Set in HTTP header (required by Helcim)
+httpReq.Header.Set("Idempotency-Key", idempotencyKey)
+```
+
+**❌ Incorrect Implementation:**
+```go
+// DON'T put idempotency key in request body
+request := map[string]interface{}{
+    "idempotencyKey": "some-key",  // Wrong!
+    // ... other fields
+}
+```
+
+### Idempotency Key Usage by Endpoint
+
+| Endpoint | Idempotency Key Required | Implementation |
+|----------|-------------------------|----------------|
+| `POST /payment/purchase` | ✅ Yes | Header-based UUID v4 |
+| `POST /payment-plans` | ✅ Yes | Header-based UUID v4 |
+| `POST /subscriptions` | ✅ Yes | Header-based UUID v4 |
+| `GET /customers` | ❌ No | Not applicable |
+| `GET /subscriptions` | ❌ No | Not applicable |
+
+### Testing Idempotency
+
+**Test UUID Generation:**
+```go
+// Test that UUIDs are properly formatted
+uuid, err := uuid.NewV4()
+assert.NoError(t, err)
+assert.Len(t, uuid.String(), 36)
+assert.Contains(t, uuid.String(), "-")
+```
+
+**Test Header Presence:**
+```go
+// Verify Idempotency-Key header is set
+assert.Equal(t, "Idempotency-Key", req.Header.Get("Idempotency-Key"))
+assert.NotEmpty(t, req.Header.Get("Idempotency-Key"))
+```
+
+**Test Body Exclusion:**
+```go
+// Verify idempotency key is NOT in request JSON body
+jsonData, _ := json.Marshal(request)
+var parsed map[string]interface{}
+json.Unmarshal(jsonData, &parsed)
+_, hasKey := parsed["idempotencyKey"]
+assert.False(t, hasKey, "idempotencyKey should not be in request body")
 ```
 
 ## 🔌 API Endpoints
