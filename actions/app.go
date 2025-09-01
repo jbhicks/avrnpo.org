@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -19,6 +18,7 @@ import (
 	"github.com/gobuffalo/middleware/forcessl"
 	"github.com/gobuffalo/middleware/i18n"
 	"github.com/gobuffalo/mw-csrf"
+	"github.com/gorilla/sessions"
 	"github.com/unrolled/secure"
 )
 
@@ -156,27 +156,43 @@ func App() *buffalo.App {
 
 		// Set Buffalo to use our logrus-based logger for all request logs
 		// Use Buffalo's built-in logger with multi-writer (terminal + file)
-		logFile, err := os.OpenFile("logs/application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err != nil {
-			println("Warning: Failed to open log file:", err.Error())
+
+		// Ensure logs directory exists
+		if err := os.MkdirAll("logs", 0755); err != nil {
+			println("Warning: Failed to create logs directory:", err.Error())
 		}
-		multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+		// Try to create log file to verify permissions
+		_, err := os.OpenFile("logs/application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			println("Warning: Failed to create log file:", err.Error())
+		} else {
+			println("✅ Log file setup successful: logs/application.log")
+		}
+
 		// Set log level based on environment: debug for dev, warn for test/prod
 		logLevel := "debug"
 		if ENV == "test" || ENV == "production" {
 			logLevel = "warn"
 		}
-		buffaloLogger := logger.NewLogger(logLevel)
-		if outableLogger, ok := buffaloLogger.(logger.Outable); ok {
-			outableLogger.SetOutput(multiWriter)
-		}
+
+		// Configure session store
+		sessionSecret := envy.Get("SESSION_SECRET", "development-session-secret-change-in-production")
 
 		app = buffalo.New(buffalo.Options{
 			Env:           ENV,
 			SessionName:   "_avrnpo.org_session",
+			SessionStore:  sessions.NewCookieStore([]byte(sessionSecret)),
 			CompressFiles: true, // Enable gzip compression for static files
 		})
+
+		// Create logger with the specified level and set it
+		buffaloLogger := logger.NewLogger(logLevel)
 		app.Logger = buffaloLogger
+
+		if ENV == "production" && sessionSecret == "development-session-secret-change-in-production" {
+			app.Logger.Warn("SESSION_SECRET not set in production! Using insecure default.")
+		}
 
 		// Use Buffalo's built-in request logging middleware
 		app.Use(buffalo.RequestLoggerFunc)
@@ -212,9 +228,10 @@ func App() *buffalo.App {
 		app.GET("/donate", DonateHandler)
 		app.POST("/donate", DonateHandler)
 		app.POST("/donate/update-amount", DonateUpdateAmountHandler)
+		app.POST("/donate/update-submit", DonateUpdateSubmitHandler)
 		app.GET("/donate/payment", DonatePaymentHandler)
-		app.POST("/donate/success", DonationSuccessHandler)
-		app.POST("/donate/failed", DonationFailedHandler)
+		app.GET("/donate/success", DonationSuccessHandler)
+		app.GET("/donate/failed", DonationFailedHandler)
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
 		app.POST("/api/donations/process", ProcessPaymentHandler)
 		app.POST("/api/donations/webhook", HelcimWebhookHandler)
