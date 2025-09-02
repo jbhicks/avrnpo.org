@@ -26,6 +26,7 @@ func init() {
 		"stripTags":           stripTagsHelper,
 		"dateFormat":          dateFormatHelper,
 		"getDonateButtonText": getDonateButtonText,
+		"current_path":        func() string { return "/" },
 	}
 
 	// Get the assets sub-filesystem
@@ -45,7 +46,7 @@ func init() {
 		TemplatesFS: templates.FS(),
 		AssetsFS:    assetsFS,
 
-		Helpers:     commonHelpers,
+		Helpers: commonHelpers,
 	})
 
 	// Fragment render engine without layout (for HTMX partials)
@@ -54,7 +55,7 @@ func init() {
 		TemplatesFS: templates.FS(),
 		AssetsFS:    assetsFS,
 
-		Helpers:     commonHelpers,
+		Helpers: commonHelpers,
 	})
 }
 
