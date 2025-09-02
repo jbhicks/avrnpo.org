@@ -179,12 +179,16 @@ func App() *buffalo.App {
 		// Configure session store
 		sessionSecret := envy.Get("SESSION_SECRET", "development-session-secret-change-in-production")
 
+		// Get port from environment or use Coolify's exposed port
+		port := envy.Get("PORT", "3001") // Match Coolify's port exposes setting
+		addr := "0.0.0.0:" + port
+
 		app = buffalo.New(buffalo.Options{
 			Env:           ENV,
 			SessionName:   "_avrnpo.org_session",
 			SessionStore:  sessions.NewCookieStore([]byte(sessionSecret)),
-			CompressFiles: true,           // Enable gzip compression for static files
-			Addr:          "0.0.0.0:3000", // Listen on all interfaces for container access
+			CompressFiles: true, // Enable gzip compression for static files
+			Addr:          addr, // Listen on all interfaces for container access
 		})
 
 		// Create logger with the specified level and set it
@@ -193,7 +197,7 @@ func App() *buffalo.App {
 
 		// Debug environment variables (after app is initialized)
 		app.Logger.Infof("Environment check - GO_ENV: %s, SESSION_SECRET length: %d", ENV, len(sessionSecret))
-		app.Logger.Infof("Application configured to listen on: 0.0.0.0:3000")
+		app.Logger.Infof("Application configured to listen on: %s", addr)
 		if len(sessionSecret) > 10 {
 			app.Logger.Infof("SESSION_SECRET value starts with: %s...", sessionSecret[:10])
 		} else {
