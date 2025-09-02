@@ -1,5 +1,7 @@
 # American Veterans Rebuilding (AVR NPO)
 
+<!-- Deployment trigger: 2025-09-02 -->
+
 Official website for American Veterans Rebuilding, a 501(c)(3) non-profit organization dedicated to helping combat veterans rebuild their lives through housing projects, skills training, and community support programs.
 
 ## About AVR NPO
