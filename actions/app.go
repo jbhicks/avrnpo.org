@@ -179,12 +179,20 @@ func App() *buffalo.App {
 		// Configure session store
 		sessionSecret := envy.Get("SESSION_SECRET", "development-session-secret-change-in-production")
 
+		// Configure port binding for production deployment
+		port := envy.Get("PORT", "3000")
+		addr := ":" + port
+
 		app = buffalo.New(buffalo.Options{
 			Env:           ENV,
 			SessionName:   "_avrnpo.org_session",
 			SessionStore:  sessions.NewCookieStore([]byte(sessionSecret)),
 			CompressFiles: true, // Enable gzip compression for static files
+			Addr:          addr, // Bind to PORT environment variable
 		})
+
+		// Log port binding for debugging
+		app.Logger.Infof("Application configured to bind to address: %s (PORT=%s)", addr, port)
 
 		// Create logger with the specified level and set it
 		buffaloLogger := logger.NewLogger(logLevel)
