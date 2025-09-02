@@ -1,134 +1,164 @@
-# AVR NPO Website
+# American Veterans Rebuilding (AVR NPO)
 
-American Veterans Rebuilding (AVR) official website - A Go-based web application with donation processing via Helcim API.
+Official website for American Veterans Rebuilding, a 501(c)(3) non-profit organization dedicated to helping combat veterans rebuild their lives through housing projects, skills training, and community support programs.
 
-## Tech Stack
-- **Backend**: Go with Gin framework
-- **Frontend**: HTML templates with HTMX for interactivity
-- **Styling**: Tailwind CSS + DaisyUI components
-- **Payment Processing**: Helcim Pay API
-- **Environment**: WSL Arch Linux
+## About AVR NPO
 
-## Current Status
-The website is functional with basic donation processing, but requires improvements for production-ready nonprofit operations.
+American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghanistan and Iraq. We are soldiers who have lived through hell on earth and found a way to continue to dedicate our lives to the military's core values of Loyalty, Duty, Respect, Selfless Service, Honor, Integrity and Personal Courage.
 
-## 🚧 DONATION SYSTEM IMPROVEMENT PLAN
+## 🚀 Quick Start
 
-### Phase 1: Security & API Improvements ✅ PLANNED
-- [x] **Task 1.1**: Convert GET `/api/checkout_token` to POST endpoint
-  - ✅ COMPLETED: Uses POST with JSON body for sensitive data
-  - ✅ COMPLETED: Added proper request validation
-  - Files modified: `main.go`, `templates/donate.html`
-  
-- [ ] **Task 1.2**: Add request validation and sanitization
-  - Implement proper input validation
-  - Add rate limiting for donation endpoints
-  - Sanitize all user inputs
+### Prerequisites
+- **Go 1.19+** - [Download Go](https://golang.org/dl/)
+- **Podman** or **Docker** - [Install Podman](https://podman.io/getting-started/installation)
+- **Buffalo CLI** - `go install github.com/gobuffalo/cli/cmd/buffalo@latest`
 
-### Phase 2: Webhook Integration ⏳ NEXT UP
-- [ ] **Task 2.1**: Implement Helcim webhook handler
-  - Create `/api/webhooks/helcim` endpoint
-  - Verify webhook signatures
-  - Handle payment status updates (success, failure, refund)
-  
-- [ ] **Task 2.2**: Add webhook security
-  - Implement HMAC signature verification
-  - Add webhook authentication
-  - Log all webhook events for debugging
+### Local Development
 
-### Phase 3: Database Integration 📋 PLANNED
-- [ ] **Task 3.1**: Choose and setup database
-  - Options: SQLite (simple) or PostgreSQL (production)
-  - Create database schema for donations
-  - Add database connection management
-  
-- [ ] **Task 3.2**: Create donation models and repositories
-  - Donation struct with all required fields
-  - CRUD operations for donations
-  - Database migration system
+```console
+# Clone the repository
+git clone <repository-url>
+cd avrnpo.org
 
-### Phase 4: Receipt & Email System 📧 PLANNED
-- [ ] **Task 4.1**: Integrate with existing email system
-  - Use current SMTP setup for receipts
-  - Create receipt email templates
-  - Send automated thank you emails
-  
-- [ ] **Task 4.2**: Tax receipt generation
-  - Generate PDF receipts for tax purposes
-  - Include 501(c)(3) information
-  - Store receipt records
+# Complete setup (database + migrations + first run)
+make setup
 
-### Phase 5: Admin Dashboard 📊 PLANNED
-- [ ] **Task 5.1**: Create admin interface
-  - View donation history
-  - Export donation data
-  - Manage refunds and disputes
-  
-- [ ] **Task 5.2**: Reporting system
-  - Monthly/yearly donation reports
-  - Donor analytics
-  - Export for accounting software
-
-## Current Implementation Details
-
-### Donation Flow
-1. User fills form on `/donate` page
-2. Frontend calls `/api/checkout_token` (currently GET - needs to be POST)
-3. Backend calls Helcim API to initialize payment
-4. Helcim returns checkout token
-5. Frontend opens Helcim hosted checkout
-6. Payment processed by Helcim
-7. Success/failure handled via JavaScript message events
-
-### Environment Variables
+# Start development mode
+make dev
 ```
-CSRF_SECRET=<secret>
-GIN_MODE=release
-HELCIM_PRIVATE_API_KEY=<api_key>
-PORT=3001 (default if not set)
+
+After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see the website running locally.
+
+### Development Commands
+
+```console
+# Start development server with hot reload
+make dev
+
+# Run tests
+make test
+
+# Reset database (development)
+make db-reset
+
+# Create admin user (promote first registered user)
+make admin
+```
+
+## 🌟 Website Features
+
+### Public Features
+- **Mission & About** - Information about AVR's mission and impact
+- **Team Profiles** - Meet the combat veterans who founded and run AVR
+- **Project Showcase** - Housing and community development projects
+- **Contact Information** - Ways to reach out and get involved
+- **Donation System** - Secure donation processing with Helcim integration
+  - ✅ One-time donations 
+  - ✅ Monthly recurring subscriptions
+  - ✅ User account linking and subscription management
+  - ✅ Automated email receipts
+
+### Content Management
+- **Blog System** - News updates and success stories
+- **Admin Dashboard** - Content management for authorized users
+- **SEO Optimization** - Search engine friendly with meta tags
+- **HTMX Navigation** - Fast, dynamic page loading without full refreshes
+
+## 🛠️ Technology Stack
+
+- **Backend**: Buffalo (Go web framework), PostgreSQL
+- **Frontend**: HTMX, Pico.css (semantic CSS framework)
+- **Payments**: Helcim Payment and Recurring APIs
+- **Authentication**: Session-based with role management
+- **Deployment**: Container-ready with Docker/Podman
+
+## 💳 Helcim Integration Quickstart
+
+The donation system uses Helcim's official payment integration. For development and testing:
+
+### Official Integration Pattern
+- **Script URL**: `https://secure.helcim.app/helcim-pay/services/start.js`
+- **API Endpoint**: `POST /v2/helcim-pay/initialize`
+- **Modal Function**: `appendHelcimPayIframe(checkoutToken)`
+- **Events**: PostMessage events (SUCCESS, ABORTED, HIDE)
+
+### Development Setup
+```bash
+# Validate Helcim URLs in codebase
+./scripts/validate-helcim-urls.sh
+
+# Test donation flow
+make dev
+# Visit: http://127.0.0.1:3000/donate
 ```
 
 ### Key Files
-- `main.go` - Main application with routes and Helcim integration
-- `templates/donate.html` - Donation form and payment flow
-- `.env` - Environment configuration
-- `static/` - CSS, JS, and asset files
+- **Template**: `templates/pages/donate_payment.plush.html`
+- **Backend**: `actions/donations.go`
+- **Validation**: `scripts/validate-helcim-urls.sh`
+- **Docs**: `docs/payment-system/`
 
-## Development Commands
+### Testing
+- Use official Helcim test cards: `4124939999999990` (CVV: 100)
+- Check browser console for Helcim script loading
+- Monitor Buffalo logs for payment processing
 
-```bash
-# Run the application
-go run main.go
+See [Payment System Documentation](./docs/payment-system/) for complete details.
 
-# Build for production
-go build -o tmp/main main.go
+## 📚 Documentation
 
-# Test local API
-./test-api-local.sh
+For detailed development information, see the [comprehensive documentation](./docs/):
 
-# Test production API
-./test-api-prod.sh
-```
+### Getting Started
+- **[Quick Start Guide](./docs/getting-started/quick-start.md)** - Detailed setup instructions
+- **[Development Workflow](./docs/getting-started/development-workflow.md)** - Daily development commands
+- **[Development Guide](./docs/DEVELOPMENT_GUIDE.md)** - Complete framework documentation
 
-## Next Steps for AI Assistant
+### Core Systems
+- **[Payment System](./docs/payment-system/README.md)** - Donation and subscription management
+- **[Buffalo Framework](./docs/buffalo-framework/README.md)** - Web framework patterns and best practices
+- **[Frontend Development](./docs/frontend/README.md)** - HTMX patterns and Pico.css styling
 
-**PRIORITY**: Always check this README first to understand current progress and what task to work on next.
+### Deployment & Production
+- **[Deployment Guide](./docs/deployment/README.md)** - Production deployment procedures
+- **[Security Guidelines](./docs/deployment/security.md)** - Security best practices
 
-1. **Current Phase**: Phase 1 (Security & API Improvements)
-2. **Next Task**: Task 1.1 - Convert GET to POST endpoint
-3. **Focus Area**: Improve donation API security before adding new features
+## 🎯 Project Status
 
-### CRITICAL: Documentation Update Requirements
-After completing any task or making significant changes:
-- [ ] **Update checkboxes in this README.md** to reflect completed work
-- [ ] **Update PROJECT_TRACKING.md** with task status changes (📋 PLANNED → 🔄 IN PROGRESS → ✅ COMPLETED)
-- [ ] **Update .github/copilot-instructions.md** if new patterns or issues are discovered
-- [ ] **Document any new requirements** or changes in approach
-- [ ] **Move to next task** in sequence and update current priority section
+### ✅ Production Ready
+- **Donation System** - Complete Helcim integration with one-time and recurring donations
+- **User Management** - Registration, authentication, and role-based access
+- **Content Management** - Blog system with admin panel
+- **Email System** - Automated receipts and contact form processing
 
-## Notes
-- Project uses WSL Arch Linux environment
-- VS Code configured for Arch WSL terminal
-- Follows clean Go practices with minimal comments
-- Uses DaisyUI components for consistent styling
-- Security-focused development required for nonprofit operations
+### 🔄 Current Focus
+- **User Experience** - Optimizing donation flows and user interfaces
+- **Documentation** - Comprehensive developer and deployment guides
+- **Testing** - Robust testing procedures for payment system reliability
+
+## 🤝 Contributing
+
+This is a private repository for AVR NPO. For development work:
+
+1. **Review Documentation** - Start with [docs/getting-started/](./docs/getting-started/)
+2. **Follow Conventions** - Check [docs/buffalo-framework/](./docs/buffalo-framework/) for patterns
+3. **Test Changes** - Use `make test` to verify all functionality works
+4. **Security First** - Follow [security guidelines](./docs/deployment/security.md)
+
+## 📞 Contact
+
+**For AVR NPO Programs:**
+- Website: [avrnpo.org](https://avrnpo.org)
+- Email: michael@avrnpo.org
+
+**For Technical Issues:**
+- Review documentation in [./docs/](./docs/)
+- Check [troubleshooting guides](./docs/buffalo-framework/troubleshooting.md)
+
+## 📝 License
+
+This website code is built on open-source technologies. Content and imagery related to American Veterans Rebuilding is proprietary to the organization.
+
+---
+
+*Supporting combat veterans in rebuilding their lives and strengthening communities.*

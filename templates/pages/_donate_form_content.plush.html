@@ -1,0 +1,243 @@
+
+
+    <h3>Make a Donation</h3>
+    <p class="donation-subtitle">
+      Choose your donation amount or enter a custom amount. All donations are tax-deductible.
+    </p>
+
+    <div class="donation-amounts">
+      <h4>Select Amount</h4>
+      <%= partial("pages/amount_selection") %>
+    </div>
+
+    <!-- Donation Type -->
+    <div class="donation-frequency">
+      <fieldset>
+        <legend>Donation Frequency</legend>
+         <label>
+           <input type="radio"
+                  name="donation_type"
+                  value="one-time"<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>
+                  hx-patch="/donate/update-submit"
+                  hx-vals='{"donation_type": "one-time", "source": "radio"}'
+                  hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
+                  hx-target="#submit-button"
+                  hx-select="#submit-button > *"
+                  hx-swap="innerHTML">
+            One-time donation
+         </label>
+         <label>
+           <input type="radio"
+                  name="donation_type"
+                  value="monthly"<% if (donationType == "monthly") { %> checked<% } %>
+                  hx-patch="/donate/update-submit"
+                  hx-vals='{"donation_type": "monthly", "source": "radio"}'
+                  hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
+                  hx-target="#submit-button"
+                  hx-select="#submit-button > *"
+                  hx-swap="innerHTML">
+            Monthly recurring
+         </label>
+      </fieldset>
+    </div>
+
+    <!-- Donor Information -->
+    <div class="donor-info">
+      <h4>Donor Information</h4>
+      <p><small>Required for payment processing and tax receipt</small></p>
+
+      <div class="grid">
+        <div>
+          <label for="first_name">First Name *</label>
+          <input type="text"
+                 id="first_name"
+                 name="first_name"
+                 autocomplete="billing given-name"
+                 aria-required="true"
+                 required
+                 value="<%= firstName %>">
+          <%= if (errors != nil && errors.Get("first_name") != nil) { %>
+            <small style="color: red;"><%= errors.Get("first_name") %></small>
+          <% } %>
+        </div>
+
+        <div>
+          <label for="last_name">Last Name *</label>
+          <input type="text"
+                 id="last_name"
+                 name="last_name"
+                 autocomplete="billing family-name"
+                 aria-required="true"
+                 required
+                 value="<%= lastName %>">
+          <%= if (errors != nil && errors.Get("last_name") != nil) { %>
+            <small style="color: red;"><%= errors.Get("last_name") %></small>
+          <% } %>
+        </div>
+      </div>
+
+      <label for="donor_email">Email Address *</label>
+      <input type="email"
+             id="donor_email"
+             name="donor_email"
+             autocomplete="billing email"
+             aria-required="true"
+             required
+             value="<%= donorEmail %>">
+       <%= if (errors != nil && errors.Get("donor_email") != nil) { %>
+           <small style="color: red;"><%= errors.Get("donor_email") %></small>
+       <% } %>
+
+      <label for="donor_phone">Phone Number (optional)</label>
+      <input type="tel"
+             id="donor_phone"
+             name="donor_phone"
+             autocomplete="billing tel"
+             value="<%= donorPhone %>">
+    </div>
+
+    <!-- Address Information -->
+    <div class="address-info">
+      <h4>Billing Address</h4>
+      <p><small>Required for payment processing</small></p>
+
+      <label for="address_line1">Address Line 1 *</label>
+      <input type="text"
+             id="address_line1"
+             name="address_line1"
+             autocomplete="billing address-line1"
+             aria-required="true"
+             required
+             value="<%= addressLine1 %>">
+      <%= if (errors) { %>
+        <%= if (errors.Get("address_line1")) { %>
+          <small style="color: red;"><%= errors.Get("address_line1") %></small>
+        <% } %>
+      <% } %>
+
+      <label for="address_line2">Address Line 2 (optional)</label>
+      <input type="text"
+             id="address_line2"
+             name="address_line2"
+             autocomplete="billing address-line2"
+             value="<%= addressLine2 %>">
+
+      <div class="grid">
+        <div>
+          <label for="city">City *</label>
+          <input type="text"
+                 id="city"
+                 name="city"
+                 autocomplete="billing address-level2"
+                 aria-required="true"
+                 required
+                 value="<%= city %>">
+          <%= if (errors != nil && errors.Get("city") != nil) { %>
+              <small style="color: red;"><%= errors.Get("city") %></small>
+          <% } %>
+        </div>
+
+        <div>
+          <label for="state">State *</label>
+          <select id="state"
+                  name="state"
+                  autocomplete="billing address-level1"
+                  aria-required="true"
+                  required>
+            <option value="">Select State</option>
+            <option value="AL"<% if (state == "AL") { %> selected<% } %>>Alabama</option>
+            <option value="AK"<% if (state == "AK") { %> selected<% } %>>Alaska</option>
+            <option value="AZ"<% if (state == "AZ") { %> selected<% } %>>Arizona</option>
+            <option value="AR"<% if (state == "AR") { %> selected<% } %>>Arkansas</option>
+            <option value="CA"<% if (state == "CA") { %> selected<% } %>>California</option>
+            <option value="CO"<% if (state == "CO") { %> selected<% } %>>Colorado</option>
+            <option value="CT"<% if (state == "CT") { %> selected<% } %>>Connecticut</option>
+            <option value="DE"<% if (state == "DE") { %> selected<% } %>>Delaware</option>
+            <option value="FL"<% if (state == "FL") { %> selected<% } %>>Florida</option>
+            <option value="GA"<% if (state == "GA") { %> selected<% } %>>Georgia</option>
+            <option value="HI"<% if (state == "HI") { %> selected<% } %>>Hawaii</option>
+            <option value="ID"<% if (state == "ID") { %> selected<% } %>>Idaho</option>
+            <option value="IL"<% if (state == "IL") { %> selected<% } %>>Illinois</option>
+            <option value="IN"<% if (state == "IN") { %> selected<% } %>>Indiana</option>
+            <option value="IA"<% if (state == "IA") { %> selected<% } %>>Iowa</option>
+            <option value="KS"<% if (state == "KS") { %> selected<% } %>>Kansas</option>
+            <option value="KY"<% if (state == "KY") { %> selected<% } %>>Kentucky</option>
+            <option value="LA"<% if (state == "LA") { %> selected<% } %>>Louisiana</option>
+            <option value="ME"<% if (state == "ME") { %> selected<% } %>>Maine</option>
+            <option value="MD"<% if (state == "MD") { %> selected<% } %>>Maryland</option>
+            <option value="MA"<% if (state == "MA") { %> selected<% } %>>Massachusetts</option>
+            <option value="MI"<% if (state == "MI") { %> selected<% } %>>Michigan</option>
+            <option value="MN"<% if (state == "MN") { %> selected<% } %>>Minnesota</option>
+            <option value="MS"<% if (state == "MS") { %> selected<% } %>>Mississippi</option>
+            <option value="MO"<% if (state == "MO") { %> selected<% } %>>Missouri</option>
+            <option value="MT"<% if (state == "MT") { %> selected<% } %>>Montana</option>
+            <option value="NE"<% if (state == "NE") { %> selected<% } %>>Nebraska</option>
+            <option value="NV"<% if (state == "NV") { %> selected<% } %>>Nevada</option>
+            <option value="NH"<% if (state == "NH") { %> selected<% } %>>New Hampshire</option>
+            <option value="NJ"<% if (state == "NJ") { %> selected<% } %>>New Jersey</option>
+            <option value="NM"<% if (state == "NM") { %> selected<% } %>>New Mexico</option>
+            <option value="NY"<% if (state == "NY") { %> selected<% } %>>New York</option>
+            <option value="NC"<% if (state == "NC") { %> selected<% } %>>North Carolina</option>
+            <option value="ND"<% if (state == "ND") { %> selected<% } %>>North Dakota</option>
+            <option value="OH"<% if (state == "OH") { %> selected<% } %>>Ohio</option>
+            <option value="OK"<% if (state == "OK") { %> selected<% } %>>Oklahoma</option>
+            <option value="OR"<% if (state == "OR") { %> selected<% } %>>Oregon</option>
+            <option value="PA"<% if (state == "PA") { %> selected<% } %>>Pennsylvania</option>
+            <option value="RI"<% if (state == "RI") { %> selected<% } %>>Rhode Island</option>
+            <option value="SC"<% if (state == "SC") { %> selected<% } %>>South Carolina</option>
+            <option value="SD"<% if (state == "SD") { %> selected<% } %>>South Dakota</option>
+            <option value="TN"<% if (state == "TN") { %> selected<% } %>>Tennessee</option>
+            <option value="TX"<% if (state == "TX") { %> selected<% } %>>Texas</option>
+            <option value="UT"<% if (state == "UT") { %> selected<% } %>>Utah</option>
+            <option value="VT"<% if (state == "VT") { %> selected<% } %>>Vermont</option>
+            <option value="VA"<% if (state == "VA") { %> selected<% } %>>Virginia</option>
+            <option value="WA"<% if (state == "WA") { %> selected<% } %>>Washington</option>
+            <option value="WV"<% if (state == "WV") { %> selected<% } %>>West Virginia</option>
+            <option value="WI"<% if (state == "WI") { %> selected<% } %>>Wisconsin</option>
+            <option value="WY"<% if (state == "WY") { %> selected<% } %>>Wyoming</option>
+          </select>
+          <%= if (errors != nil && errors.Get("state") != nil) { %>
+              <small style="color: red;"><%= errors.Get("state") %></small>
+          <% } %>
+        </div>
+
+        <div>
+          <label for="zip_code">ZIP Code *</label>
+          <input type="text"
+                 id="zip_code"
+                 name="zip_code"
+                 autocomplete="billing postal-code"
+                 aria-required="true"
+                 required
+                 pattern="[0-9]{5}(-[0-9]{4})?"
+                 value="<%= zip %>">
+          <%= if (errors != nil && errors.Get("zip_code") != nil) { %>
+              <small style="color: red;"><%= errors.Get("zip_code") %></small>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <label for="comments">Comments (optional)</label>
+    <textarea id="comments"
+              name="comments"
+              rows="3"
+              autocomplete="off"
+              placeholder="Any special message or dedication..."><%= comments %></textarea>
+
+    <!-- Submit Button -->
+    <div id="submit-button"
+         hx-post="/donate/update-submit"
+         hx-trigger="donation-amount-updated from:body"
+         hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
+         hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
+         hx-target="#submit-button"
+         hx-select="button"
+         hx-swap="innerHTML">
+      <%= partial("pages/submit_button") %>
+    </div>
+
+    <small class="donation-note">
+      Your donation is secure and tax-deductible. You will receive a receipt for your records.
+    </small>

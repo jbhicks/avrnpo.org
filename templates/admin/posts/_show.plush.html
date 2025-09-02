@@ -1,0 +1,166 @@
+<!-- Post Content (HTMX Partial) -->
+<header class="admin-header">
+    <div>
+        <h1><%= post.Title %></h1>
+        <p class="text-muted mb-0">
+            <% if (post.Published) { %>
+            <span class="status-published">Published</span>
+            <% } else { %>
+            <span class="status-draft">Draft</span>
+            <% } %> • Created <%= dateFormat(post.CreatedAt, "Jan 2, 2006") %>
+            <% if (post.UpdatedAt.After(post.CreatedAt)) { %> • Updated <%=
+            dateFormat(post.UpdatedAt, "Jan 2, 2006") %> <% } %>
+        </p>
+    </div>
+    <div class="flex flex-gap-sm">
+        <a
+            href="/admin/posts"
+            role="button"
+            class="outline"
+            hx-get="/admin/posts"
+            hx-target="#main-content"
+            hx-push-url="true"
+            >← Back to Posts</a
+        >
+        <a
+            href="/admin/posts/<%= post.ID %>/edit"
+            role="button"
+            class="secondary"
+            hx-get="/admin/posts/<%= post.ID %>/edit"
+            hx-target="#main-content"
+            hx-push-url="true"
+            >Edit Post</a
+        >
+        <a
+            href="/blog/<%= post.Slug %>"
+            role="button"
+            class="outline"
+            target="_blank"
+            >View Live</a
+        >
+    </div>
+</header>
+
+<div class="grid-2col">
+    <!-- Main Content -->
+    <article>
+        <% if (post.Image != "") { %>
+        <img
+            src="<%= post.Image %>"
+            alt="<%= post.ImageAlt %>"
+            class="img-cover"
+        />
+        <% } %> <% if (post.Excerpt != "") { %>
+        <div class="content-block">
+            <strong>Excerpt:</strong><br />
+            <%= post.Excerpt %>
+        </div>
+        <% } %>
+
+        <div class="post-content"><%= raw(post.Content) %></div>
+    </article>
+
+    <!-- Sidebar - Post Details -->
+    <aside class="sidebar">
+        <h3>Post Details</h3>
+
+        <div class="mb-2">
+            <strong>Status:</strong><br />
+            <% if (post.Published) { %>
+            <span class="status-success">✓ Published</span>
+            <% if (!post.PublishedAt.IsZero()) { %>
+            <br /><small
+                >Published on <%= dateFormat(post.PublishedAt, "Jan 2, 2006 at
+                3:04 PM") %></small
+            >
+            <% } %> <% } else { %>
+            <span class="status-warning">📝 Draft</span>
+            <% } %>
+        </div>
+
+        <div class="mb-2">
+            <strong>Author:</strong><br />
+            <% if (post.User.FirstName != "" || post.User.LastName != "") { %>
+            <%= post.User.FirstName %> <%= post.User.LastName %> <% } else { %>
+            <%= post.User.Email %> <% } %>
+        </div>
+
+        <div class="mb-2">
+            <strong>Slug:</strong><br />
+            <code><%= post.Slug %></code>
+        </div>
+
+        <div class="mb-2">
+            <strong>Created:</strong><br />
+            <%= dateFormat(post.CreatedAt, "Jan 2, 2006 at 3:04 PM") %>
+        </div>
+
+        <% if (post.UpdatedAt.After(post.CreatedAt)) { %>
+        <div class="mb-2">
+            <strong>Last Updated:</strong><br />
+            <%= dateFormat(post.UpdatedAt, "Jan 2, 2006 at 3:04 PM") %>
+        </div>
+        <% } %>
+
+        <!-- SEO Information -->
+        <% if (post.MetaTitle != "" || post.MetaDescription != "" ||
+        post.MetaKeywords != "") { %>
+        <hr />
+        <h4>SEO Information</h4>
+
+        <% if (post.MetaTitle != "") { %>
+        <div class="mb-2">
+            <strong>Meta Title:</strong><br />
+            <small><%= post.MetaTitle %></small>
+        </div>
+        <% } %> <% if (post.MetaDescription != "") { %>
+        <div class="mb-2">
+            <strong>Meta Description:</strong><br />
+            <small><%= post.MetaDescription %></small>
+        </div>
+        <% } %> <% if (post.MetaKeywords != "") { %>
+        <div class="mb-2">
+            <strong>Keywords:</strong><br />
+            <small><%= post.MetaKeywords %></small>
+        </div>
+        <% } %> <% } %>
+
+        <!-- Social Media -->
+        <% if (post.OgTitle != "" || post.OgDescription != "" || post.OgImage !=
+        "") { %>
+        <hr />
+        <h4>Social Media</h4>
+
+        <% if (post.Image != "") { %>
+        <div class="mb-2">
+            <strong>Featured Image:</strong><br />
+            <small><%= post.Image %></small>
+        </div>
+        <% } %> <% if (post.OgDescription != "") { %>
+        <div class="mb-2">
+            <strong>Social Media Description:</strong><br />
+            <small><%= post.OgDescription %></small>
+        </div>
+        <% } %> <% if (post.OgImage != "") { %>
+        <div class="mb-0">
+            <strong>Social Media Image:</strong><br />
+            <small><%= post.OgImage %></small>
+        </div>
+        <% } %> <% } %>
+
+        <!-- Actions -->
+        <hr />
+        <div class="action-column">
+            <button
+                type="button"
+                class="outline btn-danger"
+                hx-delete="/admin/posts/<%= post.ID %>"
+                hx-confirm="Are you sure you want to delete this post? This action cannot be undone."
+                hx-target="#main-content"
+                hx-push-url="/admin/posts"
+            >
+                Delete Post
+            </button>
+        </div>
+    </aside>
+</div>

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        <!-- Primary Meta Tags -->
+        <title>
+            <%= if (title) { %><%= title %> - American Veterans Rebuilding<% }
+            else { %>American Veterans Rebuilding - Rebuilding the American
+            Veteran's Self, Family and Community<% } %>
+        </title>
+        <meta
+            name="title"
+            content="<%= if (title) { %><%= title %> - American Veterans Rebuilding<% } else { %>American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community<% } %>"
+        />
+        <meta
+            name="description"
+            content="<%= if (description) { %><%= description %><% } else { %>American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.<% } %>"
+        />
+        <meta
+            name="keywords"
+            content="veterans, rebuilding, technical training, occupational licensing, home ownership, professional networking, American Veterans Rebuilding, AVR"
+        />
+        <meta name="author" content="American Veterans Rebuilding" />
+        <meta name="robots" content="index, follow" />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta
+            property="og:url"
+            content="<%= if (current_path) { %>https://avrnpo.org<%= current_path %><% } else { %>https://avrnpo.org/<% } %>"
+        />
+        <meta
+            property="og:title"
+            content="<%= if (title) { %><%= title %> - American Veterans Rebuilding<% } else { %>American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community<% } %>"
+        />
+        <meta
+            property="og:description"
+            content="<%= if (description) { %><%= description %><% } else { %>American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.<% } %>"
+        />
+        <meta property="og:image" content="/assets/images/logo.avif" />
+        <meta property="og:site_name" content="American Veterans Rebuilding" />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta
+            property="twitter:url"
+            content="<%= if (current_path) { %>https://avrnpo.org<%= current_path %><% } else { %>https://avrnpo.org/<% } %>"
+        />
+        <meta
+            property="twitter:title"
+            content="<%= if (title) { %><%= title %> - American Veterans Rebuilding<% } else { %>American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community<% } %>"
+        />
+        <meta
+            property="twitter:description"
+            content="<%= if (description) { %><%= description %><% } else { %>American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.<% } %>"
+        />
+        <meta property="twitter:image" content="/assets/images/logo.avif" />
+
+        <!-- Canonical URL -->
+        <link
+            rel="canonical"
+            href="<%= if (current_path) { %>https://avrnpo.org<%= current_path %><% } else { %>https://avrnpo.org/<% } %>"
+        />
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=2" />
+        <link
+            rel="icon"
+            type="image/avif"
+            href="/assets/images/logo.avif?v=2"
+        />
+        <link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=2" />
+        <!-- Pico.css - Minimal CSS Framework -->
+        <%= stylesheetTag("css/pico.min.css") %>
+
+        <!-- Custom CSS -->
+        <%= stylesheetTag("css/custom.css") %>
+
+        <!-- Quill Rich Text Editor -->
+        <%= stylesheetTag("css/quill.snow.css") %>
+        <%= stylesheetTag("css/quill-custom.css") %>
+
+        <!-- Structured Data for Organization -->
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "NonProfitOrganization",
+                "name": "American Veterans Rebuilding",
+                "description": "Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking",
+                "url": "https://avrnpo.org",
+                "logo": "/assets/images/logo.avif",
+                "foundingDate": "2021",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "US"
+                },
+                "sameAs": [
+                    "https://facebook.com/AmericanVeteransRebuilding",
+                    "https://x.com/avrnpo"
+                ]
+            }
+        </script>
+
+        <!-- Heroicons helper for SVG icons -->
+        <%= javascriptTag("js/icons.js") %>
+
+        <!-- Quill Rich Text Editor -->
+        <%= javascriptTag("js/quill.min.js") %>
+        <%= javascriptTag("js/quill-editor.js") %>
+
+        <!-- Theme switching functionality -->
+        <%= javascriptTag("js/theme.js") %>
+
+        <!-- HTMX Library -->
+        <%= javascriptTag("js/htmx.min.js") %>
+
+        <!-- Donation System JavaScript -->
+        <%= javascriptTag("js/donation.js") %>
+
+        <!-- Main Application JavaScript -->
+        <%= javascriptTag("js/application.js") %>
+
+        <% if (authenticity_token) { %>
+        <meta name="csrf-param" content="authenticity_token" />
+        <meta name="csrf-token" content="<%= authenticity_token %>" />
+        <% } %>
+    </head>
+    <body hx-boost="true">
+        <%= partial("flash") %> <%= partial("nav") %>
+
+        <!-- Main Content Container -->
+        <main id="main-content" class="container"><%= yield %></main>
+    </body>
+</html>

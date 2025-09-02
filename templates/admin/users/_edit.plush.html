@@ -1,0 +1,106 @@
+<!-- Edit User (HTMX Partial) -->
+<header class="admin-header">
+  <div>
+    <h1>Edit User</h1>
+    <p>Editing: <strong><%= user.FirstName %> <%= user.LastName %></strong></p>
+  </div>
+  <div>
+    <a href="/admin/users/<%= user.ID %>" role="button" class="outline"
+       hx-get="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-push-url="true">← Back to User</a>
+  </div>
+</header>
+
+<%= if (errors) { %>
+<div class="error-box">
+  <h4>Validation Errors</h4>
+  <ul>
+    <%= for (key, messages) in errors { %>
+      <%= for (message) in messages { %>
+      <li><%= message %></li>
+      <% } %>
+    <% } %>
+  </ul>
+</div>
+<% } %>
+
+<form action="/admin/users/<%= user.ID %>" method="POST"
+      hx-put="/admin/users/<%= user.ID %>" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+  <% if (authenticity_token) { %>
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <% } %>
+
+  <div class="grid-2col">
+    <!-- User Information -->
+    <section>
+      <h3>User Information</h3>
+
+      <div class="grid-2col-equal form-group">
+        <div>
+          <label for="user-first-name">First Name *</label>
+          <input type="text" id="user-first-name" name="FirstName" value="<%= user.FirstName %>" required>
+        </div>
+        <div>
+          <label for="user-last-name">Last Name *</label>
+          <input type="text" id="user-last-name" name="LastName" value="<%= user.LastName %>" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="user-email">Email Address *</label>
+        <input type="email" id="user-email" name="Email" value="<%= user.Email %>" required>
+        <small>User's email address for login and communications</small>
+      </div>
+
+      <div class="form-group">
+        <label for="user-role">Account Role *</label>
+        <select id="user-role" name="Role" required>
+          <%= for (option) in roleOptions { %>
+            <option value="<%= option["value"] %>" <%= if (user.Role == option["value"]) { %>selected<% } %>>
+              <%= option["label"] %>
+            </option>
+          <% } %>
+        </select>
+        <small>
+          <strong>User:</strong> Standard account with basic access<br>
+          <strong>Administrator:</strong> Full access to admin panel and user management
+        </small>
+      </div>
+    </section>
+
+    <!-- Account Details -->
+    <aside class="sidebar">
+      <h3>Account Status</h3>
+
+      <div class="mb-2">
+        <strong>User ID:</strong><br>
+        <code><%= user.ID %></code>
+      </div>
+
+      <div class="mb-2">
+        <strong>Created:</strong><br>
+        <%= dateFormat(user.CreatedAt, "Jan 2, 2006 at 3:04 PM") %>
+      </div>
+
+      <div class="mb-2">
+        <strong>Last Updated:</strong><br>
+        <%= dateFormat(user.UpdatedAt, "Jan 2, 2006 at 3:04 PM") %>
+      </div>
+
+      <hr>
+      <small class="text-muted">
+        <strong>Note:</strong> Password changes must be done by the user through their account settings.
+      </small>
+    </aside>
+  </div>
+
+  <!-- Form Actions -->
+  <section class="form-actions">
+    <div class="flex flex-gap">
+      <a href="/admin/users/<%= user.ID %>" role="button" class="secondary"
+         hx-get="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-push-url="true">
+        Cancel
+      </a>
+      <button type="submit" class="primary">Update User</button>
+    </div>
+  </section>
+</form>

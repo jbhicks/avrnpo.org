@@ -1,0 +1,91 @@
+<!-- Sign Up Partial for HTMX -->
+<article class="form-grid">
+  <hgroup>
+    <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m22 21-3-3 3-3"/></svg> Create your account</h1>
+     <p>Already have an account? <a href="<%= newAuthPath() %>" 
+                                 hx-boost="true">Sign in instead</a></p>
+  </hgroup>
+    
+    <%= formFor(user, {action: usersPath(), method: "POST", autocomplete: "on"}) { %>
+      <fieldset>
+        <label>
+          First Name
+          <input type="text" 
+                 id="first_name" 
+                 name="first_name" 
+                 autocomplete="given-name" 
+                 required 
+                 placeholder="Enter your first name"
+                 value="<%= user.FirstName %>">
+          <%= if (errors && errors.Get("first_name")) { %>
+            <small style="color: red;"><%= errors.Get("first_name") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          Last Name
+          <input type="text" 
+                 id="last_name" 
+                 name="last_name" 
+                 autocomplete="family-name" 
+                 required 
+                 placeholder="Enter your last name"
+                 value="<%= user.LastName %>">
+          <%= if (errors && errors.Get("last_name")) { %>
+            <small style="color: red;"><%= errors.Get("last_name") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          Email
+          <input type="email" 
+                 id="email" 
+                 name="email" 
+                 autocomplete="email" 
+                 required 
+                 placeholder="Enter your email"
+                 value="<%= user.Email %>">
+          <%= if (errors && errors.Get("email")) { %>
+            <small style="color: red;"><%= errors.Get("email") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          Password
+          <input type="password" 
+                 id="password" 
+                 name="password" 
+                 autocomplete="new-password" 
+                 required 
+                 placeholder="Enter your password">
+          <%= if (errors && errors.Get("password")) { %>
+            <small style="color: red;"><%= errors.Get("password") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          Confirm Password
+          <input type="password" 
+                 id="password_confirmation" 
+                 name="password_confirmation" 
+                 autocomplete="new-password" 
+                 required 
+                 placeholder="Confirm your password">
+          <%= if (errors && errors.Get("password_confirmation")) { %>
+            <small style="color: red;"><%= errors.Get("password_confirmation") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          <input type="checkbox" name="accept_terms" required />
+          I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+          <%= if (errors && errors.Get("accept_terms")) { %>
+            <small style="color: red;"><%= errors.Get("accept_terms") %></small>
+          <% } %>
+        </label>
+      </fieldset>
+
+      <input type="submit" value="Create Account" />
+    <% } %>
+
+  </article>

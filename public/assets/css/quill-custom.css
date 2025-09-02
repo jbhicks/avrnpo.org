@@ -1,0 +1,148 @@
+/* Custom Quill editor styles for AVR website */
+/* Extends the default Quill Snow theme */
+
+/* Container styling */
+.quill-editor,
+.quill-editor-simple {
+  min-height: 200px;
+  background-color: var(--pico-card-background-color);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: var(--pico-border-radius);
+  margin-bottom: 1rem;
+}
+
+.quill-editor-simple {
+  min-height: 120px;
+}
+
+/* Toolbar customization */
+.ql-toolbar {
+  border-bottom: 1px solid var(--pico-muted-border-color);
+  background-color: var(--pico-secondary);
+  border-radius: var(--pico-border-radius) var(--pico-border-radius) 0 0;
+}
+
+.ql-toolbar .ql-stroke {
+  stroke: var(--pico-primary);
+}
+
+.ql-toolbar .ql-fill {
+  fill: var(--pico-primary);
+}
+
+.ql-toolbar .ql-picker-label {
+  color: var(--pico-primary);
+}
+
+.ql-toolbar button:hover,
+.ql-toolbar button.ql-active {
+  background-color: var(--pico-primary);
+}
+
+.ql-toolbar button:hover .ql-stroke,
+.ql-toolbar button.ql-active .ql-stroke {
+  stroke: white;
+}
+
+.ql-toolbar button:hover .ql-fill,
+.ql-toolbar button.ql-active .ql-fill {
+  fill: white;
+}
+
+/* Editor content area */
+.ql-editor {
+  min-height: 150px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--pico-color);
+  padding: 1rem;
+}
+
+.ql-editor.ql-blank::before {
+  color: var(--pico-muted-color);
+  font-style: italic;
+}
+
+/* Focus states */
+.quill-editor:focus-within,
+.quill-editor-simple:focus-within {
+  border-color: var(--pico-primary);
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2);
+}
+
+/* Custom formatting */
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3 {
+  color: var(--pico-primary);
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ql-editor blockquote {
+  border-left: 4px solid var(--pico-primary);
+  padding-left: 1rem;
+  margin-left: 0;
+  background-color: var(--pico-secondary-hover);
+  color: var(--pico-color);
+}
+
+.ql-editor code {
+  background-color: var(--pico-code-background-color);
+  color: var(--pico-code-color);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.ql-editor pre {
+  background-color: var(--pico-code-background-color);
+  color: var(--pico-code-color);
+  padding: 1rem;
+  border-radius: var(--pico-border-radius);
+  overflow-x: auto;
+}
+
+/* Links in editor */
+.ql-editor a {
+  color: var(--pico-primary);
+  text-decoration: underline;
+}
+
+.ql-editor a:hover {
+  color: var(--pico-primary-hover);
+}
+
+/* Lists */
+.ql-editor ul,
+.ql-editor ol {
+  padding-left: 1.5rem;
+}
+
+.ql-editor li {
+  margin-bottom: 0.25rem;
+}
+
+/* Image handling */
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--pico-border-radius);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ql-toolbar {
+    flex-wrap: wrap;
+  }
+  
+  .ql-toolbar .ql-formats {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .ql-editor {
+    padding: 0.75rem;
+    min-height: 120px;
+  }
+}

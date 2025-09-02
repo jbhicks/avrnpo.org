@@ -1,0 +1,2 @@
+# This file ensures the public/assets directory is not empty.
+# It prevents Go embed errors when no assets are present.

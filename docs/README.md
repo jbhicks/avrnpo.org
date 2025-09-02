@@ -1,120 +1,183 @@
-# AVR Helcim Documentation Index
+# AVR NPO Documentation
 
-This directory contains comprehensive documentation for integrating with the Helcim payment processing API in the AVR NPO donation system.
+Comprehensive documentation for the American Veterans Rebuilding (AVR) donation system built with Buffalo framework and Helcim payment processing.
 
-## Documentation Files
+## 🚀 Quick Start
 
-### 📖 [Helcim API Reference](./helcim-api-reference.md)
-**Complete reference guide for Helcim API integration**
-- Authentication and API tokens
-- Endpoint documentation
-- Request/response formats
-- Security best practices
-- Environment configuration
-- Testing procedures
+New to the project? Start here:
 
-### 🔗 [Helcim Webhooks Implementation Guide](./helcim-webhooks-guide.md)
-**Step-by-step guide for Phase 2 webhook implementation**
-- Webhook configuration in Helcim dashboard
-- Go implementation patterns
-- Signature verification
-- Event processing logic
-- Security considerations
-- Testing and monitoring
+1. **[Development Setup](#-getting-started)** - Environment setup and first run
+2. **[Payment System Overview](./payment-system/README.md)** - Core donation functionality  
+3. **[Buffalo Framework Guide](./buffalo-framework/README.md)** - Daily development workflow
 
-### ⚠️ [Helcim Error Handling Reference](./helcim-error-handling.md)
-**Comprehensive error handling patterns and recovery procedures**
-- Common HTTP status codes
-- Error response formats
-- Go error handling patterns
-- Retry logic and backoff strategies
-- Frontend error display
-- Monitoring and alerting
+## 📚 Documentation Structure
 
-## Quick Reference
+### 🎯 Getting Started
+Essential guides for new developers and daily development workflows.
 
-### Current Implementation (Phase 1)
-- ✅ HelcimPay.js integration for donation processing
-- ✅ POST endpoint for checkout token generation
-- ✅ Input validation and sanitization
-- ✅ Rate limiting protection
+- **[Quick Start](./getting-started/quick-start.md)** - Environment setup and first run
+- **[Development Workflow](./getting-started/development-workflow.md)** - Daily development commands
+- **[Testing Guide](./getting-started/testing-guide.md)** - How to run tests properly
 
-### Next Phase (Phase 2)
-- 🔄 Webhook integration for real-time payment notifications
-- 🔄 Signature verification for webhook security
-- 🔄 Event processing for different payment statuses
+### 💳 Payment System  
+Complete donation and subscription management system documentation.
 
-### Future Phases
-- 📋 Database integration for donation storage (Phase 3)
-- 📋 Receipt and email system (Phase 4)
-- 📋 Admin dashboard for donation management (Phase 5)
+- **[Payment Overview](./payment-system/README.md)** - System architecture and status
+- **[Helcim Integration](./payment-system/helcim-integration.md)** - Complete API integration guide
+- **[Donation Flow](./payment-system/donation-flow.md)** - User experience and form handling
+- **[Recurring Payments](./payment-system/recurring-payments-final.md)** - **PRODUCTION READY** subscription management
+- **[Webhooks](./payment-system/webhooks.md)** - Event processing and notifications
+- **[Testing](./payment-system/testing.md)** - Payment testing procedures
 
-## Integration Checklist
+### 🦬 Buffalo Framework
+Buffalo web framework development guides and best practices.
 
-### Environment Setup
-- [ ] `HELCIM_PRIVATE_API_KEY` configured
-- [ ] API token permissions verified in Helcim dashboard
-- [ ] Connection test successful
+- **[Buffalo Overview](./buffalo-framework/README.md)** - Framework guide and critical rules  
+- **[Templates](./buffalo-framework/templates.md)** - Plush templating and partial naming
+- **[Routing & HTMX](./buffalo-framework/routing-htmx.md)** - Route configuration and HTMX
+- **[Authentication](./buffalo-framework/authentication.md)** - Auth patterns and testing
+- **[Database](./buffalo-framework/database.md)** - Migrations and database operations
+- **[Troubleshooting](./buffalo-framework/troubleshooting.md)** - Common issues and solutions
 
-### Current Features
-- [ ] Donation form validation working
-- [ ] HelcimPay.js checkout integration functional
-- [ ] Rate limiting protecting endpoints
-- [ ] Error handling providing user feedback
+### 🎨 Frontend Development
+Styling, interactions, and user interface implementation.
 
-### Phase 2 Requirements
-- [ ] Webhook URL configured in Helcim
-- [ ] `HELCIM_WEBHOOK_VERIFIER_TOKEN` added to environment
-- [ ] Webhook endpoint implemented with signature verification
-- [ ] Event processing logic for payment statuses
-- [ ] Webhook testing completed
+- **[Pico CSS Guide](./frontend/pico-css.md)** - Styling with Pico CSS variables
+- **[HTMX Patterns](./frontend/htmx-patterns.md)** - HTMX best practices and progressive enhancement
+- **[Assets](./frontend/assets.md)** - Asset pipeline and management
 
-## File Locations in Project
+### 🚀 Deployment & Production
+Production deployment, security, and monitoring.
 
+- **[Production Checklist](./deployment/production-checklist.md)** - Go-live requirements
+- **[Security Guidelines](./deployment/security.md)** - Security best practices
+- **[Monitoring](./deployment/monitoring.md)** - Logging and monitoring setup
+
+### 📖 Reference
+API documentation, schemas, and technical references.
+
+- **[API Endpoints](./reference/api-endpoints.md)** - Complete API reference
+- **[Database Schema](./reference/database-schema.md)** - Current database structure
+- **[Dependencies](./reference/dependencies.md)** - Dependency management rules  
+- **[Changelog](./reference/changelog.md)** - Major changes and updates
+
+## 🔍 Finding Information
+
+### By Developer Role
+
+**🆕 New Developer:**
+1. [Quick Start](./getting-started/quick-start.md) - Get running quickly
+2. [Buffalo Overview](./buffalo-framework/README.md) - Learn the framework
+3. [Payment Overview](./payment-system/README.md) - Understand core functionality
+
+**💻 Daily Development:**
+1. [Development Workflow](./getting-started/development-workflow.md) - Common commands
+2. [Testing Guide](./getting-started/testing-guide.md) - How to test changes
+3. [Troubleshooting](./buffalo-framework/troubleshooting.md) - Fix common issues
+
+**💳 Payment Features:**
+1. [Helcim Integration](./payment-system/helcim-integration.md) - Complete API guide
+2. [Donation Flow](./payment-system/donation-flow.md) - Frontend implementation
+3. [Recurring Payments](./payment-system/recurring-payments-final.md) - **PRODUCTION READY** subscription system
+
+**🎨 Frontend Work:**
+1. [Pico CSS Guide](./frontend/pico-css.md) - Styling and theming
+2. [HTMX Patterns](./frontend/htmx-patterns.md) - Progressive enhancement
+3. [Templates](./buffalo-framework/templates.md) - Template development
+
+### By Problem Type
+
+**🐛 Something Broken:**
+- [Troubleshooting](./buffalo-framework/troubleshooting.md) - Common Buffalo issues
+- [Testing Guide](./getting-started/testing-guide.md) - How to verify fixes
+- [Security Guidelines](./deployment/security.md) - Security concerns
+
+**🚀 Adding Features:**
+- [Buffalo Overview](./buffalo-framework/README.md) - Framework patterns
+- [API Endpoints](./reference/api-endpoints.md) - Existing API structure
+- [Database Schema](./reference/database-schema.md) - Current database design
+
+**🎯 Payment Issues:**
+- [Payment Testing](./payment-system/testing.md) - Test procedures and cards
+- [Helcim Integration](./payment-system/helcim-integration.md) - API troubleshooting  
+- [Webhooks](./payment-system/webhooks.md) - Event processing issues
+
+## 🎯 Current Project Status
+
+### ✅ Completed Features (Phase 2)
+- **One-time donations** - Full Helcim Payment API integration
+- **Recurring donations** - Monthly subscriptions via Helcim Recurring API  
+- **User account linking** - Donations tied to user accounts when logged in
+- **Subscription management** - View, cancel, and update subscriptions
+- **Receipt system** - Email confirmations for all donations
+- **Webhook processing** - Real-time payment status updates
+
+### 🔄 Current Focus
+- **Documentation organization** - Consolidating and improving developer experience
+- **Testing procedures** - Ensuring robust payment system operation
+- **User experience refinement** - Optimizing donation and subscription flows
+
+### 🎯 Future Enhancements
+- **Enhanced reporting** - Donation analytics and donor insights
+- **Campaign integration** - Blog-driven donation campaigns  
+- **Admin interface** - Donation and subscription oversight tools
+
+## 📋 Quick Reference
+
+### Essential Commands
+```bash
+# Start development environment
+make dev
+
+# Run comprehensive tests  
+make test
+
+# Run quick tests (assumes database running)
+make test-fast
+
+# Database migrations
+soda migrate up
+
+# Check Buffalo status
+ps aux | grep buffalo
+lsof -i :3000
 ```
-avrnpo.org/
-├── docs/                           # This documentation directory
-│   ├── README.md                   # This index file
-│   ├── helcim-api-reference.md     # Complete API reference
-│   ├── helcim-webhooks-guide.md    # Webhook implementation guide
-│   └── helcim-error-handling.md    # Error handling patterns
-├── main.go                         # Main application with Helcim integration
-├── templates/donate.html           # Donation form with HelcimPay.js
-├── .env                           # Environment variables (not in git)
-└── README.md                      # Project overview and phase tracking
-```
 
-## Code Examples Location
+### Key URLs (Development)
+- **Application:** http://127.0.0.1:3000
+- **Donation Page:** http://127.0.0.1:3000/donation  
+- **User Account:** http://127.0.0.1:3000/account
+- **Admin Panel:** http://127.0.0.1:3000/admin
 
-All code examples in the documentation are designed to integrate with the current `main.go` structure:
+### Environment Files
+- **`.env`** - Development environment variables
+- **`database.yml`** - Database configuration
+- **`config/buffalo-app.toml`** - Buffalo application settings
 
-- **API Reference**: Contains working Go code snippets for Helcim API calls
-- **Webhooks Guide**: Provides complete webhook implementation for Phase 2
-- **Error Handling**: Shows patterns for robust error handling throughout the system
+## 🆘 Getting Help
 
-## Development Workflow
+1. **Check troubleshooting guides** in relevant topic areas
+2. **Search this documentation** for specific error messages or concepts
+3. **Verify test procedures** to ensure changes work correctly
+4. **Review error logs** in Buffalo console output or log files
 
-1. **Read the relevant documentation** before implementing features
-2. **Follow the Go patterns** shown in the documentation
-3. **Test thoroughly** using the provided testing procedures
-4. **Update documentation** if new patterns or issues are discovered
-5. **Update project tracking** in README.md and PROJECT_TRACKING.md
+## 📝 Contributing to Documentation
 
-## Security Notes
-
-🔒 **Important**: All Helcim API calls must be made from the backend server, never from frontend JavaScript, to maintain PCI compliance and API security.
-
-🔐 **Critical**: Always verify webhook signatures and validate timestamps to prevent security vulnerabilities.
-
-💳 **Required**: Never handle raw credit card data - always use HelcimPay.js for PCI-compliant tokenization.
-
-## Support and Resources
-
-- **Helcim Documentation**: https://devdocs.helcim.com/
-- **Helcim API Reference**: https://devdocs.helcim.com/reference
-- **Helcim Support**: https://devdocs.helcim.com/docs/get-help
-- **Project Issues**: Document in PROJECT_TRACKING.md
+When updating documentation:
+- **Place in appropriate topic directory** based on functional area
+- **Update relevant README.md files** to maintain navigation
+- **Use consistent formatting** and include practical examples
+- **Test all code examples** to ensure they work correctly
+- **Follow security guidelines** - never expose real credentials
 
 ---
 
-*This documentation is maintained as part of the AVR NPO donation system and should be updated as new features are implemented.*
+**Documentation Organization:** This structure replaces the previous 39-file sprawl with a logical hierarchy organized around developer workflows and functional areas. Each topic directory contains a README.md that provides navigation within that area, while this main README provides navigation across all areas.
+
+## 🗂️ Legacy Documentation
+
+The previous documentation files have been reorganized. If you're looking for specific content from the old structure, check the reorganization plan:
+
+- **[Documentation Reorganization Plan](./DOCUMENTATION_REORGANIZATION_PLAN.md)** - Complete migration strategy and file mapping
+
+For immediate access to legacy content while the migration is in progress, the old files remain available in the root docs directory.

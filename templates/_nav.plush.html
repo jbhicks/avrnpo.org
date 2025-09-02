@@ -1,0 +1,50 @@
+<!-- AVR Header -->
+<header class="avr-header">
+  <div class="header-grid">
+    <div class="header-left">
+      <img src="<%= assetPath("images/Armed-Services-Logos.avif") %>" alt="American Veterans Rebuilding" class="armed-services-logo">
+    </div>
+    <div class="header-center">
+      <a href="/">
+        <img src="<%= assetPath("images/logo.avif") %>" alt="AVRNPO" class="main-logo">
+      </a>
+      <p class="tagline">Rebuilding the American Veteran's Self, Family and Community.</p>
+    </div>
+    <div class="header-right">
+      <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="social-icon">
+        <img src="<%= assetPath("images/Facebook.svg") %>" alt="Facebook">
+      </a>
+      <a href="https://x.com/avrnpo" target="_blank" class="social-icon">
+        <img src="<%= assetPath("images/X.svg") %>" alt="X">
+      </a>
+      <a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="social-icon">
+        <img src="<%= assetPath("images/Discord.svg") %>" alt="Discord">
+      </a>
+      <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="social-icon">
+        <img src="<%= assetPath("images/Spotify.svg") %>" alt="Spotify">
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- AVR Navigation -->
+<nav class="avr-navigation">
+  <div class="nav-links">
+    <a href="/" role="button" class="outline">Mission</a>
+    <a href="/blog" role="button" class="outline">Updates</a>
+    <a href="/team" role="button" class="outline">Team</a>
+    <a href="/projects" role="button" class="outline">Projects</a>
+    <a href="/donate" role="button" class="outline">Donate</a>
+    <a href="/contact" role="button" class="outline">Contact</a>
+    <% if (current_user) { %>
+      <a href="/dashboard" role="button" class="outline">Dashboard</a>
+      <a href="/account" role="button" class="outline">Account</a>
+      <% if (current_user.Role == "admin") { %>
+        <a href="/admin" role="button" class="outline">Admin</a>
+      <% } %>
+      <a href="/signout" role="button" class="outline">Sign Out</a>
+    <% } else { %>
+      <a href="/auth/new" role="button" class="outline">Sign In</a>
+    <% } %>
+  </div>
+</nav>

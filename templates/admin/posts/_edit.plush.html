@@ -1,0 +1,91 @@
+<!-- Edit Post Form (HTMX Partial) -->
+<header class="mb-4">
+    <nav class="mb-2">
+        <a
+            href="/admin/posts"
+            hx-get="/admin/posts"
+            hx-target="#main-content"
+            hx-push-url="true"
+            >← Back to Posts</a
+        >
+    </nav>
+    <div class="admin-header-start">
+        <div>
+            <h1>Edit Post</h1>
+            <p>Updating: <strong><%= post.Title %></strong></p>
+        </div>
+        <div class="flex flex-gap-sm">
+            <a
+                href="/admin/posts/<%= post.ID %>"
+                role="button"
+                class="outline"
+                hx-get="/admin/posts/<%= post.ID %>"
+                hx-target="#main-content"
+                hx-push-url="true"
+                >← View Post</a
+            >
+            <a
+                href="/blog/<%= post.Slug %>"
+                role="button"
+                class="outline"
+                target="_blank"
+                >Preview Live</a
+            >
+        </div>
+    </div>
+</header>
+
+<%= if (errors) { %>
+<div class="error-box">
+    <h4>Please fix the following errors:</h4>
+    <ul>
+        <%= for (key, messages) in errors { %> <%= for (message) in messages {
+        %>
+        <li><%= message %></li>
+        <% } %> <% } %>
+    </ul>
+</div>
+<% } %>
+
+<form
+    hx-put="/admin/posts/<%= post.ID %>"
+    hx-target="body"
+    hx-swap="outerHTML"
+    hx-push-url="true"
+    enctype="multipart/form-data"
+>
+    <% if (authenticity_token) { %>
+    <input
+        type="hidden"
+        name="authenticity_token"
+        value="<%= authenticity_token %>"
+    />
+    <% } %> <%= partial("admin/posts/form") %>
+
+    <!-- Form Actions -->
+    <div class="form-actions between">
+        <button
+            type="button"
+            class="outline btn-danger"
+            hx-delete="/admin/posts/<%= post.ID %>"
+            hx-confirm="Are you sure you want to delete this post? This action cannot be undone."
+            hx-target="#main-content"
+            hx-push-url="/admin/posts"
+        >
+            Delete Post
+        </button>
+
+        <div class="flex flex-gap">
+            <a
+                href="/admin/posts/<%= post.ID %>"
+                role="button"
+                class="outline"
+                hx-get="/admin/posts/<%= post.ID %>"
+                hx-target="#main-content"
+                hx-push-url="true"
+                >Cancel</a
+            >
+            <button type="submit" class="primary">Update Post</button>
+        </div>
+    </div>
+</form>

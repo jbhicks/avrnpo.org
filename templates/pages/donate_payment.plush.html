@@ -1,0 +1,377 @@
+<!-- Payment Processing Page Content -->
+<% if (authenticity_token) { %>
+<meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="<%= authenticity_token %>" />
+<input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+<% } %>
+<div class="payment-container">
+  <section>
+    <h1>Processing Your <%= if (donationType == "monthly" || donationType == "recurring") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
+    <p>Thank you for your generous <%= if (donationType == "monthly" || donationType == "recurring") { %>monthly recurring<% } else { %>one-time<% } %> donation to American Veterans Rebuilding!</p>
+
+    <div class="payment-details">
+      <p><strong>Donation Amount:</strong> $<%= amount %><%= if (donationType == "monthly" || donationType == "recurring") { %> per month<% } %></p>
+      <p><strong>Donor:</strong> <%= donorName %></p>
+      <%= if (donationType == "monthly" || donationType == "recurring") { %>
+        <p><strong>Billing Cycle:</strong> Monthly recurring</p>
+        <%= if (nextBillingDate) { %>
+          <p><strong>Next Payment:</strong> <%= nextBillingDate %></p>
+        <% } %>
+      <% } %>
+
+      <%= if (paymentMethod) { %>
+        <p><strong>Payment Method:</strong> <%= paymentMethod %></p>
+      <% } %>
+    </div>
+
+     <div class="payment-form">
+       <div class="payment-instructions">
+         <p>Click below to securely enter your payment information.</p>
+         <p><strong>Amount: $<%= amount %></strong></p>
+       </div>
+
+         <button type="button" id="open-payment-modal" class="payment-submit" onclick="console.log('[DonatePayment] Button clicked via onclick attribute')">
+           Enter Payment Information
+         </button>
+
+       <div class="payment-security">
+         <small>
+           🔒 SSL Encrypted • PCI Compliant • Secure Payment Processing
+         </small>
+       </div>
+     </div>
+  </section>
+</div>
+
+<script>
+  console.log('[DonatePayment] SCRIPT LOADED - Starting payment page initialization');
+    console.log('[DonatePayment] Template variables - checkoutToken:', '<%= checkoutToken %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
+    console.log('[DonatePayment] Template variables - donationType:', '<%= donationType %>');
+    console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
+    console.log('[DonatePayment] Authenticity token value:', '<%= authenticity_token %>');
+   console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
+
+   // Test if basic JavaScript is working
+   try {
+     console.log('[DonatePayment] JavaScript execution test - OK');
+
+     // Check CSRF token availability
+     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+     console.log('[DonatePayment] CSRF meta tag found:', csrfMeta ? 'YES' : 'NO');
+     if (csrfMeta) {
+       console.log('[DonatePayment] CSRF token value:', csrfMeta.getAttribute('content') ? 'PRESENT' : 'EMPTY');
+     }
+   } catch (e) {
+     console.error('[DonatePayment] JavaScript execution test failed:', e);
+   }
+
+  // Load HelcimPay.js script dynamically using official Helcim URL
+   function loadHelcimPayScript() {
+     return new Promise((resolve, reject) => {
+       if (window.appendHelcimPayIframe) {
+         console.info('[DonatePayment] HelcimPay.js already loaded');
+         resolve();
+         return;
+       }
+
+       // Use official HelcimPay.js URL from Helcim documentation
+       const canonicalUrl = 'https://secure.helcim.app/helcim-pay/services/start.js';
+       console.info(`[DonatePayment] Loading HelcimPay.js from canonical URL: ${canonicalUrl}`);
+
+       const script = document.createElement('script');
+       script.type = 'text/javascript';
+       script.src = canonicalUrl;
+       script.onload = () => {
+         console.info('[DonatePayment] Successfully loaded HelcimPay.js from canonical URL');
+         console.log('[DonatePayment] appendHelcimPayIframe function available:', typeof window.appendHelcimPayIframe);
+         resolve();
+       };
+       script.onerror = (error) => {
+         console.error('[DonatePayment] Failed to load HelcimPay.js from canonical URL:', error);
+         reject(new Error('Failed to load HelcimPay.js from official URL'));
+       };
+
+       document.head.appendChild(script);
+     });
+   }
+
+  // Initialize HelcimPay modal using official HelcimPay.js API
+   async function initializeHelcimPay() {
+     try {
+       await loadHelcimPayScript();
+       console.info('[DonatePayment] HelcimPay.js loaded successfully');
+
+       const checkoutToken = '<%= checkoutToken %>';
+       const donationId = '<%= donationId %>';
+
+       if (!checkoutToken) {
+         console.error('[DonatePayment] No checkout token available');
+         alert('Payment system error. Please try again.');
+         return;
+       }
+
+       console.info('[DonatePayment] Initializing HelcimPay modal with token:', checkoutToken.substring(0, 8) + '...');
+
+       // Use official HelcimPay.js appendHelcimPayIframe function
+       try {
+         console.info('[DonatePayment] Using official appendHelcimPayIframe function');
+         appendHelcimPayIframe(checkoutToken);
+
+         // Set up event listener for HelcimPay.js postMessage events
+         const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+
+         window.addEventListener('message', function(event) {
+           if (event.data.eventName === helcimPayJsIdentifierKey) {
+             console.info('[DonatePayment] Received HelcimPay.js event:', event.data.eventStatus);
+
+             if (event.data.eventStatus === 'SUCCESS') {
+               console.info('[DonatePayment] Payment successful:', event.data.eventMessage);
+               const paymentData = JSON.parse(event.data.eventMessage);
+               processPaymentSuccess(paymentData, donationId);
+             } else if (event.data.eventStatus === 'ABORTED') {
+               console.error('[DonatePayment] Payment failed:', event.data.eventMessage);
+               processPaymentError(event.data.eventMessage, donationId);
+             } else if (event.data.eventStatus === 'HIDE') {
+               console.info('[DonatePayment] Payment modal hidden by user');
+               // User closed modal, redirect back to donate page
+               window.location.href = '/donate';
+             }
+           }
+         });
+
+       } catch (initError) {
+         console.error('[DonatePayment] Failed to initialize HelcimPay modal:', initError);
+         alert('Payment system initialization failed. Please try again.');
+         window.location.href = '/donate';
+       }
+
+     } catch (error) {
+       console.error('[DonatePayment] Failed to load HelcimPay.js:', error);
+       alert('Payment system unavailable. Please try again later.');
+       window.location.href = '/donate';
+     }
+   }
+
+  // Handle successful payment using official HelcimPay.js response format
+   function processPaymentSuccess(paymentResponse, donationId) {
+     console.info('[DonatePayment] Processing successful payment for donation:', donationId);
+     console.debug('[DonatePayment] Payment response:', paymentResponse);
+
+      // Extract data from official HelcimPay.js response format
+      // Handle multiple possible response structures
+      let data = paymentResponse;
+      if (paymentResponse.data && typeof paymentResponse.data === 'object') {
+        // Check if the actual data is nested under data.data (HelcimPay.js structure)
+        if (paymentResponse.data.data && typeof paymentResponse.data.data === 'object') {
+          data = paymentResponse.data.data;
+        } else {
+          data = paymentResponse.data;
+        }
+      }
+
+      // Debug logging to see response structure
+      console.debug('[DonatePayment] Raw payment response:', paymentResponse);
+      console.debug('[DonatePayment] Extracted data:', data);
+      console.debug('[DonatePayment] All keys in data:', Object.keys(data));
+      console.debug('[DonatePayment] customerCode in data:', data.customerCode);
+      console.debug('[DonatePayment] cardToken in data:', data.cardToken);
+      console.debug('[DonatePayment] bankToken in data:', data.bankToken);
+      console.debug('[DonatePayment] transactionId in data:', data.transactionId);
+      console.debug('[DonatePayment] Full data object:', JSON.stringify(data, null, 2));
+
+      // Ensure we have a customerCode (generate if missing)
+      if (!data.customerCode) {
+        data.customerCode = 'DON_' + donationId + '_' + Date.now();
+        console.warn('[DonatePayment] Generated fallback customerCode:', data.customerCode);
+      } else {
+        console.info('[DonatePayment] Using Helcim customerCode:', data.customerCode);
+      }
+
+      // Get CSRF token with better error handling
+      let csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+      console.info('[DonatePayment] CSRF token from meta tag:', csrfToken ? 'PRESENT' : 'MISSING');
+
+      // Fallback: try to get from hidden input if meta tag fails
+      if (!csrfToken) {
+        csrfToken = document.querySelector('input[name="authenticity_token"]')?.value;
+        console.info('[DonatePayment] CSRF token from hidden input:', csrfToken ? 'PRESENT' : 'MISSING');
+      }
+
+      // Final fallback: use the template variable directly
+      if (!csrfToken && '<%= authenticity_token %>') {
+        csrfToken = '<%= authenticity_token %>';
+        console.info('[DonatePayment] CSRF token from template variable: PRESENT');
+      }
+
+      if (!csrfToken) {
+        console.error('[DonatePayment] CSRF token not found in any location');
+        alert('Security token missing. Please refresh the page and try again.');
+        return;
+      }
+
+      // Log the data being sent to backend
+      const requestData = {
+        customerCode: data.customerCode,
+        cardToken: data.cardToken || data.bankToken,
+        transactionId: data.transactionId,
+        donationId: donationId,
+        amount: '<%= amount %>'
+      };
+      console.info('[DonatePayment] Sending to backend:', requestData);
+
+      fetch('/api/donations/process', {
+       method: 'POST',
+       headers: {
+         'Content-Type': 'application/json',
+         'X-CSRF-Token': csrfToken
+       },
+        body: JSON.stringify(requestData)
+     })
+     .then(response => {
+       console.info('[DonatePayment] Process API response status:', response.status);
+       return response.json();
+     })
+     .then(result => {
+       if (result.success) {
+         console.info('[DonatePayment] Payment processed successfully, redirecting to success page');
+         // Clean up the HelcimPay iframe
+         if (window.removeHelcimPayIframe) {
+           removeHelcimPayIframe();
+         }
+         // Redirect to success page
+         window.location.href = '/donate/success';
+       } else {
+         console.error('[DonatePayment] Payment processing failed:', result.error);
+         alert('Payment processing failed: ' + result.error);
+         window.location.href = '/donate/failed';
+       }
+     })
+     .catch(error => {
+       console.error('[DonatePayment] Error processing payment:', error);
+       alert('An error occurred while processing your payment. Please try again.');
+       window.location.href = '/donate/failed';
+     });
+   }
+
+  // Handle payment error
+  function processPaymentError(error, donationId) {
+    console.error('[DonatePayment] Payment error for donation:', donationId, error);
+
+    // Log error but redirect to failed page
+    // For now, just log to console and redirect - error logging can be added later if needed
+    window.location.href = '/donate/failed';
+  }
+
+  // Initialize when DOM is ready
+  console.log('[DonatePayment] Setting up DOM ready listener');
+
+  document.addEventListener('DOMContentLoaded', function() {
+    console.info('[DonatePayment] DOM loaded, setting up modal trigger');
+
+    // Set up modal trigger
+    const openButton = document.getElementById('open-payment-modal');
+    console.log('[DonatePayment] Looking for button with id="open-payment-modal"', openButton);
+
+    if (openButton) {
+      console.info('[DonatePayment] Button found, attaching click handler');
+      openButton.addEventListener('click', function(event) {
+        console.info('[DonatePayment] Modal trigger clicked, initializing HelcimPay...');
+        console.log('[DonatePayment] Click event:', event);
+
+        // Disable button to prevent multiple clicks
+        openButton.disabled = true;
+        openButton.textContent = 'Loading...';
+        console.log('[DonatePayment] Button disabled and text changed');
+
+        initializeHelcimPay().catch(error => {
+          console.error('[DonatePayment] Failed to initialize modal:', error);
+          // Re-enable button on error
+          openButton.disabled = false;
+          openButton.textContent = 'Enter Payment Information';
+          console.log('[DonatePayment] Button re-enabled due to error');
+        });
+      });
+      console.info('[DonatePayment] Click handler attached successfully');
+    } else {
+      console.error('[DonatePayment] Modal trigger button not found');
+      console.log('[DonatePayment] All elements with id containing "modal":', document.querySelectorAll('[id*="modal"]'));
+      console.log('[DonatePayment] All buttons:', document.querySelectorAll('button'));
+    }
+  });
+
+  // Also try to set up immediately in case DOM is already loaded
+  if (document.readyState === 'loading') {
+    console.log('[DonatePayment] DOM still loading, waiting for DOMContentLoaded');
+  } else {
+    console.log('[DonatePayment] DOM already loaded, setting up immediately');
+    // DOM is already loaded, set up immediately
+    const openButton = document.getElementById('open-payment-modal');
+    if (openButton) {
+      console.info('[DonatePayment] Setting up button handler immediately');
+      openButton.addEventListener('click', function(event) {
+        console.info('[DonatePayment] Modal trigger clicked (immediate setup)');
+        openButton.disabled = true;
+        openButton.textContent = 'Loading...';
+        initializeHelcimPay().catch(error => {
+          console.error('[DonatePayment] Failed to initialize modal:', error);
+          openButton.disabled = false;
+          openButton.textContent = 'Enter Payment Information';
+        });
+      });
+    }
+  }
+</script>
+
+<style>
+.payment-form {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--pico-background-color);
+  border-radius: var(--pico-border-radius);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.payment-instructions {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--pico-color);
+}
+
+.payment-instructions p {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.payment-submit {
+  width: 100%;
+  padding: 1rem;
+  background: var(--pico-primary);
+  color: var(--pico-primary-inverse);
+  border: none;
+  border-radius: var(--pico-border-radius);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.payment-submit:hover {
+  background: var(--pico-primary-hover);
+}
+
+.payment-security {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--pico-border-color);
+}
+
+.payment-security small {
+  color: var(--pico-muted-color);
+  font-size: 0.9rem;
+}
+</style>
+</section>

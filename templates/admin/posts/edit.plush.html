@@ -1,0 +1,155 @@
+<!-- Edit Post Form -->
+<div class="admin-grid">
+  <!-- Admin Navigation -->
+  <aside>
+    <%= partial("admin/nav") %>
+  </aside>
+
+  <!-- Edit Post Form -->
+  <main>
+    <header class="mb-2">
+      <nav class="mb-1">
+        <a href="/admin/posts">← Back to Posts</a>
+      </nav>
+      <div class="flex-between">
+        <div>
+          <h1>Edit Post</h1>
+          <p>Updating: <strong><%= post.Title %></strong></p>
+        </div>
+        <div class="flex-gap-sm">
+          <a href="/blog/<%= post.Slug %>" role="button" class="outline">Preview</a>
+          <button hx-delete="/admin/posts/<%= post.ID %>" hx-confirm="Are you sure you want to delete this post? This action cannot be undone." hx-target="#htmx-content" hx-swap="innerHTML" role="button" class="contrast outline">Delete Post</button>
+        </div>
+      </div>
+    </header>
+
+    <%= if (errors) { %>
+    <div class="error-box">
+      <h4 class="mt-0 text-danger">Please fix the following errors:</h4>
+      <ul class="mb-0">
+        <%= for (key, messages) in errors { %>
+          <%= for (message) in messages { %>
+          <li><%= message %></li>
+          <% } %>
+        <% } %>
+      </ul>
+    </div>
+    <% } %>    <form action="/admin/posts/<%= post.ID %>" method="POST" hx-put="/admin/posts/<%= post.ID %>" hx-target="body" hx-swap="outerHTML" hx-push-url="true" enctype="multipart/form-data">
+      <% if (authenticity_token) { %>
+        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+      <% } %>
+      <input type="hidden" name="_method" value="PUT">
+
+      <!-- Post Status -->
+      <section class="card-padded mb-2">
+        <div class="flex-between-center">
+          <div>
+            <strong>Status:
+              <%= if (post.Published) { %>
+              <span class="status-published">Published</span>
+              <% } else { %>
+              <span class="status-draft">Draft</span>
+              <% } %>
+            </strong>
+            <br>
+            <small>
+              Created: <%= post.CreatedAt.Format("January 2, 2006 at 3:04 PM") %>
+              <%= if (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %>
+              | Updated: <%= post.UpdatedAt.Format("January 2, 2006 at 3:04 PM") %>
+              <% } %>
+            </small>
+          </div>
+          <div>
+            <label for="post-published">
+              <input type="checkbox" id="post-published" name="Published" value="true" <%= if (post.Published) { %>checked<% } %>>
+              Published
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- Basic Information -->
+      <section class="form-section">
+        <h3>Basic Information</h3>
+
+        <div class="form-group">
+          <label for="post-title">Post Title *</label>
+          <input type="text" id="post-title" name="Title" value="<%= post.Title %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="post-slug">URL Slug</label>
+          <input type="text" id="post-slug" name="Slug" value="<%= post.Slug %>">
+          <small>Current URL: /blog/<%= post.Slug %></small>
+        </div>
+      </section>
+
+      <!-- Content -->
+      <section class="form-section">
+        <h3>Content</h3>
+
+        <div class="form-group">
+          <label for="post-content">Post Content *</label>
+          <textarea id="post-content" name="Content" rows="15" required><%= post.Content %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="post-image">Featured Image</label>
+          <%= if (post.Image != "") { %>
+          <div class="form-group">
+            <img src="<%= post.Image %>" alt="Current featured image" class="post-image">
+            <p><small>Current image</small></p>
+          </div>
+          <% } %>
+          <input type="file" id="post-image" name="Image" accept="image/*">
+          <small>Upload a new image to replace the current one</small>
+        </div>
+      </section>
+
+      <!-- SEO Settings -->
+      <section class="form-section">
+        <h3>SEO & Social Sharing</h3>
+
+        <div class="form-group">
+          <label for="post-meta-description">Meta Description</label>
+          <textarea id="post-meta-description" name="MetaDescription" rows="3" maxlength="160"><%= post.MetaDescription %></textarea>
+          <small>Characters used: <span id="meta-desc-count">0</span>/160</small>
+        </div>
+
+        <div class="form-group">
+          <label for="post-meta-keywords">Keywords</label>
+          <input type="text" id="post-meta-keywords" name="MetaKeywords" value="<%= post.MetaKeywords %>">
+        </div>
+      </section>
+
+      <!-- Form Actions -->
+      <section class="form-actions between">
+        <div class="flex-gap">
+          <a href="/admin/posts" role="button" class="secondary">Cancel</a>
+          <a href="/blog/<%= post.Slug %>" role="button" class="outline">Preview Changes</a>
+          <button type="submit" role="button">Update Post</button>
+        </div>
+      </section>
+    </form>
+  </main>
+</div>
+
+<!-- Character Counter Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const metaDesc = document.getElementById('post-meta-description');
+    const counter = document.getElementById('meta-desc-count');
+
+    function updateCounter() {
+      counter.textContent = metaDesc.value.length;
+      if (metaDesc.value.length > 160) {
+        counter.style.color = 'var(--pico-del-color)';
+      } else {
+        counter.style.color = 'var(--pico-muted-color)';
+      }
+    }
+
+    metaDesc.addEventListener('input', updateCounter);
+    updateCounter(); // Initial count
+  });
+</script>

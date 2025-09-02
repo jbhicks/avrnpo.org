@@ -1,0 +1,10 @@
+<div class="auth-center">
+  <%= if (current_user) { %>
+    <h1><%= current_user.Email %></h1>
+    <a href="/signout" class="signout-btn">Sign Out</a>
+  <% } else { %>
+    <a href="/auth/new/">Sign In</a>
+    <a href="/users/new/">Register</a>
+  <% } %>
+</div>
+

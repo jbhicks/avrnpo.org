@@ -1,0 +1,104 @@
+<!-- Contact Page -->
+<section>
+  <hgroup>
+    <h1>Contact Us</h1>
+    <p>We'd love to hear from you. Whether you're a veteran looking for support, someone who wants to help, or you just have questions about our mission, don't hesitate to reach out.</p>
+  </hgroup>
+
+  <!-- Debug Tools - Always visible in development -->
+  <% if (ENV != "production") { %>
+    <div style="margin: 1rem 0; padding: 1rem; background: var(--pico-muted-background); border-radius: var(--pico-border-radius); border-left: 4px solid var(--pico-primary);">
+      <h4 style="margin-bottom: 0.5rem; color: var(--pico-primary);">🔧 Debug Tools</h4>
+      <p style="margin-bottom: 0.5rem;"><small>Test flash message system:</small></p>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/debug/flash/clear" role="button" class="secondary" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Clear Messages</a>
+        <a href="/debug/flash/success" role="button" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Test Success</a>
+        <a href="/debug/flash/error" role="button" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Test Error</a>
+        <a href="/debug/flash/warning" role="button" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Test Warning</a>
+        <a href="/debug/flash/info" role="button" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Test Info</a>
+      </div>
+    </div>
+  <% } %>
+</section>
+
+<!-- Contact Information -->
+<section class="grid">
+  <!-- Contact Form -->
+  <article>
+    <header>
+      <h2>Send us a Message</h2>
+    </header>
+
+    <form hx-post="/contact" hx-target="body" hx-swap="outerHTML" method="post" action="/contact">
+      <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
+
+      <label for="name">
+        Name *
+        <input type="text" id="name" name="name" required>
+      </label>
+
+      <label for="email">
+        Email *
+        <input type="email" id="email" name="email" required>
+      </label>
+
+      <label for="subject">
+        Subject *
+        <input type="text" id="subject" name="subject" required>
+      </label>
+
+      <label for="message">
+        Message *
+        <textarea id="message" name="message" required></textarea>
+      </label>
+
+      <button type="submit">Send Message</button>
+    </form>
+  </article>
+
+  <!-- Contact Info -->
+  <article>
+    <header>
+      <h2>Get in Touch</h2>
+    </header>
+
+    <section>
+      <h4>Email</h4>
+      <p><a href="mailto:michael@avrnpo.org">michael@avrnpo.org</a></p>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+      <h4>Follow Us</h4>
+      <div class="grid">
+        <a href="https://discord.com/invite/f6TzKart7J" target="_blank" rel="noopener noreferrer" aria-label="Join us on Discord">
+          <img src="<%= assetPath("images/Discord.svg") %>" alt="Discord">
+        </a>
+        <a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" rel="noopener noreferrer" aria-label="Listen to our Spotify podcast">
+          <img src="<%= assetPath("images/Spotify.svg") %>" alt="Spotify">
+        </a>
+        <a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
+          <img src="<%= assetPath("images/Facebook.svg") %>" alt="Facebook">
+        </a>
+        <a href="https://x.com/avrnpo" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X">
+          <img src="<%= assetPath("images/X.svg") %>" alt="X">
+        </a>
+      </div>
+
+      <div style="margin-bottom: 2rem;">
+        <h4>For Veterans</h4>
+        <p style="font-size: 0.95rem; line-height: 1.5;">
+          If you're a veteran interested in our programs, please include your service information
+          and what type of support you're looking for in your message.
+        </p>
+      </div>
+
+      <div>
+        <h4>For Supporters</h4>
+        <p style="font-size: 0.95rem; line-height: 1.5;">
+          Interested in volunteering, donating, or partnering with us?
+          Let us know how you'd like to contribute to our mission.
+        </p>
+      </div>
+    </section>
+  </article>
+</section>

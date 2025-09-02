@@ -1,0 +1,41 @@
+<!-- Sign In Partial for HTMX -->
+<article class="form-grid">
+  <hgroup>
+    <h1>Sign in to your account</h1>
+     <p>Not a member? <a href="<%= newUsersPath() %>" 
+                         hx-boost="true">Sign up for a new account</a></p>
+  </hgroup>
+    
+    <%= formFor(user, {action: "/auth", method: "POST", autocomplete: "on"}) { %>
+      <fieldset>
+        <label>
+          Email
+          <input type="email" 
+                 id="email" 
+                 name="email" 
+                 autocomplete="email" 
+                 required 
+                 placeholder="Enter your email"
+                 value="<%= user.Email %>">
+          <%= if (errors && errors.Get("email")) { %>
+            <small style="color: red;"><%= errors.Get("email") %></small>
+          <% } %>
+        </label>
+        
+        <label>
+          Password
+          <input type="password" 
+                 id="password" 
+                 name="password" 
+                 autocomplete="current-password" 
+                 required 
+                 placeholder="Enter your password">
+          <%= if (errors && errors.Get("password")) { %>
+            <small style="color: red;"><%= errors.Get("password") %></small>
+          <% } %>
+        </label>
+      </fieldset>
+
+      <input type="submit" value="Sign In" />
+    <% } %>
+  </article>

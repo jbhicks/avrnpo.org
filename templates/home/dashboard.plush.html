@@ -1,0 +1,48 @@
+<!-- Dashboard Page -->
+<section class="dashboard-intro">
+  <h1>Welcome to Your Dashboard</h1>
+  <p>
+    Welcome back! This is your personal dashboard where you can manage your account,
+    view your donation history, and access member-exclusive features.
+  </p>
+</section>
+
+<!-- Dashboard Content -->
+<section class="dashboard-content">
+  <div class="grid dashboard-grid">
+
+    <!-- User Profile Card -->
+    <div class="dashboard-card">
+      <h2>Your Profile</h2>
+      <div class="user-info">
+        <p><strong>Name:</strong> <%= user.FirstName %> <%= user.LastName %></p>
+        <p><strong>Email:</strong> <%= user.Email %></p>
+        <p><strong>Member Since:</strong> <%= dateFormat(user.CreatedAt, "January 2, 2006") %></p>
+      </div>
+      <div class="card-actions">
+        <a href="/users/profile" class="button">Edit Profile</a>
+      </div>
+    </div>
+
+    <!-- Donation History Card -->
+    <div class="dashboard-card">
+      <h2>Donation History</h2>
+      <p>View your past donations and download receipts.</p>
+      <div class="card-actions">
+        <a href="/users/subscriptions" class="button">View Donations</a>
+      </div>
+    </div>
+
+    <!-- Account Settings Card -->
+    <div class="dashboard-card">
+      <h2>Account Settings</h2>
+      <p>Manage your account preferences and security settings.</p>
+      <div class="card-actions">
+        <a href="/users/account" class="button">Account Settings</a>
+      </div>
+    </div>
+
+  </div>
+</section></content>
+</xai:function_call name="edit">
+<parameter name="filePath">actions/pages.go

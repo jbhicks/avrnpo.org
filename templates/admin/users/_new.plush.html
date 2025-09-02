@@ -1,0 +1,117 @@
+<!-- Create New User (HTMX Partial) -->
+<header class="admin-header">
+  <div>
+    <h1>Create New User</h1>
+    <p>Add a new user account to the system</p>
+  </div>
+  <div>
+    <a href="/admin/users" role="button" class="outline"
+       hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">← Back to Users</a>
+  </div>
+</header>
+
+<%= if (errors) { %>
+<div class="error-box">
+  <h4>Validation Errors</h4>
+  <ul>
+    <%= for (key, messages) in errors { %>
+      <%= for (message) in messages { %>
+      <li><%= message %></li>
+      <% } %>
+    <% } %>
+  </ul>
+</div>
+<% } %>
+
+<form action="/admin/users" method="POST"
+      hx-post="/admin/users" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+  <% if (authenticity_token) { %>
+    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <% } %>
+
+  <div class="grid-2col">
+    <!-- User Information -->
+    <section>
+      <h3>User Information</h3>
+
+      <div class="grid-2col-equal form-group">
+        <div>
+          <label for="user-first-name">First Name *</label>
+          <input type="text" id="user-first-name" name="FirstName" value="<%= user.FirstName %>" required>
+        </div>
+        <div>
+          <label for="user-last-name">Last Name *</label>
+          <input type="text" id="user-last-name" name="LastName" value="<%= user.LastName %>" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="user-email">Email Address *</label>
+        <input type="email" id="user-email" name="Email" value="<%= user.Email %>" required>
+        <small>User's email address for login and communications</small>
+      </div>
+
+      <div class="form-group">
+        <label for="user-role">Account Role *</label>
+        <select id="user-role" name="Role" required>
+          <%= for (option) in roleOptions { %>
+            <option value="<%= option["value"] %>" <%= if (user.Role == option["value"]) { %>selected<% } %>>
+              <%= option["label"] %>
+            </option>
+          <% } %>
+        </select>
+        <small>
+          <strong>User:</strong> Standard account with basic access<br>
+          <strong>Administrator:</strong> Full access to admin panel and user management
+        </small>
+      </div>
+
+      <div class="grid-2col-equal form-group">
+        <div>
+          <label for="user-password">Password *</label>
+          <input type="password" id="user-password" name="Password" required minlength="6">
+          <small>Minimum 6 characters</small>
+        </div>
+        <div>
+          <label for="user-password-confirmation">Confirm Password *</label>
+          <input type="password" id="user-password-confirmation" name="PasswordConfirmation" required minlength="6">
+          <small>Must match password</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Guidelines -->
+    <aside class="sidebar">
+      <h3>User Creation Guidelines</h3>
+
+      <h4>Password Requirements:</h4>
+      <ul class="text-small">
+        <li>Minimum 6 characters</li>
+        <li>Must be confirmed</li>
+        <li>User can change it later</li>
+      </ul>
+
+      <h4>Role Permissions:</h4>
+      <ul class="text-small">
+        <li><strong>User:</strong> Access to dashboard and profile</li>
+        <li><strong>Admin:</strong> Full system access including user management</li>
+      </ul>
+
+      <hr>
+      <small class="text-muted">
+        <strong>Note:</strong> The new user will receive their login credentials and can change their password on first login.
+      </small>
+    </aside>
+  </div>
+
+  <!-- Form Actions -->
+  <section class="form-actions">
+    <div class="flex flex-gap">
+      <a href="/admin/users" role="button" class="secondary"
+         hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">
+        Cancel
+      </a>
+      <button type="submit" class="primary">Create User</button>
+    </div>
+  </section>
+</form>

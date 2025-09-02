@@ -1,0 +1,160 @@
+<!-- Admin Posts Show - Single Post View -->
+<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+  <!-- Admin Navigation -->
+  <aside>
+    <%= partial("admin/nav") %>
+  </aside>
+
+  <!-- Post Content -->
+  <main>
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <div>
+        <h1><%= post.Title %></h1>
+        <p style="color: var(--pico-muted-color); margin: 0;">
+          <% if (post.Published) { %>
+            <span style="color: var(--pico-primary); font-weight: bold;">Published</span>
+          <% } else { %>
+            <span style="color: var(--pico-secondary); font-weight: bold;">Draft</span>
+          <% } %>
+          •
+          Created <%= post.CreatedAt.Format("Jan 2, 2006") %>
+          <% if (post.UpdatedAt.After(post.CreatedAt)) { %>
+            • Updated <%= post.UpdatedAt.Format("Jan 2, 2006") %>
+          <% } %>
+        </p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary">Edit Post</a>
+        <a href="/blog/<%= post.Slug %>" target="_blank" role="button" class="outline">View Live</a>
+      </div>
+    </header>
+
+    <!-- Post Metadata -->
+    <section style="margin-bottom: 2rem; padding: 1rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+      <h3>Post Information</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+          <strong>Slug:</strong> /blog/<%= post.Slug %>
+        </div>
+        <div>
+          <strong>Author:</strong> 
+          <% if (post.User) { %>
+            <%= post.User.FirstName %> <%= post.User.LastName %>
+          <% } else { %>
+            Unknown
+          <% } %>
+        </div>
+        <div>
+          <strong>Created:</strong> <%= post.CreatedAt.Format("January 2, 2006 at 3:04 PM") %>
+        </div>
+        <div>
+          <strong>Status:</strong>
+          <% if (post.Published) { %>
+            <span style="color: var(--pico-primary); font-weight: bold;">Published</span>
+          <% } else { %>
+            <span style="color: var(--pico-secondary); font-weight: bold;">Draft</span>
+          <% } %>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEO Information -->
+    <% if (post.MetaTitle || post.MetaDescription || post.MetaKeywords) { %>
+    <section style="margin-bottom: 2rem; padding: 1rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+      <h3>SEO Information</h3>
+      <% if (post.MetaTitle) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>Meta Title:</strong><br>
+          <%= post.MetaTitle %>
+        </div>
+      <% } %>
+      <% if (post.MetaDescription) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>Meta Description:</strong><br>
+          <%= post.MetaDescription %>
+        </div>
+      <% } %>
+      <% if (post.MetaKeywords) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>Meta Keywords:</strong><br>
+          <%= post.MetaKeywords %>
+        </div>
+      <% } %>
+    </section>
+    <% } %>
+
+    <!-- Post Excerpt -->
+    <% if (post.Excerpt) { %>
+    <section style="margin-bottom: 2rem;">
+      <h3>Excerpt</h3>
+      <div style="padding: 1rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius); font-style: italic;">
+        <%= post.Excerpt %>
+      </div>
+    </section>
+    <% } %>
+
+    <!-- Post Content -->
+    <section style="margin-bottom: 2rem;">      <h3>Content</h3>
+      <div style="padding: 1.5rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius); line-height: 1.6;">
+        <%= raw(post.Content) %>
+      </div>
+    </section>
+
+    <!-- Featured Image -->
+    <% if (post.Image) { %>
+    <section style="margin-bottom: 2rem;">
+      <h3>Featured Image</h3>
+      <div style="padding: 1rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+        <img src="<%= post.Image %>" alt="<%= post.ImageAlt %>" style="max-width: 100%; height: auto; border-radius: var(--pico-border-radius);">
+        <% if (post.ImageAlt) { %>
+          <p style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--pico-muted-color);">
+            <strong>Alt Text:</strong> <%= post.ImageAlt %>
+          </p>
+        <% } %>
+      </div>
+    </section>
+    <% } %>
+
+    <!-- Open Graph Information -->
+    <% if (post.OgTitle || post.OgDescription || post.OgImage) { %>
+    <section style="margin-bottom: 2rem; padding: 1rem; background-color: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+      <h3>Open Graph (Social Media)</h3>
+      <% if (post.OgTitle) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>OG Title:</strong><br>
+          <%= post.OgTitle %>
+        </div>
+      <% } %>
+      <% if (post.OgDescription) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>OG Description:</strong><br>
+          <%= post.OgDescription %>
+        </div>
+      <% } %>
+      <% if (post.OgImage) { %>
+        <div style="margin-bottom: 1rem;">
+          <strong>OG Image:</strong><br>
+          <img src="<%= post.OgImage %>" alt="Social media preview" style="max-width: 300px; height: auto; border-radius: var(--pico-border-radius);">
+        </div>
+      <% } %>
+    </section>
+    <% } %>
+
+    <!-- Actions -->
+    <section style="display: flex; gap: 1rem; justify-content: flex-start; padding-top: 2rem; border-top: 1px solid var(--pico-muted-border-color);">
+      <a href="/admin/posts" role="button" class="secondary outline">← Back to Posts</a>
+      <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary">Edit Post</a>
+      <a href="/blog/<%= post.Slug %>" target="_blank" role="button" class="outline">View Live Post</a>
+      <button 
+        hx-delete="/admin/posts/<%= post.ID %>" 
+        hx-confirm="Are you sure you want to delete this post? This action cannot be undone." 
+        hx-target="closest main" 
+        hx-swap="innerHTML" 
+        role="button" 
+        class="contrast outline"
+        style="margin-left: auto;">
+        Delete Post
+      </button>
+    </section>
+  </main>
+</div>
