@@ -1,7 +1,9 @@
 package actions
 
 import (
-	avrnpo "avrnpo.org"
+	"io/fs"
+
+	public "avrnpo.org/public"
 	"avrnpo.org/templates"
 	"html/template"
 	"regexp"
@@ -26,11 +28,14 @@ func init() {
 		"getDonateButtonText": getDonateButtonText,
 	}
 
+	// Get the assets sub-filesystem
+	assetsFS, _ := fs.Sub(public.EmbeddedAssets, "assets")
+
 	// Standard render engine with layout
 	r = render.New(render.Options{
 		HTMLLayout:  "application.plush.html",
 		TemplatesFS: templates.FS(),
-		AssetsFS:    avrnpo.FS(),
+		AssetsFS:    assetsFS,
 		Helpers:     commonHelpers,
 	})
 
@@ -38,7 +43,15 @@ func init() {
 	rFrag = render.New(render.Options{
 		HTMLLayout:  "", // no layout
 		TemplatesFS: templates.FS(),
-		AssetsFS:    avrnpo.FS(),
+		AssetsFS:    assetsFS,
+		Helpers:     commonHelpers,
+	})
+
+	// Fragment render engine without layout (for HTMX partials)
+	rFrag = render.New(render.Options{
+		HTMLLayout:  "", // no layout
+		TemplatesFS: templates.FS(),
+		AssetsFS:    assetsFS,
 		Helpers:     commonHelpers,
 	})
 }

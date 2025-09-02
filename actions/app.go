@@ -2,15 +2,16 @@ package actions
 
 import (
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 	"sync"
 
-	avrnpo "avrnpo.org"
 	"avrnpo.org/locales"
 	"avrnpo.org/models"
+	"avrnpo.org/public"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
@@ -271,14 +272,14 @@ func App() *buffalo.App {
 		adminGroup.GET("/donations", AdminDonationsIndex)
 		adminGroup.GET("/donations/{donation_id}", AdminDonationShow)
 
-		// Serve assets using Buffalo best practices
-		// ServeFiles should be LAST as it's a catch-all route
+		// Serve assets from /assets path
 		if ENV == "production" {
 			// Production: use embedded assets
-			app.ServeFiles("/", http.FS(avrnpo.FS()))
+			assetsFS, _ := fs.Sub(public.EmbeddedAssets, "assets")
+			app.ServeFiles("/assets", http.FS(assetsFS))
 		} else {
 			// Development/Test: serve from filesystem for hot reload
-			app.ServeFiles("/", http.Dir("public"))
+			app.ServeFiles("/assets", http.Dir("public/assets"))
 		}
 	})
 

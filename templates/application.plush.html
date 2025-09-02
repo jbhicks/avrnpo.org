@@ -74,11 +74,7 @@
         <link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=2" />
         <!-- Pico.css - Minimal CSS Framework -->
         <%= stylesheetTag("css/pico.min.css") %>
-
-        <!-- Custom CSS -->
         <%= stylesheetTag("css/custom.css") %>
-
-        <!-- Quill Rich Text Editor -->
         <%= stylesheetTag("css/quill.snow.css") %>
         <%= stylesheetTag("css/quill-custom.css") %>
 
@@ -105,21 +101,11 @@
 
         <!-- Heroicons helper for SVG icons -->
         <%= javascriptTag("js/icons.js") %>
-
-        <!-- Quill Rich Text Editor -->
         <%= javascriptTag("js/quill.min.js") %>
         <%= javascriptTag("js/quill-editor.js") %>
-
-        <!-- Theme switching functionality -->
         <%= javascriptTag("js/theme.js") %>
-
-        <!-- HTMX Library -->
         <%= javascriptTag("js/htmx.min.js") %>
-
-        <!-- Donation System JavaScript -->
         <%= javascriptTag("js/donation.js") %>
-
-        <!-- Main Application JavaScript -->
         <%= javascriptTag("js/application.js") %>
 
         <% if (authenticity_token) { %>
