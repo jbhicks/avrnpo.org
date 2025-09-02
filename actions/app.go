@@ -272,6 +272,7 @@ func App() *buffalo.App {
 		app.GET("/donate/failed", DonationFailedHandler)
 		app.POST("/api/donations/initialize", DonationInitializeHandler)
 		app.POST("/api/donations/process", ProcessPaymentHandler)
+		app.Logger.Info("Registered POST /api/donations/process route")
 		app.POST("/api/donations/webhook", HelcimWebhookHandler)
 		app.GET("/users/new", UsersNew)
 		app.POST("/users", UsersCreate)

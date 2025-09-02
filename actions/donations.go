@@ -935,6 +935,7 @@ func callHelcimVerifyAPI(req HelcimPayVerifyRequest) (*HelcimPayResponse, error)
 
 // ProcessPaymentHandler handles payment processing after verification (UNIFIED APPROACH)
 func ProcessPaymentHandler(c buffalo.Context) error {
+	fmt.Printf("[ProcessPayment] Handler called - Method: %s\n", c.Request().Method)
 	c.Logger().Infof("[ProcessPayment] Starting payment processing - Method: %s", c.Request().Method)
 
 	var req struct {
