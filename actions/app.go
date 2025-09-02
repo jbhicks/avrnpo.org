@@ -236,6 +236,11 @@ func App() *buffalo.App {
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Public routes
+		// Health check endpoint for Coolify
+		app.GET("/health", func(c buffalo.Context) error {
+			return c.Render(200, r.String("OK"))
+		})
+
 		app.GET("/", HomeHandler)
 		app.GET("/contact", ContactHandler)
 		app.POST("/contact", ContactHandler)
