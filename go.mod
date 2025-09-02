@@ -1,6 +1,6 @@
 module avrnpo.org
 
-go 1.23
+go 1.18
 
 require (
 	github.com/gobuffalo/buffalo v1.1.2
