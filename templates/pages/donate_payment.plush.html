@@ -229,25 +229,38 @@
        },
         body: JSON.stringify(requestData)
      })
-     .then(response => {
-       console.info('[DonatePayment] Process API response status:', response.status);
-       return response.json();
-     })
-     .then(result => {
-       if (result.success) {
-         console.info('[DonatePayment] Payment processed successfully, redirecting to success page');
-         // Clean up the HelcimPay iframe
-         if (window.removeHelcimPayIframe) {
-           removeHelcimPayIframe();
-         }
-         // Redirect to success page
-         window.location.href = '/donate/success';
-       } else {
-         console.error('[DonatePayment] Payment processing failed:', result.error);
-         alert('Payment processing failed: ' + result.error);
-         window.location.href = '/donate/failed';
-       }
-     })
+      .then(response => {
+        console.info('[DonatePayment] Process API response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
+      .then(result => {
+        console.info('[DonatePayment] Parsed result:', result);
+
+        // Check for successful payment with multiple validation methods
+        const isSuccess = result && (
+          result.success === true ||
+          (result.transactionId && result.transactionId !== "") ||
+          (result.type && result.type === "one-time")
+        );
+
+        if (isSuccess) {
+          console.info('[DonatePayment] Payment processed successfully, redirecting to success page');
+          // Clean up the HelcimPay iframe
+          if (window.removeHelcimPayIframe) {
+            removeHelcimPayIframe();
+          }
+          // Redirect to success page
+          window.location.href = '/donate/success';
+        } else {
+          console.error('[DonatePayment] Payment processing failed - validation failed:', result);
+          console.error('[DonatePayment] Success check details - result.success:', result.success, 'transactionId:', result.transactionId, 'type:', result.type);
+          alert('Payment processing failed: ' + (result.error || result.message || 'Unknown error'));
+          window.location.href = '/donate/failed';
+        }
+      })
      .catch(error => {
        console.error('[DonatePayment] Error processing payment:', error);
        alert('An error occurred while processing your payment. Please try again.');

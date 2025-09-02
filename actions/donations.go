@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -95,27 +96,55 @@ func isAPIRequest(c buffalo.Context) bool {
 
 // getClientIP extracts the client's IP address from the request
 func getClientIP(c buffalo.Context) string {
+	c.Logger().Debugf("[getClientIP] RemoteAddr: %s, X-Forwarded-For: %s, X-Real-IP: %s",
+		c.Request().RemoteAddr,
+		c.Request().Header.Get("X-Forwarded-For"),
+		c.Request().Header.Get("X-Real-IP"))
 	// Check X-Forwarded-For header first (for proxy/load balancer scenarios)
 	xff := c.Request().Header.Get("X-Forwarded-For")
 	if xff != "" {
 		// X-Forwarded-For can contain multiple IPs, take the first one
 		ips := strings.Split(xff, ",")
-		return strings.TrimSpace(ips[0])
+		ip := strings.TrimSpace(ips[0])
+		// Validate it's a valid IP
+		if net.ParseIP(ip) != nil {
+			return ip
+		}
 	}
 
 	// Check X-Real-IP header (for nginx proxy)
 	xri := c.Request().Header.Get("X-Real-IP")
-	if xri != "" {
+	if xri != "" && net.ParseIP(xri) != nil {
 		return xri
 	}
 
 	// Fall back to RemoteAddr
 	ip := c.Request().RemoteAddr
-	// Remove port if present
-	if strings.Contains(ip, ":") {
+
+	// Handle IPv6 addresses in brackets like [::1]:port
+	if strings.HasPrefix(ip, "[") && strings.Contains(ip, "]:") {
+		// IPv6 with port: [::1]:8080
+		end := strings.Index(ip, "]:")
+		if end != -1 {
+			ip = ip[1:end] // Remove brackets
+		}
+	} else if strings.Contains(ip, ":") {
+		// IPv4 with port: 127.0.0.1:8080
 		ip, _, _ = strings.Cut(ip, ":")
 	}
-	return ip
+
+	// Validate the final IP
+	if net.ParseIP(ip) != nil {
+		c.Logger().Debugf("[getClientIP] Successfully parsed IP: %s", ip)
+		return ip
+	}
+
+	// Fallback to a default IP if parsing fails
+	c.Logger().Warnf("[getClientIP] Failed to parse valid IP from RemoteAddr: %s, X-Forwarded-For: %s, X-Real-IP: %s, using fallback 127.0.0.1",
+		c.Request().RemoteAddr,
+		c.Request().Header.Get("X-Forwarded-For"),
+		c.Request().Header.Get("X-Real-IP"))
+	return "127.0.0.1"
 }
 
 // HelcimPayRequest represents the request to initialize a Helcim payment
@@ -1112,13 +1141,14 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 			c.Logger().Infof("[OneTimePayment] Development: Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionID)
 		}
 
-		c.Logger().Infof("[OneTimePayment] Development simulation completed successfully for donation %s", donation.ID.String())
-		return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+		response := map[string]interface{}{
 			"success":       true,
 			"transactionId": transactionID,
 			"type":          "one-time",
 			"message":       "Payment processed successfully!",
-		}))
+		}
+		c.Logger().Infof("[OneTimePayment] Development simulation completed successfully for donation %s - Response: %+v", donation.ID.String(), response)
+		return c.Render(http.StatusOK, r.JSON(response))
 	}
 
 	// Production: Use real Helcim API
@@ -1217,11 +1247,14 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 		c.Logger().Infof("[OneTimePayment] Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionIDStr)
 	}
 
-	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
+	response := map[string]interface{}{
 		"success":       true,
 		"transactionId": transaction.TransactionID,
 		"type":          "one-time",
-	}))
+		"message":       "Payment processed successfully!",
+	}
+	c.Logger().Infof("[OneTimePayment] Returning success response: %+v", response)
+	return c.Render(http.StatusOK, r.JSON(response))
 }
 
 // handleRecurringPayment creates a subscription using Recurring API

@@ -2,6 +2,7 @@ package services
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -266,4 +267,53 @@ func TestEmailService_generateReceipt_ZeroNextBillingDate(t *testing.T) {
 
 	t.Logf("Generated HTML with zero date:\n%s", html)
 	t.Logf("Generated Text with zero date:\n%s", text)
+}
+
+func TestEmailService_generateReceiptHTML_NoImage(t *testing.T) {
+	emailService := &EmailService{}
+
+	testData := DonationReceiptData{
+		DonorName:           "Test Donor",
+		DonationAmount:      100.00,
+		DonationType:        "One-time",
+		TransactionID:       "TEST-NO-IMG-123",
+		DonationDate:        time.Now(),
+		TaxDeductibleAmount: 100.00,
+		OrganizationEIN:     "12-3456789",
+		OrganizationName:    "Test Organization",
+		OrganizationAddress: "123 Test St, Test City, TX 12345",
+		DonorAddressLine1:   "456 Donor Ave",
+		DonorCity:           "Test City",
+		DonorState:          "TX",
+		DonorZip:            "12345",
+	}
+
+	html, err := emailService.generateReceiptHTML(testData)
+	require.NoError(t, err)
+	require.NotEmpty(t, html)
+
+	// Validate that no image tags are present in the HTML
+	require.NotContains(t, html, "<img", "Email should not contain any image tags")
+	require.NotContains(t, html, "src=", "Email should not contain any src attributes")
+
+	t.Logf("Successfully validated that email contains no images")
+}
+
+func TestEmailService_LogoFileExists(t *testing.T) {
+	// Test that the logo file exists and is readable (for web use)
+	logoPath := filepath.Join("..", "public", "assets", "images", "logo.avif")
+
+	// Check if file exists
+	require.FileExists(t, logoPath, "Logo file should exist for web use")
+
+	// Read the file
+	logoData, err := os.ReadFile(logoPath)
+	require.NoError(t, err, "Should be able to read logo file")
+	require.NotEmpty(t, logoData, "Logo file should not be empty")
+
+	// Validate it's a valid AVIF file (check magic bytes)
+	require.True(t, len(logoData) > 12, "Logo file too small to be valid")
+	require.Equal(t, "ftypavif", string(logoData[4:12]), "Logo file is not a valid AVIF image")
+
+	t.Logf("Logo file validation successful: %d bytes", len(logoData))
 }

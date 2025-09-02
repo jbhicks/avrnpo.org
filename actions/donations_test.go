@@ -189,3 +189,40 @@ func extractInputValue(html, name string) string {
 	}
 	return sub2[:end]
 }
+
+func (as *ActionSuite) Test_ProcessPayment_SuccessResponseFormat() {
+	// Test that successful payment processing returns correct JSON format for JavaScript
+	donation := &models.Donation{
+		DonorName:     "Test Donor",
+		DonorEmail:    "test@example.com",
+		CheckoutToken: "tkn_test",
+		SecretToken:   "secret_test",
+		Amount:        25.00,
+		Currency:      "USD",
+		DonationType:  "one-time",
+		Status:        "pending",
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
+	}
+
+	as.NoError(as.DB.Create(donation))
+
+	payload := map[string]interface{}{
+		"customerCode":  "TEST123",
+		"cardToken":     "test_card_token",
+		"donationId":    donation.ID.String(),
+		"transactionId": "test_txn_123",
+		"amount":        "25.00",
+	}
+
+	res := as.JSON("/api/donations/process").Post(payload)
+
+	as.Equal(200, res.Code)
+
+	// Check that response contains expected JSON structure
+	body := res.Body.String()
+	as.Contains(body, `"success":true`)
+	as.Contains(body, `"transactionId"`)
+	as.Contains(body, `"type":"one-time"`)
+	as.Contains(body, `"message"`)
+}
