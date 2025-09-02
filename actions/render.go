@@ -44,6 +44,7 @@ func init() {
 		HTMLLayout:  "", // no layout
 		TemplatesFS: templates.FS(),
 		AssetsFS:    assetsFS,
+
 		Helpers:     commonHelpers,
 	})
 
@@ -52,6 +53,7 @@ func init() {
 		HTMLLayout:  "", // no layout
 		TemplatesFS: templates.FS(),
 		AssetsFS:    assetsFS,
+
 		Helpers:     commonHelpers,
 	})
 }

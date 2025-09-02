@@ -8,10 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-
-	"avrnpo.org/locales"
-	"avrnpo.org/models"
-	"avrnpo.org/public"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
 	"github.com/gobuffalo/envy"
@@ -280,6 +276,7 @@ func App() *buffalo.App {
 		} else {
 			// Development/Test: serve from filesystem for hot reload
 			app.ServeFiles("/assets", http.Dir("public/assets"))
+
 		}
 	})
 
