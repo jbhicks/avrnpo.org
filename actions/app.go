@@ -179,6 +179,14 @@ func App() *buffalo.App {
 		// Configure session store
 		sessionSecret := envy.Get("SESSION_SECRET", "development-session-secret-change-in-production")
 
+		// Debug environment variables
+		app.Logger.Infof("Environment check - GO_ENV: %s, SESSION_SECRET length: %d", ENV, len(sessionSecret))
+		if len(sessionSecret) > 10 {
+			app.Logger.Infof("SESSION_SECRET value starts with: %s...", sessionSecret[:10])
+		} else {
+			app.Logger.Infof("SESSION_SECRET value: %s", sessionSecret)
+		}
+
 		app = buffalo.New(buffalo.Options{
 			Env:           ENV,
 			SessionName:   "_avrnpo.org_session",
