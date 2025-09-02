@@ -31,13 +31,14 @@ Set these in Coolify's app environment settings:
 | Variable                | Purpose                        |
 |-------------------------|--------------------------------|
 | `GO_ENV`                | Set to `production`            |
+| `SESSION_SECRET`        | Secure session secret (generate random string) |
 | `HELCIM_PRIVATE_API_KEY`| Helcim payment API key         |
 | `SMTP_HOST`             | Email SMTP server host         |
 | `SMTP_PORT`             | Email SMTP server port         |
 | `SMTP_USERNAME`         | Email SMTP username            |
 | `SMTP_PASSWORD`         | Email SMTP password            |
 | `FROM_EMAIL`            | Sender email address           |
-| `FROM_NAME`             | Sender display name            |
+| `FROM_NAME`            | Sender display name            |
 | `DATABASE_URL`          | Postgres connection string     |
 | `LOG_LEVEL` (optional)  | Logging level (`info`, `debug`)|
 | `LOG_FILE_PATH` (optional)| Log file path                 |
