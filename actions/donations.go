@@ -1183,6 +1183,40 @@ func handleOneTimePayment(c buffalo.Context, req struct {
 	c.Logger().Infof("[OneTimePayment] Donation %s completed successfully - TransactionID: %s",
 		donation.ID.String(), transaction.TransactionID)
 
+	// Send donation receipt email
+	emailService := services.NewEmailService()
+
+	// Map stored donation type to display label for receipt
+	displayType := donation.DonationType
+	if displayType == "monthly" {
+		displayType = "Monthly"
+	} else {
+		displayType = "One-time"
+	}
+
+	receiptData := services.DonationReceiptData{
+		DonorName:           donation.DonorName,
+		DonationAmount:      donation.Amount,
+		DonationType:        displayType,
+		TransactionID:       transactionIDStr,
+		DonationDate:        donation.CreatedAt,
+		TaxDeductibleAmount: donation.Amount,
+		OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+		OrganizationName:    "American Veterans Rebuilding",
+		OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
+		DonorAddressLine1:   stringOrEmpty(donation.AddressLine1),
+		DonorAddressLine2:   stringOrEmpty(donation.AddressLine2),
+		DonorCity:           stringOrEmpty(donation.City),
+		DonorState:          stringOrEmpty(donation.State),
+		DonorZip:            stringOrEmpty(donation.Zip),
+	}
+
+	if err := emailService.SendDonationReceipt(donation.DonorEmail, receiptData); err != nil {
+		c.Logger().Errorf("[OneTimePayment] Failed to send donation receipt email for %s: %v", donation.DonorEmail, err)
+	} else {
+		c.Logger().Infof("[OneTimePayment] Donation receipt sent to %s for transaction %s", donation.DonorEmail, transactionIDStr)
+	}
+
 	return c.Render(http.StatusOK, r.JSON(map[string]interface{}{
 		"success":       true,
 		"transactionId": transaction.TransactionID,
