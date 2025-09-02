@@ -183,7 +183,8 @@ func App() *buffalo.App {
 			Env:           ENV,
 			SessionName:   "_avrnpo.org_session",
 			SessionStore:  sessions.NewCookieStore([]byte(sessionSecret)),
-			CompressFiles: true, // Enable gzip compression for static files
+			CompressFiles: true,           // Enable gzip compression for static files
+			Addr:          "0.0.0.0:3000", // Listen on all interfaces for container access
 		})
 
 		// Create logger with the specified level and set it
@@ -192,6 +193,7 @@ func App() *buffalo.App {
 
 		// Debug environment variables (after app is initialized)
 		app.Logger.Infof("Environment check - GO_ENV: %s, SESSION_SECRET length: %d", ENV, len(sessionSecret))
+		app.Logger.Infof("Application configured to listen on: 0.0.0.0:3000")
 		if len(sessionSecret) > 10 {
 			app.Logger.Infof("SESSION_SECRET value starts with: %s...", sessionSecret[:10])
 		} else {
