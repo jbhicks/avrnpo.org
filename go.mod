@@ -1,9 +1,11 @@
 module avrnpo.org
 
-go 1.18
+go 1.23.0
+
+toolchain go1.24.6
 
 require (
-	github.com/gobuffalo/buffalo v1.1.2
+	github.com/gobuffalo/buffalo v1.1.0
 	github.com/gobuffalo/buffalo-pop/v3 v3.0.7
 	github.com/gobuffalo/envy v1.10.2
 	github.com/gobuffalo/grift v1.5.2

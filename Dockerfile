@@ -1,5 +1,5 @@
-# Use official Buffalo Docker image
-FROM gobuffalo/buffalo:latest
+# Use Buffalo image with compatible Go version
+FROM gobuffalo/buffalo:v0.18.9
 
 # Set working directory
 WORKDIR /app

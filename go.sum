@@ -34,9 +34,8 @@ github.com/go-sql-driver/mysql v1.7.0 h1:ueSltNNllEqE3qcWBTD0iQd3IpL/6U+mJxLkazJ
 github.com/go-sql-driver/mysql v1.7.0/go.mod h1:OXbVy3sEdcQ2Doequ6Z5BW6fXNQTmx+9S1MCJN5yJMI=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/gobuffalo/attrs v1.0.3/go.mod h1:KvDJCE0avbufqS0Bw3UV7RQynESY0jjod+572ctX4t8=
+github.com/gobuffalo/buffalo v1.1.0 h1:6y1fUC47QWevaM1ImukJFHNgxiRIT+Y74VcP4ZQaz80=
 github.com/gobuffalo/buffalo v1.1.0/go.mod h1:lLsx9Y8bFYu9uvQyIEB3M0QA908ChHUPjwOGumZWARU=
-github.com/gobuffalo/buffalo v1.1.2 h1:eSULDc8Tr4Bc7XA54k119QC7kmbbCkfk5uea4M/RaOY=
-github.com/gobuffalo/buffalo v1.1.2/go.mod h1:fpBgRRf9Ug6fiMQbNSRhlSRxOVj1KGT8+fO6nyULz9U=
 github.com/gobuffalo/buffalo-pop/v3 v3.0.7 h1:QU2L9cjCIjK+c+2s/3KbxfRSDAc/TC+HccV+f9YqMTs=
 github.com/gobuffalo/buffalo-pop/v3 v3.0.7/go.mod h1:5SEv2JrcuZtUFVQuQbAMx7Woc4ZsdcANa/tiP/bFrw0=
 github.com/gobuffalo/envy v1.10.2 h1:EIi03p9c3yeuRCFPOKcSfajzkLb3hrRjEpHGI8I2Wo4=
