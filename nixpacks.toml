@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["go", "buffalo"]
+nixPkgs = ["go"]
 
 [phases.build]
-cmds = ["buffalo build"]
+cmds = ["go install github.com/gobuffalo/cli/cmd/buffalo@latest", "buffalo build"]
 
 [start]
 cmd = "./bin/app"
