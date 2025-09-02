@@ -1,0 +1,18 @@
+[phases.setup]
+nixPkgs = ["go", "git"]
+
+[phases.install]
+cmds = [
+  "go install github.com/gobuffalo/buffalo-cli/v2@latest",
+  "go mod download"
+]
+
+[phases.build]
+cmds = [
+  "buffalo build"
+]
+
+[phases.start]
+cmds = [
+  "soda migrate up && ./bin/app"
+]
