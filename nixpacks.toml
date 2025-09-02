@@ -1,11 +1,2 @@
-[phases.setup]
-nixPkgs = ["go"]
-
-[phases.install]
-cmds = ["go mod download"]
-
-[phases.build]
-cmds = ["go build -o app ./cmd/app", "chmod +x app", "go install github.com/gobuffalo/soda@latest", "cp /root/go/bin/soda /usr/local/bin/soda"]
-
-[start]
-cmd = "soda migrate up && ./app"
+# Using Dockerfile instead of Nixpacks for Buffalo application
+# This provides a much simpler and more reliable deployment
