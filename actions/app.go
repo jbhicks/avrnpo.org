@@ -179,9 +179,27 @@ func App() *buffalo.App {
 		// Configure session store
 		sessionSecret := envy.Get("SESSION_SECRET", "development-session-secret-change-in-production")
 
+		// EARLY DEBUG: Log before app creation
+		fmt.Printf("EARLY DEBUG: GO_ENV=%s, SESSION_SECRET length=%d\n", ENV, len(sessionSecret))
+		if len(sessionSecret) > 10 {
+			fmt.Printf("EARLY DEBUG: SESSION_SECRET starts with: %s...\n", sessionSecret[:10])
+		} else {
+			fmt.Printf("EARLY DEBUG: SESSION_SECRET: %s\n", sessionSecret)
+		}
+
+		// Validate SESSION_SECRET
+		if len(sessionSecret) == 0 {
+			fmt.Printf("ERROR: SESSION_SECRET is empty!\n")
+		}
+		if sessionSecret == "development-session-secret-change-in-production" {
+			fmt.Printf("WARNING: Using default SESSION_SECRET - this is insecure!\n")
+		}
+
 		// Get port from environment or use Coolify's exposed port
 		port := envy.Get("PORT", "3001") // Match Coolify's port exposes setting
 		addr := "0.0.0.0:" + port
+
+		fmt.Printf("EARLY DEBUG: Configured to listen on: %s\n", addr)
 
 		app = buffalo.New(buffalo.Options{
 			Env:           ENV,
