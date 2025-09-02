@@ -1,11 +1,5 @@
 [phases.setup]
 nixPkgs = ["go"]
 
-[phases.install]
-cmds = ["echo 'Starting install phase'", "go mod download", "echo 'Go mod download complete'"]
-
-[phases.build]
-cmds = ["echo 'Starting build phase'", "go build -o bin/app .", "echo 'Go build complete'", "ls -la bin/"]
-
 [phases.start]
-cmds = ["go install github.com/gobuffalo/soda@latest && export PATH=$PATH:/root/go/bin && soda migrate up", "./bin/app"]
+cmds = ["go mod download", "go build -o bin/app .", "go install github.com/gobuffalo/soda@latest && export PATH=$PATH:/root/go/bin && soda migrate up", "./bin/app"]
