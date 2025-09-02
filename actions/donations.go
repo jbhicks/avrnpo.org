@@ -674,8 +674,42 @@ func HelcimWebhookHandler(c buffalo.Context) error {
 	// Process based on event type - Helcim only sends cardTransaction and terminalCancel events
 	switch event.Type {
 	case "cardTransaction":
-		// For cardTransaction events, event.ID contains the transaction ID
-		err = handleCardTransaction(tx, event.ID, c)
+		// For cardTransaction events, parse the detailed data from the Data field
+		var webhookData HelcimWebhookData
+		if event.Data != nil {
+			// Convert the map to JSON and then unmarshal to structured data
+			dataJSON, err := json.Marshal(event.Data)
+			if err != nil {
+				c.Logger().Errorf("[Webhook] Failed to marshal event data: %v", err)
+				return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid event data"}))
+			}
+
+			if err := json.Unmarshal(dataJSON, &webhookData); err != nil {
+				c.Logger().Errorf("[Webhook] Failed to parse webhook data: %v", err)
+				return c.Render(http.StatusBadRequest, r.JSON(map[string]string{"error": "Invalid webhook data format"}))
+			}
+
+			// Log subscription information for recurring payments
+			if webhookData.SubscriptionID != "" {
+				c.Logger().Infof("[Webhook] Recurring payment detected - SubscriptionID: %s, PaymentPlanID: %s, PaymentNumber: %d, NextBillingDate: %s",
+					webhookData.SubscriptionID, webhookData.PaymentPlanID, webhookData.PaymentNumber, webhookData.NextBillingDate)
+			} else {
+				c.Logger().Infof("[Webhook] One-time payment detected - TransactionID: %s", webhookData.TransactionID)
+			}
+
+			// Log detailed transaction information
+			c.Logger().Infof("[Webhook] Transaction details - Amount: $%.2f %s, Status: %s, Customer: %s %s (%s)",
+				webhookData.Amount, webhookData.Currency, webhookData.Status,
+				webhookData.Customer.FirstName, webhookData.Customer.LastName, webhookData.CustomerCode)
+		}
+
+		// Use transaction ID from webhook data if available, otherwise fall back to event.ID
+		transactionID := event.ID
+		if webhookData.TransactionID != "" {
+			transactionID = webhookData.TransactionID
+		}
+
+		err = handleCardTransaction(tx, transactionID, c)
 	case "terminalCancel":
 		// Terminal cancellation events - handle if needed
 		c.Logger().Infof("Received terminal cancel event - ignoring for donation system")
@@ -742,6 +776,18 @@ func handleCardTransaction(tx *pop.Connection, transactionID string, c buffalo.C
 
 	c.Logger().Infof("[Webhook] Found donation record for transaction %s - ID: %s, Donor: %s, Amount: $%.2f, Type: %s",
 		transactionID, donation.ID.String(), donation.DonorEmail, donation.Amount, donation.DonationType)
+
+	// Enhanced logging for recurring donations
+	if donation.DonationType == "monthly" {
+		if donation.SubscriptionID != nil {
+			c.Logger().Infof("[Webhook] Recurring donation details - SubscriptionID: %s, PaymentPlanID: %s, Status: %s",
+				*donation.SubscriptionID,
+				stringOrEmpty(donation.PaymentPlanID),
+				donation.Status)
+		} else {
+			c.Logger().Warnf("[Webhook] Recurring donation found but missing subscription data - DonationID: %s", donation.ID.String())
+		}
+	}
 
 	// For webhook events, we need to fetch the full transaction details from Helcim API
 	// to determine if it was successful, declined, etc.
