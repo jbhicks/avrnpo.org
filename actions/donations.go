@@ -626,6 +626,8 @@ func DonationStatusHandler(c buffalo.Context) error {
 
 // HelcimWebhookHandler processes webhook notifications from Helcim
 func HelcimWebhookHandler(c buffalo.Context) error {
+	fmt.Printf("[WEBHOOK] Received Helcim webhook - Method: %s, Content-Type: %s\n",
+		c.Request().Method, c.Request().Header.Get("Content-Type"))
 	c.Logger().Infof("[Webhook] Received Helcim webhook - Method: %s, Content-Type: %s",
 		c.Request().Method, c.Request().Header.Get("Content-Type"))
 

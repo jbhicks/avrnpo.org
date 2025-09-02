@@ -98,6 +98,7 @@ type ContactFormData struct {
 // SendDonationReceipt sends a donation receipt email to the donor
 func (e *EmailService) SendDonationReceipt(toEmail string, data DonationReceiptData) error {
 	if !e.isConfigured() {
+		fmt.Printf("[EMAIL] Service not configured - missing SMTP environment variables\n")
 		return fmt.Errorf("email service not configured - missing environment variables")
 	}
 
@@ -411,6 +412,8 @@ Content-Type: text/html; charset=UTF-8
 		return nil
 	}
 
+	fmt.Printf("[EMAIL] Attempting to send email to %s: %s\n", toEmail, subject)
+
 	// Connect to SMTP server
 	auth := smtp.PlainAuth("", e.SMTPUsername, e.SMTPPassword, e.SMTPHost)
 	addr := fmt.Sprintf("%s:%s", e.SMTPHost, e.SMTPPort)
@@ -428,9 +431,11 @@ Content-Type: text/html; charset=UTF-8
 	}
 	err := e.client.SendMail(addr, auth, e.FromEmail, recipients, []byte(message))
 	if err != nil {
+		fmt.Printf("[EMAIL] Failed to send email to %s: %v\n", toEmail, err)
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
+	fmt.Printf("[EMAIL] Successfully sent email to %s: %s\n", toEmail, subject)
 	return nil
 }
 
