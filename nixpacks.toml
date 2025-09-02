@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["go", "buffalo"]
+
+[phases.build]
+cmds = ["buffalo build"]
+
+[start]
+cmd = "./bin/app"
