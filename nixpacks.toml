@@ -2,4 +2,4 @@
 nixPkgs = ["go"]
 
 [phases.start]
-cmds = ["go mod download", "go build -o bin/app .", "go install github.com/gobuffalo/soda@latest && export PATH=$PATH:/root/go/bin && soda migrate up", "./bin/app"]
+cmds = ["go mod download", "go build -o bin/app .", "chmod +x bin/app", "go install github.com/gobuffalo/soda@latest && export PATH=$PATH:/root/go/bin && soda migrate up", "./bin/app"]
