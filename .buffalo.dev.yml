@@ -19,7 +19,7 @@ included_extensions:
 build_path: tmp
 build_delay: 200ns
 build_target_path: "./cmd/app"
-binary_name: my-go-saas-template-build
+binary_name: app
 command_flags: []
 enable_colors: true
 log_name: buffalo
