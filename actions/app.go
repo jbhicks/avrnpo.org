@@ -3,6 +3,7 @@ package actions
 import (
 	"avrnpo.org/locales"
 	"avrnpo.org/models"
+	"avrnpo.org/pkg/logging"
 	"avrnpo.org/public"
 	"fmt"
 	"github.com/gobuffalo/buffalo"
@@ -154,6 +155,9 @@ func isStaticAsset(path string) bool {
 func App() *buffalo.App {
 	appOnce.Do(func() {
 
+		// Initialize logging first
+		logging.MustInit(nil)
+
 		// Set Buffalo to use our logrus-based logger for all request logs
 		// Use Buffalo's built-in logger with multi-writer (terminal + file)
 
@@ -225,6 +229,8 @@ func App() *buffalo.App {
 		if ENV == "production" && sessionSecret == "development-session-secret-change-in-production" {
 			app.Logger.Warn("SESSION_SECRET not set in production! Using insecure default.")
 		}
+
+		app.Logger.Info("App initialization completed")
 
 		// Use Buffalo's built-in request logging middleware
 		app.Use(buffalo.RequestLoggerFunc)

@@ -11,8 +11,10 @@ import (
 
 // HomeHandler serves the public landing page
 func HomeHandler(c buffalo.Context) error {
+	c.Logger().Info("HomeHandler called")
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
+		c.Logger().Error("no transaction found in HomeHandler")
 		return fmt.Errorf("no transaction found")
 	}
 
@@ -41,6 +43,7 @@ func HomeHandler(c buffalo.Context) error {
 	c.Set("recentPosts", posts)
 
 	// Render the home page (using application layout for consistency)
+	c.Logger().Info("Rendering home page")
 	return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
 }
 

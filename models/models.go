@@ -14,6 +14,9 @@ var DB *pop.Connection
 func init() {
 	var err error
 	env := envy.Get("GO_ENV", "development")
+	logging.Info("Connecting to database", logging.Fields{
+		"environment": env,
+	})
 	DB, err = pop.Connect(env)
 	if err != nil {
 		logging.Fatal("Failed to connect to database", logging.Fields{
@@ -21,5 +24,6 @@ func init() {
 			"error":       err.Error(),
 		})
 	}
+	logging.Info("Database connected successfully")
 	pop.Debug = env == "development"
 }

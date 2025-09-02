@@ -77,7 +77,7 @@ func getDefaultLogLevel(env string) string {
 func getDefaultConsoleOutput(env string) string {
 	switch strings.ToLower(env) {
 	case "production":
-		return "false" // In production, typically only file output
+		return "true" // Enable console output in production for debugging
 	default:
 		return "true" // Development and test environments show console output
 	}

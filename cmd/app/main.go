@@ -12,7 +12,9 @@ import (
 // call `app.Serve()`, unless you don't want to start your
 // application that is. :)
 func main() {
+	logging.Info("Starting Buffalo application")
 	app := actions.App()
+	logging.Info("App created, starting server")
 	if err := app.Serve(); err != nil {
 		logging.Fatal("Failed to start Buffalo application", logging.Fields{
 			"error": err.Error(),
