@@ -10,20 +10,20 @@
  */
 
 :root {
-    /* AVR Orange/Warning Color Scheme - Matching original DaisyUI warning colors */
-    --pico-primary: #ffb627; /* Orange primary color */
+    /* AVR Military Green Color Scheme - Enhanced contrast for light mode */
+    --pico-primary: #ffb627; /* Army green primary color */
     --pico-primary-background: transparent; /* Transparent background for outline buttons */
-    --pico-primary-border: #ffb627; /* Orange border */
+    --pico-primary-border: #ffb627; /* Green border */
     --pico-primary-underline: #ffb627;
-    --pico-primary-hover: #ffb627; /* Keep orange on hover */
+    --pico-primary-hover: #ffb627; /* Green on hover */
     --pico-primary-hover-background: rgba(
-        255,
-        182,
-        39,
+        45,
+        80,
+        22,
         0.1
-    ); /* Light orange hover bg */
+    ); /* Light green hover bg */
     --pico-primary-focus: #ffb627;
-    --pico-primary-inverse: #ffffff; /* White text for good contrast on orange background */
+    --pico-primary-inverse: #ffffff; /* White text for good contrast on green background */
 
     /* Contrast colors for important CTAs */
     --pico-contrast: #dc2626; /* Red for donations/important actions */
@@ -45,13 +45,13 @@
     --pico-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     --pico-box-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.2);
 
-    /* Secondary colors - Using orange to match primary for consistent navigation */
-    --pico-secondary: #ffb627; /* Orange for secondary buttons to match primary */
+    /* Secondary colors - Using green to match primary for consistent navigation */
+    --pico-secondary: #ffb627; /* Green for secondary buttons to match primary */
     --pico-secondary-background: transparent; /* Transparent background */
     --pico-secondary-border: #ffb627;
     --pico-secondary-hover: #ffb627;
     --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
-    --pico-secondary-inverse: #ffffff; /* White text for good contrast on orange background */
+    --pico-secondary-inverse: #ffffff; /* White text for good contrast on green background */
 
     /* Enhanced spacing for better hierarchy */
     --pico-spacing: 1rem;
@@ -105,9 +105,9 @@
 /* AVR Dark Theme Variables - Following Pico.css documentation pattern */
 
 
-/* Dark color scheme (Forced) */
-/* Enabled if forced with data-theme="dark" */
-[data-theme="dark"] {
+/* Dark color scheme (Default) */
+/* Default theme, can be overridden with data-theme="light" */
+:root:not([data-theme="light"]) {
     color-scheme: dark;
     /* Manual dark theme - use same AVR colors for consistency */
     /* Core colors */
@@ -168,10 +168,9 @@
     --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
 }
 
-/* Light color scheme (Default) */
+/* Light color scheme */
 /* Can be forced with data-theme="light" */
-[data-theme="light"],
-:root:not([data-theme="dark"]) {
+[data-theme="light"] {
     color-scheme: light;
     /* Core colors */
     --pico-background-color: hsl(0, 0%, 98%);
@@ -240,28 +239,28 @@
         /* Core colors */
         --pico-background-color: hsl(210, 15%, 8%);
         --pico-color: hsl(210, 15%, 90%);
-        --pico-text-selection-color: rgba(255, 182, 39, 0.25);
+    --pico-text-selection-color: rgba(255, 182, 39, 0.25);
 
-        /* Primary color scheme */
-        --pico-primary: #ffb627;
-        --pico-primary-background: #ffb627;
-        --pico-primary-border: #ffb627;
-        --pico-primary-underline: rgba(255, 182, 39, 0.5);
-        --pico-primary-hover: #ffb627;
-        --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
-        --pico-primary-hover-border: #ffb627;
-        --pico-primary-focus: rgba(255, 182, 39, 0.5);
-        --pico-primary-inverse: #ffffff;
+    /* Primary color scheme */
+    --pico-primary: #ffb627;
+    --pico-primary-background: #ffb627;
+    --pico-primary-border: #ffb627;
+    --pico-primary-underline: rgba(255, 182, 39, 0.5);
+    --pico-primary-hover: #ffb627;
+    --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
+    --pico-primary-hover-border: #ffb627;
+    --pico-primary-focus: rgba(255, 182, 39, 0.5);
+    --pico-primary-inverse: #ffffff;
 
-        /* Secondary colors */
-        --pico-secondary: #ffb627;
-        --pico-secondary-background: transparent;
-        --pico-secondary-border: #ffb627;
-        --pico-secondary-underline: rgba(255, 182, 39, 0.5);
-        --pico-secondary-hover: #ffb627;
-        --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
-        --pico-secondary-focus: rgba(255, 182, 39, 0.25);
-        --pico-secondary-inverse: #ffffff;
+    /* Secondary colors */
+    --pico-secondary: #ffb627;
+    --pico-secondary-background: transparent;
+    --pico-secondary-border: #ffb627;
+    --pico-secondary-underline: rgba(255, 182, 39, 0.5);
+    --pico-secondary-hover: #ffb627;
+    --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
+    --pico-secondary-focus: rgba(255, 182, 39, 0.25);
+    --pico-secondary-inverse: #ffffff;
 
         /* Contrast colors */
         --pico-contrast: #dc2626;
