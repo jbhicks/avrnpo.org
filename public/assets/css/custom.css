@@ -105,9 +105,10 @@
 /* AVR Dark Theme Variables - Following Pico.css documentation pattern */
 
 
-/* Dark color scheme (Default) */
-/* Default theme, can be overridden with data-theme="light" */
-:root:not([data-theme="light"]) {
+ /* Dark color scheme (Default) */
+ /* Default theme, can be overridden with data-theme="light" or system light mode */
+ @media not (prefers-color-scheme: light) {
+     :root:not([data-theme="light"]) {
     color-scheme: dark;
     /* Manual dark theme - use same AVR colors for consistency */
     /* Core colors */
@@ -165,10 +166,11 @@
     --pico-code-color: hsl(210, 15%, 90%);
     --pico-dropdown-background-color: hsl(210, 15%, 12%);
     --pico-dropdown-border-color: hsl(210, 15%, 20%);
-    --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
-}
+     --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
+     }
+ }
 
-/* Light color scheme */
+ /* Light color scheme */
 /* Can be forced with data-theme="light" */
 [data-theme="light"] {
     color-scheme: light;
@@ -296,9 +298,9 @@
  }
 
  /* Light color scheme (Auto) */
- /* Automatically enabled if user has Light mode enabled */
+ /* Automatically enabled if user has Light mode enabled - Higher specificity to override dark theme */
  @media only screen and (prefers-color-scheme: light) {
-     :root:not([data-theme]) {
+     html:root {
          color-scheme: light;
          /* Auto-detected light theme - AVR custom colors */
          /* Core colors */
