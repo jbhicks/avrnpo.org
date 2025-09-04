@@ -67,6 +67,15 @@ func MyPageHandler(c buffalo.Context) error {
 - `make test-fast`: Run tests without database setup (when you know the DB is running and migrated).
 - `soda migrate up`: Run database migrations.
 
+## 🚨 CRITICAL: DEPLOYMENT WORKFLOW 🚨
+
+**ALWAYS CONFIRM WITH USER BEFORE PUSHING TO PRODUCTION**
+
+- **NEVER** push commits directly to production without explicit user confirmation
+- **ALWAYS** ask the user to confirm locally before pushing changes
+- **ALWAYS** provide a summary of what will be deployed and ask for approval
+- **ONLY** push after receiving explicit confirmation from the user
+
 ## Test-only signature bypass
 - Any bypass for signature verification must be strictly limited to the test environment (`GO_ENV=test`).
 - See existing tests for examples of how to use the `AttachHelcimSignature` helper or the bypass.
