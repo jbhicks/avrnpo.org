@@ -10,57 +10,48 @@
  */
 
 :root {
-    /* AVR Military Green Color Scheme - Enhanced contrast for light mode */
-    --pico-primary: #ffb627; /* Army green primary color */
-    --pico-primary-background: transparent; /* Transparent background for outline buttons */
-    --pico-primary-border: #ffb627; /* Green border */
-    --pico-primary-underline: #ffb627;
-    --pico-primary-hover: #ffb627; /* Green on hover */
-    --pico-primary-hover-background: rgba(
-        45,
-        80,
-        22,
-        0.1
-    ); /* Light green hover bg */
-    --pico-primary-focus: #ffb627;
-    --pico-primary-inverse: #ffffff; /* White text for good contrast on green background */
+    /* AVR Brand Colors - Consistent for forced dark mode */
+    --pico-primary: #ffb627; /* AVR Orange */
+    --pico-primary-background: #ffb627;
+    --pico-primary-border: #ffb627;
+    --pico-primary-underline: rgba(255, 182, 39, 0.5);
+    --pico-primary-hover: #e5a324; /* Slightly darker orange for hover */
+    --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
+    --pico-primary-focus: rgba(255, 182, 39, 0.5);
+    --pico-primary-inverse: #ffffff;
 
-    /* Contrast colors for important CTAs */
-    --pico-contrast: #dc2626; /* Red for donations/important actions */
-    --pico-contrast-background: transparent; /* Transparent background */
+    /* Contrast colors for donations/important actions */
+    --pico-contrast: #dc2626; /* Red for donations */
+    --pico-contrast-background: #dc2626;
     --pico-contrast-border: #dc2626;
-    --pico-contrast-hover: #dc2626;
+    --pico-contrast-underline: rgba(220, 38, 38, 0.5);
+    --pico-contrast-hover: #b91c1c; /* Slightly darker red for hover */
     --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
-    --pico-contrast-inverse: #ffffff; /* White text for good contrast on red background */
+    --pico-contrast-focus: rgba(220, 38, 38, 0.5);
+    --pico-contrast-inverse: #ffffff;
 
-    /* Status colors for semantic meaning */
-    --pico-success: #10b981; /* Green for success states */
-    --pico-warning: #f59e0b; /* Orange for warning states */
-    --pico-danger: #ef4444; /* Red for danger/error states */
-
-    /* Badge text color for contrast */
-    --pico-badge-text: #ffffff; /* White text for colored badge backgrounds */
-
-    /* Box shadow for subtle elevation */
-    --pico-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    --pico-box-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-    /* Secondary colors - Using green to match primary for consistent navigation */
-    --pico-secondary: #ffb627; /* Green for secondary buttons to match primary */
-    --pico-secondary-background: transparent; /* Transparent background */
+    /* Secondary colors match primary for consistency */
+    --pico-secondary: #ffb627;
+    --pico-secondary-background: transparent;
     --pico-secondary-border: #ffb627;
-    --pico-secondary-hover: #ffb627;
+    --pico-secondary-underline: rgba(255, 182, 39, 0.5);
+    --pico-secondary-hover: #e5a324;
     --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
-    --pico-secondary-inverse: #ffffff; /* White text for good contrast on green background */
+    --pico-secondary-focus: rgba(255, 182, 39, 0.25);
+    --pico-secondary-inverse: #ffffff;
 
-    /* Enhanced spacing for better hierarchy */
+    /* Enhanced spacing and visual improvements */
     --pico-spacing: 1rem;
     --pico-typography-spacing-vertical: 1.5rem;
     --pico-form-element-spacing-vertical: 0.75rem;
     --pico-form-element-spacing-horizontal: 1rem;
-
-    /* Better border radius for military/professional look */
     --pico-border-radius: 0.375rem;
+    --pico-outline-width: 2px;
+
+    /* Typography improvements */
+    --pico-font-weight: 400;
+    --pico-line-height: 1.6;
+}
 
 /* =============================================================================
    HTMX LOADING INDICATORS
@@ -95,82 +86,6 @@
     display: inline-block;
     margin-right: 0.5rem;
 }
-    --pico-outline-width: 2px;
-
-    /* Typography improvements */
-    --pico-font-weight: 400;
-    --pico-line-height: 1.6;
-}
-
-/* AVR Dark Theme Variables - Following Pico.css documentation pattern */
-
-
- /* Dark color scheme (Always Applied) */
- /* Always use dark theme regardless of OS preference */
- :root {
-     color-scheme: dark;
-     /* Core colors */
-     --pico-background-color: hsl(210, 15%, 8%);
-     --pico-color: hsl(210, 15%, 90%);
-     --pico-text-selection-color: rgba(255, 182, 39, 0.25);
-
-     /* Primary color scheme */
-     --pico-primary: #ffb627;
-     --pico-primary-background: #ffb627;
-     --pico-primary-border: #ffb627;
-     --pico-primary-underline: rgba(255, 182, 39, 0.5);
-     --pico-primary-hover: #ffb627;
-     --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
-     --pico-primary-hover-border: #ffb627;
-     --pico-primary-focus: rgba(255, 182, 39, 0.5);
-     --pico-primary-inverse: #ffffff;
-
-     /* Secondary colors */
-     --pico-secondary: #ffb627;
-     --pico-secondary-background: transparent;
-     --pico-secondary-border: #ffb627;
-     --pico-secondary-underline: rgba(255, 182, 39, 0.5);
-     --pico-secondary-hover: #ffb627;
-     --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
-     --pico-secondary-focus: rgba(255, 182, 39, 0.25);
-     --pico-secondary-inverse: #ffffff;
-
-     /* Contrast colors */
-     --pico-contrast: #dc2626;
-     --pico-contrast-background: transparent;
-     --pico-contrast-border: #dc2626;
-     --pico-contrast-underline: rgba(220, 38, 38, 0.5);
-     --pico-contrast-hover: #dc2626;
-     --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
-     --pico-contrast-focus: rgba(220, 38, 38, 0.25);
-     --pico-contrast-inverse: #ffffff;
-
-     /* UI element colors */
-     --pico-muted-color: hsl(210, 15%, 70%);
-     --pico-muted-border-color: hsl(210, 15%, 25%);
-     --pico-card-background-color: hsl(210, 15%, 12%);
-     --pico-card-border-color: hsl(210, 15%, 20%);
-     --pico-form-element-background-color: hsl(210, 15%, 15%);
-     --pico-form-element-border-color: hsl(210, 15%, 25%);
-     --pico-form-element-color: hsl(210, 15%, 95%);
-     --pico-form-element-placeholder-color: hsl(210, 15%, 70%);
-
-     /* Table colors */
-     --pico-table-border-color: hsl(210, 15%, 25%);
-     --pico-table-row-stripped-background-color: hsl(210, 15%, 10%);
-
-     /* Additional UI colors */
-     --pico-code-background-color: hsl(210, 15%, 12%);
-     --pico-code-color: hsl(210, 15%, 90%);
-     --pico-dropdown-background-color: hsl(210, 15%, 12%);
-     --pico-dropdown-border-color: hsl(210, 15%, 20%);
-     --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
- }
-
- /* Light color scheme */
-
-
-
 
 /* =============================================================================
    SEMANTIC CSS CLASSES FOR COMMON PATTERNS
