@@ -1,5 +1,5 @@
-# Use Buffalo image with compatible Go version
-FROM gobuffalo/buffalo:v0.18.9
+# Use Buffalo image with Go 1.22 support
+FROM gobuffalo/buffalo:latest
 
 # Set working directory
 WORKDIR /app
