@@ -1,5 +1,8 @@
-# Use Buffalo image with Go 1.22 support
-FROM gobuffalo/buffalo:latest
+# Use official Go image for better version control
+FROM golang:1.22-alpine
+
+# Install necessary packages for Buffalo
+RUN apk add --no-cache git ca-certificates tzdata
 
 # Set working directory
 WORKDIR /app
@@ -12,6 +15,9 @@ RUN go mod download
 
 # Copy source code
 COPY . .
+
+# Install Buffalo CLI
+RUN go install github.com/gobuffalo/cli/cmd/buffalo@latest
 
 # Build the application
 RUN buffalo build -o bin/app

@@ -27,7 +27,7 @@ services:
       - app-network
 
   postgres:
-    image: postgres:15
+    image: postgres:17
     container_name: my-go-saas-postgres
     restart: unless-stopped
     environment:
