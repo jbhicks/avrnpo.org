@@ -57,7 +57,7 @@
                  required
                  value="<%= firstName %>">
           <%= if (errors != nil && errors.Get("first_name") != nil) { %>
-            <small style="color: red;"><%= errors.Get("first_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("first_name") %></small>
           <% } %>
         </div>
 
@@ -71,7 +71,7 @@
                  required
                  value="<%= lastName %>">
           <%= if (errors != nil && errors.Get("last_name") != nil) { %>
-            <small style="color: red;"><%= errors.Get("last_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("last_name") %></small>
           <% } %>
         </div>
       </div>
@@ -85,7 +85,7 @@
              required
              value="<%= donorEmail %>">
        <%= if (errors != nil && errors.Get("donor_email") != nil) { %>
-           <small style="color: red;"><%= errors.Get("donor_email") %></small>
+           <small style="color: var(--pico-danger);"><%= errors.Get("donor_email") %></small>
        <% } %>
 
       <label for="donor_phone">Phone Number (optional)</label>
@@ -111,7 +111,7 @@
              value="<%= addressLine1 %>">
       <%= if (errors) { %>
         <%= if (errors.Get("address_line1")) { %>
-          <small style="color: red;"><%= errors.Get("address_line1") %></small>
+          <small style="color: var(--pico-danger);"><%= errors.Get("address_line1") %></small>
         <% } %>
       <% } %>
 
@@ -133,7 +133,7 @@
                  required
                  value="<%= city %>">
           <%= if (errors != nil && errors.Get("city") != nil) { %>
-              <small style="color: red;"><%= errors.Get("city") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("city") %></small>
           <% } %>
         </div>
 
@@ -197,7 +197,7 @@
             <option value="WY"<% if (state == "WY") { %> selected<% } %>>Wyoming</option>
           </select>
           <%= if (errors != nil && errors.Get("state") != nil) { %>
-              <small style="color: red;"><%= errors.Get("state") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("state") %></small>
           <% } %>
         </div>
 
@@ -212,7 +212,7 @@
                  pattern="[0-9]{5}(-[0-9]{4})?"
                  value="<%= zip %>">
           <%= if (errors != nil && errors.Get("zip_code") != nil) { %>
-              <small style="color: red;"><%= errors.Get("zip_code") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("zip_code") %></small>
           <% } %>
         </div>
       </div>

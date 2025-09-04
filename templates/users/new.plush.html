@@ -18,7 +18,7 @@
                  placeholder="Enter your first name"
                  value="<%= user.FirstName %>">
           <%= if (errors && errors.Get("first_name")) { %>
-            <small style="color: red;"><%= errors.Get("first_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("first_name") %></small>
           <% } %>
         </label>
         
@@ -32,7 +32,7 @@
                  placeholder="Enter your last name"
                  value="<%= user.LastName %>">
           <%= if (errors && errors.Get("last_name")) { %>
-            <small style="color: red;"><%= errors.Get("last_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("last_name") %></small>
           <% } %>
         </label>
         
@@ -46,7 +46,7 @@
                  placeholder="Enter your email"
                  value="<%= user.Email %>">
           <%= if (errors && errors.Get("email")) { %>
-            <small style="color: red;"><%= errors.Get("email") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("email") %></small>
           <% } %>
         </label>
         
@@ -59,7 +59,7 @@
                  required 
                  placeholder="Enter your password">
           <%= if (errors && errors.Get("password")) { %>
-            <small style="color: red;"><%= errors.Get("password") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("password") %></small>
           <% } %>
         </label>
         
@@ -72,7 +72,7 @@
                  required 
                  placeholder="Confirm your password">
           <%= if (errors && errors.Get("password_confirmation")) { %>
-            <small style="color: red;"><%= errors.Get("password_confirmation") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("password_confirmation") %></small>
           <% } %>
         </label>
         
@@ -80,7 +80,7 @@
           <input type="checkbox" name="accept_terms" required />
           I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
           <%= if (errors && errors.Get("accept_terms")) { %>
-            <small style="color: red;"><%= errors.Get("accept_terms") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("accept_terms") %></small>
           <% } %>
         </label>
       </fieldset>

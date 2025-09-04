@@ -29,7 +29,7 @@ make setup
 make dev
 ```
 
-After setup, visit [http://127.0.0.1:3000](http://127.0.0.1:3000) to see the website running locally.
+After setup, visit [http://127.0.0.1:3001](http://127.0.0.1:3001) to see the website running locally.
 
 ### Development Commands
 

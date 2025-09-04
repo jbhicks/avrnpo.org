@@ -22,11 +22,11 @@ cd avrnpo.org
 make dev
 ```
 
-**That's it!** The application will be running at http://127.0.0.1:3000
+**That's it!** The application will be running at http://127.0.0.1:3001
 
 ### 3. Verify Setup
-- Visit http://127.0.0.1:3000 - you should see the AVR homepage
-- Visit http://127.0.0.1:3000/donation - you should see the donation form
+- Visit http://127.0.0.1:3001 - you should see the AVR homepage
+- Visit http://127.0.0.1:3001/donation - you should see the donation form
 - Buffalo console will show logs in your terminal
 
 ## 🧪 Test Everything Works

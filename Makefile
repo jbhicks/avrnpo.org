@@ -171,7 +171,7 @@ dev: check-deps validate-templates
 		fi; \
 	fi
 	@echo "🚀 Starting Buffalo development server..."
-	@echo "📱 Visit http://127.0.0.1:3000 to see your application"
+	@echo "📱 Visit http://127.0.0.1:3001 to see your application"
 	@echo "🔥 Hot reload is enabled - changes will be reflected automatically"
 	@buffalo dev || (echo "❌ Buffalo failed to start. Check the output above for errors." && exit 1)
 
@@ -181,7 +181,7 @@ setup: check-deps db-up migrate
 	@echo ""
 	@echo "Next steps:"
 	@echo "  1. Run 'make dev' to start the development server"
-	@echo "  2. Visit http://127.0.0.1:3000 to see your application"
+	@echo "  2. Visit http://127.0.0.1:3001 to see your application"
 	@echo "  3. Create a user account through the web interface"
 	@echo "  4. Run 'make admin' to promote your user to admin"
 	@echo ""
@@ -197,7 +197,7 @@ admin: db-up
 	@echo "🔍 Looking for users to promote..."
 	@if buffalo task db:promote_admin 2>/dev/null; then \
 		echo "✅ User successfully promoted to admin role!"; \
-		echo "🎯 You can now access the admin panel at http://127.0.0.1:3000/admin"; \
+		echo "🎯 You can now access the admin panel at http://127.0.0.1:3001/admin"; \
 	else \
 		echo "⚠️  No users found to promote. Please:"; \
 		echo "   1. Create a user account through the web interface first"; \

@@ -35,7 +35,7 @@
                required>
         <%= if (errors) { %>
           <%= if (errors.Get("amount")) { %>
-            <small style="color: red;"><%= errors.Get("amount") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("amount") %></small>
           <% } %>
         <% } %>
       </div>
@@ -61,7 +61,7 @@
         </label>
       </fieldset>
       <%= if (errors != nil && errors.Get("donation_type") != nil) { %>
-        <small style="color: red;"><%= errors.Get("donation_type") %></small>
+        <small style="color: var(--pico-danger);"><%= errors.Get("donation_type") %></small>
       <% } %>
     </div>
 
@@ -81,7 +81,7 @@
                  required
                  value="<%= firstName %>">
           <%= if (errors != nil && errors.Get("first_name") != nil) { %>
-            <small style="color: red;"><%= errors.Get("first_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("first_name") %></small>
           <% } %>
         </div>
 
@@ -95,7 +95,7 @@
                  required
                  value="<%= lastName %>">
           <%= if (errors != nil && errors.Get("last_name") != nil) { %>
-            <small style="color: red;"><%= errors.Get("last_name") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("last_name") %></small>
           <% } %>
         </div>
       </div>
@@ -110,7 +110,7 @@
              value="<%= donorEmail %>">
       <%= if (errors) { %>
         <%= if (errors.Get("donor_email")) { %>
-          <small style="color: red;"><%= errors.Get("donor_email") %></small>
+          <small style="color: var(--pico-danger);"><%= errors.Get("donor_email") %></small>
         <% } %>
       <% } %>
 
@@ -137,7 +137,7 @@
              value="<%= addressLine1 %>">
       <%= if (errors) { %>
         <%= if (errors.Get("address_line1")) { %>
-          <small style="color: red;"><%= errors.Get("address_line1") %></small>
+          <small style="color: var(--pico-danger);"><%= errors.Get("address_line1") %></small>
         <% } %>
       <% } %>
 
@@ -160,7 +160,7 @@
                  value="<%= city %>">
           <%= if (errors) { %>
             <%= if (errors.Get("city")) { %>
-              <small style="color: red;"><%= errors.Get("city") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("city") %></small>
             <% } %>
           <% } %>
         </div>
@@ -226,7 +226,7 @@
           </select>
           <%= if (errors) { %>
             <%= if (errors.Get("state")) { %>
-              <small style="color: red;"><%= errors.Get("state") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("state") %></small>
             <% } %>
           <% } %>
         </div>
@@ -243,7 +243,7 @@
                  value="<%= zip %>">
           <%= if (errors) { %>
             <%= if (errors.Get("zip_code")) { %>
-              <small style="color: red;"><%= errors.Get("zip_code") %></small>
+              <small style="color: var(--pico-danger);"><%= errors.Get("zip_code") %></small>
             <% } %>
           <% } %>
         </div>
@@ -304,14 +304,14 @@
 
 .amount-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--pico-box-shadow);
 }
 
 .amount-btn.active {
   background-color: var(--pico-primary);
   border-color: var(--pico-primary);
   color: var(--pico-primary-inverse);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--pico-box-shadow-hover);
 }
 
 .custom-amount-group {

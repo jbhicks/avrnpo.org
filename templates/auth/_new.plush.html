@@ -18,7 +18,7 @@
                  placeholder="Enter your email"
                  value="<%= user.Email %>">
           <%= if (errors && errors.Get("email")) { %>
-            <small style="color: red;"><%= errors.Get("email") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("email") %></small>
           <% } %>
         </label>
         
@@ -31,7 +31,7 @@
                  required 
                  placeholder="Enter your password">
           <%= if (errors && errors.Get("password")) { %>
-            <small style="color: red;"><%= errors.Get("password") %></small>
+            <small style="color: var(--pico-danger);"><%= errors.Get("password") %></small>
           <% } %>
         </label>
       </fieldset>
