@@ -291,9 +291,74 @@
         --pico-code-color: hsl(210, 15%, 90%);
         --pico-dropdown-background-color: hsl(210, 15%, 12%);
         --pico-dropdown-border-color: hsl(210, 15%, 20%);
-        --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
-    }
-}
+         --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.75);
+     }
+ }
+
+ /* Light color scheme (Auto) */
+ /* Automatically enabled if user has Light mode enabled */
+ @media only screen and (prefers-color-scheme: light) {
+     :root:not([data-theme]) {
+         color-scheme: light;
+         /* Auto-detected light theme - AVR custom colors */
+         /* Core colors */
+         --pico-background-color: hsl(0, 0%, 98%);
+         --pico-color: hsl(210, 15%, 15%);
+         --pico-text-selection-color: rgba(255, 182, 39, 0.25);
+
+         /* Primary color scheme */
+         --pico-primary: #ffb627;
+         --pico-primary-background: #ffb627;
+         --pico-primary-border: #ffb627;
+         --pico-primary-underline: rgba(255, 182, 39, 0.5);
+         --pico-primary-hover: #ffb627;
+         --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
+         --pico-primary-hover-border: #ffb627;
+         --pico-primary-focus: rgba(255, 182, 39, 0.5);
+         --pico-primary-inverse: #ffffff;
+
+         /* Secondary colors */
+         --pico-secondary: #ffb627;
+         --pico-secondary-background: transparent;
+         --pico-secondary-border: #ffb627;
+         --pico-secondary-underline: rgba(255, 182, 39, 0.5);
+         --pico-secondary-hover: #ffb627;
+         --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
+         --pico-secondary-focus: rgba(255, 182, 39, 0.25);
+         --pico-secondary-inverse: #ffffff;
+
+         /* Contrast colors */
+         --pico-contrast: #dc2626;
+         --pico-contrast-background: transparent;
+         --pico-contrast-border: #dc2626;
+         --pico-contrast-underline: rgba(220, 38, 38, 0.5);
+         --pico-contrast-hover: #dc2626;
+         --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
+         --pico-contrast-focus: rgba(220, 38, 38, 0.25);
+         --pico-contrast-inverse: #ffffff;
+
+         /* UI element colors */
+         --pico-muted-color: hsl(210, 15%, 45%);
+         --pico-muted-border-color: hsl(210, 15%, 85%);
+         --pico-card-background-color: hsl(0, 0%, 100%);
+         --pico-card-border-color: hsl(210, 15%, 85%);
+         --pico-form-element-background-color: hsl(0, 0%, 100%);
+         --pico-form-element-border-color: hsl(210, 15%, 80%);
+         --pico-form-element-color: hsl(210, 15%, 15%);
+         --pico-form-element-placeholder-color: hsl(210, 15%, 45%);
+
+         /* Table colors */
+         --pico-table-border-color: hsl(210, 15%, 85%);
+         --pico-table-row-stripped-background-color: hsl(210, 15%, 95%);
+
+         /* Additional UI colors */
+         --pico-code-background-color: hsl(210, 15%, 95%);
+         --pico-code-color: hsl(210, 15%, 15%);
+         --pico-dropdown-background-color: hsl(0, 0%, 100%);
+         --pico-dropdown-border-color: hsl(210, 15%, 85%);
+         --pico-modal-overlay-background-color: rgba(0, 0, 0, 0.5);
+     }
+ }
 
 /* =============================================================================
    SEMANTIC CSS CLASSES FOR COMMON PATTERNS
