@@ -30,7 +30,8 @@ type EmailService struct {
 	SMTPPassword string
 	FromEmail    string
 	FromName     string
-	EmailEnabled bool // controls whether emails are actually sent
+	ContactEmail string // configurable contact form recipient email
+	EmailEnabled bool   // controls whether emails are actually sent
 	client       SMTPClient
 }
 
@@ -38,7 +39,13 @@ type EmailService struct {
 func NewEmailService() *EmailService {
 	// In test mode, return a service with EmailEnabled=false and a nil client to avoid network calls
 	if os.Getenv("GO_ENV") == "test" {
-		return &EmailService{EmailEnabled: false, FromEmail: "test@example.com", FromName: "AVRNPO Test", client: nil}
+		return &EmailService{
+			EmailEnabled: false,
+			FromEmail:    "test@example.com",
+			FromName:     "AVRNPO Test",
+			ContactEmail: "test-contact@example.com",
+			client:       nil,
+		}
 	}
 	// Determine default for EMAIL_ENABLED based on GO_ENV
 	enabledStr := os.Getenv("EMAIL_ENABLED")
@@ -52,6 +59,12 @@ func NewEmailService() *EmailService {
 	}
 	emailEnabled := enabledStr == "true" || enabledStr == "1" || enabledStr == "yes"
 
+	// Get contact email from environment with fallback
+	contactEmail := os.Getenv("CONTACT_EMAIL")
+	if contactEmail == "" {
+		contactEmail = "AmericanVeteransRebuilding@avrnpo.org" // Default to match displayed email
+	}
+
 	svc := &EmailService{
 		SMTPHost:     os.Getenv("SMTP_HOST"),
 		SMTPPort:     os.Getenv("SMTP_PORT"),
@@ -59,6 +72,7 @@ func NewEmailService() *EmailService {
 		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		FromEmail:    os.Getenv("FROM_EMAIL"),
 		FromName:     os.Getenv("FROM_NAME"),
+		ContactEmail: contactEmail,
 		EmailEnabled: emailEnabled,
 		client:       &realSMTPClient{},
 	}
@@ -84,6 +98,7 @@ type DonationReceiptData struct {
 	DonorCity           string
 	DonorState          string
 	DonorZip            string
+	ContactEmail        string // configurable contact email for support
 }
 
 // ContactFormData contains data for contact form submissions
@@ -97,42 +112,79 @@ type ContactFormData struct {
 
 // SendDonationReceipt sends a donation receipt email to the donor
 func (e *EmailService) SendDonationReceipt(toEmail string, data DonationReceiptData) error {
+	fmt.Printf("[EMAIL_SERVICE] Starting donation receipt for %s - Amount: $%.2f, Type: %s\n",
+		toEmail, data.DonationAmount, data.DonationType)
+
 	if !e.isConfigured() {
-		fmt.Printf("[EMAIL] Service not configured - missing SMTP environment variables\n")
+		fmt.Printf("[EMAIL_SERVICE] Configuration check failed - missing SMTP environment variables\n")
 		return fmt.Errorf("email service not configured - missing environment variables")
 	}
+	fmt.Printf("[EMAIL_SERVICE] Configuration validated for donation receipt\n")
 
-	// Generate email content
+	// Inject the contact email into the data
+	data.ContactEmail = e.ContactEmail
+	fmt.Printf("[EMAIL_SERVICE] Contact email injected: %s\n", data.ContactEmail)
+
+	// Generate email content with timing
 	subject := fmt.Sprintf("Thank you for your donation to %s", data.OrganizationName)
+	fmt.Printf("[EMAIL_SERVICE] Generated donation receipt subject: %s\n", subject)
+
 	htmlBody, err := e.generateReceiptHTML(data)
 	if err != nil {
+		fmt.Printf("[EMAIL_SERVICE] Failed to generate donation receipt HTML: %v\n", err)
 		return fmt.Errorf("error generating email HTML: %v", err)
 	}
 
 	textBody := e.generateReceiptText(data)
 
-	// Send email with BCC to michael@avrnpo.org
+	// Log content metrics
+	htmlSize := len(htmlBody)
+	textSize := len(textBody)
+	fmt.Printf("[EMAIL_SERVICE] Generated receipt content - HTML: %d bytes, Text: %d bytes\n",
+		htmlSize, textSize)
+
+	// Send email with BCC to michael@avrnpo.org (keep this for now for receipt tracking)
 	bccEmails := []string{"michael@avrnpo.org"}
+	fmt.Printf("[EMAIL_SERVICE] Donation receipt BCC recipients: %v\n", bccEmails)
+
 	return e.sendEmailWithBCC(toEmail, subject, htmlBody, textBody, bccEmails)
 }
 
 // SendContactNotification sends a contact form notification to the organization
 func (e *EmailService) SendContactNotification(contactData ContactFormData) error {
+	fmt.Printf("[EMAIL_SERVICE] Starting contact notification for submission from %s (%s)\n",
+		contactData.Name, contactData.Email)
+
 	if !e.isConfigured() {
+		fmt.Printf("[EMAIL_SERVICE] Configuration check failed - missing SMTP environment variables\n")
 		return fmt.Errorf("email service not configured - missing environment variables")
 	}
+	fmt.Printf("[EMAIL_SERVICE] Configuration validated successfully\n")
 
-	// Send to organization email
-	toEmail := "michael@avrnpo.org"
+	// Send to configured contact email
+	toEmail := e.ContactEmail
+	fmt.Printf("[EMAIL_SERVICE] Contact notification recipient: %s\n", toEmail)
+
 	subject := fmt.Sprintf("New Contact Form Submission: %s", contactData.Subject)
+	fmt.Printf("[EMAIL_SERVICE] Generated subject: %s\n", subject)
+
+	// Generate email content with timing
 	htmlBody, err := e.generateContactNotificationHTML(contactData)
 	if err != nil {
+		fmt.Printf("[EMAIL_SERVICE] Failed to generate HTML content: %v\n", err)
 		return fmt.Errorf("error generating email HTML: %v", err)
 	}
 
 	textBody := e.generateContactNotificationText(contactData)
 
+	// Log content metrics
+	htmlSize := len(htmlBody)
+	textSize := len(textBody)
+	fmt.Printf("[EMAIL_SERVICE] Generated email content - HTML: %d bytes, Text: %d bytes\n",
+		htmlSize, textSize)
+
 	// Send email
+	fmt.Printf("[EMAIL_SERVICE] Initiating email send for contact notification\n")
 	return e.sendEmail(toEmail, subject, htmlBody, textBody)
 }
 
@@ -228,9 +280,9 @@ func (e *EmailService) generateReceiptHTML(data DonationReceiptData) (string, er
             <h3>Subscription Management</h3>
             <p>
                 Your monthly recurring donation will automatically process on the same day each month. 
-                To modify the amount, change frequency, or cancel your subscription, please contact us at 
-                <strong>michael@avrnpo.org</strong> and reference your <strong>Customer ID: {{.CustomerID}}</strong> 
-                in your message.
+				To modify the amount, change frequency, or cancel your subscription, please contact us at 
+				<strong>{{.ContactEmail}}</strong> and reference your <strong>Customer ID: {{.CustomerID}}</strong> 
+				in your message.
             </p>
             {{end}}
             
@@ -315,7 +367,7 @@ Next Billing Date: %s
 RECURRING SUBSCRIPTION MANAGEMENT
 Your subscription Customer ID is %s. Please reference this ID when 
 contacting us to cancel or modify your recurring donation.
-Email: michael@avrnpo.org
+Email: %s
 
 Donor Address:
 %s
@@ -336,7 +388,7 @@ Your contribution directly supports:
 - Program operations and veteran support services
 
 We'll keep you updated on the impact your donation is making. 
-If you have any questions, please contact us at michael@avrnpo.org.
+If you have any questions, please contact us at %s.
 
 Thank you for supporting our mission!
 
@@ -360,6 +412,7 @@ This is an automated receipt. Please save this for your tax records.
 			return "To be determined"
 		}(),
 		data.CustomerID,
+		data.ContactEmail,
 		data.DonorAddressLine1,
 		data.DonorAddressLine2,
 		data.DonorCity,
@@ -372,6 +425,7 @@ This is an automated receipt. Please save this for your tax records.
 			}
 			return ""
 		}(),
+		data.ContactEmail,
 		data.OrganizationName,
 		data.OrganizationAddress,
 	)
@@ -384,6 +438,9 @@ func (e *EmailService) sendEmail(toEmail, subject, htmlBody, textBody string) er
 
 // sendEmailWithBCC sends an email using SMTP with BCC recipients
 func (e *EmailService) sendEmailWithBCC(toEmail, subject, htmlBody, textBody string, bccEmails []string) error {
+	startTime := time.Now()
+	fmt.Printf("[EMAIL_SMTP] Starting email send operation at %s\n", startTime.Format("2006-01-02 15:04:05"))
+
 	// Create message with both HTML and text parts
 	message := fmt.Sprintf(`To: %s
 From: %s <%s>
@@ -404,37 +461,65 @@ Content-Type: text/html; charset=UTF-8
 --boundary123--
 `, toEmail, e.FromName, e.FromEmail, subject, textBody, htmlBody)
 
+	// Log message statistics
+	messageSize := len(message)
+	fmt.Printf("[EMAIL_SMTP] Message composed - Size: %d bytes, To: %s, From: %s <%s>\n",
+		messageSize, toEmail, e.FromName, e.FromEmail)
+
+	// Build and log recipient list
+	recipients := []string{toEmail}
+	if bccEmails != nil {
+		recipients = append(recipients, bccEmails...)
+		fmt.Printf("[EMAIL_SMTP] Recipients: Primary=%s, BCC=%v, Total=%d\n",
+			toEmail, bccEmails, len(recipients))
+	} else {
+		fmt.Printf("[EMAIL_SMTP] Recipients: Primary=%s, BCC=none, Total=%d\n",
+			toEmail, len(recipients))
+	}
+
 	// If email sending is disabled, log and return without sending
 	if !e.EmailEnabled {
-		// Write a short log to stdout so developers can inspect locally
+		elapsed := time.Since(startTime)
+		fmt.Printf("[EMAIL_DISABLED] Email sending disabled - Duration: %v\n", elapsed)
 		fmt.Printf("[EMAIL_DISABLED] To: %s Subject: %s\nPreview: %.200s\n", toEmail, subject, textBody)
 		return nil
 	}
 
-	fmt.Printf("[EMAIL] Attempting to send email to %s: %s\n", toEmail, subject)
-
-	// Connect to SMTP server
-	auth := smtp.PlainAuth("", e.SMTPUsername, e.SMTPPassword, e.SMTPHost)
+	// Log SMTP connection attempt
 	addr := fmt.Sprintf("%s:%s", e.SMTPHost, e.SMTPPort)
+	fmt.Printf("[EMAIL_SMTP] Attempting SMTP connection to %s with user %s\n", addr, e.SMTPUsername)
 
-	// Build recipient list (TO + BCC)
-	recipients := []string{toEmail}
-	if bccEmails != nil {
-		recipients = append(recipients, bccEmails...)
-	}
+	// Connect to SMTP server with timing
+	authStart := time.Now()
+	auth := smtp.PlainAuth("", e.SMTPUsername, e.SMTPPassword, e.SMTPHost)
+	authDuration := time.Since(authStart)
+	fmt.Printf("[EMAIL_SMTP] SMTP auth prepared in %v\n", authDuration)
 
 	// Send email using injected client
 	if e.client == nil {
-		// fallback to real client
+		fmt.Printf("[EMAIL_SMTP] No injected client, using real SMTP client\n")
 		e.client = &realSMTPClient{}
 	}
+
+	fmt.Printf("[EMAIL_SMTP] Initiating SMTP send to %d recipients\n", len(recipients))
+	sendStart := time.Now()
 	err := e.client.SendMail(addr, auth, e.FromEmail, recipients, []byte(message))
+	sendDuration := time.Since(sendStart)
+	totalDuration := time.Since(startTime)
+
 	if err != nil {
-		fmt.Printf("[EMAIL] Failed to send email to %s: %v\n", toEmail, err)
+		fmt.Printf("[EMAIL_SMTP] SEND FAILED - Duration: %v, Total: %v, Error: %v\n",
+			sendDuration, totalDuration, err)
+		fmt.Printf("[EMAIL_SMTP] Failed details - To: %s, Size: %d bytes, Recipients: %d\n",
+			toEmail, messageSize, len(recipients))
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
-	fmt.Printf("[EMAIL] Successfully sent email to %s: %s\n", toEmail, subject)
+	fmt.Printf("[EMAIL_SMTP] SEND SUCCESS - Send: %v, Total: %v, Size: %d bytes\n",
+		sendDuration, totalDuration, messageSize)
+	fmt.Printf("[EMAIL_SMTP] Successfully delivered to %s (+ %d BCC recipients)\n",
+		toEmail, len(recipients)-1)
+
 	return nil
 }
 

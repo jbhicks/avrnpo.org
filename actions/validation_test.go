@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/render"
@@ -688,4 +689,191 @@ func TestConcurrentCSRFRequests(t *testing.T) {
 	}
 
 	t.Logf("✅ Concurrent CSRF token access working")
+}
+
+// TestBotProtection tests bot protection functionality
+func TestBotProtection(t *testing.T) {
+	tests := []struct {
+		name        string
+		formData    map[string]string
+		expected    bool
+		errContains string
+	}{
+		{
+			"Valid form with proper timing",
+			map[string]string{
+				"name":           "John Doe",
+				"email":          "john@example.com",
+				"subject":        "Test Subject",
+				"message":        "This is a test message",
+				"website":        "",                                     // Honeypot empty
+				"form_timestamp": fmt.Sprintf("%d", time.Now().Unix()-5), // 5 seconds ago
+			},
+			true,
+			"",
+		},
+		{
+			"Bot filled honeypot field",
+			map[string]string{
+				"name":           "Bot User",
+				"email":          "bot@spam.com",
+				"subject":        "Spam Subject",
+				"message":        "Spam message",
+				"website":        "http://spam.com", // Honeypot filled - bot behavior
+				"form_timestamp": fmt.Sprintf("%d", time.Now().Unix()-5),
+			},
+			false,
+			"invalid form submission detected",
+		},
+		{
+			"Form submitted too quickly",
+			map[string]string{
+				"name":           "Speed Bot",
+				"email":          "speed@bot.com",
+				"subject":        "Quick Subject",
+				"message":        "Quick message",
+				"website":        "",
+				"form_timestamp": fmt.Sprintf("%d", time.Now().Unix()), // Now - too fast
+			},
+			false,
+			"form submission was too quick",
+		},
+		{
+			"Form submitted too slowly (expired)",
+			map[string]string{
+				"name":           "Slow User",
+				"email":          "slow@user.com",
+				"subject":        "Slow Subject",
+				"message":        "Slow message",
+				"website":        "",
+				"form_timestamp": fmt.Sprintf("%d", time.Now().Unix()-700), // 700 seconds ago - too old
+			},
+			false,
+			"form session expired",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := buffalo.New(buffalo.Options{Env: "test"})
+			app.POST("/test", func(c buffalo.Context) error {
+				if err := ValidateContactForm(c); err != nil {
+					return c.Render(400, r.String(err.Error()))
+				}
+				return c.Render(200, r.String("success"))
+			})
+
+			formData := url.Values{}
+			for key, value := range tt.formData {
+				formData.Set(key, value)
+			}
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/test", strings.NewReader(formData.Encode()))
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+			app.ServeHTTP(w, req)
+
+			if tt.expected {
+				require.Equal(t, 200, w.Code, "Expected valid form to succeed")
+				require.Contains(t, w.Body.String(), "success")
+			} else {
+				require.Equal(t, 400, w.Code, "Expected bot/invalid form to fail")
+				require.Contains(t, w.Body.String(), tt.errContains)
+			}
+		})
+	}
+}
+
+// TestBotProtectionIntegration tests bot protection with ContactHandler logic
+func TestBotProtectionIntegration(t *testing.T) {
+	t.Run("Honeypot protection blocks bot submissions", func(t *testing.T) {
+		app := buffalo.New(buffalo.Options{Env: "test"})
+		app.POST("/contact-test", func(c buffalo.Context) error {
+			// Directly test the ValidateContactForm function which contains bot protection
+			if err := ValidateContactForm(c); err != nil {
+				return c.Render(400, r.String(err.Error()))
+			}
+			return c.Render(200, r.String("Contact form success"))
+		})
+
+		formData := url.Values{
+			"name":           {"Bot User"},
+			"email":          {"bot@spam.com"},
+			"subject":        {"Spam Message"},
+			"message":        {"This is spam"},
+			"website":        {"http://filled-by-bot.com"}, // Bot filled honeypot
+			"form_timestamp": {fmt.Sprintf("%d", time.Now().Unix()-5)},
+		}
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		app.ServeHTTP(w, req)
+
+		// Should fail due to honeypot
+		require.Equal(t, 400, w.Code, "Bot should be blocked by honeypot")
+		require.Contains(t, w.Body.String(), "invalid form submission detected")
+	})
+
+	t.Run("Timing protection blocks quick submissions", func(t *testing.T) {
+		app := buffalo.New(buffalo.Options{Env: "test"})
+		app.POST("/contact-test", func(c buffalo.Context) error {
+			// Directly test the ValidateContactForm function which contains bot protection
+			if err := ValidateContactForm(c); err != nil {
+				return c.Render(400, r.String(err.Error()))
+			}
+			return c.Render(200, r.String("Contact form success"))
+		})
+
+		formData := url.Values{
+			"name":           {"Speed Bot"},
+			"email":          {"speed@bot.com"},
+			"subject":        {"Quick Spam"},
+			"message":        {"Quick spam message"},
+			"website":        {""},
+			"form_timestamp": {fmt.Sprintf("%d", time.Now().Unix())}, // Too fast
+		}
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		app.ServeHTTP(w, req)
+
+		// Should fail due to timing
+		require.Equal(t, 400, w.Code, "Fast submission should be blocked")
+		require.Contains(t, w.Body.String(), "form submission was too quick")
+	})
+
+	t.Run("Valid submissions pass bot protection", func(t *testing.T) {
+		app := buffalo.New(buffalo.Options{Env: "test"})
+		app.POST("/contact-test", func(c buffalo.Context) error {
+			// Directly test the ValidateContactForm function which contains bot protection
+			if err := ValidateContactForm(c); err != nil {
+				return c.Render(400, r.String(err.Error()))
+			}
+			return c.Render(200, r.String("Contact form success"))
+		})
+
+		formData := url.Values{
+			"name":           {"Real User"},
+			"email":          {"user@example.com"},
+			"subject":        {"Real Message"},
+			"message":        {"This is a legitimate message"},
+			"website":        {""},                                     // Honeypot empty
+			"form_timestamp": {fmt.Sprintf("%d", time.Now().Unix()-5)}, // 5 seconds ago
+		}
+
+		w := httptest.NewRecorder()
+		req, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+		app.ServeHTTP(w, req)
+
+		// Should succeed
+		require.Equal(t, 200, w.Code, "Valid submission should pass")
+		require.Contains(t, w.Body.String(), "Contact form success")
+	})
 }

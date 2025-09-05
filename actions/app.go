@@ -19,8 +19,10 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // Validation utilities for secure input validation
@@ -32,8 +34,13 @@ var (
 // Validation utilities for handlers to use
 // These functions provide consistent validation across the application
 
-// ValidateContactForm validates contact form input
+// ValidateContactForm validates contact form input with bot protection
 func ValidateContactForm(c buffalo.Context) error {
+	// Bot protection checks first
+	if err := ValidateBotProtection(c); err != nil {
+		return err
+	}
+
 	name := SanitizeInput(c.Param("name"))
 	email := SanitizeInput(c.Param("email"))
 	subject := SanitizeInput(c.Param("subject"))
@@ -60,6 +67,40 @@ func ValidateContactForm(c buffalo.Context) error {
 	c.Set("email", email)
 	c.Set("subject", subject)
 	c.Set("message", message)
+
+	return nil
+}
+
+// ValidateBotProtection performs invisible bot protection checks
+func ValidateBotProtection(c buffalo.Context) error {
+	// Check honeypot field - should always be empty
+	honeypot := strings.TrimSpace(c.Param("website"))
+	if honeypot != "" {
+		// Bot filled the honeypot field
+		c.Logger().Infof("BOT_PROTECTION - Honeypot field filled from IP %s: %s", getClientIP(c), honeypot)
+		return fmt.Errorf("invalid form submission detected")
+	}
+
+	// Check form submission timing (3 seconds minimum, 10 minutes maximum)
+	timestampStr := c.Param("form_timestamp")
+	if timestampStr != "" {
+		if timestamp, err := strconv.ParseInt(timestampStr, 10, 64); err == nil {
+			submissionTime := time.Now().Unix()
+			timeDiff := submissionTime - timestamp
+
+			// Too fast (less than 3 seconds) - likely a bot
+			if timeDiff < 3 {
+				c.Logger().Infof("BOT_PROTECTION - Form submitted too quickly (%d seconds) from IP %s", timeDiff, getClientIP(c))
+				return fmt.Errorf("form submission was too quick, please try again")
+			}
+
+			// Too slow (more than 10 minutes) - could be a stale form or bot
+			if timeDiff > 600 {
+				c.Logger().Infof("BOT_PROTECTION - Form submitted too slowly (%d seconds) from IP %s", timeDiff, getClientIP(c))
+				return fmt.Errorf("form session expired, please refresh and try again")
+			}
+		}
+	}
 
 	return nil
 }

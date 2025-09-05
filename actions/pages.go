@@ -275,6 +275,8 @@ func ProjectsHandler(c buffalo.Context) error {
 func ContactHandler(c buffalo.Context) error {
 	// Handle GET request - show the contact form
 	if c.Request().Method == "GET" {
+		// Set form timestamp for bot protection
+		c.Set("form_timestamp", time.Now().Unix())
 		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 	}
 
@@ -300,16 +302,17 @@ func ContactHandler(c buffalo.Context) error {
 	}
 
 	// Send notification email
+	c.Logger().Infof("Initiating contact form notification email for %s (%s) - Subject: %s", name, email, subject)
 	emailService := services.NewEmailService()
 	if err := emailService.SendContactNotification(contactData); err != nil {
 		// Log error but show user-friendly message
-		c.Logger().Errorf("Failed to send contact form notification: %v", err)
-		c.Flash().Add("error", "There was an error sending your message. Please try again or contact us directly at michael@avrnpo.org.")
+		c.Logger().Errorf("CONTACT_FORM_EMAIL_FAILED - Failed to send contact form notification from %s (%s): %v", name, email, err)
+		c.Flash().Add("error", fmt.Sprintf("There was an error sending your message. Please try again or contact us directly at %s.", emailService.ContactEmail))
 		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 	}
 
 	// Success
-	c.Logger().Infof("Contact form submission from %s (%s): %s", name, email, subject)
+	c.Logger().Infof("CONTACT_FORM_EMAIL_SUCCESS - Contact form submission from %s (%s): %s", name, email, subject)
 	c.Flash().Add("success", "Thank you for your message! We'll get back to you soon.")
 	return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 }

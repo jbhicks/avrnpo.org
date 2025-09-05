@@ -31,6 +31,10 @@
 
     <form hx-post="/contact" hx-target="body" hx-swap="outerHTML" method="post" action="/contact">
       <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
+      <input name="form_timestamp" value="<%= form_timestamp %>" type="hidden">
+      
+      <!-- Honeypot field - hidden from users but bots may fill it -->
+      <input name="website" type="text" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">
 
       <label for="name">
         Name *
@@ -64,7 +68,7 @@
 
     <section>
       <h4>Email</h4>
-      <p><a href="mailto:michael@avrnpo.org">michael@avrnpo.org</a></p>
+      <p><a href="mailto:AmericanVeteransRebuilding@avrnpo.org">AmericanVeteransRebuilding@avrnpo.org</a></p>
     </section>
 
     <section style="margin-bottom: 2rem;">
@@ -86,7 +90,7 @@
 
       <div style="margin-bottom: 2rem;">
         <h4>For Veterans</h4>
-        <p style="font-size: 0.95rem; line-height: 1.5;">
+        <p style="font-size: 0.95rem; line-height: 1.5; margin-top: 2 rem;">
           If you're a veteran interested in our programs, please include your service information
           and what type of support you're looking for in your message.
         </p>
