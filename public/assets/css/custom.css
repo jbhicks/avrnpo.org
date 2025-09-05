@@ -9,7 +9,10 @@
    =============================================================================
  */
 
-:root {
+/* High specificity selectors to override Pico's [data-theme="dark"] */
+:root,
+[data-theme="dark"],
+html[data-theme="dark"] {
     /* AVR Brand Colors - Consistent for forced dark mode */
     --pico-primary: #ffb627; /* AVR Orange */
     --pico-primary-background: #ffb627;
