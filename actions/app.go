@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
+	"github.com/gobuffalo/pop/v6"
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/logger"
 	"github.com/gobuffalo/middleware/forcessl"
@@ -315,12 +316,22 @@ func App() *buffalo.App {
 		app.POST("/api/donations/process", ProcessPaymentHandler)
 		app.Logger.Info("Registered POST /api/donations/process route")
 		app.POST("/api/donations/webhook", HelcimWebhookHandler)
+		app.GET("/debug/user", func(c buffalo.Context) error {
+			tx := c.Value("tx").(*pop.Connection)
+			user := &models.User{}
+			err := tx.Where("email = ?", "admin@avrnpo.org").First(user)
+			if err != nil {
+				return c.Render(200, r.String("User not found: " + err.Error()))
+			}
+			return c.Render(200, r.String(fmt.Sprintf("User found: email=%s, role=%s, id=%s", user.Email, user.Role, user.ID)))
+		})
 		app.GET("/users/new", UsersNew)
 		app.POST("/users", UsersCreate)
 		app.GET("/auth", AuthLanding)
 		app.GET("/auth/new", AuthNew)
 		app.POST("/auth", AuthCreate)
 		app.DELETE("/auth", AuthDestroy)
+		app.GET("/auth/logout", AuthDestroy)
 		app.GET("/dashboard", Authorize(DashboardHandler))
 		app.GET("/profile", Authorize(ProfileSettings))
 		app.POST("/profile", Authorize(ProfileUpdate))

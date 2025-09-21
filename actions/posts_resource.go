@@ -113,12 +113,11 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 		c.Set("post", post)
 		c.Set("errors", verrs)
 
-		// Check if this is an HTMX request
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/new.plush.html"))
 	}
 
-	c.Flash().Add("success", T.Translate(c, "post.created.success"))
+	c.Flash().Add("success", "Post created successfully!")
 
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
@@ -172,14 +171,12 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 		c.Set("post", post)
 		c.Set("errors", verrs)
 
-		// Check if this is an HTMX request
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/edit.plush.html"))
 	}
 
-	c.Flash().Add("success", T.Translate(c, "post.updated.success"))
+	c.Flash().Add("success", "Post updated successfully!")
 
-	// Check if this is an HTMX request
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
 }
 
@@ -201,9 +198,8 @@ func (pr PostsResource) Destroy(c buffalo.Context) error {
 		return err
 	}
 
-	c.Flash().Add("success", T.Translate(c, "post.destroyed.success"))
+	c.Flash().Add("success", "Post deleted successfully!")
 
-	// Check if this is an HTMX request
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
 
@@ -265,6 +261,5 @@ func (pr PostsResource) Bulk(c buffalo.Context) error {
 		c.Flash().Add("danger", "Unknown bulk action")
 	}
 
-	// Check if this is an HTMX request
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }

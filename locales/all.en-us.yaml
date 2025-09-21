@@ -1,3 +1,12 @@
 # For more information on using i18n see: https://github.com/nicksnyder/go-i18n
 - id: welcome_greeting
   translation: "Welcome to Buffalo (EN)"
+
+- id: post.created.success
+  translation: "Post created successfully!"
+
+- id: post.updated.success
+  translation: "Post updated successfully!"
+
+- id: post.destroyed.success
+  translation: "Post deleted successfully!"

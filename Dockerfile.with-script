@@ -1,0 +1,36 @@
+# Use official Go image for better version control
+FROM golang:1.22-alpine
+
+# Install necessary packages for Buffalo
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod files first for better caching
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Install Buffalo CLI
+RUN go install github.com/gobuffalo/cli/cmd/buffalo@latest
+
+# Build the application
+RUN buffalo build -o bin/app
+
+# Install soda for migrations
+RUN go install github.com/gobuffalo/pop/v6/soda@latest
+
+# Copy deployment script
+COPY scripts/deploy.sh /app/deploy.sh
+RUN chmod +x /app/deploy.sh
+
+# Expose port
+EXPOSE 3001
+
+# Use the deployment script
+CMD ["/app/deploy.sh"]

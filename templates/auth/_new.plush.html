@@ -2,11 +2,12 @@
 <article class="form-grid">
   <hgroup>
     <h1>Sign in to your account</h1>
-     <p>Not a member? <a href="<%= newUsersPath() %>" 
+     <p>Not a member? <a href="/users/new/" 
                          hx-boost="true">Sign up for a new account</a></p>
   </hgroup>
     
-    <%= formFor(user, {action: "/auth", method: "POST", autocomplete: "on"}) { %>
+    <form action="/auth" method="POST" autocomplete="on">
+      <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
       <fieldset>
         <label>
           Email
@@ -16,7 +17,7 @@
                  autocomplete="email" 
                  required 
                  placeholder="Enter your email"
-                 value="<%= user.Email %>">
+                 value="<%= if (user) { %><%= user.Email %><% } %>">
           <%= if (errors && errors.Get("email")) { %>
             <small style="color: var(--pico-danger);"><%= errors.Get("email") %></small>
           <% } %>
@@ -37,5 +38,5 @@
       </fieldset>
 
       <input type="submit" value="Sign In" />
-    <% } %>
+    </form>
   </article>

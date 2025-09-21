@@ -39,12 +39,13 @@
     <% if (current_user) { %>
       <a href="/dashboard" role="button" class="outline">Dashboard</a>
       <a href="/account" role="button" class="outline">Account</a>
-      <% if (current_user.Role == "admin") { %>
+      <% if (current_user && current_user.Role == "admin") { %>
         <a href="/admin" role="button" class="outline">Admin</a>
       <% } %>
-      <a href="/signout" role="button" class="outline">Sign Out</a>
+      <a href="/auth/logout" role="button" class="outline" hx-boost="false">Sign Out</a>
     <% } else { %>
-      <a href="/auth/new" role="button" class="outline">Sign In</a>
+      <a href="/auth/new/" role="button" class="outline">Sign In</a>
+      <a href="/users/new/" role="button" class="outline">Sign Up</a>
     <% } %>
   </div>
 </nav>

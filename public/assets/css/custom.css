@@ -1,47 +1,136 @@
 /**
  * Custom CSS for American Veterans Rebuilding (AVR)
- * Using ONLY Pico.css variables - NO custom CSS rules or !important
- * All customization done through CSS variables to match original AVR theme
+ * Using proper Pico.css variable override patterns
+ * Army-themed color scheme
  */
 
 /* =============================================================================
-   AVR PICO CSS VARIABLE CUSTOMIZATIONS
+   PICO CSS VARIABLE OVERRIDES - Following official best practices
+   https://picocss.com/docs/css-variables
    =============================================================================
  */
 
-/* High specificity selectors to override Pico's [data-theme="dark"] */
-:root,
-[data-theme="dark"],
-html[data-theme="dark"] {
-    /* AVR Brand Colors - Consistent for forced dark mode */
-    --pico-primary: #ffb627; /* AVR Orange */
-    --pico-primary-background: #ffb627;
-    --pico-primary-border: #ffb627;
-    --pico-primary-underline: rgba(255, 182, 39, 0.5);
-    --pico-primary-hover: #e5a324; /* Slightly darker orange for hover */
-    --pico-primary-hover-background: rgba(255, 182, 39, 0.1);
-    --pico-primary-focus: rgba(255, 182, 39, 0.5);
-    --pico-primary-inverse: #ffffff;
+/* Army colors for light mode (Default) */
+[data-theme="light"],
+:root:not([data-theme="dark"]),
+:host:not([data-theme="dark"]) {
+    /* Primary: Army Gold */
+    --pico-primary: #ffb627 !important;
+    --pico-primary-background: #ffb627 !important;
+    --pico-primary-border: #ffb627 !important;
+    --pico-primary-underline: rgba(255, 182, 39, 0.5) !important;
+    --pico-primary-hover: #e5a324 !important;
+    --pico-primary-hover-background: #e5a324 !important;
+    --pico-primary-hover-border: #e5a324 !important;
+    --pico-primary-hover-underline: #e5a324 !important;
+    --pico-primary-focus: rgba(255, 182, 39, 0.5) !important;
+    --pico-primary-inverse: #ffffff !important;
 
-    /* Contrast colors for donations/important actions */
-    --pico-contrast: #dc2626; /* Red for donations */
-    --pico-contrast-background: #dc2626;
-    --pico-contrast-border: #dc2626;
-    --pico-contrast-underline: rgba(220, 38, 38, 0.5);
-    --pico-contrast-hover: #b91c1c; /* Slightly darker red for hover */
-    --pico-contrast-hover-background: rgba(220, 38, 38, 0.1);
-    --pico-contrast-focus: rgba(220, 38, 38, 0.5);
-    --pico-contrast-inverse: #ffffff;
+    /* Contrast: Military Orange */
+    --pico-contrast: #d2691e !important;
+    --pico-contrast-background: #d2691e !important;
+    --pico-contrast-border: #d2691e !important;
+    --pico-contrast-underline: rgba(210, 105, 30, 0.5) !important;
+    --pico-contrast-hover: #b8571a !important;
+    --pico-contrast-hover-background: #b8571a !important;
+    --pico-contrast-hover-border: #b8571a !important;
+    --pico-contrast-hover-underline: #b8571a !important;
+    --pico-contrast-focus: rgba(210, 105, 30, 0.5) !important;
+    --pico-contrast-inverse: #ffffff !important;
 
-    /* Secondary colors match primary for consistency */
-    --pico-secondary: #ffb627;
-    --pico-secondary-background: transparent;
-    --pico-secondary-border: #ffb627;
-    --pico-secondary-underline: rgba(255, 182, 39, 0.5);
-    --pico-secondary-hover: #e5a324;
-    --pico-secondary-hover-background: rgba(255, 182, 39, 0.1);
-    --pico-secondary-focus: rgba(255, 182, 39, 0.25);
-    --pico-secondary-inverse: #ffffff;
+    /* Secondary: Army Green */
+    --pico-secondary: #4a5d23 !important;
+    --pico-secondary-background: #4a5d23 !important;
+    --pico-secondary-border: #4a5d23 !important;
+    --pico-secondary-underline: rgba(74, 93, 35, 0.5) !important;
+    --pico-secondary-hover: #3a4a1c !important;
+    --pico-secondary-hover-background: #3a4a1c !important;
+    --pico-secondary-hover-border: #3a4a1c !important;
+    --pico-secondary-hover-underline: #3a4a1c !important;
+    --pico-secondary-focus: rgba(74, 93, 35, 0.25) !important;
+    --pico-secondary-inverse: #ffffff !important;
+}
+
+/* Army colors for dark mode (Auto) - when user has dark mode enabled */
+@media only screen and (prefers-color-scheme: dark) {
+    :root:not([data-theme]),
+    :host:not([data-theme]) {
+        /* Primary: Army Gold for dark mode */
+        --pico-primary: #ffb627 !important;
+        --pico-primary-background: #ffb627 !important;
+        --pico-primary-border: #ffb627 !important;
+        --pico-primary-underline: rgba(255, 182, 39, 0.5) !important;
+        --pico-primary-hover: #ffc952 !important;
+        --pico-primary-hover-background: #e5a324 !important;
+        --pico-primary-hover-border: #e5a324 !important;
+        --pico-primary-hover-underline: #ffc952 !important;
+        --pico-primary-focus: rgba(255, 182, 39, 0.375) !important;
+        --pico-primary-inverse: #ffffff !important;
+
+        /* Contrast: Brighter Military Orange for dark mode */
+        --pico-contrast: #ff8c42 !important;
+        --pico-contrast-background: #d2691e !important;
+        --pico-contrast-border: #d2691e !important;
+        --pico-contrast-underline: rgba(255, 140, 66, 0.5) !important;
+        --pico-contrast-hover: #ffa366 !important;
+        --pico-contrast-hover-background: #e67429 !important;
+        --pico-contrast-hover-border: #e67429 !important;
+        --pico-contrast-hover-underline: #ffa366 !important;
+        --pico-contrast-focus: rgba(255, 140, 66, 0.375) !important;
+        --pico-contrast-inverse: #ffffff !important;
+
+        /* Secondary: Army Green for dark mode */
+        --pico-secondary: #6b7c32 !important;
+        --pico-secondary-background: #4a5d23 !important;
+        --pico-secondary-border: #4a5d23 !important;
+        --pico-secondary-underline: rgba(107, 124, 50, 0.5) !important;
+        --pico-secondary-hover: #7a8d3b !important;
+        --pico-secondary-hover-background: #5a6629 !important;
+        --pico-secondary-hover-border: #5a6629 !important;
+        --pico-secondary-hover-underline: #7a8d3b !important;
+        --pico-secondary-focus: rgba(107, 124, 50, 0.25) !important;
+        --pico-secondary-inverse: #ffffff !important;
+    }
+}
+
+/* Army colors for dark mode (Forced) - when forced with data-theme="dark" */
+[data-theme="dark"] {
+    /* Primary: Army Gold for dark mode */
+    --pico-primary: #ffb627 !important;
+    --pico-primary-background: #ffb627 !important;
+    --pico-primary-border: #ffb627 !important;
+    --pico-primary-underline: rgba(255, 182, 39, 0.5) !important;
+    --pico-primary-hover: #ffc952 !important;
+    --pico-primary-hover-background: #e5a324 !important;
+    --pico-primary-hover-border: #e5a324 !important;
+    --pico-primary-hover-underline: #ffc952 !important;
+    --pico-primary-focus: rgba(255, 182, 39, 0.375) !important;
+    --pico-primary-inverse: #ffffff !important;
+
+    /* Contrast: Brighter Military Orange for dark mode */
+    --pico-contrast: #ff8c42 !important;
+    --pico-contrast-background: #d2691e !important;
+    --pico-contrast-border: #d2691e !important;
+    --pico-contrast-underline: rgba(255, 140, 66, 0.5) !important;
+    --pico-contrast-hover: #ffa366 !important;
+    --pico-contrast-hover-background: #e67429 !important;
+    --pico-contrast-hover-border: #e67429 !important;
+    --pico-contrast-hover-underline: #ffa366 !important;
+    --pico-contrast-focus: rgba(255, 140, 66, 0.375) !important;
+    --pico-contrast-inverse: #ffffff !important;
+
+    /* Secondary: Army Green for dark mode */
+    --pico-secondary: #6b7c32 !important;
+    --pico-secondary-background: #4a5d23 !important;
+    --pico-secondary-border: #4a5d23 !important;
+    --pico-secondary-underline: rgba(107, 124, 50, 0.5) !important;
+    --pico-secondary-hover: #7a8d3b !important;
+    --pico-secondary-hover-background: #5a6629 !important;
+    --pico-secondary-hover-border: #5a6629 !important;
+    --pico-secondary-hover-underline: #7a8d3b !important;
+    --pico-secondary-focus: rgba(107, 124, 50, 0.25) !important;
+    --pico-secondary-inverse: #ffffff !important;
+}
 
     /* Enhanced spacing and visual improvements */
     --pico-spacing: 1rem;

@@ -2,11 +2,12 @@
 <article class="form-grid">
   <hgroup>
     <h1><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m22 21-3-3 3-3"/></svg> Create your account</h1>
-     <p>Already have an account? <a href="<%= newAuthPath() %>" 
+     <p>Already have an account? <a href="/auth/new/" 
                                  hx-boost="true">Sign in instead</a></p>
   </hgroup>
     
-    <%= formFor(user, {action: usersPath(), method: "POST", autocomplete: "on"}) { %>
+    <form action="/users" method="POST" autocomplete="on">
+      <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
       <fieldset>
         <label>
           First Name
@@ -16,7 +17,7 @@
                  autocomplete="given-name" 
                  required 
                  placeholder="Enter your first name"
-                 value="<%= user.FirstName %>">
+                 value="<%= if (user) { %><%= user.FirstName %><% } %>">
           <%= if (errors && errors.Get("first_name")) { %>
             <small style="color: var(--pico-danger);"><%= errors.Get("first_name") %></small>
           <% } %>
@@ -30,7 +31,7 @@
                  autocomplete="family-name" 
                  required 
                  placeholder="Enter your last name"
-                 value="<%= user.LastName %>">
+                 value="<%= if (user) { %><%= user.LastName %><% } %>">
           <%= if (errors && errors.Get("last_name")) { %>
             <small style="color: var(--pico-danger);"><%= errors.Get("last_name") %></small>
           <% } %>
@@ -44,7 +45,7 @@
                  autocomplete="email" 
                  required 
                  placeholder="Enter your email"
-                 value="<%= user.Email %>">
+                 value="<%= if (user) { %><%= user.Email %><% } %>">
           <%= if (errors && errors.Get("email")) { %>
             <small style="color: var(--pico-danger);"><%= errors.Get("email") %></small>
           <% } %>
@@ -86,6 +87,6 @@
       </fieldset>
 
       <input type="submit" value="Create Account" />
-    <% } %>
+    </form>
 
   </article>

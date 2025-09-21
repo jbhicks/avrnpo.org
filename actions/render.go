@@ -27,6 +27,7 @@ func init() {
 		"dateFormat":          dateFormatHelper,
 		"getDonateButtonText": getDonateButtonText,
 		"current_path":        func() string { return "/" },
+		"t":                   func(s string, args ...interface{}) string { return s }, // Simple fallback translator
 	}
 
 	// Get the assets sub-filesystem

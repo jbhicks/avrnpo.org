@@ -3,9 +3,11 @@ package grifts
 import (
 	"avrnpo.org/models"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/gobuffalo/grift/grift"
-	"github.com/gobuffalo/pop/v6"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var _ = grift.Namespace("db", func() {
@@ -18,11 +20,8 @@ var _ = grift.Namespace("db", func() {
 
 	grift.Desc("promote_admin", "Promotes the first user (by email) to admin role")
 	grift.Add("promote_admin", func(c *grift.Context) error {
-		db, err := pop.Connect("development")
-		if err != nil {
-			return err
-		}
-		defer db.Close()
+		// Use the existing global DB connection
+		db := models.DB
 
 		// Find the first user
 		user := &models.User{}
@@ -41,4 +40,137 @@ var _ = grift.Namespace("db", func() {
 		return nil
 	})
 
+	grift.Desc("create_admin", "Creates an admin user from environment variables or defaults")
+	grift.Add("create_admin", func(c *grift.Context) error {
+		// Use the existing global DB connection
+		db := models.DB
+
+		// Get admin details from environment variables or use defaults
+		email := getEnvOrDefault("ADMIN_EMAIL", "admin@avrnpo.org")
+		password := getEnvOrDefault("ADMIN_PASSWORD", "admin123!")
+		firstName := getEnvOrDefault("ADMIN_FIRST_NAME", "Admin")
+		lastName := getEnvOrDefault("ADMIN_LAST_NAME", "User")
+
+		// Validate required fields
+		if email == "" || password == "" {
+			return fmt.Errorf("ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required")
+		}
+
+		// Check if admin user already exists
+		existingUser := &models.User{}
+		if err := db.Where("email = ?", email).First(existingUser); err == nil {
+			// User exists, promote to admin if not already
+			if existingUser.Role != "admin" {
+				existingUser.Role = "admin"
+				if err := db.Update(existingUser); err != nil {
+					return fmt.Errorf("failed to promote existing user to admin: %w", err)
+				}
+				fmt.Printf("✅ Promoted existing user %s to admin\n", email)
+			} else {
+				fmt.Printf("ℹ️  Admin user %s already exists\n", email)
+			}
+			return nil
+		}
+
+		// Hash the password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to hash password: %w", err)
+		}
+
+		// Create new admin user
+		admin := &models.User{
+			FirstName:    firstName,
+			LastName:     lastName,
+			Email:        email,
+			PasswordHash: string(hashedPassword),
+			Role:         "admin",
+		}
+
+		// Validate and create the user
+		if err := db.Create(admin); err != nil {
+			return fmt.Errorf("failed to create admin user: %w", err)
+		}
+
+		fmt.Printf("✅ Successfully created admin user:\n")
+		fmt.Printf("   Email: %s\n", email)
+		fmt.Printf("   Name: %s %s\n", firstName, lastName)
+		fmt.Printf("   Password: %s\n", password)
+		fmt.Printf("   Role: admin\n")
+
+		if password == "admin123!" {
+			fmt.Printf("\n⚠️  WARNING: Using default password! Please change it after first login.\n")
+			fmt.Printf("   Set ADMIN_PASSWORD environment variable for custom password.\n")
+		}
+
+		return nil
+	})
+
+	grift.Desc("create_admin_interactive", "Creates an admin user with interactive prompts")
+	grift.Add("create_admin_interactive", func(c *grift.Context) error {
+		// Use the existing global DB connection
+		db := models.DB
+
+		fmt.Println("🔧 Creating Admin User")
+		fmt.Println("=====================")
+
+		var email, password, firstName, lastName string
+
+		fmt.Print("Email: ")
+		fmt.Scanln(&email)
+
+		fmt.Print("Password: ")
+		fmt.Scanln(&password)
+
+		fmt.Print("First Name: ")
+		fmt.Scanln(&firstName)
+
+		fmt.Print("Last Name: ")
+		fmt.Scanln(&lastName)
+
+		// Validate
+		if email == "" || password == "" || firstName == "" || lastName == "" {
+			return fmt.Errorf("all fields are required")
+		}
+
+		// Check if user already exists
+		existingUser := &models.User{}
+		if err := db.Where("email = ?", email).First(existingUser); err == nil {
+			return fmt.Errorf("user with email %s already exists", email)
+		}
+
+		// Hash password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to hash password: %w", err)
+		}
+
+		// Create admin user
+		admin := &models.User{
+			FirstName:    firstName,
+			LastName:     lastName,
+			Email:        email,
+			PasswordHash: string(hashedPassword),
+			Role:         "admin",
+		}
+
+		if err := db.Create(admin); err != nil {
+			return fmt.Errorf("failed to create admin user: %w", err)
+		}
+
+		fmt.Printf("✅ Admin user created successfully!\n")
+		fmt.Printf("   Email: %s\n", email)
+		fmt.Printf("   Name: %s %s\n", firstName, lastName)
+
+		return nil
+	})
+
 })
+
+// getEnvOrDefault returns environment variable value or default if not set
+func getEnvOrDefault(key, defaultValue string) string {
+	if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+		return value
+	}
+	return defaultValue
+}

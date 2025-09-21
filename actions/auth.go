@@ -88,7 +88,14 @@ func AuthCreate(c buffalo.Context) error {
 	c.Session().Set("current_user_id", u.ID)
 	c.Flash().Add("success", "Welcome Back!")
 
+	// Default redirect based on user role
 	redirectURL := "/"
+	if u.Role == "admin" {
+		redirectURL = "/admin"
+		logging.UserAction(c, u.Email, "admin_redirect", "Redirecting admin user to admin dashboard", logging.Fields{})
+	}
+	
+	// Check if there was a specific redirect URL requested
 	if redir, ok := c.Session().Get("redirectURL").(string); ok && redir != "" {
 		redirectURL = redir
 	}

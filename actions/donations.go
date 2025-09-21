@@ -382,14 +382,6 @@ func DonationInitializeHandler(c buffalo.Context) error {
 		c.Set("zip", req.Zip)
 		setDonateContext(c, nil)
 
-		// Check if this is an HTMX request
-		isHTMX := c.Request().Header.Get("HX-Request") == "true"
-		if isHTMX {
-			c.Logger().Infof("[DonationInitialize] Returning HTMX form fragment due to validation errors")
-			// For HTMX requests, return only the form content
-			return c.Render(http.StatusOK, r.HTML("pages/_donate_form.plush.html"))
-		}
-
 		c.Logger().Infof("[DonationInitialize] Returning full donate page due to validation errors")
 		return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
 	}
@@ -1590,12 +1582,10 @@ func DonateUpdateSubmitHandler(c buffalo.Context) error {
 	defer func() {
 		if r := recover(); r != nil {
 			c.Logger().Errorf("Panic in DonateUpdateSubmitHandler: %v", r)
-			// For HTMX requests, redirect rather than injecting a full page into a fragment
-			if c.Request().Header.Get("HX-Request") == "true" {
-				c.Response().Header().Set("HX-Redirect", "/donate")
-				c.Response().WriteHeader(http.StatusOK)
-				return
-			}
+			// For requests with errors, redirect to donate page
+			c.Response().Header().Set("HX-Redirect", "/donate")
+			c.Response().WriteHeader(http.StatusOK)
+			return
 			c.Error(http.StatusInternalServerError, fmt.Errorf("Internal server error"))
 		}
 	}()
@@ -1819,12 +1809,11 @@ func DonateUpdateAmountHandler(c buffalo.Context) error {
 	c.Set("hasStateError", false)
 	c.Set("hasZipError", false)
 
-	// HTMX / wants HTML?
-	isHTMX := c.Request().Header.Get("HX-Request") == "true"
+	// Always return HTML for donation amount updates
 	accept := c.Request().Header.Get("Accept")
 	wantsHTML := strings.Contains(accept, "text/html") && !strings.Contains(accept, "application/json")
 
-	if isHTMX || wantsHTML {
+	if wantsHTML {
 		c.Response().Header().Set("HX-Trigger", "donation-amount-updated")
 
 		buttonText := "Donate Now"
