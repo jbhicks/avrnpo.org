@@ -13,31 +13,21 @@
     <!-- Donation Type -->
     <div class="donation-frequency">
       <fieldset>
-        <legend>Donation Frequency</legend>
-         <label>
-           <input type="radio"
-                  name="donation_type"
-                  value="one-time"<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>
-                  hx-patch="/donate/update-submit"
-                  hx-vals='{"donation_type": "one-time", "source": "radio"}'
-                  hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
-                  hx-target="#submit-button"
-                  hx-select="#submit-button > *"
-                  hx-swap="innerHTML">
-            One-time donation
-         </label>
-         <label>
-           <input type="radio"
-                  name="donation_type"
-                  value="monthly"<% if (donationType == "monthly") { %> checked<% } %>
-                  hx-patch="/donate/update-submit"
-                  hx-vals='{"donation_type": "monthly", "source": "radio"}'
-                  hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
-                  hx-target="#submit-button"
-                  hx-select="#submit-button > *"
-                  hx-swap="innerHTML">
-            Monthly recurring
-         </label>
+         <legend>Donation Frequency</legend>
+          <label>
+            <input type="radio"
+                   name="donation_type"
+                   value="one-time"<% if (donationType == "one-time" || donationType == "") { %> checked<% } %>
+                   onchange="updateDonationType('one-time')">
+             One-time donation
+          </label>
+          <label>
+            <input type="radio"
+                   name="donation_type"
+                   value="monthly"<% if (donationType == "monthly") { %> checked<% } %>
+                   onchange="updateDonationType('monthly')">
+             Monthly recurring
+          </label>
       </fieldset>
     </div>
 
@@ -227,14 +217,7 @@
               placeholder="Any special message or dedication..."><%= comments %></textarea>
 
     <!-- Submit Button -->
-    <div id="submit-button"
-         hx-post="/donate/update-submit"
-         hx-trigger="donation-amount-updated from:body"
-         hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
-         hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
-         hx-target="#submit-button"
-         hx-select="button"
-         hx-swap="innerHTML">
+    <div id="submit-button">
       <%= partial("pages/submit_button") %>
     </div>
 

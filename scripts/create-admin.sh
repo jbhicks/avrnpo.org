@@ -33,7 +33,7 @@ fi
 
 echo "🔍 Environment: $GO_ENV"
 
-# Method 1: Use environment variables (recommended for production)
+# Method 1: Use environment variables (required)
 if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
     echo "📧 Creating admin user from environment variables..."
     echo "   Email: $ADMIN_EMAIL"
@@ -43,8 +43,8 @@ if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
 fi
 
 # Method 2: Interactive mode (for development/manual setup)
-echo "📝 No ADMIN_EMAIL/ADMIN_PASSWORD found in environment."
-echo "   Would you like to create an admin user interactively? (y/n)"
+echo "📝 ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required."
+echo "   Would you like to create an admin user interactively instead? (y/n)"
 read -r response
 
 if [ "$response" = "y" ] || [ "$response" = "Y" ]; then

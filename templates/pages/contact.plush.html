@@ -29,9 +29,8 @@
       <h2>Send us a Message</h2>
     </header>
 
-    <form hx-post="/contact" hx-target="body" hx-swap="outerHTML" method="post" action="/contact">
+    <form method="post" action="/contact">
       <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
-      <input name="form_timestamp" value="<%= form_timestamp %>" type="hidden">
       
       <!-- Honeypot field - hidden from users but bots may fill it -->
       <input name="website" type="text" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" autocomplete="off">

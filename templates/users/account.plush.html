@@ -1,6 +1,5 @@
-<!-- Account Settings Partial for HTMX -->
-<%# The persistent header is now in templates/home/index.plush.html %>
-<%# The hx-get request for this page will load its content into #htmx-content %>
+<!-- Account Settings -->
+<!-- The persistent header is now in templates/home/index.plush.html -->
 
 <!-- Page Header -->
 <section>
@@ -88,9 +87,7 @@
     </header>
     
     <form action="/account" method="POST">
-      <% if (authenticity_token) { %>
-        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-      <% } %>
+      <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
       <fieldset>
         <label>
           Current Password

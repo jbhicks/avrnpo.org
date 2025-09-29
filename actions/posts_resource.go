@@ -9,6 +9,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
+	"github.com/pkg/errors"
 )
 
 // PostsResource handles CRUD operations for blog posts in admin area
@@ -44,7 +45,7 @@ func (pr PostsResource) List(c buffalo.Context) error {
 	}
 
 	if err := query.All(&posts); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	c.Set("posts", posts)
@@ -91,7 +92,7 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 
 	post := &models.Post{}
 	if err := c.Bind(post); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// Set the author to current user
@@ -108,7 +109,7 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 
 	// Validate and create post
 	if verrs, err := tx.ValidateAndCreate(post); err != nil {
-		return err
+		return errors.WithStack(err)
 	} else if verrs.HasAny() {
 		c.Set("post", post)
 		c.Set("errors", verrs)
@@ -157,7 +158,7 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 	}
 
 	if err := c.Bind(post); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// Generate slug from title if changed
@@ -166,7 +167,7 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 	}
 
 	if verrs, err := tx.ValidateAndUpdate(post); err != nil {
-		return err
+		return errors.WithStack(err)
 	} else if verrs.HasAny() {
 		c.Set("post", post)
 		c.Set("errors", verrs)
@@ -195,7 +196,7 @@ func (pr PostsResource) Destroy(c buffalo.Context) error {
 	}
 
 	if err := tx.Destroy(post); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	c.Flash().Add("success", "Post deleted successfully!")
@@ -239,21 +240,21 @@ func (pr PostsResource) Bulk(c buffalo.Context) error {
 		now := time.Now()
 		err := tx.RawQuery("UPDATE posts SET published = true, published_at = ? WHERE id IN (?)", now, ids).Exec()
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		c.Flash().Add("success", fmt.Sprintf("Published %d posts", len(ids)))
 
 	case "unpublish":
 		err := tx.RawQuery("UPDATE posts SET published = false, published_at = NULL WHERE id IN (?)", ids).Exec()
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		c.Flash().Add("success", fmt.Sprintf("Unpublished %d posts", len(ids)))
 
 	case "delete":
 		err := tx.RawQuery("DELETE FROM posts WHERE id IN (?)", ids).Exec()
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 		c.Flash().Add("success", fmt.Sprintf("Deleted %d posts", len(ids)))
 

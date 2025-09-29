@@ -14,6 +14,7 @@ API documentation, database schemas, and technical references for the AVR NPO do
 
 ### 📦 Development References
 - **[Dependencies](./dependencies.md)** - Dependency management rules and guidelines
+- **[Subscription API Reference](./subscription-api-reference.md)** - Complete subscription management API
 - **[Changelog](./changelog.md)** - Major changes and version history *(planned)*
 
 ## 🎯 Current System Architecture

@@ -89,6 +89,10 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 | `SMTP_PASSWORD` | Email authentication | [ ] |
 | `FROM_EMAIL` | Sender email address | [ ] |
 | `FROM_NAME` | Sender display name | [ ] |
+| `ADMIN_EMAIL` | Initial admin user email | [ ] |
+| `ADMIN_PASSWORD` | Initial admin user password | [ ] |
+| `ADMIN_FIRST_NAME` | Initial admin first name | [ ] |
+| `ADMIN_LAST_NAME` | Initial admin last name | [ ] |
 
 **Optional but Recommended:**
 | Variable | Purpose | Status |

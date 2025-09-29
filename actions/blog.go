@@ -6,6 +6,7 @@ import (
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
+	"github.com/pkg/errors"
 )
 
 // BlogIndex displays all published posts
@@ -18,7 +19,7 @@ func BlogIndex(c buffalo.Context) error {
 	posts := []models.Post{}
 	// Get published posts ordered by created_at desc with user relationships
 	if err := tx.Eager("User").Where("published = ?", true).Order("created_at desc").All(&posts); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	c.Set("posts", posts)

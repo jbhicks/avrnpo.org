@@ -1,7 +1,5 @@
-<form id="donation-form" hx-post="/donate" hx-target="body" hx-swap="outerHTML" method="post" action="/donate" autocomplete="on" novalidate>
-  <% if (authenticity_token) { %>
-    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-  <% } %>
+<form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
+  <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
   <div id="donation-form-content">
 
 
@@ -259,16 +257,9 @@
               placeholder="Any special message or dedication..."><%= comments %></textarea>
 
     <!-- Submit Button -->
-    <div id="submit-button"
-         hx-post="/donate/update-submit"
-         hx-trigger="donation-amount-updated from:body"
-         hx-include="#donation-form [name='donation_type'], #donation-form [name='amount'], #donation-form [name='custom_amount']"
-         hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
-         hx-target="#submit-button"
-         hx-select="button"
-         hx-swap="innerHTML">
+    <div id="submit-button">
       <button type="submit" class="contrast donation-submit">
-        Donate Now
+        <span id="submit-text">Donate Now</span>
       </button>
     </div>
 
@@ -546,16 +537,7 @@
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', initializeDonationForm);
 
-  // Re-initialize after HTMX content updates
-  document.addEventListener('htmx:afterSwap', initializeDonationForm);
-
-  // Also handle htmx:load event for more comprehensive coverage
-  if (typeof htmx !== 'undefined') {
-    htmx.onLoad(function(elt) {
-      if (elt.querySelector && (elt.querySelector('.amount-btn') || elt.querySelector('#custom_amount'))) {
-        initializeDonationForm();
-      }
-    });
-  }
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initializeDonationForm);
 })();
 </script>

@@ -47,7 +47,8 @@ func (as *ActionSuite) Test_CSRF_Token_Generation_Enabled_In_Test() {
 	body := res.Body.String()
 
 	// Check that CSRF token is present as hidden input (Buffalo's standard approach)
-	require.Contains(as.T(), body, `<input name="authenticity_token" type="hidden"`)
+	require.Contains(as.T(), body, `name="authenticity_token"`)
+	require.Contains(as.T(), body, `type="hidden"`)
 	require.Contains(as.T(), body, `value="`)
 }
 

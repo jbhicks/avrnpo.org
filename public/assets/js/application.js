@@ -2,8 +2,17 @@
 
 document.addEventListener('DOMContentLoaded', function () {
   // Ensure HTMX requests include CSRF tokens
-  // HTMX automatically includes form fields including CSRF tokens
-  // No custom CSRF handling needed - Buffalo's middleware handles it
+  // Get CSRF token from meta tag for HTMX requests
+  document.body.addEventListener('htmx:configRequest', function(event) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (csrfToken) {
+      event.detail.parameters['authenticity_token'] = csrfToken.getAttribute('content');
+      console.log('HTMX: Added CSRF token to request:', csrfToken.getAttribute('content').substring(0, 20) + '...');
+    } else {
+      console.warn('HTMX: No CSRF token found in meta tag');
+    }
+    console.log('HTMX: Request parameters:', event.detail.parameters);
+  });
 
   // Add loading indicators for better UX
   document.body.addEventListener('htmx:beforeRequest', function (event) {

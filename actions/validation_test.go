@@ -289,7 +289,7 @@ func TestHTMXCSRFTokenInclusion(t *testing.T) {
 		}
 	}())
 
-	app.POST("/htmx-test", func(c buffalo.Context) error {
+	app.POST("/progressive-test", func(c buffalo.Context) error {
 		token := c.Param("authenticity_token")
 		if token == "" {
 			return c.Render(403, r.String("CSRF token missing"))
@@ -304,12 +304,11 @@ func TestHTMXCSRFTokenInclusion(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("POST", "/htmx-test", strings.NewReader(formData.Encode()))
+	req, _ := http.NewRequest("POST", "/progressive-test", strings.NewReader(formData.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("HX-Request", "true")
 
 	app.ServeHTTP(w, req)
-	require.Equal(t, 200, w.Code, "HTMX request with CSRF token should succeed")
+	require.Equal(t, 200, w.Code, "Form request with CSRF token should succeed")
 	require.Contains(t, w.Body.String(), "success")
 }
 
@@ -531,7 +530,7 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	// GET endpoint to get form with token
 	app.GET("/contact-form", func(c buffalo.Context) error {
 		responseToken := c.Value("authenticity_token")
-		html := fmt.Sprintf(`<form method="post" action="/contact-test" hx-post="/contact-test" hx-target="#result" hx-swap="innerHTML">
+		html := fmt.Sprintf(`<form method="post" action="/contact-test">
 			<input type="hidden" name="authenticity_token" value="%s" />
 			<input type="email" name="email" required />
 			<button type="submit">Submit</button>
@@ -542,7 +541,7 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 
 	app.POST("/contact-test", func(c buffalo.Context) error {
 		email := c.Param("email")
-		// Always return full page, regardless of HX-Request
+		// Always return full page with standard Buffalo patterns
 		return c.Render(200, r.String(fmt.Sprintf("Form Success: %s", email)))
 	})
 
@@ -579,13 +578,12 @@ func TestHTMXProgressiveEnhancement(t *testing.T) {
 	require.Equal(t, 200, w2.Code)
 	require.Contains(t, w2.Body.String(), "Form Success")
 
-	// Submit HTMX request with token and cookies
+	// Submit form request with token and cookies
 	w3 := httptest.NewRecorder()
 	req3, _ := http.NewRequest("POST", "/contact-test", strings.NewReader(formData.Encode()))
 	req3.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req3.Header.Set("HX-Request", "true")
 
-	// Copy cookies from GET response to HTMX POST request
+	// Copy cookies from GET response to form POST request
 	if res := w1.Result(); res != nil {
 		for _, c := range res.Cookies() {
 			req3.AddCookie(c)

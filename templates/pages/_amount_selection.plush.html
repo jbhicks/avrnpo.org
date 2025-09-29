@@ -1,7 +1,8 @@
 <div id="amount-selection">
   <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
   <input type="hidden" name="donation_type" value="<%= donationType %>">
-  <input type="hidden" name="amount" value="<%= if (amount && amount != "") { %><%= amount %><% } else if (customAmount && customAmount != "") { %><%= customAmount %><% } else { %><%# empty to avoid nil %><% } %>">
+  <input type="hidden" name="amount" id="selected-amount" value="<%= if (amount && amount != "") { %><%= amount %><% } else if (customAmount && customAmount != "") { %><%= customAmount %><% } else { %><%# empty to avoid nil %><% } %>">
+  
   <div class="amount-grid" role="radiogroup" aria-label="Donation amount">
     <% let presetAmounts = ["25", "50", "100", "250", "500", "1000"] %>
     <%= for (preset) in presetAmounts { %>
@@ -12,19 +13,11 @@
               class="<%= btnClass %>"
               data-amount="<%= preset %>"
               aria-pressed="<%= if (isActive) { %>true<% } else { %>false<% } %>"
-              hx-patch="/donate/update-amount"
-               hx-vals='{"amount": "<%= preset %>", "source": "preset", "donation_type": "<%= donationType %>"}'
-           hx-include="closest form"
-           hx-headers='{"X-CSRF-Token": "<%= authenticity_token %>"}'
-              hx-target="#amount-selection"
-              hx-swap="outerHTML">
+              onclick="selectAmount('<%= preset %>')">
         $<%= preset %>
       </button>
     <% } %>
   </div>
-
-  <!-- Keep a canonical hidden amount field so server receives the selection -->
-  <input type="hidden" name="amount" value="<%= if (amount && amount != "") { %><%= amount %><% } else if (customAmount && customAmount != "") { %><%= customAmount %><% } else { %><%# empty to avoid nil %><% } %>">
 
   <div class="custom-amount-group" style="margin-top:1em;">
     <label for="custom_amount">Or enter a custom amount</label>
@@ -35,13 +28,14 @@
            placeholder="Enter custom amount"
            step="1"
            min="1"
+    <input type="number"
+           id="custom_amount"
+           name="custom_amount"
+           placeholder="Enter amount"
+           min="1"
+           step="0.01"
            value="<%= if (amount && amount != "") { %><%= amount %><% } else if (customAmount && customAmount != "") { %><%= customAmount %><% } %>"
-           hx-patch="/donate/update-amount"
-           hx-trigger="change, blur delay:300ms from:#custom_amount"
-           hx-include="closest form"
-           hx-vals='{"source": "custom"}'
-           hx-target="#amount-selection"
-           hx-swap="outerHTML">
+           oninput="selectCustomAmount(this.value)">
     <%= if (hasAmountError) { %>
       <small class="error" style="color: var(--pico-del-color); display:block; margin-top: .25rem;">
         <%= errors.Get("amount")[0] %>

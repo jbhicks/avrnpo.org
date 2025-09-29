@@ -26,7 +26,6 @@ func Test_AdminTemplateStructure(t *testing.T) {
 	adminTemplates := []string{}
 	excludePatterns := []string{
 		"_", // partials (start with underscore)
-		"htmx.plush.html",
 		"application.plush.html",
 	}
 

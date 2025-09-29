@@ -82,6 +82,7 @@ func MockLogin(t *testing.T, app http.Handler, email, password string) (string, 
 	t.Helper()
 	// First fetch login page to get initial cookie and token
 	cookie, token := fetchCSRF(t, app, "/auth/new")
+	t.Logf("🔍 MockLogin: Initial fetchCSRF - Cookie: '%s', Token: '%s'", cookie, token)
 
 	form := url.Values{}
 	form.Set("email", email)
@@ -99,31 +100,79 @@ func MockLogin(t *testing.T, app http.Handler, email, password string) (string, 
 	res := rw.Result()
 	defer res.Body.Close()
 
-	// Grab session cookie from response
+	// Debug the login response
+	t.Logf("🔍 MockLogin: POST /auth - Status: %d, Location: %s", res.StatusCode, res.Header.Get("Location"))
+
+	if res.StatusCode == 401 {
+		bodyBytes, _ := io.ReadAll(res.Body)
+		bodyExcerpt := string(bodyBytes)
+		if len(bodyExcerpt) > 200 {
+			bodyExcerpt = bodyExcerpt[:200] + "..."
+		}
+		t.Logf("🔍 MockLogin: LOGIN FAILED - Status: 401, Body excerpt: %s", bodyExcerpt)
+		return "", ""
+	}
+
+	// Extract session cookie from login response headers
 	sessCookie := ""
-	for _, c := range res.Cookies() {
+	t.Logf("🔍 MockLogin: Checking login response cookies (%d total)", len(res.Cookies()))
+	for i, c := range res.Cookies() {
+		t.Logf("🔍 MockLogin: Cookie %d: %s = %s", i, c.Name, c.Value)
 		if strings.Contains(c.Name, "session") || c.Name == "_avrnpo.org_session" {
 			sessCookie = c.String()
+			t.Logf("🔍 MockLogin: Found session cookie: %s", sessCookie)
 			break
 		}
 	}
 
-	// After login, fetch root to get a fresh CSRF token tied to session
+	// If no session cookie in response, try to find it in request headers (Buffalo might reuse existing session)
+	if sessCookie == "" && cookie != "" {
+		t.Logf("🔍 MockLogin: No new session cookie, testing if original cookie works by accessing /account")
+		// Buffalo often reuses the existing session cookie, so check if login was successful by trying to access a protected page
+		testReq := httptest.NewRequest("GET", "/account", nil)
+		testReq.Header.Set("Cookie", cookie)
+		testRw := httptest.NewRecorder()
+		app.ServeHTTP(testRw, testReq)
+		testRes := testRw.Result()
+		defer testRes.Body.Close()
+
+		t.Logf("🔍 MockLogin: /account test - Status: %d", testRes.StatusCode)
+		// If we can access /account (which requires auth), then the original cookie is valid
+		if testRes.StatusCode == 200 {
+			sessCookie = cookie
+			t.Logf("🔍 MockLogin: Reusing initial session cookie after successful login")
+		} else {
+			t.Logf("🔍 MockLogin: /account access failed, trying /profile instead")
+			// Try /profile as alternative
+			testReq2 := httptest.NewRequest("GET", "/profile", nil)
+			testReq2.Header.Set("Cookie", cookie)
+			testRw2 := httptest.NewRecorder()
+			app.ServeHTTP(testRw2, testReq2)
+			testRes2 := testRw2.Result()
+			defer testRes2.Body.Close()
+
+			t.Logf("🔍 MockLogin: /profile test - Status: %d", testRes2.StatusCode)
+			if testRes2.StatusCode == 200 {
+				sessCookie = cookie
+				t.Logf("🔍 MockLogin: Reusing initial session cookie (verified with /profile)")
+			}
+		}
+	}
+
+	t.Logf("🔍 MockLogin: Session cookie from response: '%s'", sessCookie)
+
+	// After login, fetch a page to get a fresh CSRF token tied to the authenticated session
 	finalCookie, finalToken := "", ""
 	if sessCookie != "" {
-		// combine cookies if initial cookie exists
-		combined := sessCookie
-		if cookie != "" && !strings.Contains(sessCookie, cookie) {
-			combined = cookie + "; " + sessCookie
-		}
-		// fetch home to extract token
+		// Use the session cookie to fetch a fresh CSRF token
 		req2 := httptest.NewRequest("GET", "/", nil)
-		req2.Header.Set("Cookie", combined)
+		req2.Header.Set("Cookie", sessCookie)
 		rw2 := httptest.NewRecorder()
 		app.ServeHTTP(rw2, req2)
 		res2 := rw2.Result()
 		defer res2.Body.Close()
 
+		// Check for updated session cookie
 		for _, c := range res2.Cookies() {
 			if strings.Contains(c.Name, "session") || c.Name == "_avrnpo.org_session" {
 				finalCookie = c.String()
@@ -158,8 +207,8 @@ func includeCSRF(req *http.Request, token, cookie string) {
 		req.Header.Set("Cookie", cookie)
 	}
 	if token != "" {
-		// For HTMX or AJAX requests, use header
-		if req.Header.Get("HX-Request") == "true" || req.Header.Get("X-Requested-With") == "XMLHttpRequest" {
+		// For enhanced requests (formerly HTMX/AJAX), use header
+		if req.Header.Get("X-Requested-With") == "XMLHttpRequest" {
 			req.Header.Set("X-CSRF-Token", token)
 		} else {
 			// For form requests, add to form data if it's a POST with form encoding

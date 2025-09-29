@@ -42,7 +42,7 @@
       <% if (current_user && current_user.Role == "admin") { %>
         <a href="/admin" role="button" class="outline">Admin</a>
       <% } %>
-      <a href="/auth/logout" role="button" class="outline" hx-boost="false">Sign Out</a>
+      <a href="/auth/logout" role="button" class="outline">Sign Out</a>
     <% } else { %>
       <a href="/auth/new/" role="button" class="outline">Sign In</a>
       <a href="/users/new/" role="button" class="outline">Sign Up</a>

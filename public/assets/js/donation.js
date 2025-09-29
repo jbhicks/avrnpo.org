@@ -1,24 +1,83 @@
-// HTMX-first donation helpers — keep behavior minimal and idempotent
-(function() {
-  'use strict';
-
-  function initDonationContent(root) {
-    if (!root) return;
-    try {
-      const form = (root.querySelector) ? root.querySelector('#donation-form') : null;
-      if (!form) return;
-
-      // Small accessibility helper: ensure numeric amount input has decimal inputmode
-      const amountInput = form.querySelector('#amount');
-      if (amountInput) amountInput.setAttribute('inputmode', 'decimal');
-    } catch (e) {
-      // swallow errors — this is a tiny helper
+// Simple donation form enhancements
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Amount selection functionality
+  window.selectAmount = function(amount) {
+    // Update hidden field
+    const amountField = document.getElementById('selected-amount');
+    if (amountField) {
+      amountField.value = amount;
+    }
+    
+    // Update button states
+    const buttons = document.querySelectorAll('.amount-btn');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    
+    // Activate selected button
+    const selectedBtn = document.querySelector(`[data-amount="${amount}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+      selectedBtn.setAttribute('aria-pressed', 'true');
+    }
+    
+    // Clear custom amount
+    const customAmount = document.getElementById('custom_amount');
+    if (customAmount && customAmount.value !== amount) {
+      customAmount.value = '';
+    }
+    
+    updateSubmitButton();
+  };
+  
+  // Custom amount functionality
+  window.selectCustomAmount = function(amount) {
+    // Update hidden field
+    const amountField = document.getElementById('selected-amount');
+    if (amountField) {
+      amountField.value = amount;
+    }
+    
+    // Clear preset button selection
+    const buttons = document.querySelectorAll('.amount-btn');
+    buttons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    
+    updateSubmitButton();
+  };
+  
+  // Donation type functionality
+  window.updateDonationType = function(type) {
+    updateSubmitButton();
+  };
+  
+  // Update submit button text based on selection
+  function updateSubmitButton() {
+    const amountField = document.getElementById('selected-amount');
+    const donationType = document.querySelector('input[name="donation_type"]:checked');
+    const submitText = document.getElementById('submit-text');
+    
+    if (!submitText) return;
+    
+    const amount = amountField ? amountField.value : '';
+    const type = donationType ? donationType.value : 'one-time';
+    
+    if (amount && parseFloat(amount) > 0) {
+      const formattedAmount = '$' + parseFloat(amount).toFixed(2);
+      if (type === 'monthly') {
+        submitText.textContent = `Donate ${formattedAmount}/month`;
+      } else {
+        submitText.textContent = `Donate ${formattedAmount}`;
+      }
+    } else {
+      submitText.textContent = 'Donate Now';
     }
   }
-
-  // Run on initial load and after HTMX swaps
-  initDonationContent(document);
-  if (typeof htmx !== 'undefined') {
-    htmx.onLoad(function(elt) { initDonationContent(elt); });
-  }
-})();
+  
+  // Initialize on page load
+  updateSubmitButton();
+});

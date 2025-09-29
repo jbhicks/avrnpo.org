@@ -16,10 +16,9 @@ func (as *ActionSuite) Test_HomeHandler() {
 	as.Contains(res.Body.String(), "Rebuilding the American Veteran's Self")
 }
 
-func (as *ActionSuite) Test_HomeHandler_HTMX_Content() {
-	// Test HTMX content loading
+func (as *ActionSuite) Test_HomeHandler_Enhanced_Content() {
+	// Test enhanced content loading with progressive enhancement
 	req := as.HTML("/")
-	req.Headers["HX-Request"] = "true"
 	res := req.Get()
 
 	as.Equal(http.StatusOK, res.Code)
@@ -111,17 +110,16 @@ func (as *ActionSuite) Test_HomeHandler_LoggedIn() {
 	body := res.Body.String()
 	as.Contains(body, "THE AVR MISSION") // Main content should be there
 
-	// Test HTMX content for logged in user
-	htmxReq := as.HTML("/")
-	htmxReq.Headers["HX-Request"] = "true"
+	// Test enhanced content for logged in user
+	enhancedReq := as.HTML("/")
 	if finalSessionCookie != "" {
-		htmxReq.Headers["Cookie"] = finalSessionCookie
+		enhancedReq.Headers["Cookie"] = finalSessionCookie
 	}
-	htmxRes := htmxReq.Get()
-	as.Equal(http.StatusOK, htmxRes.Code)
+	enhancedRes := enhancedReq.Get()
+	as.Equal(http.StatusOK, enhancedRes.Code)
 	// Verify the basic template content is there
-	as.Contains(htmxRes.Body.String(), "THE AVR MISSION")
-	as.Contains(htmxRes.Body.String(), "Technical Training")
+	as.Contains(enhancedRes.Body.String(), "THE AVR MISSION")
+	as.Contains(enhancedRes.Body.String(), "Technical Training")
 
 	// Test that the dashboard is accessible (this proves authentication works)
 	dashboardReq := as.HTML("/dashboard")

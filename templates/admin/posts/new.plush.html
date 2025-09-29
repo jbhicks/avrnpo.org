@@ -9,7 +9,7 @@
   <main>
     <header class="mb-2">
       <nav class="mb-1">
-        <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true">← Back to Posts</a>
+        <a href="/admin/posts">← Back to Posts</a>
       </nav>
       <h1>Create New Post</h1>
       <p>Share veteran success stories, program updates, and community impact.</p>
@@ -26,7 +26,7 @@
         <% } %>
       </ul>
     </div>
-    <% } %>    <form action="/admin/posts" method="POST" hx-post="/admin/posts" hx-target="body" hx-swap="outerHTML" hx-push-url="true" enctype="multipart/form-data">
+    <% } %>    <form action="/admin/posts" method="POST" enctype="multipart/form-data">
       <% if (authenticity_token) { %>
         <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
       <% } %>
@@ -93,7 +93,7 @@
       <!-- Form Actions -->
       <section class="form-actions between">
         <div class="flex-gap">
-          <a href="/admin/posts" hx-get="/admin/posts" hx-target="#htmx-content" hx-swap="innerHTML" hx-push-url="true" role="button" class="secondary">Cancel</a>
+          <a href="/admin/posts" role="button" class="secondary">Cancel</a>
           <button type="submit" name="action" value="draft" role="button" class="outline">Save as Draft</button>
           <button type="submit" name="action" value="publish" role="button">Publish Post</button>
         </div>

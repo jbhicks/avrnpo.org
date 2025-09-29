@@ -40,14 +40,14 @@ var _ = grift.Namespace("db", func() {
 		return nil
 	})
 
-	grift.Desc("create_admin", "Creates an admin user from environment variables or defaults")
+	grift.Desc("create_admin", "Creates an admin user from environment variables")
 	grift.Add("create_admin", func(c *grift.Context) error {
 		// Use the existing global DB connection
 		db := models.DB
 
-		// Get admin details from environment variables or use defaults
-		email := getEnvOrDefault("ADMIN_EMAIL", "admin@avrnpo.org")
-		password := getEnvOrDefault("ADMIN_PASSWORD", "admin123!")
+		// Get admin details from environment variables - all required
+		email := strings.TrimSpace(os.Getenv("ADMIN_EMAIL"))
+		password := strings.TrimSpace(os.Getenv("ADMIN_PASSWORD"))
 		firstName := getEnvOrDefault("ADMIN_FIRST_NAME", "Admin")
 		lastName := getEnvOrDefault("ADMIN_LAST_NAME", "User")
 
@@ -95,13 +95,8 @@ var _ = grift.Namespace("db", func() {
 		fmt.Printf("✅ Successfully created admin user:\n")
 		fmt.Printf("   Email: %s\n", email)
 		fmt.Printf("   Name: %s %s\n", firstName, lastName)
-		fmt.Printf("   Password: %s\n", password)
 		fmt.Printf("   Role: admin\n")
-
-		if password == "admin123!" {
-			fmt.Printf("\n⚠️  WARNING: Using default password! Please change it after first login.\n")
-			fmt.Printf("   Set ADMIN_PASSWORD environment variable for custom password.\n")
-		}
+		fmt.Printf("   Password: [Set from environment variable]\n")
 
 		return nil
 	})

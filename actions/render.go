@@ -15,7 +15,6 @@ import (
 )
 
 var r *render.Engine
-var rFrag *render.Engine
 
 func init() {
 	// Common helpers
@@ -39,24 +38,6 @@ func init() {
 		TemplatesFS: templates.FS(),
 		AssetsFS:    assetsFS,
 		Helpers:     commonHelpers,
-	})
-
-	// Fragment render engine without layout (for HTMX partials)
-	rFrag = render.New(render.Options{
-		HTMLLayout:  "", // no layout
-		TemplatesFS: templates.FS(),
-		AssetsFS:    assetsFS,
-
-		Helpers: commonHelpers,
-	})
-
-	// Fragment render engine without layout (for HTMX partials)
-	rFrag = render.New(render.Options{
-		HTMLLayout:  "", // no layout
-		TemplatesFS: templates.FS(),
-		AssetsFS:    assetsFS,
-
-		Helpers: commonHelpers,
 	})
 }
 

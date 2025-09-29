@@ -6,7 +6,7 @@
   </div>
   <div>
     <a href="/admin/users/<%= user.ID %>" role="button" class="outline"
-       hx-get="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-push-url="true">← Back to User</a>
+      >← Back to User</a>
   </div>
 </header>
 
@@ -24,7 +24,7 @@
 <% } %>
 
 <form action="/admin/users/<%= user.ID %>" method="POST"
-      hx-put="/admin/users/<%= user.ID %>" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+     >
   <% if (authenticity_token) { %>
     <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
   <% } %>
@@ -97,7 +97,7 @@
   <section class="form-actions">
     <div class="flex flex-gap">
       <a href="/admin/users/<%= user.ID %>" role="button" class="secondary"
-         hx-get="/admin/users/<%= user.ID %>" hx-target="#main-content" hx-push-url="true">
+        >
         Cancel
       </a>
       <button type="submit" class="primary">Update User</button>

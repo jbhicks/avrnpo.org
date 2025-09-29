@@ -53,13 +53,19 @@ Production deployment, security, and monitoring.
 - **[Security Guidelines](./deployment/security.md)** - Security best practices
 - **[Monitoring](./deployment/monitoring.md)** - Logging and monitoring setup
 
+### 🔧 Development & Setup
+Development tools, configuration, and contributor resources.
+
+- **[Development Guide](./development/README.md)** - AI agents, refactoring plans, and contributor tools
+- **[Setup & Configuration](./setup/README.md)** - System setup, admin configuration, and environment setup
+- **[Changelog & History](./changelog/README.md)** - Implementation histories and major changes
+
 ### 📖 Reference
 API documentation, schemas, and technical references.
 
 - **[API Endpoints](./reference/api-endpoints.md)** - Complete API reference
 - **[Database Schema](./reference/database-schema.md)** - Current database structure
-- **[Dependencies](./reference/dependencies.md)** - Dependency management rules  
-- **[Changelog](./reference/changelog.md)** - Major changes and updates
+- **[Dependencies](./reference/dependencies.md)** - Dependency management rules
 
 ## 🔍 Finding Information
 
@@ -75,6 +81,11 @@ API documentation, schemas, and technical references.
 2. [Testing Guide](./getting-started/testing-guide.md) - How to test changes
 3. [Troubleshooting](./buffalo-framework/troubleshooting.md) - Fix common issues
 
+**🤖 AI Contributors:**
+1. [Agents Guide](./development/agents-guide.md) - Critical rules and patterns for AI agents
+2. [Current Feature](./development/current-feature.md) - What we're currently working on
+3. [Development Guide](./development/README.md) - Development tools and resources
+
 **💳 Payment Features:**
 1. [Helcim Integration](./payment-system/helcim-integration.md) - Complete API guide
 2. [Donation Flow](./payment-system/donation-flow.md) - Frontend implementation
@@ -84,6 +95,11 @@ API documentation, schemas, and technical references.
 1. [Pico CSS Guide](./frontend/pico-css.md) - Styling and theming
 2. [HTMX Patterns](./frontend/htmx-patterns.md) - Progressive enhancement
 3. [Templates](./buffalo-framework/templates.md) - Template development
+
+**⚙️ Setup & Configuration:**
+1. [Setup Guide](./setup/README.md) - System configuration and admin setup
+2. [Receipt Setup](./setup/receipt-setup.md) - Payment confirmation configuration
+3. [Environment Setup](./getting-started/setup-checklist.md) - Development environment
 
 ### By Problem Type
 

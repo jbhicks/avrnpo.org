@@ -4,16 +4,16 @@
     <h1>Manage Posts</h1>
     <p>Create, edit, and manage blog posts for American Veterans Rebuilding.</p>
   </div>
-  <a href="/admin/posts/new" role="button" hx-get="/admin/posts/new" hx-target="#main-content" hx-push-url="true">Create New Post</a>
+  <a href="/admin/posts/new" role="button">Create New Post</a>
 </header>
 
 <%= if (len(posts) > 0) { %>
 <!-- Search and Filter -->
 <div class="search-bar">
   <input type="search" name="search" placeholder="Search posts..." value="<%= search %>"
-         hx-get="/admin/posts" hx-target="#main-content" hx-trigger="input changed delay:300ms, search">
+        >
 
-  <select name="status" hx-get="/admin/posts" hx-target="#main-content" hx-trigger="change">
+  <select name="status">
     <option value="">All Posts</option>
     <option value="published" <%= if (status == "published") { %>selected<% } %>>Published</option>
     <option value="draft" <%= if (status == "draft") { %>selected<% } %>>Draft</option>
@@ -61,12 +61,12 @@
         <td>
           <div class="table-actions">
             <a href="/admin/posts/<%= post.ID %>" role="button" class="secondary outline btn-sm"
-               hx-get="/admin/posts/<%= post.ID %>" hx-target="#main-content" hx-push-url="true">View</a>
+              >View</a>
             <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary outline btn-sm"
-               hx-get="/admin/posts/<%= post.ID %>/edit" hx-target="#main-content" hx-push-url="true">Edit</a>
+              >Edit</a>
             <button type="button" class="outline btn-sm btn-danger"
-                    hx-delete="/admin/posts/<%= post.ID %>" hx-confirm="Are you sure you want to delete this post?"
-                    hx-target="#main-content" hx-swap="outerHTML">Delete</button>
+                   
+                   >Delete</button>
           </div>
         </td>
       </tr>
@@ -78,24 +78,24 @@
 <!-- Bulk Actions -->
 <div class="bulk-actions">
   <span>With selected posts:</span>
-  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+  <form class="inline-form">
     <input type="hidden" name="action" value="publish">
-    <button type="submit" class="outline" hx-indicator="#bulk-loading">Publish</button>
+    <button type="submit" class="outline">Publish</button>
   </form>
-  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+  <form class="inline-form">
     <input type="hidden" name="action" value="unpublish">
-    <button type="submit" class="outline" hx-indicator="#bulk-loading">Unpublish</button>
+    <button type="submit" class="outline">Unpublish</button>
   </form>
-  <form hx-post="/admin/posts/bulk" hx-target="#main-content" class="inline-form">
+  <form class="inline-form">
     <input type="hidden" name="action" value="delete">
     <input type="hidden" name="confirm_delete" value="true">
     <button type="submit" class="outline btn-danger"
-            hx-confirm="Are you sure you want to delete the selected posts? This action cannot be undone."
-            hx-indicator="#bulk-loading">
+           
+           >
       Delete
     </button>
   </form>
-  <div id="bulk-loading" class="htmx-indicator" style="display: none;">
+  <div id="bulk-loading" class="loading-indicator" style="display: none;">
     <small>Processing...</small>
   </div>
 </div>
@@ -118,6 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="empty-state">
   <h3>No Posts Found</h3>
   <p>Get started by creating your first blog post.</p>
-  <a href="/admin/posts/new" role="button" hx-get="/admin/posts/new" hx-target="#main-content" hx-push-url="true">Create New Post</a>
+  <a href="/admin/posts/new" role="button">Create New Post</a>
 </div>
 <% } %>

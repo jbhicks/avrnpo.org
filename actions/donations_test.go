@@ -67,9 +67,8 @@ func (as *ActionSuite) Test_DonateUpdateAmount_HTMXSwapBehavior() {
 		"donation_type": "one-time",
 	}
 
-	// Make a request with HTMX headers (using POST for testing - PATCH not supported in Buffalo test suite)
-	req := as.HTML("/donate/update-amount")
-	req.Headers["HX-Request"] = "true"
+	// Make a request to the main donate route (testing form submission)
+	req := as.HTML("/donate")
 	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
 
 	res := req.Post(formData)
@@ -78,13 +77,13 @@ func (as *ActionSuite) Test_DonateUpdateAmount_HTMXSwapBehavior() {
 
 	responseBody := res.Body.String()
 
-	// Should return a fragment suitable for innerHTML swap (not a full page)
-	as.NotContains(responseBody, "<!doctype", "Response should not contain full page HTML")
-	as.NotContains(responseBody, "<html", "Response should not contain full page HTML")
+	// Should return a full page (not a fragment)
+	as.Contains(responseBody, "<!doctype", "Response should contain full page HTML")
+	as.Contains(responseBody, "<html", "Response should contain full page HTML")
 
-	// The fragment should contain the donation form content and hidden CSRF token
+	// The page should contain the donation form content and hidden CSRF token
 	as.Contains(responseBody, `<h3>Make a Donation</h3>`, "Response should contain the donation heading")
-	as.Contains(responseBody, `name="authenticity_token"`, "Fragment must include authenticity_token hidden input")
+	as.Contains(responseBody, `name="authenticity_token"`, "Page must include authenticity_token hidden input")
 	// The response should include a selected amount indicator and updated submit text
 	as.Contains(responseBody, `Donate $100`, "Response should contain updated submit button text")
 
@@ -116,11 +115,10 @@ func min(a, b int) int {
 	return b
 }
 
-// Test that HTMX fragments include CSRF token and that posting with that token succeeds
-func (as *ActionSuite) Test_Donate_HTMX_CSRF_Roundtrip() {
-	// Step 1: Request the fragment via HTMX (simulate clicking a preset amount)
-	req := as.HTML("/donate/update-amount")
-	req.Headers["HX-Request"] = "true"
+// Test that pages include CSRF token and that posting with that token succeeds
+func (as *ActionSuite) Test_Donate_CSRF_Roundtrip() {
+	// Step 1: Request the donate page (simulate getting the form)
+	req := as.HTML("/donate")
 	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
 
 	formData := map[string]interface{}{
@@ -132,19 +130,18 @@ func (as *ActionSuite) Test_Donate_HTMX_CSRF_Roundtrip() {
 	as.Equal(http.StatusOK, res.Code)
 	body := res.Body.String()
 
-	// Fragment must include authenticity_token
-	as.Contains(body, `name="authenticity_token"`, "Fragment must include authenticity_token")
+	// Page must include authenticity_token
+	as.Contains(body, `name="authenticity_token"`, "Page must include authenticity_token")
 
 	// Extract token value (simple extraction for test)
 	token := extractInputValue(body, "authenticity_token")
-	as.True(token != "", "Should find an authenticity_token in fragment")
+	as.True(token != "", "Should find an authenticity_token in page")
 
-	// Step 2: Submit full donate POST with HX-Request true and the token included
+	// Step 2: Submit full donate POST and the token included
 	// Use MockLogin to ensure a session cookie exists (some CSRF implementations tie tokens to session)
 	cookie, _ := MockLogin(as.T(), as.App, "user@test.com", "password")
 
 	submitReq := as.HTML("/donate")
-	submitReq.Headers["HX-Request"] = "true"
 	submitReq.Headers["Content-Type"] = "application/x-www-form-urlencoded"
 	if cookie != "" {
 		submitReq.Headers["Cookie"] = cookie

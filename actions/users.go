@@ -323,14 +323,17 @@ func SetCurrentUser(next buffalo.Handler) buffalo.Handler {
 	return func(c buffalo.Context) error {
 		sessionUID := c.Session().Get("current_user_id")
 		if sessionUID != nil {
+			c.Logger().Infof("Found current_user_id in session: %v", sessionUID)
 			u := &models.User{}
 			tx := c.Value("tx").(*pop.Connection)
 			err := tx.Find(u, sessionUID)
 			if err != nil {
+				c.Logger().Infof("User not found for ID %v, clearing session", sessionUID)
 				// If user not found, clear the session and continue
 				c.Session().Delete("current_user_id")
 				c.Set("current_user", nil)
 			} else {
+				c.Logger().Infof("Setting current_user: %s (%s)", u.Email, u.Role)
 				c.Set("current_user", u)
 			}
 		} else {

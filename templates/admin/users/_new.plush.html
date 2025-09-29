@@ -6,7 +6,7 @@
   </div>
   <div>
     <a href="/admin/users" role="button" class="outline"
-       hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">← Back to Users</a>
+      >← Back to Users</a>
   </div>
 </header>
 
@@ -24,7 +24,7 @@
 <% } %>
 
 <form action="/admin/users" method="POST"
-      hx-post="/admin/users" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+     >
   <% if (authenticity_token) { %>
     <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
   <% } %>
@@ -108,7 +108,7 @@
   <section class="form-actions">
     <div class="flex flex-gap">
       <a href="/admin/users" role="button" class="secondary"
-         hx-get="/admin/users" hx-target="#main-content" hx-push-url="true">
+        >
         Cancel
       </a>
       <button type="submit" class="primary">Create User</button>

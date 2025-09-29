@@ -60,9 +60,8 @@ func (as *ActionSuite) Test_DonateHandler_POST_HTMX_Success() {
 	// Fetch CSRF token from donate page
 	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
 
-	// Test HTMX POST request with CSRF token
+	// Test enhanced POST request with CSRF token
 	req := as.HTML("/donate")
-	req.Headers["HX-Request"] = "true"
 	if cookie != "" {
 		req.Headers["Cookie"] = cookie
 	}
@@ -110,9 +109,8 @@ func (as *ActionSuite) Test_DonateHandler_POST_HTMX_ValidationErrors() {
 	// Fetch CSRF token
 	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
 
-	// Test HTMX POST with validation errors
+	// Test enhanced POST with validation errors
 	req := as.HTML("/donate")
-	req.Headers["HX-Request"] = "true"
 	if cookie != "" {
 		req.Headers["Cookie"] = cookie
 	}

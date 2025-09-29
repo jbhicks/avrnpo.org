@@ -85,8 +85,7 @@
                   <div class="action-buttons">
                     <a href="/admin/users/<%= user.ID %>" role="button" class="outline">Edit</a>
                     <%= if (user.ID.String() != current_user.ID.String()) { %>
-                      <form method="POST" action="/admin/users/<%= user.ID %>" class="inline-form"
-                            hx-post="/admin/users/<%= user.ID %>" hx-target="body" hx-swap="outerHTML" hx-push-url="true">
+                      <form method="POST" action="/admin/users/<%= user.ID %>" class="inline-form">
                         <input type="hidden" name="_method" value="DELETE">
                         <input type="hidden" name="confirm_delete" value="true">
                         <button type="submit" class="outline">Delete</button>

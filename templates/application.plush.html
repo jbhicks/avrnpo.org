@@ -105,7 +105,6 @@
         <%= javascriptTag("js/quill.min.js") %>
         <%= javascriptTag("js/quill-editor.js") %>
         <%= javascriptTag("js/theme.js") %>
-        <%= javascriptTag("js/htmx.min.js") %>
         <%= javascriptTag("js/donation.js") %>
         <%= javascriptTag("js/application.js") %>
 
@@ -114,7 +113,7 @@
         <meta name="csrf-token" content="<%= authenticity_token %>" />
         <% } %>
     </head>
-    <body hx-boost="true">
+    <body>
         <%= partial("flash") %> <%= partial("nav") %>
 
         <!-- Main Content Container -->

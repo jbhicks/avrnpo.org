@@ -1,12 +1,22 @@
-<!-- Buffalo Flash Messages - Standard Pattern -->
+<!-- Buffalo Flash Messages - Pico.css Pattern -->
 <%= for (k, messages) in flash { %>
   <%= for (msg) in messages { %>
-    <div class="alert alert-<%= k %>" role="alert">
-      <button type="button" class="close" onclick="this.parentElement.remove()" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-      <%= msg %>
-    </div>
+    <% if (k == "success") { %>
+      <div class="flash-message" style="color: var(--pico-primary); background-color: var(--pico-background-color); border: 1px solid var(--pico-primary); padding: 1rem; margin: 1rem 0; border-radius: var(--pico-border-radius);" role="alert">
+        <%= msg %>
+        <button type="button" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer;" aria-label="Close">&times;</button>
+      </div>
+    <% } else if (k == "danger" || k == "error") { %>
+      <div class="flash-message" style="color: var(--pico-del-color); background-color: var(--pico-background-color); border: 1px solid var(--pico-del-color); padding: 1rem; margin: 1rem 0; border-radius: var(--pico-border-radius);" role="alert">
+        <%= msg %>
+        <button type="button" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer;" aria-label="Close">&times;</button>
+      </div>
+    <% } else { %>
+      <div class="flash-message" style="color: var(--pico-secondary); background-color: var(--pico-background-color); border: 1px solid var(--pico-secondary); padding: 1rem; margin: 1rem 0; border-radius: var(--pico-border-radius);" role="alert">
+        <%= msg %>
+        <button type="button" onclick="this.parentElement.remove()" style="float: right; background: none; border: none; font-size: 1.2rem; cursor: pointer;" aria-label="Close">&times;</button>
+      </div>
+    <% } %>
   <% } %>
 <% } %>
 

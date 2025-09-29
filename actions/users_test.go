@@ -173,15 +173,15 @@ func (as *ActionSuite) Test_AccountSettings_RequiresAuth() {
 	as.Equal(http.StatusFound, res.Code) // Should redirect to signin
 }
 
-func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
+func (as *ActionSuite) Test_AccountSettings_ProgressiveEnhancement() {
 	timestamp := time.Now().UnixNano()
 
 	// Create and login user
 	signupData := map[string]interface{}{
-		"Email":                fmt.Sprintf("htmx-test-%d@example.com", timestamp),
+		"Email":                fmt.Sprintf("progressive-test-%d@example.com", timestamp),
 		"Password":             "password",
 		"PasswordConfirmation": "password",
-		"FirstName":            "HTMX",
+		"FirstName":            "Progressive",
 		"LastName":             "Test",
 		"accept_terms":         "on", // Add required terms acceptance
 	}
@@ -195,18 +195,17 @@ func (as *ActionSuite) Test_AccountSettings_HTMX_Partial() {
 	as.Equal(http.StatusFound, signupRes.Code)
 
 	// Use MockLogin for session-backed requests
-	_, _ = MockLogin(as.T(), as.App, fmt.Sprintf("htmx-test-%d@example.com", timestamp), "password")
+	_, _ = MockLogin(as.T(), as.App, fmt.Sprintf("progressive-test-%d@example.com", timestamp), "password")
 
-	// Test HTMX request (now returns full page with progressive enhancement)
+	// Test progressive enhancement request (returns full page)
 	req := as.HTML("/account")
-	req.Headers["HX-Request"] = "true"
-	htmxRes := req.Get()
+	enhancedRes := req.Get()
 
-	as.Equal(http.StatusOK, htmxRes.Code)
-	as.Contains(htmxRes.Body.String(), "Account Settings")
-	// HTMX response now returns full page (single-template architecture)
-	as.Contains(htmxRes.Body.String(), "American Veterans Rebuilding")
-	as.Contains(htmxRes.Body.String(), "<nav")
+	as.Equal(http.StatusOK, enhancedRes.Code)
+	as.Contains(enhancedRes.Body.String(), "Account Settings")
+	// Progressive enhancement returns full page (single-template architecture)
+	as.Contains(enhancedRes.Body.String(), "American Veterans Rebuilding")
+	as.Contains(enhancedRes.Body.String(), "<nav")
 
 	// Test regular request (should return full page)
 	regularRes := as.HTML("/account").Get()

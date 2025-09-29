@@ -17,10 +17,10 @@ func (as *ActionSuite) Test_DonateHandler_TraditionalForm() {
 	as.Contains(body, "Make a Donation")
 	as.Contains(body, "donor-info")
 
-	// Should contain consolidated HTMX amount buttons
+	// Should contain donation amount selection
 	as.Contains(body, "donation-amounts")
 	as.Contains(body, "amount-grid")
-	as.Contains(body, "hx-patch=\"/donate/update-amount\"")
+	// Progressive enhancement will handle amount updates via JavaScript, not HTMX
 
 	// Should return full HTML structure
 	as.Contains(body, "<!doctype")       // Full HTML document
@@ -71,9 +71,8 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	as.Contains(body, "THE AVR MISSION") // Actual home content
 	as.Contains(body, "American Veterans Rebuilding")
 
-	// Test HTMX access - now also returns full page (progressive enhancement)
+	// Test enhanced access - now also returns full page (progressive enhancement)
 	req := as.HTML("/")
-	req.Headers["HX-Request"] = "true"
 	res2 := req.Get()
 	as.Equal(http.StatusOK, res2.Code)
 	body2 := res2.Body.String()
@@ -82,22 +81,21 @@ func (as *ActionSuite) Test_HomeHandler_Only_Supports_Both() {
 	as.Contains(body2, "<html")           // Single-template architecture
 }
 
-func (as *ActionSuite) Test_HX_Request_Header_Irrelevant_For_Pages() {
-	// Test that HX-Request header doesn't matter for page handlers (single-template)
+func (as *ActionSuite) Test_Single_Template_Architecture() {
+	// Test that all requests return identical full pages (single-template architecture)
 
-	// Test with HX-Request header
+	// Test standard request
 	req := as.HTML("/donate")
-	req.Headers["HX-Request"] = "true"
 	res := req.Get()
 	as.Equal(http.StatusOK, res.Code)
 	body1 := res.Body.String()
 
-	// Test without HX-Request header
+	// Test enhanced request (formerly would have been HTMX)
 	res2 := as.HTML("/donate").Get()
 	as.Equal(http.StatusOK, res2.Code)
 	body2 := res2.Body.String()
 
-	// Should return identical content regardless of header
+	// Should return identical content regardless of request type
 	as.Equal(body1, body2)
 	as.Contains(body1, "<!doctype html>")
 	as.Contains(body2, "<!doctype html>")
@@ -113,7 +111,7 @@ func (as *ActionSuite) Test_Donation_Amount_Buttons_Render() {
 	body := res.Body.String()
 	as.Contains(body, "donation-amounts")
 	as.Contains(body, "amount-grid")
-	as.Contains(body, "hx-patch=\"/donate/update-amount\"")
+	// Progressive enhancement will handle amount updates via JavaScript, not HTMX
 }
 func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 	// Test that main page loads JavaScript properly for progressive enhancement
@@ -122,33 +120,31 @@ func (as *ActionSuite) Test_JavaScript_Load_Strategy() {
 
 	// Check for JavaScript includes in main page (updated paths)
 	body := res.Body.String()
-	as.Contains(body, "/assets/js/htmx.min.js")
 	as.Contains(body, "/assets/js/theme.js")
 	as.Contains(body, "/assets/js/application.js")
+	// No longer using HTMX - using progressive enhancement with vanilla JS
 }
 
-func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
+func (as *ActionSuite) Test_Donate_PresetAmount_Click() {
 	// Fetch CSRF token
 	cookie, token := fetchCSRF(as.T(), as.App, "/donate")
 
-	// Simulate clicking a preset amount button using HTMX headers and values
+	// Simulate clicking a preset amount button with progressive enhancement
 	req := as.HTML("/donate")
-	req.Headers["HX-Request"] = "true"
 	if cookie != "" {
 		req.Headers["Cookie"] = cookie
 	}
-	// HTMX sends values as form-encoded; simulate preset button sending custom_amount
-	// For preset amount clicks, the HTMX endpoint is /donate/update-amount
-	req = as.HTML("/donate/update-amount")
+	// Enhanced requests send values as form-encoded; simulate preset button sending amount
+	// For preset amount clicks, the endpoint is /donate (single template)
+	req = as.HTML("/donate")
 	if req.Headers == nil {
 		req.Headers = map[string]string{}
 	}
-	req.Headers["HX-Request"] = "true"
 	req.Headers["Content-Type"] = "application/x-www-form-urlencoded"
 	if cookie != "" {
 		req.Headers["Cookie"] = cookie
 	}
-	// Prefer header for HTMX CSRF
+	// Use header for CSRF token
 	if token != "" {
 		req.Headers["X-CSRF-Token"] = token
 	}
@@ -159,15 +155,16 @@ func (as *ActionSuite) Test_Donate_HTMX_PresetAmount_Click() {
 	}
 	res := req.Post(formData)
 
-	// We expect a 200 and the amount-selection fragment (no layout)
+	// We expect a 200 and the full HTML page with updated amount selection
 	as.Equal(http.StatusOK, res.Code)
 	body := res.Body.String()
-	// Fragment wrapper id and selected value
+	// Should return a full page with the updated amount
+	as.Contains(body, "<html")
+	as.Contains(body, "<nav")
 	as.Contains(body, "<div id=\"amount-selection\"")
 	as.Contains(body, "value=\"25\"")
-	// Ensure no full layout leaked
-	as.NotContains(body, "<html")
-	as.NotContains(body, "<nav")
+	// Should contain donation form with selected amount
+	as.Contains(body, "Donate $25")
 }
 
 // Test that static asset endpoints return 200 OK and non-empty body

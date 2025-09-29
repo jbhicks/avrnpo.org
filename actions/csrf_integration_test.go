@@ -13,23 +13,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Minimal CSRF/HTMX cycle test to ensure middleware integration compiles
+// Minimal CSRF integration test to ensure middleware works with forms
 func TestCSRFIntegrationCycle(t *testing.T) {
 	app := buffalo.New(buffalo.Options{Env: "development"})
 	app.Use(csrf.New)
 
-	// GET returns a one-time token in a form fragment
-	app.GET("/htmx-test", func(c buffalo.Context) error {
+	// GET returns a one-time token in a form
+	app.GET("/csrf-test", func(c buffalo.Context) error {
 		responseToken := c.Value("authenticity_token")
 		if responseToken == nil {
 			return c.Render(500, r.String("No CSRF token generated"))
 		}
-		html := fmt.Sprintf(`<form method="post" action="/htmx-test" hx-post="/htmx-test"><input type="hidden" name="authenticity_token" value="%s" /></form>`, responseToken)
+		html := fmt.Sprintf(`<form method="post" action="/csrf-test"><input type="hidden" name="authenticity_token" value="%s" /></form>`, responseToken)
 		return c.Render(200, r.String(html))
 	})
 
 	// POST accepts the token and returns ok
-	app.POST("/htmx-test", func(c buffalo.Context) error {
+	app.POST("/csrf-test", func(c buffalo.Context) error {
 		token := c.Param("authenticity_token")
 		if token == "" {
 			return c.Render(400, r.String("missing token"))
@@ -39,7 +39,7 @@ func TestCSRFIntegrationCycle(t *testing.T) {
 
 	// Request to get token (use GET to avoid CSRF middleware rejecting POST)
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", "/htmx-test", nil)
+	req, _ := http.NewRequest("GET", "/csrf-test", nil)
 	app.ServeHTTP(w, req)
 	require.Equal(t, 200, w.Code)
 	require.Contains(t, w.Body.String(), "authenticity_token")
@@ -54,7 +54,7 @@ func TestCSRFIntegrationCycle(t *testing.T) {
 	// CSRF middleware can validate the one-time token against the session.
 	formData := url.Values{"authenticity_token": {token}, "message": {"x"}}
 	w2 := httptest.NewRecorder()
-	req2, _ := http.NewRequest("POST", "/htmx-test", strings.NewReader(formData.Encode()))
+	req2, _ := http.NewRequest("POST", "/csrf-test", strings.NewReader(formData.Encode()))
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	// copy cookies from the GET response

@@ -9,7 +9,7 @@
     <main class="contact-main" id="main-content">
       <h2>Send Us a Message</h2>
 
-       <form method="post" action="/contact" hx-post="/contact" hx-target="#main-content" hx-swap="outerHTML" novalidate>
+        <form method="post" action="/contact" novalidate>
         <% if (authenticity_token) { %>
           <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
         <% } %>

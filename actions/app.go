@@ -8,12 +8,12 @@ import (
 	"fmt"
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo-pop/v3/pop/popmw"
-	"github.com/gobuffalo/pop/v6"
 	"github.com/gobuffalo/envy"
 	"github.com/gobuffalo/logger"
 	"github.com/gobuffalo/middleware/forcessl"
 	"github.com/gobuffalo/middleware/i18n"
 	"github.com/gobuffalo/mw-csrf"
+	"github.com/gobuffalo/pop/v6"
 	"github.com/gorilla/sessions"
 	"github.com/unrolled/secure"
 	"io/fs"
@@ -295,7 +295,7 @@ func App() *buffalo.App {
 
 		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks) in non-test environments
 		if ENV != "test" {
-			app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonateUpdateAmountHandler, DonateHandler)
+			app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
 		}
 		app.GET("/debug/files", debugFilesHandler)
 
@@ -307,8 +307,6 @@ func App() *buffalo.App {
 		app.GET("/projects", ProjectsHandler)
 		app.GET("/donate", DonateHandler)
 		app.POST("/donate", DonateHandler)
-		app.POST("/donate/update-amount", DonateUpdateAmountHandler)
-		app.POST("/donate/update-submit", DonateUpdateSubmitHandler)
 		app.GET("/donate/payment", DonatePaymentHandler)
 		app.GET("/donate/success", DonationSuccessHandler)
 		app.GET("/donate/failed", DonationFailedHandler)
@@ -321,7 +319,7 @@ func App() *buffalo.App {
 			user := &models.User{}
 			err := tx.Where("email = ?", "admin@avrnpo.org").First(user)
 			if err != nil {
-				return c.Render(200, r.String("User not found: " + err.Error()))
+				return c.Render(200, r.String("User not found: "+err.Error()))
 			}
 			return c.Render(200, r.String(fmt.Sprintf("User found: email=%s, role=%s, id=%s", user.Email, user.Role, user.ID)))
 		})

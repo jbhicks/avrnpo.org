@@ -33,10 +33,13 @@ func AuthNew(c buffalo.Context) error {
 
 // AuthCreate attempts to log the user in with an existing account.
 func AuthCreate(c buffalo.Context) error {
+	c.Logger().Infof("AuthCreate called - POST /auth")
 	u := &models.User{}
 	if err := c.Bind(u); err != nil {
+		c.Logger().Errorf("Bind error: %v", err)
 		return errors.WithStack(err)
 	}
+	c.Logger().Infof("Email submitted: %s", u.Email)
 
 	// Preserve the plaintext password before database query
 	plaintextPassword := u.Password
@@ -48,6 +51,7 @@ func AuthCreate(c buffalo.Context) error {
 
 	// helper function to handle bad attempts
 	bad := func() error {
+		c.Logger().Infof("Login failed - rendering auth form with errors")
 		// Always perform a dummy bcrypt operation to prevent timing attacks
 		bcrypt.CompareHashAndPassword([]byte("$2a$10$dummy.hash.to.prevent.timing.attacks"), []byte("dummy"))
 
@@ -58,6 +62,7 @@ func AuthCreate(c buffalo.Context) error {
 
 		verrs := validate.NewErrors()
 		verrs.Add("email", "invalid email/password")
+		c.Logger().Infof("Setting validation errors: %v", verrs)
 
 		c.Set("errors", verrs)
 		c.Set("user", &models.User{}) // Don't leak the submitted email
@@ -94,7 +99,7 @@ func AuthCreate(c buffalo.Context) error {
 		redirectURL = "/admin"
 		logging.UserAction(c, u.Email, "admin_redirect", "Redirecting admin user to admin dashboard", logging.Fields{})
 	}
-	
+
 	// Check if there was a specific redirect URL requested
 	if redir, ok := c.Session().Get("redirectURL").(string); ok && redir != "" {
 		redirectURL = redir

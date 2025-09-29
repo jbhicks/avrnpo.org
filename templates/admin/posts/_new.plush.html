@@ -3,9 +3,9 @@
     <nav class="mb-2">
         <a
             href="/admin/posts"
-            hx-get="/admin/posts"
-            hx-target="#main-content"
-            hx-push-url="true"
+           
+           
+           
             >← Back to Posts</a
         >
     </nav>
@@ -26,10 +26,10 @@
 <% } %>
 
 <form
-    hx-post="/admin/posts"
-    hx-target="body"
-    hx-swap="outerHTML"
-    hx-push-url="true"
+   
+   
+   
+   
     enctype="multipart/form-data"
 >
     <% if (authenticity_token) { %>
@@ -46,9 +46,9 @@
             href="/admin/posts"
             role="button"
             class="outline"
-            hx-get="/admin/posts"
-            hx-target="#main-content"
-            hx-push-url="true"
+           
+           
+           
             >Cancel</a
         >
         <button type="submit" class="primary">Create Post</button>

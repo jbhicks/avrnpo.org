@@ -24,7 +24,7 @@ func (as *ActionSuite) Test_DonateButton_Selection_Persistence() {
 	as.Contains(body, "restoreButtonSelection", "Button selection restoration JavaScript should be present")
 	as.Contains(body, "saveButtonSelection", "Button selection saving JavaScript should be present")
 	as.Contains(body, "sessionStorage.getItem('selectedDonationAmount')", "Session storage usage should be present")
-	as.Contains(body, "htmx:afterSwap", "HTMX after swap handler should be present")
+	// No longer using HTMX - using progressive enhancement
 
 	// Test that the form can be submitted with button selection
 	req := as.HTML("/donate")
