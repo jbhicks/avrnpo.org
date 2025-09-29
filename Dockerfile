@@ -1,5 +1,5 @@
 # Use official Go image for better version control
-FROM golang:1.22-alpine
+FROM golang:1.24-alpine
 
 # Install necessary packages for Buffalo
 RUN apk add --no-cache git ca-certificates tzdata
