@@ -19,6 +19,7 @@ import (
 func UsersNew(c buffalo.Context) error {
 	u := models.User{}
 	c.Set("user", u)
+	c.Set("csrf", c.Value("authenticity_token"))
 	return c.Render(http.StatusOK, r.HTML("users/new.plush.html"))
 }
 
@@ -133,6 +134,7 @@ func ProfileUpdate(c buffalo.Context) error {
 func AccountSettings(c buffalo.Context) error {
 	user := c.Value("current_user").(*models.User)
 	c.Set("user", user)
+	c.Set("csrf", c.Value("authenticity_token"))
 	return c.Render(http.StatusOK, r.HTML("users/account.plush.html"))
 }
 
@@ -260,6 +262,7 @@ func SubscriptionDetails(c buffalo.Context) error {
 
 	c.Set("donation", donation)
 	c.Set("subscription", subscription)
+	c.Set("csrf", c.Value("authenticity_token"))
 	return c.Render(http.StatusOK, r.HTML("users/subscription_details.plush.html"))
 }
 

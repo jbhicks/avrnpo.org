@@ -1,9 +1,5 @@
 <!-- Payment Processing Page Content -->
-<% if (authenticity_token) { %>
-<meta name="csrf-param" content="authenticity_token" />
-<meta name="csrf-token" content="<%= authenticity_token %>" />
-<input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-<% } %>
+<%= csrf() %>
 <div class="payment-container">
   <section>
     <h1>Processing Your <%= if (donationType == "monthly" || donationType == "recurring") { %>Monthly Recurring<% } else { %>One-Time<% } %> Donation</h1>
@@ -49,8 +45,7 @@
     console.log('[DonatePayment] Template variables - donationId:', '<%= donationId %>' ? 'PRESENT' : 'MISSING');
     console.log('[DonatePayment] Template variables - amount:', '<%= amount %>');
     console.log('[DonatePayment] Template variables - donationType:', '<%= donationType %>');
-    console.log('[DonatePayment] Template variables - authenticity_token:', '<%= authenticity_token %>' ? 'PRESENT' : 'MISSING');
-    console.log('[DonatePayment] Authenticity token value:', '<%= authenticity_token %>');
+    console.log('[DonatePayment] Template variables - csrf token:', document.querySelector('meta[name="csrf-token"]') ? 'PRESENT' : 'MISSING');
    console.info('[DonatePayment] Payment page loaded - initializing HelcimPay.js modal');
 
    // Test if basic JavaScript is working
@@ -199,10 +194,13 @@
         console.info('[DonatePayment] CSRF token from hidden input:', csrfToken ? 'PRESENT' : 'MISSING');
       }
 
-      // Final fallback: use the template variable directly
-      if (!csrfToken && '<%= authenticity_token %>') {
-        csrfToken = '<%= authenticity_token %>';
-        console.info('[DonatePayment] CSRF token from template variable: PRESENT');
+      // Final fallback: check if meta tag exists
+      if (!csrfToken) {
+        const metaTag = document.querySelector('meta[name="csrf-token"]');
+        if (metaTag) {
+          csrfToken = metaTag.getAttribute('content');
+          console.info('[DonatePayment] CSRF token from meta tag fallback: PRESENT');
+        }
       }
 
       if (!csrfToken) {

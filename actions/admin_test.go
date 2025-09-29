@@ -15,37 +15,48 @@ func (as *ActionSuite) createAndLoginUser(email, role string) (*models.User, str
 	timestamp := time.Now().UnixNano()
 	uniqueEmail := fmt.Sprintf("test-%d-%s", timestamp, email)
 
-	// If admin role is needed, create user directly with admin role to avoid session caching issues
+	// If admin role is needed, create user via web signup first, then promote to admin
 	if role == "admin" {
-		// Create admin user directly in database with correct role from the start
-		adminUser := &models.User{
-			Email:                uniqueEmail,
-			FirstName:            "Test",
-			LastName:             "User",
-			Role:                 "admin", // Set role to admin from creation
-			Password:             "password123",
-			PasswordConfirmation: "password123",
+		// Create user via web interface like successful user tests do
+		cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
+		as.T().Logf("🔍 Initial signup fetchCSRF - Cookie: '%s', Token exists: %t", cookie, token != "")
+
+		signupData := map[string]interface{}{
+			"Email":                uniqueEmail,
+			"Password":             "password",
+			"PasswordConfirmation": "password",
+			"FirstName":            "Test",
+			"LastName":             "User",
+			"accept_terms":         "on", // Add required terms acceptance
+			"authenticity_token":   token,
 		}
 
-		verrs, err := adminUser.Create(as.DB)
-		as.NoError(err, "Failed to create admin user")
-		as.False(verrs.HasAny(), "Validation errors creating admin user")
-		as.T().Logf("✅ Created admin user %s with admin role from start", uniqueEmail)
-
-		// Now use MockLogin to login as the admin user (this will create proper session)
-		cookie, token := MockLogin(as.T(), as.App, uniqueEmail, "password123")
-		as.T().Logf("🔍 MockLogin result for admin - Cookie: %s, Token: %s", cookie, token)
-
-		// Test that session is working by accessing dashboard
-		testReq := as.HTML("/dashboard")
-		testRes := testReq.Get()
-		if testRes.Code == 200 {
-			as.T().Logf("✅ Admin session working: /dashboard accessible")
-		} else {
-			as.T().Logf("❌ Admin session not working: /dashboard returned %d", testRes.Code)
+		// Create user via web interface to ensure it's properly committed
+		signupReq := as.HTML("/users")
+		if cookie != "" {
+			signupReq.Headers["Cookie"] = cookie
 		}
+		signupRes := signupReq.Post(signupData)
+		as.Equal(http.StatusFound, signupRes.Code)
+		as.T().Logf("✅ User created via web signup: %s", uniqueEmail)
 
-		return adminUser, cookie, token
+		// Now promote the user to admin role using the global DB connection
+		// Use models.DB instead of as.DB to avoid transaction isolation
+		user := &models.User{}
+		err := models.DB.Where("email = ?", uniqueEmail).First(user)
+		as.NoError(err, "Should find user created via web interface")
+
+		user.Role = "admin"
+		verrs, err := models.DB.ValidateAndUpdate(user)
+		as.NoError(err, "Failed to promote user to admin")
+		as.False(verrs.HasAny(), "Validation errors promoting user to admin")
+		as.T().Logf("✅ Promoted user %s to admin role", uniqueEmail)
+
+		// Now use MockLogin to login as the admin user
+		adminCookie, adminToken := MockLogin(as.T(), as.App, uniqueEmail, "password")
+		as.T().Logf("🔍 MockLogin result for admin - Cookie: %s, Token: %s", adminCookie, adminToken)
+
+		return user, adminCookie, adminToken
 	}
 
 	// For regular users, use the web signup flow
@@ -247,18 +258,21 @@ func (as *ActionSuite) Test_AdminDashboard_Success() {
 
 func (as *ActionSuite) Test_AdminUsers_Success() {
 	// Create and login admin user
-	_, cookie, _ := as.createAndLoginUser("admin@example.com", "admin")
+	admin, cookie, _ := as.createAndLoginUser("admin@example.com", "admin")
 
-	// Create additional test user
+	// Create additional test user using global DB to avoid transaction isolation
+	timestamp := time.Now().UnixNano()
+	uniqueUserEmail := fmt.Sprintf("test-user-%d@example.com", timestamp)
+
 	user1 := &models.User{
-		Email:                "user1@example.com",
+		Email:                uniqueUserEmail,
 		FirstName:            "Test",
 		LastName:             "User",
 		Role:                 "user",
 		Password:             "password123",
 		PasswordConfirmation: "password123",
 	}
-	verrs, err := user1.Create(as.DB)
+	verrs, err := user1.Create(models.DB)
 	as.NoError(err)
 	as.False(verrs.HasAny())
 
@@ -270,10 +284,10 @@ func (as *ActionSuite) Test_AdminUsers_Success() {
 	res := req.Get()
 	as.Equal(http.StatusOK, res.Code)
 
-	// Should show both users
+	// Should show both users using their actual emails
 	body := res.Body.String()
-	as.Contains(body, "admin@example.com")
-	as.Contains(body, "user1@example.com")
+	as.Contains(body, admin.Email, "Should show admin user email")
+	as.Contains(body, uniqueUserEmail, "Should show test user email")
 }
 
 func (as *ActionSuite) Test_AdminUsers_Pagination() {
@@ -347,42 +361,50 @@ func (as *ActionSuite) Test_AdminUserCreationDebug() {
 	timestamp := time.Now().UnixNano()
 	uniqueEmail := fmt.Sprintf("debug-admin-%d@example.com", timestamp)
 
-	// Create admin user directly
-	adminUser := &models.User{
-		Email:                uniqueEmail,
-		FirstName:            "Debug",
-		LastName:             "Admin",
-		Role:                 "admin",
-		Password:             "password123",
-		PasswordConfirmation: "password123",
+	// Create user via web interface first (like successful tests do)
+	cookie, token := fetchCSRF(as.T(), as.App, "/users/new")
+	signupData := map[string]interface{}{
+		"Email":                uniqueEmail,
+		"Password":             "password",
+		"PasswordConfirmation": "password",
+		"FirstName":            "Debug",
+		"LastName":             "Admin",
+		"accept_terms":         "on",
+		"authenticity_token":   token,
 	}
 
-	verrs, err := adminUser.Create(as.DB)
+	signupReq := as.HTML("/users")
+	if cookie != "" {
+		signupReq.Headers["Cookie"] = cookie
+	}
+	signupRes := signupReq.Post(signupData)
+	as.Equal(http.StatusFound, signupRes.Code)
+	as.T().Logf("✅ Created user via web signup: %s", uniqueEmail)
+
+	// Promote to admin using global DB connection
+	adminUser := &models.User{}
+	err := models.DB.Where("email = ?", uniqueEmail).First(adminUser)
+	as.NoError(err)
+	adminUser.Role = "admin"
+	verrs, err := models.DB.ValidateAndUpdate(adminUser)
 	as.NoError(err)
 	as.False(verrs.HasAny())
-	as.T().Logf("✅ Created admin user: %s", uniqueEmail)
-
-	// Verify user was saved correctly
-	verifyUser := &models.User{}
-	err = as.DB.Where("email = ?", uniqueEmail).First(verifyUser)
-	as.NoError(err)
-	as.Equal("admin", verifyUser.Role)
-	as.T().Logf("✅ Verified admin role: %s", verifyUser.Role)
+	as.T().Logf("✅ Promoted to admin role: %s", adminUser.Role)
 
 	// Test password verification directly
-	err = verifyUser.VerifyPassword("password123")
+	err = adminUser.VerifyPassword("password")
 	as.NoError(err)
 	as.T().Logf("✅ Password verification passed")
 
 	// Debug: Log the exact password hash and original password
-	as.T().Logf("🔍 Password hash: %s", verifyUser.PasswordHash)
-	as.T().Logf("🔍 Original password used: password123")
+	as.T().Logf("🔍 Password hash: %s", adminUser.PasswordHash)
+	as.T().Logf("🔍 Original password used: password")
 
 	// Now try MockLogin
-	cookie, token := MockLogin(as.T(), as.App, uniqueEmail, "password123")
-	as.T().Logf("MockLogin result - Cookie: %s, Token: %s", cookie, token)
+	loginCookie, loginToken := MockLogin(as.T(), as.App, uniqueEmail, "password")
+	as.T().Logf("MockLogin result - Cookie: %s, Token: %s", loginCookie, loginToken)
 
-	if cookie == "" {
+	if loginCookie == "" {
 		as.T().Logf("❌ MockLogin failed - empty cookie returned")
 		as.Fail("MockLogin returned empty cookie")
 		return
@@ -390,7 +412,7 @@ func (as *ActionSuite) Test_AdminUserCreationDebug() {
 
 	// Test admin route access
 	req := as.HTML("/admin/dashboard")
-	req.Headers["Cookie"] = cookie
+	req.Headers["Cookie"] = loginCookie
 	res := req.Get()
 	as.T().Logf("Admin dashboard access - Status: %d, Location: %s", res.Code, res.Header().Get("Location"))
 

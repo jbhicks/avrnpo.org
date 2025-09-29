@@ -10,9 +10,7 @@
       <h2>Send Us a Message</h2>
 
         <form method="post" action="/contact" novalidate>
-        <% if (authenticity_token) { %>
-          <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
-        <% } %>
+        <%= csrf() %>
 
         <div class="form-row">
           <label for="name">Name <span class="required">*</span>

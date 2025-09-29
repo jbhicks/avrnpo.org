@@ -70,9 +70,7 @@
                                 <p>Canceling your subscription will stop all future donations. This action cannot be undone.</p>
                                 
                                 <form method="POST" action="/account/subscriptions/<%= donation.SubscriptionID %>/cancel">
-                                    <% if (authenticity_token) { %>
-                                      <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
-                                    <% } %>
+                                    <%= csrf() %>
                                     <input type="hidden" name="confirm_cancel" value="true">
                                     <button type="submit" class="outline" style="color: var(--pico-del-color)">
                                         Yes, Cancel Subscription

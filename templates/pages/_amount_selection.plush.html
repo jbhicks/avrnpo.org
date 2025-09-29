@@ -1,5 +1,5 @@
 <div id="amount-selection">
-  <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
+  <%= csrf() %>
   <input type="hidden" name="donation_type" value="<%= donationType %>">
   <input type="hidden" name="amount" id="selected-amount" value="<%= if (amount && amount != "") { %><%= amount %><% } else if (customAmount && customAmount != "") { %><%= customAmount %><% } else { %><%# empty to avoid nil %><% } %>">
   

@@ -277,6 +277,8 @@ func ContactHandler(c buffalo.Context) error {
 	if c.Request().Method == "GET" {
 		// Set form timestamp for bot protection
 		c.Set("form_timestamp", time.Now().Unix())
+		// Ensure CSRF token is available
+		c.Set("csrf", c.Value("authenticity_token"))
 		return c.Render(http.StatusOK, r.HTML("pages/contact.plush.html"))
 	}
 
@@ -357,6 +359,9 @@ func DonateHandler(c buffalo.Context) error {
 	if c.Request().Method == "GET" {
 		// Set up all context variables for the donation form
 		setupDonateFormContext(c)
+
+		// Ensure CSRF token is available
+		c.Set("csrf", c.Value("authenticity_token"))
 
 		// Set default values for form fields if not already set
 		if c.Value("amount") == nil || c.Value("amount") == "" {
@@ -625,6 +630,7 @@ func DonateHandler(c buffalo.Context) error {
 func DonatePaymentHandler(c buffalo.Context) error {
 	// Ensure CSRF token is available for the template
 	ensureDonateContext(c)
+	c.Set("csrf", c.Value("authenticity_token"))
 
 	// Get session data from the donation initialization
 	donationID := c.Session().Get("donation_id")

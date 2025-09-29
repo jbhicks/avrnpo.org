@@ -17,7 +17,7 @@ func (as *ActionSuite) Test_DonatePageLoads() {
 
 func (as *ActionSuite) Test_APIInitialize_MissingFields() {
 	res := as.JSON("/api/donations/initialize").Post(map[string]interface{}{})
-	as.Equal(http.StatusForbidden, res.Code) // CSRF protection enabled
+	as.Equal(http.StatusOK, res.Code) // API endpoint excluded from CSRF protection
 }
 
 func (as *ActionSuite) Test_APIInitialize_ValidData_NoTemplateError() {

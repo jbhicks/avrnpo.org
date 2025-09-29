@@ -58,14 +58,20 @@ echo "📝 Analyzing templates and controllers..."
 # Track validation results
 TEMPLATE_ERRORS=0
 MISSING_VARS=()
-
-# Track validation results
-TEMPLATE_ERRORS=0
-MISSING_VARS=()
+CSRF_WARNINGS=()
 
 # Find all Plush templates and process them
 while IFS= read -r -d '' template_file; do
     echo "🔍 Validating: $template_file"
+
+    # Check for deprecated CSRF token usage
+    if grep -q 'authenticity_token' "$template_file"; then
+        if grep -q 'name="authenticity_token"' "$template_file" || grep -q 'value="<%= authenticity_token %>"' "$template_file"; then
+            echo -e "${YELLOW}⚠️  DEPRECATED: $template_file uses old authenticity_token pattern${NC}"
+            echo "   💡 Replace with: <%= csrf() %>"
+            CSRF_WARNINGS+=("$template_file")
+        fi
+    fi
 
     # Skip syntax validation - use existing parse_test.go for that
     # Just focus on variable validation which is the enhancement
@@ -216,6 +222,7 @@ echo ""
 echo "📊 Validation Summary:"
 echo "   Templates with syntax errors: $TEMPLATE_ERRORS"
 echo "   Missing variables: ${#MISSING_VARS[@]}"
+echo "   CSRF warnings: ${#CSRF_WARNINGS[@]}"
 
 if [ $TEMPLATE_ERRORS -gt 0 ] || [ ${#MISSING_VARS[@]} -gt 0 ]; then
     echo -e "${RED}❌ Template validation failed!${NC}"
@@ -236,7 +243,20 @@ if [ $TEMPLATE_ERRORS -gt 0 ] || [ ${#MISSING_VARS[@]} -gt 0 ]; then
 
     exit 1
 else
-    echo -e "${GREEN}✅ All templates validated successfully!${NC}"
+    if [ ${#CSRF_WARNINGS[@]} -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Templates have CSRF warnings but validation passed${NC}"
+        echo ""
+        echo "CSRF warnings (should be fixed):"
+        for warning in "${CSRF_WARNINGS[@]}"; do
+            echo -e "   ${YELLOW}• $warning${NC}"
+        done
+        echo ""
+        echo "💡 Replace old CSRF pattern:"
+        echo "   OLD: <input name=\"authenticity_token\" value=\"<%= authenticity_token %>\">"
+        echo "   NEW: <%= csrf() %>"
+    else
+        echo -e "${GREEN}✅ All templates validated successfully!${NC}"
+    fi
 fi
 
 exit 0

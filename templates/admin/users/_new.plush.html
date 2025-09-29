@@ -25,9 +25,7 @@
 
 <form action="/admin/users" method="POST"
      >
-  <% if (authenticity_token) { %>
-    <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
-  <% } %>
+  <%= csrf() %>
 
   <div class="grid-2col">
     <!-- User Information -->

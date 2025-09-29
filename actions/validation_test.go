@@ -348,34 +348,32 @@ func TestProductionCSRFBuiltInPattern(t *testing.T) {
 	os.Setenv("BUFFALO_CSRF_STRICT", "true")
 	app.Use(csrf.New)
 
-	app.POST("/secure-test", func(c buffalo.Context) error {
-		// First check if we have a token in the request
-		token := c.Param("authenticity_token")
-		if token == "" {
-			// No token provided, this is the first request - return form with token
-			responseToken := c.Value("authenticity_token")
-			if responseToken == nil {
-				return c.Render(500, r.String("No CSRF token generated"))
-			}
-			html := fmt.Sprintf(`<form method="post" action="/secure-test">
-				<input type="hidden" name="authenticity_token" value="%s" />
-				<input type="text" name="data" required />
-				<button type="submit">Submit</button>
-			</form>`, responseToken)
-			return c.Render(200, r.String(html))
-		} else {
-			// Token provided, validate it
-			data := c.Param("data")
-			return c.Render(200, r.String(fmt.Sprintf("Secure submission: %s", data)))
+	// GET route to serve the form with CSRF token
+	app.GET("/secure-test", func(c buffalo.Context) error {
+		responseToken := c.Value("authenticity_token")
+		if responseToken == nil {
+			return c.Render(500, r.String("No CSRF token generated"))
 		}
+		html := fmt.Sprintf(`<form method="post" action="/secure-test">
+			<input type="hidden" name="authenticity_token" value="%s" />
+			<input type="text" name="data" required />
+			<button type="submit">Submit</button>
+		</form>`, responseToken)
+		return c.Render(200, r.String(html))
 	})
 
-	// Test production form loading
+	// POST route to handle form submission
+	app.POST("/secure-test", func(c buffalo.Context) error {
+		data := c.Param("data")
+		return c.Render(200, r.String(fmt.Sprintf("Secure submission: %s", data)))
+	})
+
+	// Test GET request to load form with CSRF token
 	w1 := httptest.NewRecorder()
-	req1, _ := http.NewRequest("POST", "/secure-test", nil)
+	req1, _ := http.NewRequest("GET", "/secure-test", nil)
 	app.ServeHTTP(w1, req1)
 
-	require.Equal(t, 200, w1.Code, "Production POST should return form with token")
+	require.Equal(t, 200, w1.Code, "GET request should return form with token")
 	require.Contains(t, w1.Body.String(), "authenticity_token")
 
 	// Extract token
@@ -384,7 +382,13 @@ func TestProductionCSRFBuiltInPattern(t *testing.T) {
 	tokenEnd := strings.Index(bodyString[tokenStart:], `"`) + tokenStart
 	token := bodyString[tokenStart:tokenEnd]
 
-	// Test production form submission
+	// Test POST without token should be rejected
+	w_notoken := httptest.NewRecorder()
+	req_notoken, _ := http.NewRequest("POST", "/secure-test", nil)
+	app.ServeHTTP(w_notoken, req_notoken)
+	require.Equal(t, 403, w_notoken.Code, "POST without CSRF token should be rejected")
+
+	// Test production form submission with session cookies
 	formData := url.Values{
 		"authenticity_token": {token},
 		"data":               {"production test data"},
@@ -393,6 +397,11 @@ func TestProductionCSRFBuiltInPattern(t *testing.T) {
 	w2 := httptest.NewRecorder()
 	req2, _ := http.NewRequest("POST", "/secure-test", strings.NewReader(formData.Encode()))
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Copy session cookies from GET request to maintain CSRF token association
+	for _, cookie := range w1.Result().Cookies() {
+		req2.AddCookie(cookie)
+	}
 
 	app.ServeHTTP(w2, req2)
 

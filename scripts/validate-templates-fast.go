@@ -297,7 +297,7 @@ func removeHelperFunctionCalls(expr string) string {
 	// Remove custom helper function calls like getDonateButtonText(...), stripTags(...), etc.
 	// This regex matches: functionName(anything until closing paren)
 	// But excludes common keywords and built-in functions
-	helperRe := regexp.MustCompile(`\b(getDonateButtonText|stripTags|dateFormat|getCurrentURL)\([^)]*\)`)
+	helperRe := regexp.MustCompile(`\b(getDonateButtonText|stripTags|dateFormat|getCurrentURL|csrf)\([^)]*\)`)
 	expr = helperRe.ReplaceAllString(expr, "")
 
 	return expr

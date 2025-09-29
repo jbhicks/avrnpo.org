@@ -87,7 +87,7 @@
     </header>
     
     <form action="/account" method="POST">
-      <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>" />
+      <%= csrf() %>
       <fieldset>
         <label>
           Current Password

@@ -1,5 +1,5 @@
 <form id="donation-form" method="post" action="/donate" autocomplete="on" novalidate>
-  <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
+  <%= csrf() %>
   <div id="donation-form-content">
 
 

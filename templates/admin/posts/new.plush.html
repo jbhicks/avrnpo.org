@@ -27,9 +27,7 @@
       </ul>
     </div>
     <% } %>    <form action="/admin/posts" method="POST" enctype="multipart/form-data">
-      <% if (authenticity_token) { %>
-        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
-      <% } %>
+      <%= csrf() %>
 
       <!-- Basic Information -->
       <section class="form-section">

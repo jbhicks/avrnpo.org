@@ -29,6 +29,7 @@ help:
 	@echo "  test-fast       - ⚡ Run Buffalo tests without database setup"
 	@echo "  test-resilient  - 🛡️  Run tests with automatic database startup"
 	@echo "  test-integration - 🔒 Run CSRF integration tests (tests real middleware)"
+	@echo "  test-e2e        - 🌐 Run end-to-end tests with browser automation"
 	@echo "  validate-templates - 🔍 Enhanced template validation with variable checking"
 	@echo "  validate-templates-verbose - 🔍 Enhanced template validation with detailed output"
 	@echo "  build           - 🔨 Build the application for production"
@@ -341,13 +342,13 @@ db-reset:
 		echo "❌ Database failed to start. Cannot reset."; \
 		exit 1; \
 	fi
-	@echo "� Terminating active database connections..."
+	@echo "🔌 Terminating active database connections..."
 	@if command -v docker-compose >/dev/null 2>&1; then \
 		docker-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='avrnpo_development' AND pid <> pg_backend_pid();" 2>/dev/null || echo "No active connections to terminate"; \
 	elif command -v podman-compose >/dev/null 2>&1; then \
 		podman-compose exec postgres psql -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='avrnpo_development' AND pid <> pg_backend_pid();" 2>/dev/null || echo "No active connections to terminate"; \
 	fi
-	@echo "�🗑️  Dropping development database..."
+	@echo "🗑️  Dropping development database..."
 	@buffalo pop drop -e development 2>/dev/null || echo "Database drop failed (may not exist)"
 	@echo "🏗️  Creating development database..."
 	@buffalo pop create -e development || (echo "❌ Database create failed" && exit 1)
@@ -432,6 +433,36 @@ test-integration: check-deps db-up
 	else \
 		echo "❌ CSRF integration tests failed. Check the output above for details."; \
 		echo "💡 These tests verify that CSRF protection works with real middleware"; \
+		exit 1; \
+	fi
+
+# End-to-end tests with browser automation
+test-e2e: check-deps db-up
+	@echo "🌐 Running end-to-end tests with browser automation..."
+	@if ! ./scripts/wait-for-postgres.sh; then \
+		echo "❌ Database is not ready. Cannot run E2E tests."; \
+		exit 1; \
+	fi
+	@echo "🔄 Setting up E2E test database..."
+	@GO_ENV=test buffalo pop create -a >/dev/null 2>&1 || true
+	@GO_ENV=test buffalo pop migrate up >/dev/null 2>&1 || true
+	@echo "🚀 Starting Buffalo server in background for E2E tests..."
+	@# Kill any existing Buffalo processes on port 3001
+	@fuser -k 3001/tcp || true
+	@sleep 1
+	@GO_ENV=test buffalo dev > /tmp/buffalo_e2e.log 2>&1 &
+	@SERVER_PID=$$!; \
+	echo "Server PID: $$SERVER_PID"; \
+	sleep 5; \
+	echo "🏃 Executing E2E tests..."
+	@if GO_ENV=test go test ./actions -run "Test_E2ESuite" -v; then \
+		echo "✅ All E2E tests passed!"; \
+		echo "🌐 Browser automation tests completed successfully"; \
+		kill $$SERVER_PID 2>/dev/null || true; \
+	else \
+		echo "❌ E2E tests failed. Check the output above for details."; \
+		echo "💡 These tests simulate real user interactions with the website"; \
+		kill $$SERVER_PID 2>/dev/null || true; \
 		exit 1; \
 	fi
 

@@ -3,6 +3,7 @@ package actions
 import (
 	"avrnpo.org/models"
 	"fmt"
+	"strconv"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop/v6"
@@ -60,4 +61,37 @@ func BlogShow(c buffalo.Context) error {
 	c.Set("baseURL", scheme+"://"+req.Host)
 
 	return c.Render(200, r.HTML("blog/show.plush.html"))
+}
+
+// BlogLoadMore loads additional posts for infinite scroll
+func BlogLoadMore(c buffalo.Context) error {
+	tx, ok := c.Value("tx").(*pop.Connection)
+	if !ok {
+		return fmt.Errorf("no transaction found")
+	}
+
+	pageStr := c.Param("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Define posts per page (e.g., 10)
+	postsPerPage := 10
+
+	posts := []models.Post{}
+	// Get published posts with pagination
+	if err := tx.Where("published = ?", true).Order("created_at desc").Paginate(page, postsPerPage).All(&posts); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// Check if there are more posts
+	hasMore := len(posts) == postsPerPage
+
+	// Return JSON response
+	return c.Render(200, r.JSON(map[string]interface{}{
+		"posts":    posts,
+		"hasMore":  hasMore,
+		"nextPage": page + 1,
+	}))
 }

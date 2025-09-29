@@ -6,7 +6,7 @@
   </hgroup>
     
     <form action="/auth" method="POST" autocomplete="on">
-      <input name="authenticity_token" value="<%= authenticity_token %>" type="hidden">
+      <%= csrf() %>
       <fieldset>
         <label>
           Email

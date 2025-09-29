@@ -78,6 +78,7 @@ func (pr PostsResource) Show(c buffalo.Context) error {
 func (pr PostsResource) New(c buffalo.Context) error {
 	post := &models.Post{}
 	c.Set("post", post)
+	c.Set("csrf", c.Value("authenticity_token"))
 
 	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/new.plush.html"))
@@ -113,6 +114,7 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 	} else if verrs.HasAny() {
 		c.Set("post", post)
 		c.Set("errors", verrs)
+		c.Set("csrf", c.Value("authenticity_token"))
 
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/new.plush.html"))
@@ -138,6 +140,7 @@ func (pr PostsResource) Edit(c buffalo.Context) error {
 	}
 
 	c.Set("post", post)
+	c.Set("csrf", c.Value("authenticity_token"))
 
 	// Always return the complete page - Single Template Architecture
 	return c.Render(http.StatusOK, r.HTML("admin/posts/edit.plush.html"))
@@ -171,6 +174,7 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 	} else if verrs.HasAny() {
 		c.Set("post", post)
 		c.Set("errors", verrs)
+		c.Set("csrf", c.Value("authenticity_token"))
 
 		// Always return complete page for validation errors
 		return c.Render(http.StatusUnprocessableEntity, r.HTML("admin/posts/edit.plush.html"))

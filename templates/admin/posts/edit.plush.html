@@ -34,10 +34,10 @@
         <% } %>
       </ul>
     </div>
-    <% } %>    <form action="/admin/posts/<%= post.ID %>" method="POST" enctype="multipart/form-data">
-      <% if (authenticity_token) { %>
-        <input type="hidden" name="authenticity_token" value="<%= authenticity_token %>">
-      <% } %>
+    <% } %>
+    
+    <form action="/admin/posts/<%= post.ID %>" method="POST" enctype="multipart/form-data">
+      <%= csrf() %>
       <input type="hidden" name="_method" value="PUT">
 
       <!-- Post Status -->

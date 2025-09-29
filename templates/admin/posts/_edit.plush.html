@@ -54,13 +54,7 @@
    
     enctype="multipart/form-data"
 >
-    <% if (authenticity_token) { %>
-    <input
-        type="hidden"
-        name="authenticity_token"
-        value="<%= authenticity_token %>"
-    />
-    <% } %> <%= partial("admin/posts/form") %>
+    <%= csrf() %> <%= partial("admin/posts/form") %>
 
     <!-- Form Actions -->
     <div class="form-actions between">

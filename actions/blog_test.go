@@ -86,6 +86,7 @@ func (as *ActionSuite) Test_AdminPostsIndex_WithAdmin() {
 
 	// Set admin session directly following Buffalo patterns
 	as.Session.Set("current_user_id", admin.ID)
+	as.Session.Set("current_user_role", "admin")
 
 	// Test admin posts index
 	req := as.HTML("/admin/posts")
@@ -120,9 +121,10 @@ func (as *ActionSuite) Test_AdminPostsCreate() {
 		Published: true,
 	}
 
-	res := as.HTML("/admin/posts").Post(postData)
+	req := as.HTML("/admin/posts")
+	res := req.Post(postData)
 
-	as.Equal(303, res.Code) // Should redirect after creation (303 See Other)
+	as.Equal(302, res.Code) // Should redirect after creation (302 Found)
 
 	// Verify post was created
 	post := &models.Post{}

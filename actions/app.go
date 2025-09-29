@@ -286,17 +286,15 @@ func App() *buffalo.App {
 		// Set current user for all requests (after DB transactions)
 		app.Use(SetCurrentUser)
 
-		// TEMPORARILY DISABLE CSRF for debugging
+		// CSRF protection middleware
 		app.Use(csrf.New)
 
 		// Additional middleware can be added here. Examples:
 		// app.Use(forceSSL())
 		// app.Use(secure.New(secure.Options{...}).Handler)
 
-		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks) in non-test environments
-		if ENV != "test" {
-			app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler)
-		}
+		// Skip CSRF protection only for legitimate API endpoints (webhooks, payment callbacks)
+		app.Middleware.Skip(csrf.New, HelcimWebhookHandler, debugFilesHandler, DebugFlashHandler, DonationInitializeHandler, ProcessPaymentHandler)
 		app.GET("/debug/files", debugFilesHandler)
 
 		// Public routes
@@ -330,6 +328,7 @@ func App() *buffalo.App {
 		app.POST("/auth", AuthCreate)
 		app.DELETE("/auth", AuthDestroy)
 		app.GET("/auth/logout", AuthDestroy)
+		app.GET("/api/blog/load-more/{page}", BlogLoadMore)
 		app.GET("/dashboard", Authorize(DashboardHandler))
 		app.GET("/profile", Authorize(ProfileSettings))
 		app.POST("/profile", Authorize(ProfileUpdate))

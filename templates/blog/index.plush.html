@@ -1,21 +1,80 @@
-<section class="container">
-  <header>
-    <h1>Blog</h1>
-    <p>Latest updates and insights from American Veterans Rebuilding</p>
-  </header>
+ <section class="container">
+   <header>
+     <h1>Blog</h1>
+     <p>Latest updates and insights from American Veterans Rebuilding</p>
+   </header>
 
-  <% if (len(posts) > 0) { %>
-    <section class="posts-grid">
-      <% for (post) in posts { %>
-        <article>
-          <h3><%= post.Title %></h3>
-          <p><%= post.Content %></p>
-        </article>
-      <% } %>
-    </section>
-  <% } else { %>
-    <section>
-      <p>No blog posts available at this time. Check back soon for updates!</p>
-    </section>
-  <% } %>
-</section>
+   <% if (len(posts) > 0) { %>
+     <section class="posts-grid" id="posts-container">
+       <% for (post) in posts { %>
+         <article>
+           <h3><%= post.Title %></h3>
+           <p><%= post.Content %></p>
+         </article>
+       <% } %>
+     </section>
+     <div id="loading-indicator" style="display: none; text-align: center; padding: 20px;">
+       <p>Loading more posts...</p>
+     </div>
+   <% } else { %>
+     <section>
+       <p>No blog posts available at this time. Check back soon for updates!</p>
+     </section>
+   <% } %>
+ </section>
+
+ <script>
+   document.addEventListener('DOMContentLoaded', function() {
+     const postsContainer = document.getElementById('posts-container');
+     const loadingIndicator = document.getElementById('loading-indicator');
+     let currentPage = 1;
+     let isLoading = false;
+     let hasMore = true;
+
+     // Create observer for infinite scroll
+     const observer = new IntersectionObserver((entries) => {
+       entries.forEach(entry => {
+         if (entry.isIntersecting && !isLoading && hasMore) {
+           loadMorePosts();
+         }
+       });
+     }, { threshold: 1.0 });
+
+     // Observe the loading indicator
+     observer.observe(loadingIndicator);
+
+     function loadMorePosts() {
+       if (isLoading || !hasMore) return;
+
+       isLoading = true;
+       loadingIndicator.style.display = 'block';
+
+       currentPage++;
+
+       fetch(`/api/blog/load-more/${currentPage}`)
+         .then(response => response.json())
+         .then(data => {
+           hasMore = data.hasMore;
+           if (data.posts && data.posts.length > 0) {
+             data.posts.forEach(post => {
+               const article = document.createElement('article');
+               article.innerHTML = `<h3>${post.title}</h3><p>${post.content}</p>`;
+               postsContainer.appendChild(article);
+             });
+           }
+           loadingIndicator.style.display = 'none';
+           isLoading = false;
+
+           // If no more posts, stop observing
+           if (!hasMore) {
+             observer.unobserve(loadingIndicator);
+           }
+         })
+         .catch(error => {
+           console.error('Error loading more posts:', error);
+           loadingIndicator.style.display = 'none';
+           isLoading = false;
+         });
+     }
+   });
+ </script>

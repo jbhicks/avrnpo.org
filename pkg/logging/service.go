@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -165,13 +166,28 @@ func (s *Service) Warn(msg string, fields ...Fields) {
 	}
 }
 
-// Error logs an error level message
+// Error logs an error level message with stack trace
 func (s *Service) Error(msg string, err error, fields ...Fields) {
 	entry := s.logger.WithFields(logrus.Fields{}) // Start with an empty Fields map for logrus
 	if len(fields) > 0 && fields[0] != nil {
 		entry = s.WithFields(fields[0])
 	}
 	if err != nil {
+		// Add stack trace for production debugging
+		if s.config.Environment == "production" {
+			pc := make([]uintptr, 10)
+			n := runtime.Callers(2, pc)
+			frames := runtime.CallersFrames(pc[:n])
+			stack := ""
+			for {
+				frame, more := frames.Next()
+				stack += fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function)
+				if !more {
+					break
+				}
+			}
+			entry = entry.WithField("stack", stack)
+		}
 		entry.WithError(err).Error(msg)
 	} else {
 		entry.Error(msg)

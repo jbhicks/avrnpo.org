@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"io/fs"
 
 	public "avrnpo.org/public"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/helpers/forms"
+	"github.com/gobuffalo/helpers/hctx"
+	"github.com/gobuffalo/tags/v3"
 )
 
 var r *render.Engine
@@ -27,6 +30,7 @@ func init() {
 		"getDonateButtonText": getDonateButtonText,
 		"current_path":        func() string { return "/" },
 		"t":                   func(s string, args ...interface{}) string { return s }, // Simple fallback translator
+		"csrf":                csrfHelper,
 	}
 
 	// Get the assets sub-filesystem
@@ -75,4 +79,18 @@ func dateFormatHelper(t time.Time, format string) string {
 // This function is useful for ensuring that user-generated content is displayed safely.
 func SanitizeString(s string) string {
 	return template.HTMLEscapeString(s)
+}
+
+// csrfHelper returns the CSRF token from the context for use in templates
+func csrfHelper(opts tags.Options, help hctx.HelperContext) (template.HTML, error) {
+	if help == nil {
+		return template.HTML(""), nil
+	}
+
+	token := help.Value("authenticity_token")
+	if token == nil {
+		return template.HTML(""), nil
+	}
+
+	return template.HTML(fmt.Sprintf(`<input name="authenticity_token" type="hidden" value="%s" />`, token)), nil
 }
