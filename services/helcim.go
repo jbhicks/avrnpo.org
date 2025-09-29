@@ -208,7 +208,7 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
-	httpReq.Header.Set("idempotencyKey", idempotencyKey) // Required by Helcim API
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {
@@ -278,7 +278,7 @@ func (h *HelcimClient) CreatePaymentPlan(amount float64, planName string) (*Paym
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
-	httpReq.Header.Set("idempotencyKey", idempotencyKey) // Required by Helcim API
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {
@@ -369,7 +369,7 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("api-token", h.APIToken)
-	httpReq.Header.Set("idempotencyKey", idempotencyKey) // Required by Helcim API
+	httpReq.Header.Set("Idempotency-Key", idempotencyKey) // Required by Helcim API
 
 	resp, err := h.Client.Do(httpReq)
 	if err != nil {
