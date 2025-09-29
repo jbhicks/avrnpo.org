@@ -76,7 +76,6 @@ type PaymentAPIRequest struct {
 	BillingAddress *BillingAddress `json:"billingAddress,omitempty"`
 	CustomerEmail  string          `json:"customerEmail,omitempty"`
 	CustomerName   string          `json:"customerName,omitempty"`
-	IdempotencyKey string          `json:"idempotencyKey,omitempty"`
 }
 
 type CardData struct {
@@ -193,9 +192,6 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 	if len(h.APIToken) > 8 {
 		fmt.Printf("[Helcim] Using API token: %s...%s\n", h.APIToken[:4], h.APIToken[len(h.APIToken)-4:])
 	}
-
-	// Set idempotencyKey in the request body
-	req.IdempotencyKey = idempotencyKey
 
 	jsonData, err := json.Marshal(req)
 	if err != nil {
