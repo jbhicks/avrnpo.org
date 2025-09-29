@@ -93,6 +93,30 @@ install-deps:
 # Start database and development server with improved resilience
 dev: check-deps validate-templates
 	@echo "🏃 Starting development environment..."
+	@echo "🔍 Checking for conflicting PostgreSQL containers..."
+	@# Kill any existing PostgreSQL containers that might be using our port
+	@if command -v docker >/dev/null 2>&1; then \
+		CONFLICTING_CONTAINERS=$$(docker ps -q --filter "publish=5432" --filter "ancestor=postgres" 2>/dev/null); \
+		if [ -n "$$CONFLICTING_CONTAINERS" ]; then \
+			echo "🔪 Found conflicting PostgreSQL containers using port 5432:"; \
+			docker ps --filter "publish=5432" --filter "ancestor=postgres" --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"; \
+			echo "🗡️  Stopping conflicting containers..."; \
+			docker stop $$CONFLICTING_CONTAINERS >/dev/null 2>&1; \
+			docker rm $$CONFLICTING_CONTAINERS >/dev/null 2>&1; \
+			echo "✅ Conflicting containers removed"; \
+		fi; \
+	fi; \
+	if command -v podman >/dev/null 2>&1; then \
+		CONFLICTING_CONTAINERS=$$(podman ps -q --filter "publish=5432" --filter "ancestor=postgres" 2>/dev/null); \
+		if [ -n "$$CONFLICTING_CONTAINERS" ]; then \
+			echo "🔪 Found conflicting PostgreSQL containers using port 5432:"; \
+			podman ps --filter "publish=5432" --filter "ancestor=postgres" --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}"; \
+			echo "🗡️  Stopping conflicting containers..."; \
+			podman stop $$CONFLICTING_CONTAINERS >/dev/null 2>&1; \
+			podman rm $$CONFLICTING_CONTAINERS >/dev/null 2>&1; \
+			echo "✅ Conflicting containers removed"; \
+		fi; \
+	fi
 	@echo "🔍 Checking database status..."
 	@# Check if database is already running and ready
 	@DB_READY=false; \
