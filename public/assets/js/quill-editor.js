@@ -63,6 +63,14 @@
                 quill.on('text-change', function() {
                     hiddenInput.value = quill.root.innerHTML;
                 });
+                
+                // Sync content before form submission to ensure it's captured
+                const form = element.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function() {
+                        hiddenInput.value = quill.root.innerHTML;
+                    });
+                }
             }
         });
         

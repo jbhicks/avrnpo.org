@@ -27,9 +27,17 @@
   <h3>Content</h3>
 
   <div class="form-group">
-    <label for="post-content">Post Content *</label>
-    <textarea id="post-content" name="Content" rows="15" required placeholder="Write your post content here... You can use Markdown formatting."><%= post.Content %></textarea>
-    <small>Use Markdown formatting for rich content. Images can be uploaded separately.</small>
+    <label for="post-content-editor">Post Content *</label>
+    
+    <!-- Quill Rich Text Editor -->
+    <div id="post-content-editor" class="quill-editor">
+      <%= if (post.Content) { %><%= raw(post.Content) %><% } %>
+    </div>
+    
+    <!-- Hidden input to store HTML content for form submission -->
+    <input type="hidden" id="post-content" name="Content" required>
+    
+    <small>Use the rich text editor to format your content with headings, bold, italic, links, images, and more.</small>
   </div>
 </section>
 

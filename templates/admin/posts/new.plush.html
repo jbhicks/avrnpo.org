@@ -26,76 +26,18 @@
         <% } %>
       </ul>
     </div>
-    <% } %>    <form action="/admin/posts" method="POST" enctype="multipart/form-data">
+    <% } %>
+    
+    <form action="/admin/posts" method="POST" enctype="multipart/form-data">
       <%= csrf() %>
-
-      <!-- Basic Information -->
-      <section class="form-section">
-        <h3>Basic Information</h3>
-
-        <div class="form-group">
-          <label for="post-title">Post Title *</label>
-          <input type="text" id="post-title" name="Title" value="<%= post.Title %>" required placeholder="e.g., Veteran John Smith Completes Technical Training Program">
-          <small>This will be the main headline for your post</small>
-        </div>
-
-        <div class="form-group">
-          <label for="post-slug">URL Slug</label>
-          <input type="text" id="post-slug" name="Slug" value="<%= post.Slug %>" placeholder="Auto-generated from title">
-          <small>Leave blank to auto-generate from title (e.g., veteran-john-smith-training)</small>
-        </div>
-
-        <div class="form-group">
-          <label for="post-published">
-            <input type="checkbox" id="post-published" name="Published" value="true" <%= if (post.Published) { %>checked<% } %>>
-            Publish immediately
-          </label>
-          <small>Uncheck to save as draft</small>
-        </div>
-      </section>
-
-      <!-- Content -->
-      <section class="form-section">
-        <h3>Content</h3>
-
-        <div class="form-group">
-          <label for="post-content">Post Content *</label>
-          <textarea id="post-content" name="Content" rows="15" required placeholder="Share the veteran's story, program details, or community impact..."><%= post.Content %></textarea>
-          <small>Use HTML tags for formatting: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;</small>
-        </div>
-
-        <div class="form-group">
-          <label for="post-image">Featured Image</label>
-          <input type="file" id="post-image" name="Image" accept="image/*">
-          <small>Upload a photo related to the story (veterans, training, community events)</small>
-        </div>
-      </section>
-
-      <!-- SEO Settings -->
-      <section class="form-section">
-        <h3>SEO & Social Sharing</h3>
-
-        <div class="form-group">
-          <label for="post-meta-description">Meta Description</label>
-          <textarea id="post-meta-description" name="MetaDescription" rows="3" maxlength="160" placeholder="Brief description for search engines and social media (160 characters max)"><%= post.MetaDescription %></textarea>
-          <small>This appears in search results and social media previews</small>
-        </div>
-
-        <div class="form-group">
-          <label for="post-meta-keywords">Keywords</label>
-          <input type="text" id="post-meta-keywords" name="MetaKeywords" value="<%= post.MetaKeywords %>" placeholder="veterans, training, American Veterans Rebuilding, military">
-          <small>Comma-separated keywords to help people find this content</small>
-        </div>
-      </section>
+      
+      <%= partial("admin/posts/form") %>
 
       <!-- Form Actions -->
-      <section class="form-actions between">
-        <div class="flex-gap">
-          <a href="/admin/posts" role="button" class="secondary">Cancel</a>
-          <button type="submit" name="action" value="draft" role="button" class="outline">Save as Draft</button>
-          <button type="submit" name="action" value="publish" role="button">Publish Post</button>
-        </div>
-      </section>
+      <div class="form-actions">
+        <a href="/admin/posts" role="button" class="secondary">Cancel</a>
+        <button type="submit">Create Post</button>
+      </div>
     </form>
 
     <!-- Content Guidelines -->

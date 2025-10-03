@@ -2,6 +2,7 @@ package actions
 
 import (
 	"avrnpo.org/models"
+	"avrnpo.org/services"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -108,6 +109,9 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 		post.GenerateSlug()
 	}
 
+	// Sanitize HTML content to prevent XSS attacks
+	post.Content = services.SanitizeHTML(post.Content)
+
 	// Validate and create post
 	if verrs, err := tx.ValidateAndCreate(post); err != nil {
 		return errors.WithStack(err)
@@ -168,6 +172,9 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 	if post.Slug == "" {
 		post.GenerateSlug()
 	}
+
+	// Sanitize HTML content to prevent XSS attacks
+	post.Content = services.SanitizeHTML(post.Content)
 
 	if verrs, err := tx.ValidateAndUpdate(post); err != nil {
 		return errors.WithStack(err)
@@ -268,3 +275,4 @@ func (pr PostsResource) Bulk(c buffalo.Context) error {
 
 	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
+
