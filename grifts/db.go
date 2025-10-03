@@ -160,6 +160,35 @@ var _ = grift.Namespace("db", func() {
 		return nil
 	})
 
+	grift.Desc("check_posts", "Check all posts and published posts")
+	grift.Add("check_posts", func(c *grift.Context) error {
+		db := models.DB
+
+		// Query all posts
+		posts := []models.Post{}
+		if err := db.All(&posts); err != nil {
+			return fmt.Errorf("failed to query all posts: %w", err)
+		}
+
+		fmt.Printf("Found %d posts:\n", len(posts))
+		for _, post := range posts {
+			fmt.Printf("ID: %d, Title: %s, Slug: %s, Published: %t, Content Length: %d, Created: %s\n", post.ID, post.Title, post.Slug, post.Published, len(post.Content), post.CreatedAt.Format("2006-01-02 15:04:05"))
+		}
+
+		// Query published posts
+		publishedPosts := []models.Post{}
+		if err := db.Where("published = ?", true).All(&publishedPosts); err != nil {
+			return fmt.Errorf("failed to query published posts: %w", err)
+		}
+
+		fmt.Printf("\nFound %d published posts:\n", len(publishedPosts))
+		for _, post := range publishedPosts {
+			fmt.Printf("ID: %d, Title: %s, Published: %t\n", post.ID, post.Title, post.Published)
+		}
+
+		return nil
+	})
+
 })
 
 // getEnvOrDefault returns environment variable value or default if not set

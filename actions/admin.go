@@ -301,14 +301,30 @@ func AdminPostsCreate(c buffalo.Context) error {
 		post.GenerateSlug()
 	}
 
-	// Handle published status - use form data if provided, otherwise check action
+	// Handle published status from both checkbox and action buttons
 	action := c.Param("action")
+	publishedCheckbox := c.Param("Published")
+	
+	// Determine published status:
+	// 1. If "Publish Post" button clicked (action="publish"), always publish
+	// 2. If "Save as Draft" button clicked (action="draft"), always save as draft  
+	// 3. Otherwise use checkbox value (if present)
+	shouldPublish := false
 	if action == "publish" {
-		post.Published = true
+		shouldPublish = true
 	} else if action == "draft" {
-		post.Published = false
+		shouldPublish = false
+	} else if publishedCheckbox == "true" || publishedCheckbox == "on" || post.Published {
+		shouldPublish = true
 	}
-	// If no specific action, keep the Published value from the form
+	
+	post.Published = shouldPublish
+	if shouldPublish {
+		now := time.Now()
+		post.PublishedAt = &now
+	} else {
+		post.PublishedAt = nil
+	}
 
 	// Validate and save
 	verrs, err := tx.ValidateAndCreate(post)
@@ -364,6 +380,16 @@ func AdminPostsUpdate(c buffalo.Context) error {
 
 	if err := c.Bind(post); err != nil {
 		return errors.WithStack(err)
+	}
+
+	// Handle published status changes
+	if post.Published && post.PublishedAt == nil {
+		// Post is being published for the first time
+		now := time.Now()
+		post.PublishedAt = &now
+	} else if !post.Published {
+		// Post is being unpublished
+		post.PublishedAt = nil
 	}
 
 	// Generate slug if changed
@@ -505,7 +531,7 @@ func AdminPostsBulk(c buffalo.Context) error {
 	switch action {
 	case "publish":
 		now := time.Now()
-		err := tx.RawQuery("UPDATE posts SET published_at = ? WHERE id IN (?)", now, postIDInts).Exec()
+		err := tx.RawQuery("UPDATE posts SET published = true, published_at = ? WHERE id IN (?)", now, postIDInts).Exec()
 		if err != nil {
 			return err
 		}
@@ -515,7 +541,7 @@ func AdminPostsBulk(c buffalo.Context) error {
 		c.Flash().Add("success", fmt.Sprintf("Published %d post(s)", len(postIDInts)))
 
 	case "unpublish":
-		err := tx.RawQuery("UPDATE posts SET published_at = NULL WHERE id IN (?)", postIDInts).Exec()
+		err := tx.RawQuery("UPDATE posts SET published = false, published_at = NULL WHERE id IN (?)", postIDInts).Exec()
 		if err != nil {
 			return err
 		}

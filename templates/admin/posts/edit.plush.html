@@ -18,7 +18,13 @@
         </div>
         <div class="flex-gap-sm">
           <a href="/blog/<%= post.Slug %>" role="button" class="outline">Preview</a>
-          <button role="button" class="contrast outline">Delete Post</button>
+           <form action="/admin/posts/<%= post.ID %>" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+               <%= csrf() %>
+               <input type="hidden" name="_method" value="DELETE">
+               <button type="submit" class="contrast outline">
+                   Delete Post
+               </button>
+           </form>
         </div>
       </div>
     </header>

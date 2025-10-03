@@ -81,16 +81,13 @@
                                     class="outline btn-sm"
                                     >View</a
                                 >
-                                <button
-                                   
-                                   
-                                   
-                                   
-                                    role="button"
-                                    class="contrast outline btn-sm"
-                                >
-                                    Delete
-                                </button>
+                                 <form action="/admin/posts/<%= post.ID %>" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                                     <%= csrf() %>
+                                     <input type="hidden" name="_method" value="DELETE">
+                                     <button type="submit" class="contrast outline btn-sm">
+                                         Delete
+                                     </button>
+                                 </form>
                             </div>
                         </td>
                     </tr>

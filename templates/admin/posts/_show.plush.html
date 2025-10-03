@@ -151,16 +151,13 @@
         <!-- Actions -->
         <hr />
         <div class="action-column">
-            <button
-                type="button"
-                class="outline btn-danger"
-               
-               
-               
-               
-            >
-                Delete Post
-            </button>
+            <form action="/admin/posts/<%= post.ID %>" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+                <%= csrf() %>
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="outline btn-danger">
+                    Delete Post
+                </button>
+            </form>
         </div>
     </aside>
 </div>

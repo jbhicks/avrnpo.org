@@ -42,20 +42,39 @@ func (ppr PublicPostsResource) List(c buffalo.Context) error {
 	return c.Render(http.StatusOK, r.HTML("blog/index.plush.html"))
 }
 
-// Show displays a single published post by slug (GET /blog/{slug})
+// Show displays a single post by slug (GET /blog/{slug})
 func (ppr PublicPostsResource) Show(c buffalo.Context) error {
 	tx, ok := c.Value("tx").(*pop.Connection)
 	if !ok {
 		return fmt.Errorf("no transaction found")
 	}
 
-	slug := c.Param("slug")
+	slug := c.Param("public_post_id")
 	post := &models.Post{}
 
-	// Find published post by slug with user relationship
-	if err := tx.Eager("User").Where("slug = ? AND published = ?", slug, true).First(post); err != nil {
-		return c.Error(http.StatusNotFound, err)
+	// Find post by slug with user relationship
+	if err := tx.Eager("User").Where("slug = ?", slug).First(post); err != nil {
+		return c.Error(404, err)
 	}
+
+	// Check if current user is authenticated and can preview
+	currentUser := c.Value("current_user")
+	if currentUser != nil {
+		user := currentUser.(*models.User)
+		// Allow preview if user is admin or the post author
+		if user.Role != "admin" && user.ID != post.AuthorID {
+			// Not authorized to preview, check if published
+			if !post.Published {
+				return c.Error(404, fmt.Errorf("post not found"))
+			}
+		}
+	} else {
+		// For non-authenticated users, only show published posts
+		if !post.Published {
+			return c.Error(404, fmt.Errorf("post not found"))
+		}
+	}
+
 	c.Set("post", post)
 
 	// Set base URL for social sharing

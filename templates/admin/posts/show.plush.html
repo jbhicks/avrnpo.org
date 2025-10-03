@@ -145,16 +145,13 @@
       <a href="/admin/posts" role="button" class="secondary outline">← Back to Posts</a>
       <a href="/admin/posts/<%= post.ID %>/edit" role="button" class="secondary">Edit Post</a>
       <a href="/blog/<%= post.Slug %>" target="_blank" role="button" class="outline">View Live Post</a>
-      <button 
-        
-        
-        
-        
-        role="button" 
-        class="contrast outline"
-        style="margin-left: auto;">
-        Delete Post
-      </button>
+      <form action="/admin/posts/<%= post.ID %>" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this post?');">
+          <%= csrf() %>
+          <input type="hidden" name="_method" value="DELETE">
+          <button type="submit" class="contrast outline" style="margin-left: auto;">
+              Delete Post
+          </button>
+      </form>
     </section>
   </main>
 </div>

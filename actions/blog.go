@@ -18,8 +18,8 @@ func BlogIndex(c buffalo.Context) error {
 	}
 
 	posts := []models.Post{}
-	// Get published posts ordered by created_at desc with user relationships
-	if err := tx.Eager("User").Where("published = ?", true).Order("created_at desc").All(&posts); err != nil {
+	// Get published posts ordered by published_at desc with user relationships
+	if err := tx.Eager("User").Where("published = ?", true).Order("published_at desc").All(&posts); err != nil {
 		return errors.WithStack(err)
 	}
 

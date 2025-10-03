@@ -122,7 +122,7 @@ func (pr PostsResource) Create(c buffalo.Context) error {
 
 	c.Flash().Add("success", "Post created successfully!")
 
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
+	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
 
 // Edit displays the form for editing a post (GET /admin/posts/{post_id}/edit)
@@ -182,7 +182,7 @@ func (pr PostsResource) Update(c buffalo.Context) error {
 
 	c.Flash().Add("success", "Post updated successfully!")
 
-	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/admin/posts/%d", post.ID))
+	return c.Redirect(http.StatusSeeOther, "/admin/posts")
 }
 
 // Destroy deletes a blog post (DELETE /admin/posts/{post_id})
