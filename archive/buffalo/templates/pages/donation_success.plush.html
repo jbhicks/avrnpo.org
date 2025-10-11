@@ -1,0 +1,148 @@
+<!-- Donation Success Page -->
+<section class="donation-success">
+  <div class="success-message">
+    <h1>Thank You for Your <% if (param("type") == "recurring") { %>Recurring <% } %>Donation!</h1>
+    <p class="lead">
+      <% if (param("type") == "recurring") { %>
+        Your monthly recurring donation helps American Veterans Rebuilding maintain consistent support 
+        for combat veterans through housing projects, skills training, and community building.
+      <% } else { %>
+        Your generous contribution helps American Veterans Rebuilding continue our mission 
+        of supporting combat veterans through housing projects, skills training, and community building.
+      <% } %>
+    </p>
+    
+    <% if (param("type") == "recurring") { %>
+      <div class="recurring-info" style="background-color: var(--pico-primary-background); border: 1px solid var(--pico-primary); border-radius: var(--pico-border-radius); padding: var(--pico-spacing); margin-top: var(--pico-spacing);">
+        <h3 style="margin-bottom: calc(var(--pico-spacing) / 2); color: var(--pico-primary);">🔄 Recurring Donation Active</h3>
+        <p style="margin-bottom: 0;">
+          Your monthly donation will automatically process on the same day each month. You can modify or cancel 
+                    your recurring donation at any time by contacting us at michael@avrnpo.org.
+        </p>
+      </div>
+    <% } %>
+  </div>
+  
+  <div class="donation-details">
+    <h2>What Happens Next</h2>
+    
+    <div class="grid">
+      <article class="next-step">
+        <h3>📧 Receipt Email</h3>
+        <p>
+          You will receive a detailed receipt for your donation via email within the next few minutes. 
+          This receipt includes all information needed for tax purposes.
+          <% if (param("type") == "recurring") { %>
+          <br><br><strong>Note:</strong> You'll receive a separate receipt for each monthly donation.
+          <% } %>
+        </p>
+      </article>
+      
+      <article class="next-step">
+        <h3>🧾 Tax Information</h3>
+        <p>
+          Your donation is tax-deductible. American Veterans Rebuilding is a registered 501(c)(3) 
+          non-profit organization. Save your receipt for tax filing purposes.
+          <% if (param("type") == "recurring") { %>
+          <br><br>Each monthly donation is fully tax-deductible.
+          <% } %>
+        </p>
+      </article>
+      
+      <% if (param("type") == "recurring") { %>
+        <article class="next-step">
+          <h3>🔄 Subscription Management</h3>
+          <p>
+            Your recurring donation will process automatically each month. To modify the amount, 
+            change frequency, or cancel your subscription, please contact us at:
+            <br><br>
+            <strong>Email:</strong> michael@avrnpo.org<br>
+            <strong>Subject:</strong> Subscription Management Request
+          </p>
+        </article>
+      <% } %>
+      
+      <article class="next-step">
+        <h3>📱 Stay Connected</h3>
+        <p>
+          Follow our progress and see how your donation is making a difference. 
+          We'll send periodic updates about the veterans and projects you're supporting.
+        </p>
+      </article>
+      
+      <% if (param("type") != "recurring") { %>
+        <article class="next-step">
+          <h3>🤝 Get Involved</h3>
+          <p>
+            Consider volunteering, spreading the word, or exploring other ways to support 
+            our mission beyond financial contributions.
+          </p>
+        </article>
+      <% } %>
+    </div>
+  </div>
+  
+  <% if (param("type") == "recurring") { %>
+    <div class="recurring-impact">
+      <h2>Your Monthly Impact</h2>
+      <p>
+        With your recurring support, we can plan long-term projects and provide consistent assistance. 
+        Here's what monthly donations accomplish:
+      </p>
+      
+      <div class="impact-examples">
+        <div class="impact-item">
+          <strong>$25/month</strong> - Sustains ongoing veteran support services
+        </div>
+        <div class="impact-item">
+          <strong>$50/month</strong> - Funds regular skills training programs
+        </div>
+        <div class="impact-item">
+          <strong>$100/month</strong> - Supports major housing project milestones
+        </div>
+        <div class="impact-item">
+          <strong>$250/month</strong> - Enables comprehensive veteran career programs
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="donation-impact">
+      <h2>Your Impact</h2>
+      <p>
+        Every dollar you donate goes directly toward supporting combat veterans and their families. 
+        Here's how contributions like yours make a difference:
+      </p>
+      
+      <div class="impact-examples">
+        <div class="impact-item">
+          <strong>$25</strong> - Covers materials for basic home repairs
+        </div>
+        <div class="impact-item">
+          <strong>$50</strong> - Funds one veteran's technical training session
+        </div>
+        <div class="impact-item">
+          <strong>$100</strong> - Supports housing project planning and coordination
+        </div>
+        <div class="impact-item">
+          <strong>$250</strong> - Provides comprehensive skills assessment and career guidance
+        </div>
+        <div class="impact-item">
+          <strong>$500+</strong> - Enables major housing renovation projects
+        </div>
+      </div>
+    </div>
+  <% } %>
+  
+  <div class="next-actions">
+    <h2>Continue Supporting Our Mission</h2>
+    <div class="action-buttons">
+      <% if (param("type") != "recurring") { %>
+        <a href="/donate" role="button" class="primary">Set Up Monthly Donation</a>
+      <% } %>
+      <a href="/projects" role="button" class="outline">View Our Projects</a>
+      <a href="/team" role="button" class="outline">Meet Our Team</a>
+      <a href="/contact" role="button" class="outline">Get Involved</a>
+      <a href="/" role="button" class="secondary">Return Home</a>
+    </div>
+  </div>
+</section>

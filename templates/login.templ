@@ -1,0 +1,30 @@
+package templates
+
+templ LoginPage(errorMsg string, csrfToken string) {
+	@BasePage("Login", csrfToken, loginContent(errorMsg, csrfToken))
+}
+
+templ loginContent(errorMsg string, csrfToken string) {
+	<div class="admin-container narrow">
+		<article class="admin-card">
+			<h1>Login</h1>
+			if errorMsg != "" {
+				<div class="error-message">
+					{ errorMsg }
+				</div>
+			}
+		<form hx-post="/auth/login" hx-target="body">
+			<input type="hidden" name="csrf_token" value={ csrfToken }/>
+			<div class="form-field">
+					<label for="email">Email</label>
+					<input type="email" id="email" name="email" required placeholder="you@example.com"/>
+				</div>
+				<div class="form-field">
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" required placeholder="Enter your password"/>
+				</div>
+				<button type="submit" role="button" class="contrast full-width">Login</button>
+			</form>
+		</article>
+	</div>
+}

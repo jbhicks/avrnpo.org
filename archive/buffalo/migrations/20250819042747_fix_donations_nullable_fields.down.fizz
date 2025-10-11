@@ -1,0 +1,3 @@
+change_column("donations", "checkout_token", "string", {"null": false})
+change_column("donations", "secret_token", "string", {"null": false})
+change_column("donations", "address_line2", "text", {"null": false})

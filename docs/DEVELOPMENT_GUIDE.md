@@ -678,6 +678,89 @@ This project uses Buffalo's Plush templating engine, Pico.css for styling, and H
 - **Use semantic HTML**: Follow patterns in `/docs/pico-implementation-guide.md` for proper Pico.css usage
 - **Never override Pico directly**: Work within Pico's variable system for all customization
 
+### CSS Architecture
+
+**Status**: ✅ **Complete** - All templates refactored to use semantic, component-based CSS (October 2025)
+
+#### Design Philosophy
+AVR uses a **semantic-first, component-based** CSS architecture built on Pico CSS:
+
+1. **Zero Inline Styles**: Never use `style=""` attributes in templates
+2. **Zero Utility Classes**: No Tailwind-style utilities (`.mt-4`, `.bg-gray-100`, etc.)
+3. **Semantic Components**: Use meaningful class names (`.blog-post-item`, `.team-card`, `.donation-form`)
+4. **Pico CSS Variables**: All colors, spacing, and styling uses Pico's variable system
+5. **100% Pico Compatible**: All custom CSS works with Pico's conventions
+
+#### File Structure
+```
+pb_public/assets/css/
+├── pico.min.css          # Pico CSS framework (DO NOT EDIT)
+├── custom.css            # AVR custom styles (MAIN WORKING FILE)
+├── quill.snow.css        # Quill editor theme
+└── quill-custom.css      # Quill overrides
+```
+
+#### Quick Reference
+
+**Main Documentation**: `/docs/development/design-system.md` (comprehensive guide)
+
+**Color System** (3-tier visual hierarchy):
+```css
+/* Light Mode */
+--pico-background-color: #e8e9ea;              /* Body: Concrete gray */
+--pico-card-background-color: #ffffff;          /* Cards: White */
+--pico-card-sectional-background-color: #f5f5f5; /* Sections: Light gray */
+
+/* Army-themed accents */
+--pico-primary: #ffb627;      /* Army gold - CTAs */
+--pico-secondary: #4a5d23;    /* Army green - accents */
+--pico-contrast: #d2691e;     /* Burnt orange - warnings */
+```
+
+**Common Components**:
+- **Blog**: `.blog-post-item`, `.post-title`, `.post-excerpt`
+- **Team**: `.team-card`, `.team-card-overlay`, `.team-card-content`
+- **Donation**: `.donation-grid`, `.amount-grid`, `.impact-item`
+- **Admin**: `.admin-container`, `.admin-table`, `.status-badge`
+- **Contact**: `.social-links`, `.info-section`
+
+**How to Add New Styles**:
+1. Check `/docs/development/design-system.md` for existing patterns
+2. Use Pico CSS variables for all values
+3. Create semantic component classes in `pb_public/assets/css/custom.css`
+4. Never use inline styles or utility classes
+5. Document new components in design-system.md
+
+**Example**:
+```css
+/* ❌ DON'T: Inline styles or utilities */
+<div style="margin: 2rem;" class="mt-8 bg-white">
+
+/* ✅ DO: Semantic component */
+<div class="content-section">
+
+/* In custom.css */
+.content-section {
+    margin: var(--pico-spacing);
+    background: var(--pico-card-background-color);
+    padding: var(--pico-block-spacing-vertical);
+    border-radius: var(--pico-border-radius);
+}
+```
+
+**Testing Your CSS**:
+- Run `make dev` to start development server
+- Test in light and dark modes
+- Check responsive breakpoints: mobile (375px), tablet (768px), desktop (1280px)
+- Verify WCAG AA contrast ratios (use browser DevTools)
+- See `/docs/development/visual-regression-testing-checklist.md` for full checklist
+
+#### Migration History
+- **Phase 1** (Oct 2025): Removed 117+ inline styles from public templates
+- **Phase 2** (Oct 2025): Removed 83+ Tailwind classes from admin templates
+- **Phase 3** (Oct 2025): Added team page components
+- **Result**: 100% semantic, Pico-native CSS across entire application
+
 ### Database Management
 The application includes a PostgreSQL container configured via `docker-compose.yml`:
 - **Development DB**: `my_go_saas_template_development`

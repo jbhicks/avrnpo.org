@@ -1,0 +1,50 @@
+<!-- New Post Form (HTMX Partial) -->
+<header class="mb-4">
+    <nav class="mb-2">
+        <a
+            href="/admin/posts"
+           
+           
+           
+            >← Back to Posts</a
+        >
+    </nav>
+    <h1>Create New Post</h1>
+    <p>Share veteran success stories, program updates, and community impact.</p>
+</header>
+
+<%= if (errors) { %>
+<div class="error-box">
+    <h4>Please fix the following errors:</h4>
+    <ul>
+        <%= for (key, messages) in errors { %> <%= for (message) in messages {
+        %>
+        <li><%= message %></li>
+        <% } %> <% } %>
+    </ul>
+</div>
+<% } %>
+
+<form
+   
+   
+   
+   
+    enctype="multipart/form-data"
+>
+    <%= csrf() %> <%= partial("admin/posts/form") %>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+        <a
+            href="/admin/posts"
+            role="button"
+            class="outline"
+           
+           
+           
+            >Cancel</a
+        >
+        <button type="submit" class="primary">Create Post</button>
+    </div>
+</form>

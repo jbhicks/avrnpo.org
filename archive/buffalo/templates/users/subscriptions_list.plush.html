@@ -1,0 +1,58 @@
+<% contentFor("title") { %>My Subscriptions<% } %>
+
+<div class="container">
+    <div class="grid">
+        <article class="card">
+            <header>
+                <h1>📋 My Subscriptions</h1>
+                <p>Manage your recurring donations</p>
+            </header>
+
+            <% if (len(subscriptions) == 0) { %>
+                <main class="text-center">
+                    <p>💡 You don't have any active subscriptions.</p>
+                    <p><a href="/donate" class="outline">Make a recurring donation</a></p>
+                </main>
+            <% } else { %>
+                <main>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Amount</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (subscription) in subscriptions { %>
+                                <tr>
+                                    <td><strong>$<%= subscription.Amount %></strong></td>
+                                    <td><%= capitalize(subscription.DonationType) %></td>
+                                    <td>
+                                        <% if (subscription.Status == "active") { %>
+                                            <span style="color: var(--pico-primary)">✅ Active</span>
+                                        <% } else if (subscription.Status == "cancelled") { %>
+                                            <span style="color: var(--pico-del-color)">❌ Cancelled</span>
+                                        <% } else { %>
+                                            <span><%= subscription.Status %></span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= subscription.CreatedAt.Format("Jan 2, 2006") %></td>
+                                    <td>
+                                        <a href="/account/subscriptions/<%= subscription.SubscriptionID %>" class="outline">View Details</a>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </main>
+            <% } %>
+
+            <footer>
+                <a href="/account" class="outline">← Back to Account</a>
+            </footer>
+        </article>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+drop_index("donations", ["last_status_sync"], {})
+drop_index("donations", ["payment_retry_count"], {})
+drop_index("donations", ["next_billing_date"], {})
+drop_index("donations", ["subscription_status"], {})
+
+drop_column("donations", "sync_error")
+drop_column("donations", "last_status_sync")
+
+drop_column("donations", "payment_failure_reason")
+drop_column("donations", "last_payment_attempt")
+drop_column("donations", "payment_retry_count")
+
+drop_column("donations", "addon_amounts")
+drop_column("donations", "addon_ids")
+
+drop_column("donations", "payment_method")
+drop_column("donations", "next_billing_date")
+drop_column("donations", "activation_date")
+drop_column("donations", "subscription_status")

@@ -1,0 +1,25 @@
+ <section class="container">
+   <header>
+     <h1>Blog</h1>
+     <p>Latest updates and insights from American Veterans Rebuilding</p>
+   </header>
+
+    <%= if (len(posts) > 0) { %>
+      <section class="posts-grid" id="posts-container">
+        <%= for (post) in posts { %>
+          <article>
+            <h3><%= post.Title %></h3>
+            <p><%= post.Content %></p>
+          </article>
+        <% } %>
+      </section>
+     <div id="loading-indicator" style="display: none; text-align: center; padding: 20px;">
+       <p>Loading more posts...</p>
+     </div>
+   <% } else { %>
+     <section>
+       <p>No blog posts available at this time. Check back soon for updates!</p>
+     </section>
+   <% } %>
+ </section>
+

@@ -1,2 +1,0 @@
-drop_index("donations", ["user_id"])
-drop_column("donations", "user_id")

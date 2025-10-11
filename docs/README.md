@@ -1,14 +1,14 @@
 # AVR NPO Documentation
 
-Comprehensive documentation for the American Veterans Rebuilding (AVR) donation system built with Buffalo framework and Helcim payment processing.
+Comprehensive documentation for the American Veterans Rebuilding (AVR) donation system built with PocketBase and Helcim payment processing.
 
 ## 🚀 Quick Start
 
 New to the project? Start here:
 
-1. **[Development Setup](#-getting-started)** - Environment setup and first run
+1. **[Development Setup](./getting-started/quick-start.md)** - Environment setup and first run
 2. **[Payment System Overview](./payment-system/README.md)** - Core donation functionality  
-3. **[Buffalo Framework Guide](./buffalo-framework/README.md)** - Daily development workflow
+3. **[PocketBase Development Guide](./DEVELOPMENT_GUIDE.md)** - Daily development workflow
 
 ## 📚 Documentation Structure
 
@@ -25,47 +25,37 @@ Complete donation and subscription management system documentation.
 - **[Payment Overview](./payment-system/README.md)** - System architecture and status
 - **[Helcim Integration](./payment-system/helcim-integration.md)** - Complete API integration guide
 - **[Donation Flow](./payment-system/donation-flow.md)** - User experience and form handling
-- **[Recurring Payments](./payment-system/recurring-payments-final.md)** - **PRODUCTION READY** subscription management
+- **[Recurring Payments](./payment-system/recurring-payments-final.md)** - Subscription management
 - **[Webhooks](./payment-system/webhooks.md)** - Event processing and notifications
 - **[Testing](./payment-system/testing.md)** - Payment testing procedures
-
-### 🦬 Buffalo Framework
-Buffalo web framework development guides and best practices.
-
-- **[Buffalo Overview](./buffalo-framework/README.md)** - Framework guide and critical rules  
-- **[Templates](./buffalo-framework/templates.md)** - Plush templating and partial naming
-- **[Routing & HTMX](./buffalo-framework/routing-htmx.md)** - Route configuration and HTMX
-- **[Authentication](./buffalo-framework/authentication.md)** - Auth patterns and testing
-- **[Database](./buffalo-framework/database.md)** - Migrations and database operations
-- **[Troubleshooting](./buffalo-framework/troubleshooting.md)** - Common issues and solutions
 
 ### 🎨 Frontend Development
 Styling, interactions, and user interface implementation.
 
 - **[Pico CSS Guide](./frontend/pico-css.md)** - Styling with Pico CSS variables
 - **[HTMX Patterns](./frontend/htmx-patterns.md)** - HTMX best practices and progressive enhancement
-- **[Assets](./frontend/assets.md)** - Asset pipeline and management
+- **[Templ Templates](./frontend/templ-guide.md)** - Type-safe Go templates
 
 ### 🚀 Deployment & Production
 Production deployment, security, and monitoring.
 
 - **[Production Checklist](./deployment/production-checklist.md)** - Go-live requirements
 - **[Security Guidelines](./deployment/security.md)** - Security best practices
-- **[Monitoring](./deployment/monitoring.md)** - Logging and monitoring setup
+- **[Deployment History](./changelog/deployment-history.md)** - Coolify deployment notes
 
 ### 🔧 Development & Setup
 Development tools, configuration, and contributor resources.
 
-- **[Development Guide](./development/README.md)** - AI agents, refactoring plans, and contributor tools
-- **[Setup & Configuration](./setup/README.md)** - System setup, admin configuration, and environment setup
-- **[Changelog & History](./changelog/README.md)** - Implementation histories and major changes
+- **[Development Guide](./DEVELOPMENT_GUIDE.md)** - Current development workflow
+- **[Current Feature](./development/current-feature.md)** - Active feature work (Phase 3: Templ UI)
+- **[Refactoring Status](../REFACTORING_STATUS.md)** - PocketBase migration status
+- **[Setup & Configuration](./setup/README.md)** - System setup and environment configuration
 
 ### 📖 Reference
 API documentation, schemas, and technical references.
 
-- **[API Endpoints](./reference/api-endpoints.md)** - Complete API reference
-- **[Database Schema](./reference/database-schema.md)** - Current database structure
 - **[Dependencies](./reference/dependencies.md)** - Dependency management rules
+- **[Subscription API Reference](./reference/subscription-api-reference.md)** - PocketBase collections schema
 
 ## 🔍 Finding Information
 
@@ -73,127 +63,119 @@ API documentation, schemas, and technical references.
 
 **🆕 New Developer:**
 1. [Quick Start](./getting-started/quick-start.md) - Get running quickly
-2. [Buffalo Overview](./buffalo-framework/README.md) - Learn the framework
+2. [Development Guide](./DEVELOPMENT_GUIDE.md) - Learn the stack
 3. [Payment Overview](./payment-system/README.md) - Understand core functionality
 
 **💻 Daily Development:**
 1. [Development Workflow](./getting-started/development-workflow.md) - Common commands
 2. [Testing Guide](./getting-started/testing-guide.md) - How to test changes
-3. [Troubleshooting](./buffalo-framework/troubleshooting.md) - Fix common issues
+3. [Refactoring Status](../REFACTORING_STATUS.md) - Current project state
 
 **🤖 AI Contributors:**
-1. [Agents Guide](./development/agents-guide.md) - Critical rules and patterns for AI agents
-2. [Current Feature](./development/current-feature.md) - What we're currently working on
-3. [Development Guide](./development/README.md) - Development tools and resources
+1. [Current Feature](./development/current-feature.md) - What we're currently working on (Phase 3)
+2. [Development Guide](./DEVELOPMENT_GUIDE.md) - Development tools and patterns
+3. [Refactoring Status](../REFACTORING_STATUS.md) - Migration progress
 
 **💳 Payment Features:**
 1. [Helcim Integration](./payment-system/helcim-integration.md) - Complete API guide
 2. [Donation Flow](./payment-system/donation-flow.md) - Frontend implementation
-3. [Recurring Payments](./payment-system/recurring-payments-final.md) - **PRODUCTION READY** subscription system
+3. [Recurring Payments](./payment-system/recurring-payments-final.md) - Subscription system
 
 **🎨 Frontend Work:**
 1. [Pico CSS Guide](./frontend/pico-css.md) - Styling and theming
 2. [HTMX Patterns](./frontend/htmx-patterns.md) - Progressive enhancement
-3. [Templates](./buffalo-framework/templates.md) - Template development
+3. [Templ Templates](./frontend/templ-guide.md) - Template development
 
 **⚙️ Setup & Configuration:**
 1. [Setup Guide](./setup/README.md) - System configuration and admin setup
 2. [Receipt Setup](./setup/receipt-setup.md) - Payment confirmation configuration
 3. [Environment Setup](./getting-started/setup-checklist.md) - Development environment
 
-### By Problem Type
-
-**🐛 Something Broken:**
-- [Troubleshooting](./buffalo-framework/troubleshooting.md) - Common Buffalo issues
-- [Testing Guide](./getting-started/testing-guide.md) - How to verify fixes
-- [Security Guidelines](./deployment/security.md) - Security concerns
-
-**🚀 Adding Features:**
-- [Buffalo Overview](./buffalo-framework/README.md) - Framework patterns
-- [API Endpoints](./reference/api-endpoints.md) - Existing API structure
-- [Database Schema](./reference/database-schema.md) - Current database design
-
-**🎯 Payment Issues:**
-- [Payment Testing](./payment-system/testing.md) - Test procedures and cards
-- [Helcim Integration](./payment-system/helcim-integration.md) - API troubleshooting  
-- [Webhooks](./payment-system/webhooks.md) - Event processing issues
-
 ## 🎯 Current Project Status
 
-### ✅ Completed Features (Phase 2)
-- **One-time donations** - Full Helcim Payment API integration
-- **Recurring donations** - Monthly subscriptions via Helcim Recurring API  
-- **User account linking** - Donations tied to user accounts when logged in
-- **Subscription management** - View, cancel, and update subscriptions
-- **Receipt system** - Email confirmations for all donations
-- **Webhook processing** - Real-time payment status updates
+### ✅ Phase 2 Complete: PocketBase Migration
+- **PocketBase initialized** - Single binary, SQLite database
+- **Collections created** - `posts`, `donations`, `contact_submissions`, `users`
+- **Migrations working** - Go-based migration system
+- **Buffalo archived** - All old code preserved in `archive/buffalo/`
+- **Services preserved** - Helcim and Email services ready for integration
 
-### 🔄 Current Focus
-- **Documentation organization** - Consolidating and improving developer experience
-- **Testing procedures** - Ensuring robust payment system operation
-- **User experience refinement** - Optimizing donation and subscription flows
+### 🔄 Current Focus: Phase 3
+- **Template strategy** - Implementing Templ for type-safe Go templates
+- **UI implementation** - Building pages (home, blog, donate, contact)
+- **Service integration** - Connecting Helcim and Email to PocketBase
+- **Route handlers** - Updating handlers to use PocketBase SDK
 
-### 🎯 Future Enhancements
-- **Enhanced reporting** - Donation analytics and donor insights
-- **Campaign integration** - Blog-driven donation campaigns  
-- **Admin interface** - Donation and subscription oversight tools
+### 🎯 Future Phases
+- **Phase 4:** Data migration from Buffalo/PostgreSQL (if needed)
+- **Phase 5:** Testing and deployment to production
 
 ## 📋 Quick Reference
 
 ### Essential Commands
 ```bash
-# Start development environment
-make dev
+# Build and run PocketBase
+go build -o avrnpo ./main.go
+./avrnpo serve --dev
 
-# Run comprehensive tests  
-make test
+# Apply migrations
+./avrnpo migrate up
 
-# Run quick tests (assumes database running)
-make test-fast
+# Create superuser
+./avrnpo superuser create admin@avrnpo.org password
 
-# Database migrations
-soda migrate up
+# Generate Templ templates
+templ generate
 
-# Check Buffalo status
-ps aux | grep buffalo
-lsof -i :3000
+# Watch Templ files
+templ generate --watch
 ```
 
 ### Key URLs (Development)
-- **Application:** http://127.0.0.1:3000
-- **Donation Page:** http://127.0.0.1:3000/donation  
-- **User Account:** http://127.0.0.1:3000/account
-- **Admin Panel:** http://127.0.0.1:3000/admin
+- **Application:** http://127.0.0.1:8090
+- **PocketBase Admin:** http://127.0.0.1:8090/_/
+- **API Base:** http://127.0.0.1:8090/api/
 
 ### Environment Files
-- **`.env`** - Development environment variables
-- **`database.yml`** - Database configuration
-- **`config/buffalo-app.toml`** - Buffalo application settings
+- **`.env`** - Environment variables
+- **`pb_data/`** - PocketBase SQLite database and files
+- **`migrations/`** - Go-based database migrations
 
 ## 🆘 Getting Help
 
-1. **Check troubleshooting guides** in relevant topic areas
-2. **Search this documentation** for specific error messages or concepts
-3. **Verify test procedures** to ensure changes work correctly
-4. **Review error logs** in Buffalo console output or log files
+1. **Check current status** - [REFACTORING_STATUS.md](../REFACTORING_STATUS.md)
+2. **Search this documentation** for specific topics
+3. **Review PocketBase docs** - https://pocketbase.io/docs/
+4. **Check archived Buffalo docs** - [ARCHIVE.md](./ARCHIVE.md)
 
-## 📝 Contributing to Documentation
+## 📝 Documentation Organization
 
-When updating documentation:
-- **Place in appropriate topic directory** based on functional area
-- **Update relevant README.md files** to maintain navigation
-- **Use consistent formatting** and include practical examples
-- **Test all code examples** to ensure they work correctly
-- **Follow security guidelines** - never expose real credentials
+This documentation is organized by functional area:
 
----
+- **`getting-started/`** - Setup and initial workflows
+- **`payment-system/`** - Helcim integration and donation system
+- **`frontend/`** - UI, styling, and templates
+- **`development/`** - Active feature work and refactoring
+- **`deployment/`** - Production deployment guides
+- **`setup/`** - System configuration
+- **`reference/`** - API and technical references
+- **`changelog/`** - Project history
+- **`buffalo-framework/`** - **ARCHIVED** - Buffalo-era documentation
 
-**Documentation Organization:** This structure replaces the previous 39-file sprawl with a logical hierarchy organized around developer workflows and functional areas. Each topic directory contains a README.md that provides navigation within that area, while this main README provides navigation across all areas.
+## 🗂️ Archived Documentation
 
-## 🗂️ Legacy Documentation
+Buffalo framework documentation has been archived. See:
 
-The previous documentation files have been reorganized. If you're looking for specific content from the old structure, check the reorganization plan:
+- **[ARCHIVE.md](./ARCHIVE.md)** - Links to all Buffalo-era documentation
 
-- **[Documentation Reorganization Plan](./DOCUMENTATION_REORGANIZATION_PLAN.md)** - Complete migration strategy and file mapping
+The project migrated from Buffalo to PocketBase in October 2025. All Buffalo, Plush, Pop, and Fizz references are historical only.
 
-For immediate access to legacy content while the migration is in progress, the old files remain available in the root docs directory.
+## 🔄 Current Stack
+
+- **Backend:** PocketBase (Go)
+- **Database:** SQLite (embedded)
+- **Templates:** Templ (type-safe Go templates)
+- **Frontend:** HTMX + Pico CSS
+- **Payments:** Helcim API
+- **Email:** PocketBase mailer
+- **Deployment:** Coolify (Docker)

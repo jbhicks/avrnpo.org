@@ -1,0 +1,2 @@
+drop_index("posts", "published_at")
+drop_column("posts", "published_at")

@@ -1,0 +1,2 @@
+add_column("donations", "user_id", "uuid", {"null": true})
+add_index("donations", ["user_id"], {})

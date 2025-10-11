@@ -1,0 +1,97 @@
+package templates
+
+type PostFormData struct {
+	Id        string
+	Title     string
+	Content   string
+	Excerpt   string
+	Published bool
+}
+
+templ PostForm(post *PostFormData, csrfToken string) {
+	if post != nil && post.Id != "" {
+		@BasePage("Edit Post", csrfToken, editPostContent(post, csrfToken))
+	} else {
+		@BasePage("Create Post", csrfToken, createPostContent(csrfToken))
+	}
+}
+
+templ editPostContent(post *PostFormData, csrfToken string) {
+	<div class="admin-container">
+		<div class="admin-nav">
+			<a href="/cms/posts">&larr; Back to Posts</a>
+			<button hx-post="/auth/logout" role="button" class="outline small">Logout</button>
+		</div>
+		<article class="admin-card">
+			<h1>Edit Post</h1>
+		<form hx-put={ "/cms/posts/" + post.Id } hx-target="body">
+			<input type="hidden" name="csrf_token" value={ csrfToken }/>
+			<div class="form-field">
+					<label for="title">Title</label>
+					<input type="text" id="title" name="title" placeholder="Enter post title" value={ post.Title } required/>
+				</div>
+				<div class="form-field">
+					<label for="markdown-editor">Content (Markdown)</label>
+					<textarea id="markdown-editor" name="content">{ post.Content }</textarea>
+				</div>
+				<div class="form-field">
+					<label for="excerpt">Excerpt</label>
+					<textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief summary of your post">{ post.Excerpt }</textarea>
+				</div>
+				<div class="form-field">
+					<label>
+						<input type="checkbox" id="published" name="published" if post.Published { checked }/>
+						Publish immediately
+					</label>
+				</div>
+			<div class="form-actions">
+				<button type="submit" role="button" class="contrast">Update Post</button>
+				<a href="/cms/posts" role="button" class="secondary">Cancel</a>
+			</div>
+			</form>
+		</article>
+	</div>
+	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css"/>
+	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+	<script src="/assets/js/markdown-editor.js"></script>
+}
+
+templ createPostContent(csrfToken string) {
+	<div class="admin-container">
+		<div class="admin-nav">
+			<a href="/cms/posts">&larr; Back to Posts</a>
+			<button hx-post="/auth/logout" role="button" class="outline small">Logout</button>
+		</div>
+		<article class="admin-card">
+			<h1>Create New Post</h1>
+		<form hx-post="/cms/posts" hx-target="body">
+			<input type="hidden" name="csrf_token" value={ csrfToken }/>
+			<div class="form-field">
+					<label for="title">Title</label>
+					<input type="text" id="title" name="title" placeholder="Enter post title" required/>
+				</div>
+				<div class="form-field">
+					<label for="markdown-editor">Content (Markdown)</label>
+					<textarea id="markdown-editor" name="content"></textarea>
+				</div>
+				<div class="form-field">
+					<label for="excerpt">Excerpt</label>
+					<textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief summary of your post"></textarea>
+				</div>
+				<div class="form-field">
+					<label>
+						<input type="checkbox" id="published" name="published"/>
+						Publish immediately
+					</label>
+				</div>
+			<div class="form-actions">
+				<button type="submit" role="button" class="contrast">Create Post</button>
+				<a href="/cms/posts" role="button" class="secondary">Cancel</a>
+			</div>
+			</form>
+		</article>
+	</div>
+	<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css"/>
+	<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+	<script src="/assets/js/markdown-editor.js"></script>
+}

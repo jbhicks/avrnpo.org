@@ -1,0 +1,77 @@
+<!-- Create New Post Form -->
+<div class="admin-grid">
+  <!-- Admin Navigation -->
+  <aside>
+    <%= partial("admin/nav") %>
+  </aside>
+
+  <!-- New Post Form -->
+  <main>
+    <header class="mb-2">
+      <nav class="mb-1">
+        <a href="/admin/posts">← Back to Posts</a>
+      </nav>
+      <h1>Create New Post</h1>
+      <p>Share veteran success stories, program updates, and community impact.</p>
+    </header>
+
+    <%= if (errors) { %>
+    <div class="error-box">
+      <h4 class="mt-0 text-danger">Please fix the following errors:</h4>
+      <ul class="mb-0">
+        <%= for (key, messages) in errors { %>
+          <%= for (message) in messages { %>
+          <li><%= message %></li>
+          <% } %>
+        <% } %>
+      </ul>
+    </div>
+    <% } %>
+    
+    <form action="/admin/posts" method="POST" enctype="multipart/form-data">
+      <%= csrf() %>
+      
+      <%= partial("admin/posts/form") %>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <a href="/admin/posts" role="button" class="secondary">Cancel</a>
+        <button type="submit">Create Post</button>
+      </div>
+    </form>
+
+    <!-- Content Guidelines -->
+    <section class="content-block mt-3">
+      <h3>Content Guidelines</h3>
+      <div class="grid-auto">
+        <div>
+          <h4>Veteran Success Stories</h4>
+          <ul class="text-small">
+            <li>Focus on specific achievements</li>
+            <li>Include before/after context</li>
+            <li>Highlight program impact</li>
+            <li>Respect privacy and consent</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Program Updates</h4>
+          <ul style="font-size: 0.95rem;">
+            <li>Announce new opportunities</li>
+            <li>Share enrollment deadlines</li>
+            <li>Explain program benefits</li>
+            <li>Include application links</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Community Impact</h4>
+          <ul style="font-size: 0.95rem;">
+            <li>Show donation impact</li>
+            <li>Highlight volunteer contributions</li>
+            <li>Share partnership news</li>
+            <li>Include specific numbers/results</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

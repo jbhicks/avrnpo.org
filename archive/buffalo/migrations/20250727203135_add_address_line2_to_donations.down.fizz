@@ -1,0 +1,1 @@
+drop_column("donations", "address_line2")

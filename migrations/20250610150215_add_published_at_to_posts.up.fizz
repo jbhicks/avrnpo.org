@@ -1,2 +1,0 @@
-add_column("posts", "published_at", "datetime", {"null": true})
-add_index("posts", "published_at")

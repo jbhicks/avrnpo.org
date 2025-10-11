@@ -1,0 +1,80 @@
+<!-- Individual blog post partial for HTMX loading -->
+<article class="blog-post">
+    <header class="text-center mb-2">
+        <%= if (post.Image != "") { %>
+        <img
+            src="<%= post.Image %>"
+            alt="<%= post.Title %>"
+            class="post-image-large mb-2"
+        />
+        <% } %>
+
+        <hgroup>
+            <h1><%= post.Title %></h1>
+            <small>
+                <%= if (post.User.FirstName != "") { %> By <%=
+                post.User.FirstName %> <%= post.User.LastName %> • <% } %> <%=
+                dateFormat(post.CreatedAt, "January 2, 2006") %> <%= if
+                (post.UpdatedAt.After(post.CreatedAt.Add(time.Hour))) { %> •
+                Updated <%= dateFormat(post.UpdatedAt, "January 2, 2006") %> <%
+                } %>
+            </small>
+        </hgroup>
+    </header>
+
+    <!-- Post Content -->
+    <div class="post-content mb-3"><%= raw(post.Content) %></div>
+
+    <!-- Social Sharing -->
+    <section class="social-sharing mb-3">
+        <h3>Share This Story</h3>
+        <p>
+            Help us spread awareness about veteran support programs and success
+            stories.
+        </p>
+        <div class="flex-gap flex-wrap">
+            <a
+                href="https://www.facebook.com/sharer/sharer.php?u=<%= baseURL %>/blog/<%= post.Slug %>"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Share on Facebook
+            </a>
+            <a
+                href="https://twitter.com/intent/tweet?url=<%= baseURL %>/blog/<%= post.Slug %>&text=<%= post.Title %>&via=avrnpo"
+                target="_blank"
+                role="button"
+                class="secondary outline"
+            >
+                Share on X
+            </a>
+            <a href="/contact" role="button" class="secondary outline">
+                Contact Us
+            </a>
+        </div>
+    </section>
+
+    <!-- Back to Blog -->
+    <nav class="mb-2">
+        <a
+            href="/blog"
+            role="button"
+            class="secondary outline"
+            >← Back to Updates</a
+        >
+    </nav>
+
+    <!-- Call to Action -->
+    <section class="post-cta text-center">
+        <h3>Support American Veterans</h3>
+        <p>
+            Stories like this are made possible by generous supporters who
+            believe in helping veterans rebuild their lives.
+        </p>
+        <div class="flex-gap flex-center flex-wrap">
+            <a href="/donate" role="button" class="contrast">Make a Donation</a>
+            <a href="/team" role="button" class="secondary">Meet Our Team</a>
+        </div>
+    </section>
+</article>

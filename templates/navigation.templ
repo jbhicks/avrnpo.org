@@ -1,0 +1,90 @@
+package templates
+
+templ Header() {
+	<header class="avr-header">
+		<div class="header-grid">
+			<div class="header-left">
+				<img src="/assets/images/Armed-Services-Logos.avif" alt="American Veterans Rebuilding" class="armed-services-logo"/>
+			</div>
+			<div class="header-center">
+				<a href="/">
+					<img src="/assets/images/logo.avif" alt="AVRNPO" class="main-logo"/>
+				</a>
+				<p class="tagline">Rebuilding the American Veteran's Self, Family and Community.</p>
+			</div>
+			<div class="header-right">
+				<a href="https://www.facebook.com/AmericanVeteransRebuilding" target="_blank" class="social-icon">
+					<img src="/assets/images/Facebook.svg" alt="Facebook"/>
+				</a>
+				<a href="https://x.com/avrnpo" target="_blank" class="social-icon">
+					<img src="/assets/images/X.svg" alt="X"/>
+				</a>
+				<a href="https://discord.com/invite/f6TzKart7J" target="_blank" class="social-icon">
+					<img src="/assets/images/Discord.svg" alt="Discord"/>
+				</a>
+				<a href="https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73" target="_blank" class="social-icon">
+					<img src="/assets/images/Spotify.svg" alt="Spotify"/>
+				</a>
+			</div>
+		</div>
+	</header>
+}
+
+templ Navigation() {
+	<nav class="avr-navigation sticky-header" 
+		hx-trigger="intersect once from:.sticky-header-sentinel" 
+		hx-get="/api/nav-state" 
+		hx-swap="outerHTML">
+		<div class="nav-links">
+			<a href="/#mission" role="button" class="outline nav-link" data-section="mission">Mission</a>
+			<a href="/#blog" role="button" class="outline nav-link" data-section="blog">Updates</a>
+			<a href="/#team" role="button" class="outline nav-link" data-section="team">Team</a>
+			<a href="/#projects" role="button" class="outline nav-link" data-section="projects">Projects</a>
+			<a href="/#donate" role="button" class="outline nav-link" data-section="donate">Donate</a>
+			<a href="/#contact" role="button" class="outline nav-link" data-section="contact">Contact</a>
+		</div>
+	</nav>
+}
+
+templ NavigationScrolled() {
+	<nav class="avr-navigation sticky-header scrolled">
+		<div class="nav-links">
+			<a href="/#mission" role="button" class="outline nav-link" data-section="mission">Mission</a>
+			<a href="/#blog" role="button" class="outline nav-link" data-section="blog">Updates</a>
+			<a href="/#team" role="button" class="outline nav-link" data-section="team">Team</a>
+			<a href="/#projects" role="button" class="outline nav-link" data-section="projects">Projects</a>
+			<a href="/#donate" role="button" class="outline nav-link" data-section="donate">Donate</a>
+			<a href="/#contact" role="button" class="outline nav-link" data-section="contact">Contact</a>
+		</div>
+	</nav>
+}
+
+templ Footer() {
+	<footer class="container">
+		<hr/>
+		<div class="grid">
+			<div>
+				<p><strong>American Veterans Rebuilding</strong></p>
+				<p>Supporting veterans in their journey home.</p>
+				<p><small>&copy; { templ.EscapeString(currentYear()) } American Veterans Rebuilding. All rights reserved.</small></p>
+			</div>
+			<div>
+				<p><strong>Quick Links</strong></p>
+				<ul>
+					<li><a href="/about">About Us</a></li>
+					<li><a href="/blog">Blog</a></li>
+					<li><a href="/donate">Donate</a></li>
+					<li><a href="/contact">Contact</a></li>
+				</ul>
+			</div>
+			<div>
+				<p><strong>Legal</strong></p>
+				<ul>
+					<li><a href="/privacy">Privacy Policy</a></li>
+					<li><a href="/terms">Terms of Service</a></li>
+				</ul>
+				<p><small>Tax ID: [EIN]</small></p>
+			</div>
+		</div>
+	</footer>
+}
