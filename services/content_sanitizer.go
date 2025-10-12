@@ -1,8 +1,29 @@
 package services
 
 import (
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/microcosm-cc/bluemonday"
 )
+
+func MarkdownToHTML(md string) string {
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse([]byte(md))
+
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	htmlContent := markdown.Render(doc, renderer)
+	return string(htmlContent)
+}
+
+func SanitizeContent(content string) string {
+	htmlContent := MarkdownToHTML(content)
+	return SanitizeHTML(htmlContent)
+}
 
 // SanitizeHTML sanitizes user-submitted HTML content to prevent XSS attacks
 // while preserving safe formatting elements commonly used in blog posts.

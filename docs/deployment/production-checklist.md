@@ -1,78 +1,73 @@
 # Production Deployment Checklist
 
-**Pre-merge checklist for Buffalo app deployment to Coolify with PostgreSQL**
+**Pre-deployment checklist for PocketBase app deployment to Coolify**
 
-Use this checklist before merging to `main` branch. Upon merge, a webhook will trigger automatic deployment to Coolify.
-
----
-
-## 🔄 Migration from Go App to Buffalo + PostgreSQL
-
-**IMPORTANT:** This deployment introduces significant infrastructure changes:
-- **Framework:** Go app → Buffalo framework
-- **Database:** None/SQLite → PostgreSQL (via Coolify service)
-- **Build System:** Direct Go build → Nixpacks auto-detection
-- **Migrations:** Manual → Automated via `soda migrate up`
+Use this checklist before deploying to production. The application uses PocketBase with SQLite, Templ templates, and HTMX for frontend interactions.
 
 ---
 
-## 📋 Pre-Merge Checklist
+## 📋 Pre-Deployment Checklist
 
 ### 🧪 Code Quality & Testing
-- [ ] **All tests pass locally**: `make test` completes successfully
+- [ ] **All tests pass locally**: `go test ./...` completes successfully
+- [ ] **E2E tests pass**: `E2E_TESTS=1 go test -v -run E2E` completes successfully
 - [ ] **Test coverage adequate**: Core functionality covered
-- [ ] **No critical linting issues**: Code meets project standards
+- [ ] **No critical linting issues**: `golangci-lint run` passes
 - [ ] **Dependencies up to date**: No critical security vulnerabilities
 - [ ] **Git status clean**: No uncommitted changes
 
-### 🗄️ Database Readiness
-- [ ] **Migration files valid**: All `.fizz` files in `migrations/` directory
-- [ ] **Migration status verified**: `soda migrate status` shows all applied
-- [ ] **No schema.sql files**: Auto-generated files removed
-- [ ] **Database models tested**: Models work with PostgreSQL syntax
-- [ ] **Data seeding (if needed)**: Test data procedures documented
+### 🗄️ Database & Migrations
+- [ ] **Migration files valid**: All `.go` files in `pb_migrations/` directory
+- [ ] **Migrations tested**: Applied successfully in development
+- [ ] **Collections verified**: All required collections defined
+- [ ] **Indexes optimized**: Database queries perform well
+- [ ] **Initial data ready**: Seed data procedures documented
 
-### 🔧 Buffalo Framework
-- [ ] **Buffalo app builds**: `buffalo build` completes without errors
-- [ ] **Configuration valid**: `config/buffalo-app.toml` properly configured
-- [ ] **Static assets working**: CSS, JS, images accessible at `/assets/`
-- [ ] **Templates render**: All `.plush.html` templates compile correctly
-- [ ] **Routes functional**: All endpoints respond as expected
+### 🎨 Frontend & Templates
+- [ ] **Templ templates compiled**: `templ generate` completes without errors
+- [ ] **Static assets ready**: CSS, JS, images in `pb_public/assets/`
+- [ ] **HTMX interactions tested**: All dynamic features working
+- [ ] **Pico CSS theme working**: Dark/light mode toggle functional
+- [ ] **Forms validated**: All forms include CSRF protection
+- [ ] **Responsive design verified**: Mobile and desktop layouts tested
 
 ### 🔒 Environment & Secrets
 - [ ] **Environment variables documented**: All required vars listed below
 - [ ] **No secrets in code**: `.env` files not committed
-- [ ] **Production config ready**: `GO_ENV=production` tested
 - [ ] **SMTP credentials valid**: Email sending functional
 - [ ] **Helcim API key current**: Payment processing ready
+- [ ] **Admin credentials secure**: Strong password for admin account
 
 ### 💳 Payment System
 - [ ] **Helcim integration tested**: Both test and live modes
 - [ ] **Receipt generation working**: Email receipts with proper branding
 - [ ] **Subscription handling ready**: Monthly donations functional
 - [ ] **Error handling complete**: Failed payments handled gracefully
+- [ ] **Webhook endpoints secure**: CSRF exemptions properly configured
 
 ### 🔗 Integration Testing
 - [ ] **Email delivery tested**: Receipts and notifications working
-- [ ] **Admin dashboard functional**: User management operational
+- [ ] **Admin dashboard functional**: PocketBase admin at `/_/` operational
 - [ ] **Blog system working**: Post creation and display functional
 - [ ] **Donation flow complete**: End-to-end donation process tested
+- [ ] **Contact form working**: Email delivery and rate limiting functional
 
 ---
 
 ## 🌐 Coolify Infrastructure Checklist
 
-### 📊 Database Service (PostgreSQL)
-- [ ] **PostgreSQL service provisioned**: Database service running in Coolify
-- [ ] **Database linked to app**: `DATABASE_URL` environment variable set
-- [ ] **Connection tested**: App can connect to database
-- [ ] **Backup strategy confirmed**: Database backup procedures in place
-
 ### 🚀 Application Deployment
-- [ ] **Nixpacks build pack selected**: Auto-detection configured for Go/Buffalo
-- [ ] **Migration command configured**: `soda migrate up` set as pre-start command
+- [ ] **Build command configured**: `make build` or `go build -o avrnpo`
+- [ ] **Start command configured**: `./avrnpo serve --http=0.0.0.0:8090`
+- [ ] **Port mapping**: Port 8090 exposed and mapped
 - [ ] **Domain configured**: `avrnpo.org` pointing to Coolify app
 - [ ] **SSL certificate ready**: HTTPS properly configured
+
+### 💾 Persistent Storage
+- [ ] **Volume mounted**: `pb_data/` directory persisted across deployments
+- [ ] **SQLite database persistent**: Database file not lost on restart
+- [ ] **Uploads directory persistent**: User-uploaded files preserved
+- [ ] **Backup strategy confirmed**: Database backup procedures in place
 
 ### 🔧 Environment Variables Set
 
@@ -80,41 +75,49 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 
 | Variable | Purpose | Status |
 |----------|---------|---------|
-| `GO_ENV` | Set to `production` | [ ] |
-| `DATABASE_URL` | PostgreSQL connection (auto-set by Coolify) | [ ] |
-| `HELCIM_PRIVATE_API_KEY` | Payment processing | [ ] |
+| `PB_ADMIN_EMAIL` | Admin user email | [ ] |
+| `PB_ADMIN_PASSWORD` | Admin user password (secure!) | [ ] |
+| `HELCIM_API_TOKEN` | Payment processing | [ ] |
+| `HELCIM_TEST_MODE` | Set to `false` for production | [ ] |
 | `SMTP_HOST` | Email delivery | [ ] |
 | `SMTP_PORT` | Email delivery | [ ] |
 | `SMTP_USERNAME` | Email authentication | [ ] |
 | `SMTP_PASSWORD` | Email authentication | [ ] |
 | `FROM_EMAIL` | Sender email address | [ ] |
 | `FROM_NAME` | Sender display name | [ ] |
-| `ADMIN_EMAIL` | Initial admin user email | [ ] |
-| `ADMIN_PASSWORD` | Initial admin user password | [ ] |
-| `ADMIN_FIRST_NAME` | Initial admin first name | [ ] |
-| `ADMIN_LAST_NAME` | Initial admin last name | [ ] |
+| `EMAIL_ENABLED` | Set to `true` for production | [ ] |
+| `CONTACT_EMAIL` | Email for contact form submissions | [ ] |
 
 **Optional but Recommended:**
 | Variable | Purpose | Status |
 |----------|---------|---------|
 | `LOG_LEVEL` | Application logging level | [ ] |
-| `LOG_FILE_PATH` | Log file location | [ ] |
+| `PB_ENCRYPTION_KEY` | Encryption key for sensitive data | [ ] |
 
 ---
 
 ## 🔍 Pre-Deployment Testing
 
 ### 🧪 Local Testing with Production Config
-- [ ] **Production environment simulation**: Test with `GO_ENV=production`
-- [ ] **PostgreSQL compatibility**: Test against real PostgreSQL instance
-- [ ] **Migration rollback tested**: Ensure migrations can be safely reverted
-- [ ] **Performance testing**: Application performs adequately under load
+- [ ] **Production environment simulation**: Test with production-like settings
+- [ ] **Database performance**: SQLite performs adequately under load
+- [ ] **Migration testing**: All migrations apply cleanly
+- [ ] **Concurrent requests**: Application handles multiple simultaneous users
 
 ### 💰 Payment Integration Final Check
 - [ ] **Test credit cards work**: Use Helcim test card numbers
 - [ ] **Receipt emails deliver**: End-to-end email verification
 - [ ] **Subscription creation**: Monthly donations process correctly
 - [ ] **Error scenarios handled**: Invalid cards, network failures, etc.
+- [ ] **Switch to live mode**: `HELCIM_TEST_MODE=false` verified
+
+### 🔐 Security Verification
+- [ ] **CSRF protection active**: All forms protected
+- [ ] **Rate limiting configured**: Login and contact forms rate-limited
+- [ ] **Input validation**: All user input sanitized
+- [ ] **XSS prevention**: Content sanitization working
+- [ ] **SQL injection safe**: Parameterized queries used
+- [ ] **Admin UI secured**: Only accessible with authentication
 
 ---
 
@@ -127,10 +130,10 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 - [ ] **Emergency contacts ready**: Team members available during deployment
 
 ### 📊 Monitoring Ready
-- [ ] **Health check endpoint**: Application health monitoring configured
+- [ ] **Health check endpoint**: `/api/health` configured
 - [ ] **Log monitoring**: Application logs accessible in Coolify
 - [ ] **Error alerting**: Critical errors trigger notifications
-- [ ] **Performance baseline**: Know expected response times and throughput
+- [ ] **Performance baseline**: Know expected response times
 
 ---
 
@@ -138,30 +141,33 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 
 ### 🔧 Technical Readiness
 - [ ] All items in this checklist completed
-- [ ] Code review approved by team member
+- [ ] Code review approved
 - [ ] Breaking changes documented
-- [ ] Feature flags configured (if applicable)
+- [ ] Build tested in production mode
 
 ### 📢 Communication
 - [ ] **Stakeholders notified**: Deployment timing communicated
 - [ ] **Maintenance window scheduled**: If downtime expected
 - [ ] **Documentation updated**: User-facing changes documented
-- [ ] **Support team briefed**: Customer service aware of changes
+- [ ] **Support team briefed**: Team aware of changes
 
 ---
 
-## 🚀 Post-Merge Verification
+## 🚀 Post-Deployment Verification
 
-**After merge triggers deployment, verify:**
+**After deployment completes, verify:**
 
 - [ ] **Site loads**: https://avrnpo.org responds
-- [ ] **Database connected**: No database connection errors in logs
-- [ ] **Migrations applied**: Database schema up to date
+- [ ] **Database working**: No database errors in logs
+- [ ] **PocketBase admin accessible**: `https://avrnpo.org/_/` loads
 - [ ] **Static assets serve**: CSS, JS, images load correctly
-- [ ] **Email functions**: Test receipt generation and delivery
+- [ ] **Email functions**: Test contact form and receipt delivery
 - [ ] **Admin access**: Dashboard accessible and functional
 - [ ] **Payment processing**: Test donation flow works
 - [ ] **Performance acceptable**: Site responds within acceptable time
+- [ ] **SSL certificate valid**: HTTPS working correctly
+- [ ] **Blog posts visible**: Content displays correctly
+- [ ] **Theme toggle works**: Dark/light mode switching functional
 
 ---
 
@@ -171,10 +177,30 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 
 1. **Check Coolify logs**: Review build and runtime logs for errors
 2. **Verify environment variables**: Ensure all required variables set
-3. **Database connectivity**: Confirm PostgreSQL service running and linked
-4. **Migration issues**: Check migration logs for schema conflicts
-5. **Rollback if necessary**: Revert to previous working version
-6. **Contact team**: Escalate to development team if issues persist
+3. **Database connectivity**: Confirm `pb_data/` volume mounted correctly
+4. **Port configuration**: Verify port 8090 is exposed
+5. **Migration issues**: Check migration logs for errors
+6. **Rollback if necessary**: Revert to previous working version
+7. **Contact team**: Escalate to development team if issues persist
+
+### Common Issues
+
+**Database locked errors:**
+- Ensure only one instance of PocketBase is running
+- Check that `pb_data/` is properly mounted as persistent volume
+
+**Migration failures:**
+- Review migration logs in Coolify
+- Check that all migration files are included in build
+
+**Static assets not loading:**
+- Verify `pb_public/` directory is included in deployment
+- Check that assets are accessible at `/assets/*` paths
+
+**Email not sending:**
+- Verify SMTP credentials are correct
+- Check that `EMAIL_ENABLED=true`
+- Review email service logs
 
 ---
 
@@ -182,7 +208,30 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 
 - **Development Team**: [Contact Information]
 - **System Administrator**: [Contact Information]  
-- **Database Administrator**: [Contact Information]
+- **Coolify Support**: [Contact Information]
+
+---
+
+## 🔧 PocketBase-Specific Deployment Notes
+
+### Database Backup Before Deployment
+```bash
+# Backup SQLite database
+cp pb_data/data.db pb_data/data.db.backup-$(date +%Y%m%d-%H%M%S)
+```
+
+### Testing Migration Rollback
+```bash
+# PocketBase automatically manages migrations
+# No manual rollback needed - restore from backup if necessary
+```
+
+### Verifying Admin User Creation
+```bash
+# Check admin user exists
+./avrnpo admin:check
+# Or check directly in PocketBase admin UI at /_/
+```
 
 ---
 
@@ -190,4 +239,4 @@ Use this checklist before merging to `main` branch. Upon merge, a webhook will t
 **Deployed By**: ____________________  
 **Verification Completed By**: _______
 
-**✅ APPROVED FOR MERGE TO MAIN**
+**✅ APPROVED FOR DEPLOYMENT**

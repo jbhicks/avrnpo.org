@@ -24,7 +24,7 @@ templ editPostContent(post *PostFormData, csrfToken string) {
 		</div>
 		<article class="admin-card">
 			<h1>Edit Post</h1>
-		<form hx-put={ "/cms/posts/" + post.Id } hx-target="body">
+		<form hx-put={ "/cms/posts/" + post.Id } hx-target="body" hx-encoding="multipart/form-data">
 			<input type="hidden" name="csrf_token" value={ csrfToken }/>
 			<div class="form-field">
 					<label for="title">Title</label>
@@ -37,6 +37,11 @@ templ editPostContent(post *PostFormData, csrfToken string) {
 				<div class="form-field">
 					<label for="excerpt">Excerpt</label>
 					<textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief summary of your post">{ post.Excerpt }</textarea>
+				</div>
+				<div class="form-field">
+					<label for="featured_image">Featured Image</label>
+					<input type="file" id="featured_image" name="featured_image" accept="image/*"/>
+					<small class="text-muted">Optional. Upload a featured image for this post.</small>
 				</div>
 				<div class="form-field">
 					<label>
@@ -64,7 +69,7 @@ templ createPostContent(csrfToken string) {
 		</div>
 		<article class="admin-card">
 			<h1>Create New Post</h1>
-		<form hx-post="/cms/posts" hx-target="body">
+		<form hx-post="/cms/posts" hx-target="body" hx-encoding="multipart/form-data">
 			<input type="hidden" name="csrf_token" value={ csrfToken }/>
 			<div class="form-field">
 					<label for="title">Title</label>
@@ -77,6 +82,11 @@ templ createPostContent(csrfToken string) {
 				<div class="form-field">
 					<label for="excerpt">Excerpt</label>
 					<textarea id="excerpt" name="excerpt" rows="3" placeholder="Brief summary of your post"></textarea>
+				</div>
+				<div class="form-field">
+					<label for="featured_image">Featured Image</label>
+					<input type="file" id="featured_image" name="featured_image" accept="image/*"/>
+					<small class="text-muted">Optional. Upload a featured image for this post.</small>
 				</div>
 				<div class="form-field">
 					<label>

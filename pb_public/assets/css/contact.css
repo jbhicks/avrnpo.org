@@ -1,0 +1,15 @@
+/* Scoped contact page styles (AVR NPO redesign) */
+.contact-page .contact-hero { margin-bottom: 1rem; }
+.contact-page .contact-grid { display: grid; grid-template-columns: 1fr 320px; gap: 2rem; align-items: start; }
+.contact-page .contact-main { max-width: 720px; }
+.contact-page .contact-aside .card { margin-bottom: 1rem; }
+.contact-page .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.contact-page label input, .contact-page label textarea { width: 100%; box-sizing: border-box; }
+.contact-page .required { color: var(--pico-contrast); }
+.contact-page .contact-purpose { margin-top: 1rem; display: grid; gap: 0.5rem; }
+.contact-page .form-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+.contact-page .contact-faq { margin-top: 2rem; }
+.contact-page .contact-accessibility { margin-top: 1.5rem; padding: 1rem; background: var(--pico-card-background-color); border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); }
+
+/* Responsive fallback */
+@media (max-width: 900px) { .contact-page .contact-grid { grid-template-columns: 1fr; } .contact-page .form-row { grid-template-columns: 1fr; } }

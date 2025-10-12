@@ -145,7 +145,7 @@ func Head(title string, csrfToken ...string) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<meta property=\"twitter:description\" content=\"American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.\"><meta property=\"twitter:image\" content=\"/assets/images/logo.avif\"><link rel=\"canonical\" href=\"https://avrnpo.org/\"><link rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/favicon.svg?v=2\"><link rel=\"icon\" type=\"image/avif\" href=\"/assets/images/logo.avif?v=2\"><link rel=\"icon\" type=\"image/x-icon\" href=\"/assets/favicon.ico?v=2\"><link rel=\"stylesheet\" href=\"/assets/css/pico.min.css\"><link rel=\"stylesheet\" href=\"/assets/css/layout.css\"><link rel=\"stylesheet\" href=\"/assets/css/custom.css\"><script type=\"application/ld+json\">\n\t\t\t{\n\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\"@type\": \"NonProfitOrganization\",\n\t\t\t\t\"name\": \"American Veterans Rebuilding\",\n\t\t\t\t\"description\": \"Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking\",\n\t\t\t\t\"url\": \"https://avrnpo.org\",\n\t\t\t\t\"logo\": \"/assets/images/logo.avif\",\n\t\t\t\t\"foundingDate\": \"2021\",\n\t\t\t\t\"address\": {\n\t\t\t\t\t\"@type\": \"PostalAddress\",\n\t\t\t\t\t\"addressCountry\": \"US\"\n\t\t\t\t},\n\t\t\t\t\"sameAs\": [\n\t\t\t\t\t\"https://facebook.com/AmericanVeteransRebuilding\",\n\t\t\t\t\t\"https://x.com/avrnpo\"\n\t\t\t\t]\n\t\t\t}\n\t\t</script><script src=\"https://unpkg.com/htmx.org@2.0.3\"></script><script src=\"/assets/js/application.js\"></script><script src=\"/assets/js/theme.js\" defer></script><script src=\"https://myhelcim.com/js/version2/helcim-pay.js\"></script></head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<meta property=\"twitter:description\" content=\"American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.\"><meta property=\"twitter:image\" content=\"/assets/images/logo.avif\"><link rel=\"canonical\" href=\"https://avrnpo.org/\"><link rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/favicon.svg?v=2\"><link rel=\"icon\" type=\"image/avif\" href=\"/assets/images/logo.avif?v=2\"><link rel=\"icon\" type=\"image/x-icon\" href=\"/assets/favicon.ico?v=2\"><link rel=\"stylesheet\" href=\"/assets/css/pico.min.css\"><link rel=\"stylesheet\" href=\"/assets/css/layout.css\"><link rel=\"stylesheet\" href=\"/assets/css/custom.css\"><script type=\"application/ld+json\">\n\t\t\t{\n\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\"@type\": \"NonProfitOrganization\",\n\t\t\t\t\"name\": \"American Veterans Rebuilding\",\n\t\t\t\t\"description\": \"Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking\",\n\t\t\t\t\"url\": \"https://avrnpo.org\",\n\t\t\t\t\"logo\": \"/assets/images/logo.avif\",\n\t\t\t\t\"foundingDate\": \"2021\",\n\t\t\t\t\"address\": {\n\t\t\t\t\t\"@type\": \"PostalAddress\",\n\t\t\t\t\t\"addressCountry\": \"US\"\n\t\t\t\t},\n\t\t\t\t\"sameAs\": [\n\t\t\t\t\t\"https://facebook.com/AmericanVeteransRebuilding\",\n\t\t\t\t\t\"https://x.com/avrnpo\"\n\t\t\t\t]\n\t\t\t}\n\t\t</script><script src=\"https://unpkg.com/htmx.org@2.0.3\"></script><script src=\"/assets/js/application.js\"></script><script src=\"/assets/js/theme.js\" defer></script></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -247,7 +247,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 94, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 93, Col: 47}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -266,7 +266,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 97, Col: 18}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 96, Col: 18}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -279,7 +279,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(title + " - American Veterans Rebuilding")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 98, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 97, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -307,7 +307,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(title + " - American Veterans Rebuilding")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 110, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 109, Col: 81}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -335,7 +335,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(title + " - American Veterans Rebuilding")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 120, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/base.templ`, Line: 119, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -351,7 +351,7 @@ func Base(title string, csrfToken string, content templ.Component) templ.Compone
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<meta property=\"twitter:description\" content=\"American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.\"><meta property=\"twitter:image\" content=\"/assets/images/logo.avif\"><link rel=\"canonical\" href=\"https://avrnpo.org/\"><link rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/favicon.svg?v=2\"><link rel=\"icon\" type=\"image/avif\" href=\"/assets/images/logo.avif?v=2\"><link rel=\"icon\" type=\"image/x-icon\" href=\"/assets/favicon.ico?v=2\"><link rel=\"stylesheet\" href=\"/assets/css/pico.min.css\"><link rel=\"stylesheet\" href=\"/assets/css/layout.css\"><link rel=\"stylesheet\" href=\"/assets/css/custom.css\"><script type=\"application/ld+json\">\n\t\t\t\t{\n\t\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\t\"@type\": \"NonProfitOrganization\",\n\t\t\t\t\t\"name\": \"American Veterans Rebuilding\",\n\t\t\t\t\t\"description\": \"Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking\",\n\t\t\t\t\t\"url\": \"https://avrnpo.org\",\n\t\t\t\t\t\"logo\": \"/assets/images/logo.avif\",\n\t\t\t\t\t\"foundingDate\": \"2021\",\n\t\t\t\t\t\"address\": {\n\t\t\t\t\t\t\"@type\": \"PostalAddress\",\n\t\t\t\t\t\t\"addressCountry\": \"US\"\n\t\t\t\t\t},\n\t\t\t\t\t\"sameAs\": [\n\t\t\t\t\t\t\"https://facebook.com/AmericanVeteransRebuilding\",\n\t\t\t\t\t\t\"https://x.com/avrnpo\"\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t</script><script src=\"https://unpkg.com/htmx.org@2.0.3\"></script><script src=\"/assets/js/application.js\"></script><script src=\"https://myhelcim.com/js/version2/helcim-pay.js\"></script></head><body class=\"js-enabled\"><div class=\"sticky-header-sentinel\"></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<meta property=\"twitter:description\" content=\"American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.\"><meta property=\"twitter:image\" content=\"/assets/images/logo.avif\"><link rel=\"canonical\" href=\"https://avrnpo.org/\"><link rel=\"icon\" type=\"image/svg+xml\" href=\"/assets/favicon.svg?v=2\"><link rel=\"icon\" type=\"image/avif\" href=\"/assets/images/logo.avif?v=2\"><link rel=\"icon\" type=\"image/x-icon\" href=\"/assets/favicon.ico?v=2\"><link rel=\"stylesheet\" href=\"/assets/css/pico.min.css\"><link rel=\"stylesheet\" href=\"/assets/css/layout.css\"><link rel=\"stylesheet\" href=\"/assets/css/custom.css\"><script type=\"application/ld+json\">\n\t\t\t\t{\n\t\t\t\t\t\"@context\": \"https://schema.org\",\n\t\t\t\t\t\"@type\": \"NonProfitOrganization\",\n\t\t\t\t\t\"name\": \"American Veterans Rebuilding\",\n\t\t\t\t\t\"description\": \"Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking\",\n\t\t\t\t\t\"url\": \"https://avrnpo.org\",\n\t\t\t\t\t\"logo\": \"/assets/images/logo.avif\",\n\t\t\t\t\t\"foundingDate\": \"2021\",\n\t\t\t\t\t\"address\": {\n\t\t\t\t\t\t\"@type\": \"PostalAddress\",\n\t\t\t\t\t\t\"addressCountry\": \"US\"\n\t\t\t\t\t},\n\t\t\t\t\t\"sameAs\": [\n\t\t\t\t\t\t\"https://facebook.com/AmericanVeteransRebuilding\",\n\t\t\t\t\t\t\"https://x.com/avrnpo\"\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t</script><script src=\"https://unpkg.com/htmx.org@2.0.3\"></script><script src=\"/assets/js/application.js\"></script></head><body class=\"js-enabled\"><div class=\"sticky-header-sentinel\"></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

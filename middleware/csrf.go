@@ -92,20 +92,30 @@ func CSRFProtection(next func(*core.RequestEvent) error) func(*core.RequestEvent
 
 		if method == "POST" || method == "PUT" || method == "DELETE" || method == "PATCH" {
 			token := e.Request.FormValue("csrf_token")
+			log.Printf("[CSRF] Form token for %s %s: %s (first 10 chars)", method, e.Request.URL.Path, truncate(token, 10))
 			if token == "" {
 				token = e.Request.Header.Get("X-CSRF-Token")
+				log.Printf("[CSRF] Header token for %s %s: %s (first 10 chars)", method, e.Request.URL.Path, truncate(token, 10))
 			}
 
 			if !GlobalCSRFStore.Validate(token) {
-				log.Printf("CSRF validation failed for %s %s", method, e.Request.URL.Path)
+				log.Printf("[CSRF] Validation FAILED for %s %s - token: %s", method, e.Request.URL.Path, truncate(token, 10))
 				return e.JSON(403, map[string]string{"error": "Invalid or expired CSRF token"})
 			}
 
+			log.Printf("[CSRF] Validation SUCCESS for %s %s", method, e.Request.URL.Path)
 			GlobalCSRFStore.Delete(token)
 		}
 
 		return next(e)
 	}
+}
+
+func truncate(s string, maxLen int) string {
+	if len(s) > maxLen {
+		return s[:maxLen] + "..."
+	}
+	return s
 }
 
 func GetCSRFToken(e *core.RequestEvent) (string, error) {

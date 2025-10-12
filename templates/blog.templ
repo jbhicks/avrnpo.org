@@ -42,6 +42,9 @@ templ blogPostContent(post Post) {
 			<h1>{ post.Title }</h1>
 			<p><small class="text-muted">Published: { post.PublishedAt }</small></p>
 		</header>
+		if post.FeaturedImage != "" {
+			<img src={ post.FeaturedImage } alt={ post.Title } class="post-featured-image"/>
+		}
 		<div class="post-content">
 			@templ.Raw(post.Content)
 		</div>

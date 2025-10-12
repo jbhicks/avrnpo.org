@@ -39,6 +39,13 @@ remove_home_assistant.sh
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+# Compiled project binaries
+/avrnpo.org
+/main
+/fresh-build
+/test-binary
+/test-e2e
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 

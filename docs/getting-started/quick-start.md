@@ -1,11 +1,11 @@
 # Quick Start Guide
 
-Get the AVR NPO donation system running locally in under 10 minutes.
+Get the AVR NPO donation system running locally in under 5 minutes.
 
 ## 🎯 Prerequisites
 
-- Go 1.24+ installed
-- Podman or Docker installed  
+- Go 1.23+ installed
+- Templ CLI installed (`go install github.com/a-h/templ/cmd/templ@latest`)
 - Git installed
 
 ## ⚡ Quick Setup
@@ -16,80 +16,87 @@ git clone https://github.com/jbhicks/avrnpo.org.git
 cd avrnpo.org
 ```
 
-### 2. Start Development Environment
+### 2. Environment Configuration
 ```bash
-# This command starts everything: PostgreSQL + Buffalo
+# Copy the example environment file
+cp .env.example .env
+
+# Edit .env with your settings
+# Required: Set PB_ADMIN_EMAIL and PB_ADMIN_PASSWORD
+```
+
+### 3. Start Development
+```bash
 make dev
 ```
 
-**That's it!** The application will be running at http://127.0.0.1:3001
+**That's it!** The application will be running at http://127.0.0.1:8090
 
-### 3. Verify Setup
-- Visit http://127.0.0.1:3001 - you should see the AVR homepage
-- Visit http://127.0.0.1:3001/donation - you should see the donation form
-- Buffalo console will show logs in your terminal
+### 4. Verify Setup
+- Visit http://127.0.0.1:8090 - you should see the AVR homepage
+- Visit http://127.0.0.1:8090/donate - you should see the donation form
+- Visit http://127.0.0.1:8090/_/ - PocketBase admin UI (login with PB_ADMIN_EMAIL/PASSWORD)
 
 ## 🧪 Test Everything Works
 
 ```bash
-# In a new terminal (keep Buffalo running)
-make test-fast
+# Run unit tests
+go test ./...
+
+# Run E2E tests
+E2E_TESTS=1 go test -v -run E2E
 ```
 
 ## 🎯 What Just Happened?
 
-1. **Database Started**: PostgreSQL container launched via Podman
-2. **Migrations Applied**: Database schema created automatically  
-3. **Buffalo Started**: Web server running with hot reload
-4. **Assets Served**: CSS/JS files available at `/assets/`
+1. **Database Initialized**: SQLite database created at `pb_data/data.db`
+2. **Admin User Created**: Auto-created from .env on first run
+3. **Migrations Applied**: Collections and schema created automatically
+4. **Server Started**: PocketBase + custom handlers running with hot reload
+5. **Assets Served**: Static files from `public/assets/`
 
 ## 📋 Essential Commands
 
 ```bash
-# Start development (run once)
+# Start development server with hot reload
 make dev
 
-# Run tests (Buffalo keeps running)
-make test-fast
+# Run unit tests
+go test ./...
 
-# Check what's running
-ps aux | grep buffalo
-lsof -i :3000
+# Run E2E tests  
+E2E_TESTS=1 go test -v -run E2E
 
-# Database operations
-soda migrate up
-soda reset  # Reset database if needed
+# Regenerate Templ templates after editing
+templ generate
+
+# Build production binary
+go build
 ```
-
-## 🚨 Important Rules
-
-- **Don't kill Buffalo** - It auto-reloads on all file changes
-- **Use `make test-fast`** - Never use `go test` directly
-- **Use `soda` commands** - Not `buffalo pop` (removed in v0.18.14+)
-
-## 🔧 If Something Goes Wrong
-
-1. **Buffalo won't start**: Check if port 3000 is already in use
-2. **Database errors**: Run `soda reset` to recreate database
-3. **Template errors**: Check partial naming (use `partial("dir/file")` not `partial("dir/_file.plush.html")`)
-4. **Test failures**: Ensure PostgreSQL is running before tests
-
-## 📚 Next Steps
-
-- **[Development Workflow](./development-workflow.md)** - Daily development commands
-- **[Testing Guide](./testing-guide.md)** - How to test properly
-- **[Buffalo Framework Guide](../buffalo-framework/README.md)** - Framework patterns
-- **[Payment System Overview](../payment-system/README.md)** - Donation functionality
 
 ## 🎯 Development URLs
 
-- **Application**: http://127.0.0.1:3000
-- **Donation Page**: http://127.0.0.1:3000/donation
-- **Admin Panel**: http://127.0.0.1:3000/admin
-- **User Account**: http://127.0.0.1:3000/account
+- **Application**: http://127.0.0.1:8090
+- **Donation Page**: http://127.0.0.1:8090/donate
+- **PocketBase Admin**: http://127.0.0.1:8090/_/
+- **API Base**: http://127.0.0.1:8090/api/
+
+## 🔧 If Something Goes Wrong
+
+1. **Port already in use**: Check if port 8090 is being used by another process
+2. **Database errors**: Delete `pb_data/` folder and restart to recreate
+3. **Template errors**: Run `templ generate` to regenerate template code
+4. **Admin login fails**: Check PB_ADMIN_EMAIL/PASSWORD in .env
+
+## 📚 Next Steps
+
+- **[Development Workflow](./development-workflow.md)** - Daily development patterns
+- **[Testing Guide](./testing-guide.md)** - How to test properly
+- **[Development Guide](../DEVELOPMENT_GUIDE.md)** - Complete development reference
+- **[Payment System Overview](../payment-system/README.md)** - Donation functionality
 
 ## 🆘 Need Help?
 
-- Check **[Troubleshooting](../buffalo-framework/troubleshooting.md)** for common issues
-- Review **[Development Workflow](./development-workflow.md)** for detailed commands
-- See **[Testing Guide](./testing-guide.md)** for testing problems
+- Check **[Development Guide](../DEVELOPMENT_GUIDE.md)** for comprehensive documentation
+- Review **[Testing Guide](./testing-guide.md)** for testing patterns
+- See PocketBase docs at https://pocketbase.io/docs/

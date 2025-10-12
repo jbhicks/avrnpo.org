@@ -1,6 +1,4 @@
-
-
-# American Veterans Rebuilding (AVR NPO) Website
+# American Veterans Rebuilding (AVR NPO) Development Guide
 
 Official website for American Veterans Rebuilding, a 501(c)(3) non-profit organization dedicated to helping combat veterans rebuild their lives through housing projects, skills training, and community support programs.
 
@@ -8,1338 +6,508 @@ Official website for American Veterans Rebuilding, a 501(c)(3) non-profit organi
 
 American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghanistan and Iraq. We are soldiers who have lived through hell on earth and found a way to continue to dedicate our lives to the military's core values of Loyalty, Duty, Respect, Selfless Service, Honor, Integrity and Personal Courage.
 
-## Website Features
+## Technology Stack
 
-### Public Features
-- **Mission & About** - Information about AVR's mission and impact
-- **Team Profiles** - Meet the combat veterans who founded and run AVR
-- **Project Showcase** - Housing and community development projects
-- **Contact Information** - Ways to reach out and get involved
-- **Donation System** - Secure donation processing for supporter contributions (one-time and recurring)
+### Backend
+- **Go 1.23.0** - Modern, compiled language
+- **PocketBase v0.22+** - Embedded backend (SQLite + Admin UI)
+- **Templ v0.3.943** - Type-safe Go templates
 
-## 🚨 Current Development Status
+### Frontend
+- **HTMX** - Dynamic interactions without heavy JavaScript
+- **Pico CSS v2** - Semantic CSS framework
+- **Progressive Enhancement** - Works without JavaScript
 
-### Donation System Enhancement (IN PROGRESS)
-The donation system is being enhanced to support true recurring monthly donations:
+### Services
+- **Helcim** - Payment processing (one-time + recurring)
+- **SMTP** - Email delivery (custom Go implementation)
 
-**Current Status:**
-- ✅ One-time donations working perfectly with Helcim integration
-- ⚠️ Recurring donations UI exists but only processes one-time payments
-- 🔧 **Implementing unified payment architecture** for both donation types
-
-**Implementation Plan:**
-- **Unified Flow**: Use HelcimPay.js `verify` mode for ALL donations (cleaner architecture)
-- **Backend Processing**: Route to appropriate API based on donation type
-  - One-time → Payment API `purchase` with card token
-  - Recurring → Recurring API subscription with card token
-
-**Documentation:** See `/docs/helcim-recurring-implementation-plan.md` for complete technical details
-
----
-
-### Content Management
-- **Blog System** - News updates and success stories
-- **Admin Dashboard** - Content management for authorized users
-- **SEO Optimization** - Search engine friendly with meta tags and structured data
-- **HTMX Navigation** - Fast, dynamic page loading without full refreshes
-
-### Technical Foundation
-
-This website is built using the [My Go SaaS Template](https://github.com/your-template-repo) with the following technologies:
-
-- **Buffalo** - Go web framework with hot reload development
-- **PostgreSQL** - Database with Podman container setup
-- **Pico.css** - Semantic CSS framework with automatic theming
-- **HTMX** - Dynamic content loading and interactions
-- **Plush** - Go templating engine for server-side rendering
-
-## Development Setup
+## Quick Start
 
 ### Prerequisites
-- **Go 1.19+** - [Download Go](https://golang.org/dl/)
-- **Container Runtime** - Choose one of:
-  - **Podman** (recommended for macOS) - [Install Podman](https://podman.io/getting-started/installation)
-  - **Docker** with Compose - [Install Docker](https://docs.docker.com/get-docker/)
-- **Buffalo CLI** - `go install github.com/gobuffalo/cli/cmd/buffalo@latest`
+- Go 1.23+
+- Templ CLI: `go install github.com/a-h/templ/cmd/templ@latest`
 
-> **Note:** The Makefile automatically detects and uses Podman Compose, Docker Compose v1 (`docker-compose`), or Docker Compose v2 (`docker compose`). Podman is recommended for macOS as it provides native container support without requiring a virtual machine.
+### Setup
 
-### Local Development
-
-```console
-# Clone the repository
+```bash
+# Clone repository
 git clone <repository-url>
 cd avrnpo.org
 
-# Complete setup (database + migrations + first run)
-make setup
+# Copy environment template
+cp .env.example .env
 
-# Start development mode
+# Edit .env with your settings
+# Required: PB_ADMIN_EMAIL, PB_ADMIN_PASSWORD
+
+# Build and run
 make dev
 ```
 
-After setup, visit [http://127.0.0.1:3001](http://127.0.0.1:3001) to see the website running locally.
+### Access Points
+- **Website**: http://127.0.0.1:8090
+- **Admin UI**: http://127.0.0.1:8090/_/
 
-### Development Commands
+## Development Workflow
 
-```console
-# Start development server with hot reload
+### Daily Development
+
+```bash
+# Start development server (with hot reload via Air)
 make dev
 
-# Run tests
-make test
+# Run unit tests
+go test ./...
 
-# Reset database (development)
-make db-reset
+# Run E2E tests
+E2E_TESTS=1 go test -v -run E2E
 
-# Create admin user (promote first registered user)
-make admin
+# Regenerate templates after changes
+templ generate
 
-# Check database status
-make db-status
+# Build production binary
+go build
 ```
 
-## Project Structure
+### Project Structure
 
 ```
 avrnpo.org/
-├── actions/          # HTTP handlers and routing
-├── models/           # Database models and business logic
-├── templates/        # HTML templates (Plush)
-├── public/           # Static assets (CSS, images, JS)
-├── migrations/       # Database schema migrations
-├── docs/             # Development documentation
-├── scripts/          # Build and deployment scripts
-└── Makefile         # Development commands
+├── main.go                # Application entry point + all route handlers
+├── templates/             # Templ templates (.templ files)
+│   ├── base.templ        # Main layout with navigation
+│   ├── helpers.templ     # Reusable components
+│   └── *_templ.go        # Generated Go files (don't edit)
+├── services/             # External integrations
+│   ├── email.go          # SMTP email service
+│   ├── helcim.go         # Payment processing
+│   └── content_sanitizer.go
+├── middleware/           # Security & validation
+│   ├── csrf.go           # CSRF protection
+│   ├── ratelimit.go      # Rate limiting
+│   └── validation.go     # Input validation
+├── pb_migrations/        # Database schema migrations
+├── pb_data/              # SQLite database + logs (gitignored)
+└── public/               # Static assets
+    └── assets/
+        ├── css/          # Pico CSS + custom theme
+        └── js/           # HTMX, editor, theme toggle
 ```
 
-### Key Files
-- `actions/home.go` - Homepage and mission content
-- `actions/pages.go` - Team, projects, contact, donate pages
-- `actions/blog.go` - Blog system for news and updates
-- `actions/admin.go` - Admin dashboard and content management
-- `templates/` - All HTML templates using Plush syntax
-- `public/images/` - Team photos and project images
+## Template Development
+
+### Template Architecture
+
+All templates use either `Base` or `BasePage` for consistency:
+
+```go
+// Public page with full navigation
+templ BlogList(csrfToken string, posts []*models.Record) {
+    @Base("Blog - AVR NPO", csrfToken, blogListContent(posts))
+}
+
+templ blogListContent(posts []*models.Record) {
+    // page content here
+}
+
+// Simplified page (login/admin)
+templ LoginPage(csrfToken string) {
+    @BasePage("Login", csrfToken, loginForm(csrfToken))
+}
+```
+
+### Base Components
+- `Base(title, csrfToken, content)` - Full page with navigation
+- `BasePage(title, csrfToken, content)` - Simplified (admin/login)
+- Both include CSRF meta tag when csrfToken provided
+
+### Templ Best Practices
+
+1. **Compile templates**: Run `templ generate` after changes
+2. **Don't edit *_templ.go files**: Generated automatically
+3. **Type safety**: Templates are compiled, errors caught at build time
+4. **Component composition**: Build larger pages from smaller components
+
+## PocketBase Patterns
+
+### Database Access
+
+```go
+// Query multiple records
+posts, err := app.Dao().FindRecordsByFilter(
+    "posts",
+    "status = 'published' && published = true",
+    "-created",  // sort
+    10,          // limit
+    0,           // offset
+)
+
+// Get single record
+user, err := app.Dao().FindFirstRecordByFilter(
+    "users",
+    "email = {:email}",
+    dbx.Params{"email": email},
+)
+
+// Create record
+collection, _ := app.Dao().FindCollectionByNameOrId("posts")
+record := models.NewRecord(collection)
+record.Set("title", "My Post")
+record.Set("content", "Content here")
+app.Dao().SaveRecord(record)
+
+// Update record
+record.Set("status", "published")
+app.Dao().SaveRecord(record)
+```
+
+### Route Registration
+
+All routes in `main.go`:
+
+```go
+app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+    // Public routes
+    e.Router.GET("/", handleHome)
+    e.Router.GET("/blog", handleBlogList)
+    
+    // Protected routes with middleware
+    e.Router.POST("/contact", handleContact,
+        middleware.CSRFProtection(),
+        contactRateLimiter.RequestEventMiddleware())
+    
+    return nil
+})
+```
+
+### Authentication
+
+```go
+// Get authenticated user
+authRecord := e.Get(apis.ContextAuthRecordKey)
+if authRecord == nil {
+    return apis.NewUnauthorizedError("Unauthorized", nil)
+}
+user := authRecord.(*models.Record)
+
+// Check admin role
+if user.GetString("role") != "admin" {
+    return apis.NewForbiddenError("Admin access required", nil)
+}
+```
+
+### Response Patterns
+
+```go
+// HTML response with Templ
+component := templates.BlogPost(csrfToken, post)
+return component.Render(context.Background(), e.Response())
+
+// JSON response
+return e.JSON(200, map[string]interface{}{
+    "success": true,
+    "data": data,
+})
+
+// Redirect
+return e.Redirect(302, "/success")
+
+// Errors
+return apis.NewBadRequestError("Invalid input", err)
+```
 
 ## Content Management
 
-### Adding Team Members
-1. Add team member photo to `public/images/`
-2. Update `templates/pages/_team.plush.html` with member information
-3. Follow the existing card structure for consistency
+### Blog Posts
 
-### Managing Blog Posts
-1. Access admin dashboard at `/admin` (requires admin role)
-2. Navigate to "Blog Management"
-3. Create, edit, or delete blog posts
-4. Posts support rich text editing with embedded images
+**Managed via PocketBase Admin UI** at `/_/`
 
-### Updating Project Information
-1. Edit `templates/pages/_projects.plush.html`
-2. Add project photos to `public/images/`
-3. Update project descriptions and outcomes
+- Use Admin UI for creating/editing posts
+- Templates are READ-ONLY for display
+- Do NOT create custom CRUD forms
+
+### Collections
+
+- **users** - User accounts with role field (user/admin)
+- **posts** - Blog posts with markdown content + featured images
+- **donations** - Donation records from Helcim
+- **subscriptions** - Recurring payment subscriptions
+
+## Security
+
+### CSRF Protection
+
+```templ
+// In all forms
+<input type="hidden" name="csrf_token" value={ csrfToken }/>
+
+// In handlers
+csrfToken, _ := middleware.GetCSRFToken(e)
+
+// Protect routes
+e.Router.POST("/contact", handleContact,
+    middleware.CSRFProtection())
+```
+
+### Rate Limiting
+
+```go
+// Create limiter
+loginRateLimiter := middleware.NewRateLimiter(5, 1*time.Minute)
+
+// Apply to route
+e.Router.POST("/login", handleLoginPost,
+    loginRateLimiter.RequestEventMiddleware())
+```
+
+## Styling with Pico CSS
+
+### Design System
+
+Use semantic HTML + Pico CSS variables:
+
+```css
+/* Theme variables in public/assets/css/custom.css */
+--pico-primary: #ffb627;        /* Army gold */
+--pico-secondary: #4a5d23;      /* Army green */
+--pico-background-color: #e8e9ea; /* Concrete gray */
+```
+
+### Common Patterns
+
+```html
+<!-- Cards -->
+<article>
+  <header><h3>Title</h3></header>
+  <p>Content here</p>
+  <footer><button>Action</button></footer>
+</article>
+
+<!-- Forms -->
+<form method="post">
+  <input type="hidden" name="csrf_token" value="..."/>
+  <label>
+    Email
+    <input type="email" name="email" required/>
+  </label>
+  <button type="submit">Submit</button>
+</form>
+
+<!-- Grids -->
+<div class="grid">
+  <div>Column 1</div>
+  <div>Column 2</div>
+  <div>Column 3</div>
+</div>
+```
+
+### Styling Guidelines
+
+1. **Semantic HTML first** - Use proper elements
+2. **Pico CSS variables** - Don't write custom CSS rules
+3. **Component classes** - Use `.blog-post-item`, `.team-card` for custom needs
+4. **Theme compatible** - Test dark/light modes
+
+## Payment System
+
+### Helcim Integration
+
+```go
+// Initialize payment (one-time)
+token, err := helcimService.InitializePayment(amount, currency)
+
+// Create subscription (recurring)
+subID, err := helcimService.CreateSubscription(userEmail, amount, cardToken)
+
+// Process callback
+result := helcimService.ProcessCallback(callbackData)
+```
+
+### Donation Flow
+
+1. User selects amount + type (one-time/recurring)
+2. Frontend: Helcim.js collects card, returns token
+3. Backend: Process via Helcim API
+4. Save donation record to database
+5. Send receipt email via `services/email.go`
+
+## Email System
+
+### Configuration
+
+```bash
+# In .env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=donations@avrnpo.org
+FROM_NAME=American Veterans Rebuilding
+EMAIL_ENABLED=true
+CONTACT_EMAIL=info@avrnpo.org
+```
+
+### Sending Emails
+
+```go
+emailService := services.NewEmailService()
+
+// Donation receipt
+err := emailService.SendDonationReceipt(
+    donation,
+    transactionID,
+    subscriptionID,
+)
+
+// Contact form
+err := emailService.SendContactNotification(
+    name,
+    email,
+    message,
+)
+```
+
+## Testing
+
+### Unit Tests
+
+```bash
+# All tests
+go test ./...
+
+# Specific package
+go test ./services
+
+# Verbose
+go test -v ./middleware
+```
+
+### E2E Tests
+
+```bash
+# Run E2E tests
+E2E_TESTS=1 go test -v -run E2E
+
+# Test includes:
+# - Homepage rendering
+# - Blog list/detail
+# - Contact form submission
+# - Login flow
+# - Admin operations
+```
+
+### Test Patterns
+
+```go
+func TestHandler(t *testing.T) {
+    app, cleanup := setupTestApp(t)
+    defer cleanup()
+    
+    // Create test data
+    collection, _ := app.Dao().FindCollectionByNameOrId("posts")
+    record := models.NewRecord(collection)
+    record.Set("title", "Test")
+    app.Dao().SaveRecord(record)
+    
+    // Make request
+    req := httptest.NewRequest("GET", "/blog", nil)
+    rec := httptest.NewRecorder()
+    
+    // Test response
+    // ...
+}
+```
 
 ## Deployment
 
-This website can be deployed using:
-- **Traditional hosting** with Go binary and PostgreSQL
-- **Container deployment** using provided Dockerfile
-- **Cloud platforms** supporting Go applications
+See [Coolify Deployment Guide](./deployment/coolify-pocketbase-migration.md) for complete instructions.
 
-Contact the development team for deployment assistance and environment configuration.
+### Environment Variables
 
-## Contact & Support
+```bash
+# PocketBase Admin
+PB_ADMIN_EMAIL=admin@avrnpo.org
+PB_ADMIN_PASSWORD=secure_password
 
-For technical issues with this website:
-- Review documentation in the `/docs/` folder
-- Check the Buffalo framework documentation
-- Contact the development team
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=...
+SMTP_PASSWORD=...
+FROM_EMAIL=noreply@avrnpo.org
+EMAIL_ENABLED=true
 
-For AVR NPO program information:
-- Visit the contact page on the website
-- Email: michael@avrnpo.org
-- See team member contact information
+# Helcim
+HELCIM_API_TOKEN=your_token
+HELCIM_TEST_MODE=false
 
-## License
+# Server
+PORT=8090
+```
 
-This website code is built on open-source technologies. Content and imagery related to American Veterans Rebuilding is proprietary to the organization.
+### Production Build
+
+```bash
+# Build binary
+go build -o avrnpo
+
+# Run
+./avrnpo serve --http=0.0.0.0:8090
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Templates not updating**
+```bash
+templ generate
+make dev
+```
+
+**Database migrations not running**
+- Migrations auto-run on server start
+- Check `pb_data/logs/` for errors
+
+**CSRF token errors**
+- Ensure form includes `<input type="hidden" name="csrf_token".../>`
+- Check middleware is applied to route
+
+**Email not sending**
+- Verify `EMAIL_ENABLED=true`
+- Check SMTP credentials
+- Review server logs
+
+### Debug Logging
+
+```bash
+# Enable verbose logging
+LOG_LEVEL=debug ./avrnpo serve
+
+# View logs
+tail -f pb_data/logs/data.log
+
+# Check database
+sqlite3 pb_data/data.db "SELECT * FROM users;"
+```
+
+## Resources
+
+- **PocketBase Docs**: https://pocketbase.io/docs/
+- **Templ Guide**: https://templ.guide/
+- **Pico CSS**: https://picocss.com/
+- **HTMX**: https://htmx.org/
+- **Project Docs**: `./docs/`
+
+## Contributing
+
+1. Review [AGENTS.md](../AGENTS.md) for patterns
+2. Run tests before committing: `go test ./...`
+3. Update Templ templates: `templ generate`
+4. Follow security guidelines
+5. Test in light/dark modes
 
 ---
 
 *Supporting combat veterans in rebuilding their lives and strengthening communities.*
-
-**Important**: Buffalo has built-in hot reload that automatically handles all file changes. Once you run `make dev`, the server stays running and automatically reloads when you make changes.
-
-### How Auto-Reload Works
-- **Go code changes** → Buffalo automatically recompiles and restarts the server
-- **Template changes** → Templates reload instantly without server restart
-- **Static assets** → CSS/JS changes update automatically via the asset pipeline
-- **Database migrations** → Run migrations with `soda migrate up` while server runs
-
-### Development Best Practices
-- **Start once**: Run `make dev` at the beginning of your development session
-- **Keep running**: Leave Buffalo running in the background throughout development
-- **Just code**: Make your changes and refresh the browser to see updates
-- **No manual restarts**: Buffalo handles all recompilation automatically
-
-### When to Restart Buffalo
-- **Compilation errors**: If Go code has syntax errors preventing compilation
-- **Database issues**: If you need to reset the database state
-- **Explicit request**: Only restart if specifically needed for debugging
-
-**🚨 Never kill the Buffalo process during normal development** - it's designed to handle all changes automatically!
-
-### First Admin User
-
-To set up your first admin user:
-
-1. **Register a user account** through the web interface
-2. **Promote to admin** with one command:
-   ```console
-   make admin
-   ```
-
-This automatically promotes the first registered user to admin role, giving them access to the admin panel.
-
-## 👑 Admin Management System
-
-This template includes a role-based admin management system with basic CRUD operations and safety controls.
-
-### Admin System Features
-
-#### User Management
-- **Basic CRUD Operations** - Create, read, update, and delete users
-- **Role Assignment** - Change user roles between admin and user
-- **User Management** - User listing with basic pagination
-- **Safety Controls** - Admins cannot delete their own accounts
-
-#### Admin Interface
-- **Basic Dashboard** - User statistics and system overview
-- **User Management Table** - User list with edit/delete actions
-- **Role Management Forms** - Simple role assignment interface
-- **Responsive Design** - Works on desktop and mobile devices
-
-#### Security Features
-- **Authorization Middleware** - Admin routes protected with `AdminRequired` middleware
-- **Role-Based Access** - UI shows/hides features based on user permissions
-- **Session Security** - Session management with role verification
-- **Input Validation** - Basic validation for admin operations
-
-### Setting Up Admin Access
-
-#### Automatic Admin Promotion
-```console
-# Promote the first registered user to admin
-make admin
-```
-
-This grift task finds the first user (by creation date) and promotes them to admin role.
-
-#### Manual Admin Promotion
-```console
-# Using Buffalo task directly
-buffalo task db:promote_admin
-
-# Or promote a specific user via database
-psql -d my_go_saas_template_development -c "UPDATE users SET role = 'admin' WHERE email = 'your-email@example.com';"
-```
-
-### Admin Routes & API
-
-| Route | Method | Description | Access Level |
-|-------|--------|-------------|--------------|
-| `/admin` | GET | Admin dashboard with statistics | Admin Only |
-| `/admin/users` | GET | User management list (paginated) | Admin Only |
-| `/admin/users/{id}` | GET | Edit user form | Admin Only |
-| `/admin/users/{id}` | POST | Update user (including role) | Admin Only |
-| `/admin/users/{id}` | DELETE | Delete user (with safety checks) | Admin Only |
-
-### Role System Details
-
-#### User Roles
-- **`user`** (default) - Standard application access
-  - Profile management
-  - Dashboard access
-  - Standard features
-
-- **`admin`** - Full administrative privileges
-  - All user permissions
-  - Admin panel access (`/admin`)
-  - User management capabilities
-  - Role assignment permissions
-  - System administration
-
-#### Role Enforcement
-- **Database Level** - Role field with proper constraints and validation
-- **Middleware Level** - `AdminRequired` middleware protects admin routes
-- **Template Level** - Conditional rendering based on user role
-- **UI Level** - Dynamic navigation and feature visibility
-
-### Admin Development Patterns
-
-#### Adding New Admin Features
-```go
-// In actions/app.go - Add new admin routes
-adminGroup := app.Group("/admin")
-adminGroup.Use(AdminRequired)
-adminGroup.GET("/new-feature", AdminNewFeatureHandler)
-```
-
-#### Template Access Control
-```html
-<!-- In templates - Check admin role -->
-<%= if (current_user.Role == "admin") { %>
-  <a href="/admin">Admin Panel</a>
-<% } %>
-```
-
-#### Safety Checks Example
-```go
-// Prevent self-deletion
-if userToDelete.ID == currentUser.ID {
-    return c.Error(400, errors.New("cannot delete your own account"))
-}
-```
-
-## 🛠️ Development Commands
-
-### Quick Reference
-
-| Command | Purpose | Description |
-|---------|---------|-------------|
-| `make setup` | First-time setup | Creates database, runs migrations |
-| `make dev` | Development mode | Starts database + Buffalo dev server |
-| `make admin` | Admin setup | Promotes first user to admin role |
-| `make test` | Run tests | Executes full test suite with database |
-| `make clean` | Cleanup | Stops services and cleans containers |
-| `make db-status` | Health check | Shows database container status |
-
-### Development Workflow
-
-#### First Time Setup
-```console
-# Clone and setup the project
-git clone <your-repo-url>
-cd my-go-saas-template
-make setup
-
-# Create your first user account via the web interface
-# Then promote to admin
-make admin
-```
-
-#### Daily Development
-```console
-# Start development (runs database + Buffalo dev server)
-make dev
-
-# Buffalo automatically reloads on file changes
-# Visit http://127.0.0.1:3000 to see your changes
-```
-
-#### Testing & Quality Assurance
-```console
-# Run all tests (includes database setup)
-make test
-
-# Check database health
-make db-status
-
-# Clean up after development
-make clean
-```
-
-### Advanced Commands
-
-#### Database Operations
-```console
-# Manual database management
-make db-up                     # Start database only
-make db-down                   # Stop database
-make db-reset                  # Reset database (drop/create/migrate)
-make migrate                   # Run migrations only
-
-# Buffalo database commands
-soda create -a                 # Create all databases
-soda migrate up                # Run migrations
-soda generate migration        # Create new migration
-soda drop -e development       # Drop development database
-```
-
-#### Admin Management
-```console
-# Admin user management
-buffalo task db:promote_admin  # Promote first user to admin
-make admin                     # Same as above (via make)
-
-# Manual role assignment via database
-psql -d my_go_saas_template_development \
-  -c "UPDATE users SET role = 'admin' WHERE email = 'user@example.com';"
-```
-
-#### Building & Production
-```console
-# Build for production
-make build                     # Creates binary in bin/
-buffalo build                  # Direct Buffalo build
-buffalo build --static        # Static binary build
-
-# Production database setup
-GO_ENV=production soda create
-GO_ENV=production soda migrate up
-```
-
-### Development Tips
-
-#### Buffalo Development Server
-- **Automatic reload** - Buffalo watches files and reloads automatically
-- **Port 3000** - Default development port
-- **Hot reload** - Template and Go code changes reload automatically
-- **Keep running** - Leave Buffalo running, it handles recompilation
-
-#### Database Development
-- **Container persistence** - Database data persists between restarts
-- **Health checks** - Make commands wait for database readiness
-- **Multiple environments** - Development, test, and production databases
-- **Migration tracking** - Buffalo tracks applied migrations automatically
-
-#### Template Development
-- **HTMX integration** - Templates support dynamic content loading
-- **Pico.css styling** - Semantic HTML with automatic styling
-- **Plush templating** - Buffalo's template engine with Go-like syntax
-- **Live reload** - Template changes appear immediately
-
-**🚨 CRITICAL: Buffalo Template & Partial Guidelines**
-- **Partial naming** - Partials MUST be prefixed with underscore: `_partial.plush.html`
-- **Partial calls** - Reference without underscore or extension: `partial("auth/new")` finds `auth/_new.plush.html`
-- **Universal layout** - Use HTMX content swapping with persistent header/footer instead of full page templates
-- **Component architecture** - Create reusable partials for forms, content sections, navigation
-- **Template structure** - Direct route visits should load universal layout with content, HTMX requests load partials only
-
-**Template Architecture Pattern:**
-```go
-// In action handler
-func MyPageHandler(c buffalo.Context) error {
-    if c.Request().Header.Get("HX-Request") == "true" {
-        return c.Render(http.StatusOK, rHTMX.HTML("mypage/_content.plush.html"))
-    }
-    // Direct visits get universal layout with content flag
-    c.Set("myPageContent", true)
-    return c.Render(http.StatusOK, r.HTML("home/index.plush.html"))
-}
-```
-
-### Troubleshooting
-
-#### Common Issues
-
-**Database Connection Issues**
-```console
-# Check container status
-make db-status
-podman-compose ps
-
-# Check logs
-podman-compose logs postgres
-
-# Reset database if corrupted
-make db-reset
-```
-
-**Buffalo Issues**
-```console
-# Check if Buffalo is running
-ps aux | grep buffalo
-lsof -i :3000
-
-# Restart Buffalo if needed
-# Ctrl+C to stop, then: make dev
-```
-
-**Port Conflicts**
-```console
-# Check what's using port 3000
-lsof -i :3000
-
-# Kill process if needed
-kill -9 $(lsof -t -i:3000)
-```
-
-**Template Errors**
-- Check Buffalo console output for Plush syntax errors
-- Ensure proper variable names and template structure
-- Verify HTMX attributes and targets are correct
-
-## 🔐 Authentication Features
-
-### User Registration & Login
-- **Registration**: `/users/new` - Create new user accounts (form loads in a modal via HTMX)
-- **Login**: `/auth/new` - Sign in with email/password (form loads in a modal via HTMX)
-- **Dashboard**: `/dashboard` - Protected area for authenticated users (content loads via HTMX)
-- **Logout**: Available via user dropdown menu (uses HTMX POST)
-
-### User Interface
-- **Persistent Header/Footer**: The main site header (with navigation, theme toggle, profile/auth links) and footer are defined in `templates/home/index.plush.html` and persist across page views using `hx-preserve="true"`.
-- **Dynamic Content Area**: The `<main id="htmx-content">` in `index.plush.html` is where page-specific content is dynamically loaded by HTMX.
-- **Modal Authentication Forms**: "Login" and "Sign Up" buttons in the header trigger Pico.css modals. The respective forms are loaded into these modals via HTMX.
-- **Landing Page**: Marketing page with conditional CTAs. Login/Signup CTAs open modals.
-- **User Dropdown**: Professional dropdown menu in the persistent header for authenticated users with:
-  - User avatar (initials with gradient background)
-  - User name display
-  - Profile Settings (placeholder, loads via HTMX)
-  - Account Settings (placeholder, loads via HTMX)  
-  - Sign Out functionality (HTMX POST request)
-
-### Authentication Flow
-1. Unauthenticated users see the landing page. "Login" and "Sign Up" buttons in the header open modals with the respective forms, loaded via HTMX.
-2. After successful login/signup from a modal, the server typically responds with an `HX-Refresh: true` header, causing a full page refresh. This updates the header to the logged-in state and closes the modal.
-3. Authenticated users see the persistent header with their profile dropdown. Navigating to areas like `/dashboard` loads the content into the `#htmx-content` area.
-4. Logout (via an HTMX POST request from the dropdown) clears the session and typically triggers an `HX-Refresh: true` or `HX-Redirect` to the landing page.
-
-## ✨ HTMX Integration
-
-This template heavily utilizes HTMX for a modern, single-page application feel without complex JavaScript frameworks.
-
-- **Core Principle**: The main layout (`templates/home/index.plush.html`) acts as a persistent shell. Navigation links and form submissions use HTMX attributes (`hx-get`, `hx-post`, `hx-target`, `hx-swap`) to fetch HTML fragments from the server and swap them into the `#htmx-content` div.
-- **Initial Page Load**: The homepage (`/`) loads `index.plush.html`, and the `<main id="htmx-content">` tag has an `hx-trigger="load"` attribute that immediately makes an HTMX request to fetch the initial homepage content (`_index_content.plush.html`).
-- **Server-Side Handling**:
-    - Go handlers in the `actions` package detect HTMX requests (using `IsHTMX(c.Request())` from `actions/render.go`).
-    - For HTMX requests, handlers use a specific render engine (`rHTMX`) that employs a minimal layout (`templates/htmx.plush.html`, which is just `<%= yield %>`). This ensures only the necessary HTML fragment is sent to the client.
-    - Standard (non-HTMX) requests render full pages using the default engine (`r`) and `templates/application.plush.html` (which now primarily serves `index.plush.html` for the main app view).
-- **Benefits**: Reduced page flicker, faster perceived load times for content changes, and simpler server-rendered HTML.
-
-##  SEO & Performance Features
-
-### Search Engine Optimization
-- **Search Engine Friendly**: robots.txt configured to allow crawling while protecting private areas
-- **Dynamic Meta Tags**: Page-specific titles, descriptions, and keywords
-- **Open Graph**: Social media preview tags for Facebook, Twitter, and LinkedIn
-- **Structured Data**: JSON-LD schema markup for SaaS applications
-- **Canonical URLs**: Prevent duplicate content issues
-- **XML Sitemap**: Basic sitemap for search engines
-
-### Performance & Accessibility
-- **Semantic HTML**: Proper HTML5 structure with Pico.css styling
-- **HTMX for Dynamic Updates**: Updates page sections without full refreshes
-- **Mobile-First**: Responsive design with proper viewport settings
-- **Theme Support**: Dark/light/auto modes with system preference detection
-- **Fast Loading**: Minimal CSS/JS footprint
-- **Accessibility**: Semantic markup and keyboard navigation
-
-## 📊 Architecture & Technology Stack
-
-### Backend Architecture
-- **Framework**: Buffalo (Go web framework)
-- **Database**: PostgreSQL 15 (containerized)
-- **Authentication**: Session-based with bcrypt password hashing
-- **Authorization**: Role-based access control with middleware
-- **Background Jobs**: Buffalo workers (available for future use)
-- **Testing**: Go testing framework with database integration
-
-### Frontend Architecture
-- **Templating**: Plush templates - Buffalo's template engine
-- **Styling**: Pico.css - Semantic CSS framework with automatic theming
-- **Interactions**: HTMX - Dynamic content loading without complex JavaScript
-- **Theme System**: Dark/light/auto modes with localStorage persistence
-- **Responsive Design**: Mobile-first approach with semantic HTML
-
-### Database Schema
-
-#### Users Table
-```sql
-users (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'user' -- 'user' or 'admin'
-);
-```
-
-#### Key Features
-- **UUID Primary Keys** - Non-enumerable identifiers
-- **Timestamps** - Automatic created_at/updated_at tracking
-- **Email Uniqueness** - Prevents duplicate accounts
-- **Password Security** - bcrypt hashing
-- **Role System** - User and admin roles
-
-### Application Structure
-
-```
-my-go-saas-template/
-├── actions/          # HTTP handlers and middleware
-│   ├── app.go       # Main application and routing
-│   ├── auth.go      # Authentication handlers
-│   ├── admin.go     # Admin management system
-│   ├── users.go     # User profile management
-│   └── render.go    # Template rendering utilities
-├── models/          # Database models and validation
-│   └── user.go      # User model with role support
-├── templates/       # Plush template files
-│   ├── application.plush.html  # Main layout
-│   ├── home/        # Homepage and dashboard
-│   ├── auth/        # Authentication forms
-│   ├── users/       # User profile management
-│   └── admin/       # Admin panel templates
-├── migrations/      # Database migration files
-├── grifts/         # Background tasks and utilities
-├── public/         # Static assets (CSS, JS, images)
-└── docs/           # Documentation and guides
-```
-
-### HTMX Integration Architecture
-
-#### Core Concept
-The application uses a persistent shell architecture where the main layout stays loaded and content areas are dynamically updated via HTMX.
-
-#### Key Components
-1. **Persistent Shell** (`templates/home/index.plush.html`)
-   - Header with navigation and user menu
-   - Footer with site information
-   - `<main id="htmx-content">` target area
-
-2. **Content Partials** (Various template files)
-   - Dashboard content (`templates/home/dashboard.plush.html`)
-   - Admin interfaces (`templates/admin/*.plush.html`)
-   - User forms (`templates/users/*.plush.html`)
-
-3. **HTMX Response Engine** (`actions/render.go`)
-   - Detects HTMX requests via headers
-   - Uses minimal layout for partial responses
-   - Maintains full page rendering for direct access
-
-#### Benefits
-- **Faster Navigation** - Only content area updates, header/footer persist
-- **Better UX** - No page flicker during navigation
-- **SEO Friendly** - Full pages still render for search engines
-- **Progressive Enhancement** - Works without JavaScript as fallback
-
-### Security Architecture
-
-#### Authentication Security
-- **Session Management** - Session cookies with expiration
-- **Password Hashing** - bcrypt with appropriate cost factor
-- **CSRF Protection** - Built-in Buffalo CSRF middleware
-- **Input Validation** - Basic validation on user inputs
-
-#### Authorization Security
-- **Role-Based Access** - Middleware-enforced role checking
-- **Route Protection** - Admin routes protected with `AdminRequired` middleware
-- **Template Security** - Role-based conditional rendering
-- **API Security** - Authorization checks on endpoints
-
-#### Database Security
-- **Prepared Statements** - All queries use parameterization
-- **Connection Pooling** - Database connection management
-- **Migration Tracking** - Database schema version control
-- **Data Validation** - Model-level validation before database operations
-
-### Performance Optimizations
-
-#### Frontend Performance
-- **Minimal JavaScript** - HTMX provides dynamic behavior with minimal JS
-- **Semantic CSS** - Pico.css provides styling without utility class bloat
-- **Template Rendering** - Plush templates for server-side rendering
-- **Static Asset Optimization** - Minified CSS and optimized images
-
-#### Backend Performance
-- **Compiled Go Binary** - High-performance compiled application
-- **Connection Pooling** - Database connection management
-- **Session Optimization** - Session storage and retrieval
-- **Template Caching** - Plush templates cached in production
-
-#### Database Performance
-- **Indexed Queries** - Indexing on frequently queried columns
-- **Query Optimization** - Efficient queries
-- **Connection Limits** - Connection pool sizing
-- **Migration Efficiency** - Non-blocking migrations where possible
-
-## 🛠️ Development
-
-### Template Development
-
-This project uses Buffalo's Plush templating engine, Pico.css for styling, and HTMX for dynamic interactions.
-
-**Important: For ALL styling changes, always consult `/docs/` folder FIRST**
-
-- **Main Shell**: `templates/home/index.plush.html` is the primary persistent layout containing the header, footer, and the `<main id="htmx-content">` target.
-- **Content Partials**: Most page-specific content is in separate partial files (e.g., `templates/home/_index_content.plush.html`, `templates/home/dashboard.plush.html`). These are loaded into `#htmx-content`.
-- **HTMX Fragments Layout**: `templates/htmx.plush.html` (containing just `<%= yield %>`) is used by the `rHTMX` render engine for HTMX responses.
-- **Plush Syntax**: See `/docs/buffalo-template-syntax.md`.
-- **Pico.css Styling**: **CRITICAL** - See `/docs/pico-implementation-guide.md` and `/docs/pico-css-variables.md` - Use Pico CSS variables instead of custom CSS
-- **Modals**: Pico.css `<dialog>` elements are used for login/signup, triggered by JavaScript and populated by HTMX.
-- **Theme Switching**: Built-in dark/light/auto mode support, works with the persistent header.
-
-#### Pico.css Styling Guidelines
-- **Always use CSS variables**: Modify `--pico-primary`, `--pico-background-color`, etc. instead of writing custom CSS
-- **Check documentation first**: Consult `/docs/pico-css-variables.md` for all available Pico variables
-- **Use semantic HTML**: Follow patterns in `/docs/pico-implementation-guide.md` for proper Pico.css usage
-- **Never override Pico directly**: Work within Pico's variable system for all customization
-
-### CSS Architecture
-
-**Status**: ✅ **Complete** - All templates refactored to use semantic, component-based CSS (October 2025)
-
-#### Design Philosophy
-AVR uses a **semantic-first, component-based** CSS architecture built on Pico CSS:
-
-1. **Zero Inline Styles**: Never use `style=""` attributes in templates
-2. **Zero Utility Classes**: No Tailwind-style utilities (`.mt-4`, `.bg-gray-100`, etc.)
-3. **Semantic Components**: Use meaningful class names (`.blog-post-item`, `.team-card`, `.donation-form`)
-4. **Pico CSS Variables**: All colors, spacing, and styling uses Pico's variable system
-5. **100% Pico Compatible**: All custom CSS works with Pico's conventions
-
-#### File Structure
-```
-pb_public/assets/css/
-├── pico.min.css          # Pico CSS framework (DO NOT EDIT)
-├── custom.css            # AVR custom styles (MAIN WORKING FILE)
-├── quill.snow.css        # Quill editor theme
-└── quill-custom.css      # Quill overrides
-```
-
-#### Quick Reference
-
-**Main Documentation**: `/docs/development/design-system.md` (comprehensive guide)
-
-**Color System** (3-tier visual hierarchy):
-```css
-/* Light Mode */
---pico-background-color: #e8e9ea;              /* Body: Concrete gray */
---pico-card-background-color: #ffffff;          /* Cards: White */
---pico-card-sectional-background-color: #f5f5f5; /* Sections: Light gray */
-
-/* Army-themed accents */
---pico-primary: #ffb627;      /* Army gold - CTAs */
---pico-secondary: #4a5d23;    /* Army green - accents */
---pico-contrast: #d2691e;     /* Burnt orange - warnings */
-```
-
-**Common Components**:
-- **Blog**: `.blog-post-item`, `.post-title`, `.post-excerpt`
-- **Team**: `.team-card`, `.team-card-overlay`, `.team-card-content`
-- **Donation**: `.donation-grid`, `.amount-grid`, `.impact-item`
-- **Admin**: `.admin-container`, `.admin-table`, `.status-badge`
-- **Contact**: `.social-links`, `.info-section`
-
-**How to Add New Styles**:
-1. Check `/docs/development/design-system.md` for existing patterns
-2. Use Pico CSS variables for all values
-3. Create semantic component classes in `pb_public/assets/css/custom.css`
-4. Never use inline styles or utility classes
-5. Document new components in design-system.md
-
-**Example**:
-```css
-/* ❌ DON'T: Inline styles or utilities */
-<div style="margin: 2rem;" class="mt-8 bg-white">
-
-/* ✅ DO: Semantic component */
-<div class="content-section">
-
-/* In custom.css */
-.content-section {
-    margin: var(--pico-spacing);
-    background: var(--pico-card-background-color);
-    padding: var(--pico-block-spacing-vertical);
-    border-radius: var(--pico-border-radius);
-}
-```
-
-**Testing Your CSS**:
-- Run `make dev` to start development server
-- Test in light and dark modes
-- Check responsive breakpoints: mobile (375px), tablet (768px), desktop (1280px)
-- Verify WCAG AA contrast ratios (use browser DevTools)
-- See `/docs/development/visual-regression-testing-checklist.md` for full checklist
-
-#### Migration History
-- **Phase 1** (Oct 2025): Removed 117+ inline styles from public templates
-- **Phase 2** (Oct 2025): Removed 83+ Tailwind classes from admin templates
-- **Phase 3** (Oct 2025): Added team page components
-- **Result**: 100% semantic, Pico-native CSS across entire application
-
-### Database Management
-The application includes a PostgreSQL container configured via `docker-compose.yml`:
-- **Development DB**: `my_go_saas_template_development`
-- **Test DB**: `my_go_saas_template_test`
-- **Production DB**: `my_go_saas_template_production`
-
-### Common Commands
-```console
-# Development shortcuts (recommended)
-make dev                       # Start everything for development
-make setup                     # First-time setup
-make test                      # Run tests
-make clean                     # Stop and cleanup
-make admin                     # Promote first user to admin
-
-# Manual commands
-# Database operations
-soda create -a                 # Create databases
-soda migrate up                # Run migrations
-soda generate migration        # Create new migration
-
-# Admin management
-buffalo task db:promote_admin  # Promote first user to admin role
-
-# Development
-buffalo dev                    # Start dev server with hot reload
-buffalo build                  # Build production binary
-
-# Testing - CRITICAL USAGE REQUIREMENTS
-buffalo test ./actions         # Test actions package (RECOMMENDED)
-buffalo test ./models          # Test models package  
-buffalo test ./pkg             # Test pkg package
-buffalo test ./actions ./models ./pkg  # Test multiple packages
-buffalo test ./actions -v      # Test with verbose output
-
-# ❌ DO NOT USE THESE COMMANDS:
-# buffalo test ./...           # Includes problematic backup directory
-# go test ./actions            # Bypasses Buffalo test setup
-
-# Container management (Podman/Docker)
-podman-compose up -d           # Start database
-podman-compose down            # Stop database
-podman-compose ps              # Check container status
-```
-User management endpoints (`/users`, `/auth`) are still the same, but interactions are now primarily via HTMX from modals or links.
-
-## 🤖 Bot Instructions
-
-When working with this Buffalo SaaS template:
-
-### Template Development & HTMX
-1.  **Understand the Shell**: `templates/home/index.plush.html` is the persistent shell. Most new content should be a partial loaded into `#htmx-content`.
-2.  **HTMX Attributes**: Use `hx-get`, `hx-post`, `hx-target="#htmx-content"`, `hx-swap` for navigation and forms. For modals, target the modal's content div.
-3.  **Server-Side**:
-    *   Check for HTMX requests using `IsHTMX(c.Request())`.
-    *   Use `rHTMX.HTML("path/to/partial.plush.html")` for HTMX responses.
-    *   Use `r.HTML("home/index.plush.html")` for initial full page loads of the main app view.
-4.  **Plush Syntax**: Refer to `/docs/buffalo-template-syntax.md`. Avoid Go-style operations.
-5.  **Modals**: Login/signup forms are in modals. Ensure HTMX attributes on trigger buttons target modal content divs. Server responses for modal forms (e.g., validation errors) should re-render the form fragment. Successful modal submissions often use `HX-Refresh: true`.
-
-### Styling with Pico.css
-
-**CRITICAL: Always use Pico.css variables instead of custom CSS**
-
-1.  **Semantic HTML**: Key for Pico.css - use proper HTML elements
-2.  **CSS Variables Only**: Modify `--pico-primary`, `--pico-background-color`, etc. instead of writing custom CSS
-3.  **Documentation First**: Always check `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` BEFORE making styling changes
-4.  **Modals**: Use `<dialog>` and `<article>` structure as documented in `/docs/`
-5.  **Theme Support**: Use CSS variables to ensure compatibility with dark/light modes
-
-### Authentication & Authorization
-1.  **Modal Forms**: Login/signup are via modals loaded with HTMX.
-2.  **Session Management**: `current_user_id` in session, `current_user` in templates.
-3.  **Role-based Access**: Check `current_user.Role` for admin functionality.
-4.  **Admin Middleware**: Use `AdminRequired` middleware for admin-only routes.
-5.  **Post-Login/Signup**: Usually `HX-Refresh: true` from server.
-
-### Admin System Patterns
-1.  **Admin Routes**: Group under `/admin` with `AdminRequired` middleware.
-2.  **Role Checks**: Use `current_user.Role == "admin"` in templates for conditional content.
-3.  **User Management**: CRUD operations follow Buffalo conventions with proper validation.
-4.  **Safety Checks**: Always prevent users from deleting themselves or escalating beyond their permissions.
-
-### Common Patterns
-- **Persistent Elements**: Header/footer in `index.plush.html` use `hx-preserve="true"`.
-- **Conditional Content**: Check `current_user` for auth-specific content, often within partials.
-- **Form Handling**: Standard Buffalo form helpers can be used, but HTMX attributes handle submission.
-
-### Troubleshooting
-- **500 errors**: Often Plush syntax. Check Buffalo logs.
-- **HTMX Issues**: Use browser dev tools (Network tab) to inspect HTMX requests and responses. Check `HX-Request` headers and what HTML fragments are being returned. Ensure `hx-target` and `hx-swap` are correct.
-
-### Buffalo Testing - CRITICAL REQUIREMENTS
-
-**🚨 ALWAYS use Buffalo test commands, NEVER use `go test` directly!**
-
-#### Required Testing Commands:
-```bash
-# ✅ CORRECT - Test specific packages
-buffalo test ./actions         # Test actions package only
-buffalo test ./models          # Test models package only  
-buffalo test ./pkg             # Test pkg package only
-buffalo test ./actions ./models ./pkg  # Test multiple packages
-buffalo test ./actions -v      # Test with verbose output
-
-# ❌ WRONG - These will fail or cause issues
-buffalo test ./...             # Includes problematic backup directory
-go test ./actions              # Bypasses Buffalo's test setup
-go test ./...                  # Bypasses Buffalo entirely
-```
-
-#### Buffalo Test Process:
-Buffalo test automatically:
-1. Drops and recreates test database (`avrnpo_test`)
-2. Dumps schema from development database  
-3. Loads schema into test database
-4. Runs Go tests with Buffalo flags (`-p 1 -tags development`)
-
-#### Database Requirements:
-- **PostgreSQL Version**: 17+ (upgraded from 15 to fix transaction_timeout errors)
-- **Container Management**: Use `podman-compose up -d` to start database
-- **Schema Management**: Use `soda migrate up` (NOT `buffalo pop migrate`)
-
-#### If Tests Fail:
-1. **Check PostgreSQL**: `podman ps` to verify database container is running
-2. **Check Schema**: `GO_ENV=test soda migrate status` to verify migrations
-3. **Check Compilation**: Look for Go syntax errors in test output
-4. **Exclude Backup Dir**: Never include `backup/` directory in test patterns
-
-See `/docs/buffalo-test-debugging-summary.md` for complete troubleshooting guide.
-
-## 🤖 Development Assistant Instructions
-
-When working with this Buffalo SaaS template, follow these patterns and guidelines:
-
-#### Template Development & HTMX Integration
-1. **Understand the Shell Architecture**: `templates/home/index.plush.html` is the persistent shell. Most new content should be a partial template loaded into `#htmx-content`.
-
-2. **HTMX Response Patterns**: 
-   - Use `hx-get`, `hx-post`, `hx-target="#htmx-content"`, `hx-swap` for navigation and forms
-   - For modals, target the modal's content div specifically
-   - Server responses use `rHTMX.HTML("path/to/partial.plush.html")` for HTMX requests
-
-3. **Template Engine Guidelines**:
-   - Check for HTMX requests using `IsHTMX(c.Request())` in handlers
-   - Use `r.HTML("home/index.plush.html")` for initial full page loads
-   - Reference `/docs/buffalo-template-syntax.md` for Plush syntax patterns
-
-#### Styling with Pico.css Framework
-
-**CRITICAL: Always consult `/docs/` folder before making ANY styling changes**
-
-1. **Documentation First**: Check `/docs/pico-css-variables.md` and `/docs/pico-implementation-guide.md` BEFORE styling
-2. **CSS Variables Only**: Use `--pico-primary`, `--pico-background-color`, etc. - NEVER write custom CSS rules
-3. **Semantic HTML First**: Use proper HTML elements (`<nav>`, `<article>`, `<section>`, `<details>`) as shown in `/docs/`
-4. **Minimal CSS Classes**: Prefer `role="button"`, `class="secondary"`, `class="dropdown"` over custom styles
-5. **Theme Compatibility**: Use CSS variables to ensure dark/light mode compatibility
-6. **Responsive Design**: Trust Pico.css responsive behavior, avoid custom breakpoints unless necessary
-
-#### Authentication & Authorization Patterns
-1. **Modal Authentication**: Login/signup forms load via HTMX into modal dialogs
-2. **Session Management**: Use `current_user_id` in session, `current_user` available in templates
-3. **Role-Based Access**: Check `current_user.Role` for admin functionality in templates
-4. **Admin Middleware**: Always use `AdminRequired` middleware for admin-only routes
-5. **Post-Authentication**: Use `HX-Refresh: true` header for successful modal form submissions
-
-#### Admin System Development
-1. **Route Structure**: Group admin routes under `/admin` with `AdminRequired` middleware protection
-2. **Role Checking**: Use `current_user.Role == "admin"` in templates for conditional content
-3. **CRUD Operations**: Follow Buffalo conventions with proper validation and error handling
-4. **Safety Controls**: Always prevent users from deleting themselves or escalating beyond permissions
-
-#### Database & Migration Patterns
-1. **Migration Safety**: Use non-blocking migrations where possible for production deployments
-2. **Model Validation**: Implement comprehensive validation at the model level
-3. **Role System**: Use `role` field with proper constraints and default values
-4. **UUID Primary Keys**: Maintain UUID usage for security and scalability
-
-#### Common Development Patterns
-- **Persistent Elements**: Header/footer use `hx-preserve="true"` to maintain state
-- **Conditional Content**: Check `current_user` for authentication-specific content rendering
-- **Form Handling**: Use HTMX attributes for submission while maintaining Buffalo form helpers
-- **Error Handling**: Provide comprehensive error messages and proper HTTP status codes
-
-#### Testing & Quality Assurance
-- **Test Coverage**: Maintain tests for all authentication and admin functionality
-- **Database Testing**: Use test database environment for isolated test runs
-- **HTMX Testing**: Test both HTMX and direct URL access for all routes
-- **Role Testing**: Verify proper authorization for all role-based features
-
-#### Troubleshooting Guidelines
-- **500 Errors**: Usually Plush template syntax issues - check Buffalo console output
-- **HTMX Issues**: Use browser dev tools Network tab to inspect HTMX requests/responses
-- **Database Issues**: Use `make db-status` and `make db-logs` for diagnostics
-- **Permission Issues**: Verify middleware application and role assignments
-
-## 📁 Project File Structure
-
-```
-my-go-saas-template/
-├── 🗄️  Database & Configuration
-│   ├── database.yml              # Database configuration for all environments
-│   ├── docker-compose.yml        # PostgreSQL container configuration
-│   └── migrations/               # Database migration files
-│       ├── *_create_users.up.fizz   # Initial user table creation
-│       └── *_add_role_to_users.*.fizz # Role system addition
-│
-├── 🏗️  Application Core
-│   ├── main.go                   # Application entry point
-│   ├── app                       # Buffalo application instance
-│   ├── actions/                  # HTTP handlers and middleware
-│   │   ├── app.go               # Main routing and application setup
-│   │   ├── auth.go              # Authentication handlers (login/logout)
-│   │   ├── users.go             # User profile management
-│   │   ├── admin.go             # Admin management system (CRUD)
-│   │   ├── home.go              # Homepage and dashboard handlers
-│   │   └── render.go            # Template rendering utilities
-│   │
-│   ├── models/                   # Database models and validation
-│   │   ├── models.go            # Database connection and base models
-│   │   └── user.go              # User model with role support
-│   │
-│   └── grifts/                   # Background tasks and utilities
-│       └── db.go                # Admin promotion and database tasks
-│
-├── 🎨 Frontend & Templates
-│   ├── templates/                # Plush template files
-│   │   ├── application.plush.html    # Base application layout
-│   │   ├── home/                     # Homepage and dashboard templates
-│   │   │   ├── index.plush.html      # Persistent shell (header/footer)
-│   │   │   └── dashboard.plush.html  # User dashboard with admin section
-│   │   ├── auth/                     # Authentication form templates
-│   │   │   ├── new.plush.html        # Login form (modal)
-│   │   │   └── landing.plush.html    # Marketing landing page
-│   │   ├── users/                    # User management templates
-│   │   │   ├── profile.plush.html    # User profile editing
-│   │   │   └── new.plush.html        # User registration (modal)
-│   │   └── admin/                    # Admin panel templates
-│   │       ├── users.plush.html      # User management table
-│   │       └── user_edit.plush.html  # User editing form
-│   │
-│   └── public/                   # Static assets
-│       ├── css/
-│       │   ├── pico.min.css     # Pico.css framework (semantic styling)
-│       │   └── custom.css       # Custom CSS variables and overrides
-│       ├── js/
-│       │   ├── theme.js         # Dark/light mode switching
-│       │   └── icons.js         # Icon system utilities
-│       └── images/              # Static images and favicon
-│
-├── 🛠️  Development & Deployment
-│   ├── Makefile                  # Robust development commands
-│   ├── scripts/
-│   │   └── wait-for-postgres.sh # Database health check script
-│   ├── go.mod                   # Go module dependencies
-│   ├── go.sum                   # Dependency checksums
-│   └── bin/                     # Compiled binaries (created by build)
-│
-├── 🧪 Testing & Quality
-│   ├── *_test.go                # Go test files throughout project
-│   ├── fixtures/                # Test data fixtures
-│   └── tmp/                     # Temporary build files
-│
-└── 📖 Documentation
-    ├── README.md                # This comprehensive guide
-    └── docs/                    # Additional documentation
-        ├── buffalo-template-syntax.md     # Plush templating guide
-        ├── pico-implementation-guide.md   # Semantic CSS patterns
-        ├── pico-css-variables.md          # CSS customization guide
-        └── seo-implementation.md          # SEO optimization guide
-```
-
-### Key File Descriptions
-
-#### Core Application Files
-- **`actions/app.go`** - Main application setup, routing configuration, and middleware stack
-- **`actions/admin.go`** - Complete admin management system with CRUD operations and safety controls  
-- **`models/user.go`** - User model with role support, validation, and authentication methods
-- **`templates/home/index.plush.html`** - Persistent application shell with HTMX content area
-
-#### Database Files
-- **`migrations/*.fizz`** - Database schema evolution with role-based user system
-- **`database.yml`** - Multi-environment database configuration
-- **`grifts/db.go`** - Administrative tasks including user promotion to admin role
-
-#### Frontend Architecture
-- **`public/css/pico.min.css`** - Semantic CSS framework providing automatic styling
-- **`public/js/theme.js`** - Theme switching functionality with localStorage persistence
-- **`templates/admin/*.plush.html`** - Professional admin interface templates
-
-#### Development Infrastructure  
-- **`Makefile`** - Comprehensive development commands with health checks and error handling
-- **`scripts/wait-for-postgres.sh`** - Database readiness verification for reliable automation
-- **`docker-compose.yml`** - PostgreSQL container configuration for development environment
-
-This file structure supports a maintainable SaaS application with clear separation of concerns.
-
-## 📝 Development Roadmap
-
-### 🚀 Unified Logging Implementation Plan
-
-**Status**: Planning Phase - Not Started
-
-Buffalo already has a solid logging foundation via `gobuffalo/logger` (logrus-based). This plan enhances it with configurability and structured business event logging.
-
-#### **📋 Current State Analysis**
-
-**✅ What Buffalo Already Provides:**
-- [x] Built-in structured logging with request IDs, timing, status codes
-- [x] paramlogger middleware for HTTP request logging  
-- [x] Context-aware logger via `c.Logger()`
-- [x] Log levels (info, debug, error, etc.)
-- [x] JSON-like structured output
-
-**❌ What's Missing:**
-- [ ] Configurable file output location
-- [ ] Consistent application-level logging
-- [ ] Business event logging (user actions, errors)
-- [ ] Centralized logging configuration
-
-#### **🎯 Implementation Phases**
-
-##### **Phase 1: Configuration & File Output** 
-- [ ] Create logging configuration structure
-  - [ ] Environment-based log levels (`LOG_LEVEL`)
-  - [ ] Configurable file paths with sensible defaults (`LOG_FILE_PATH`)
-  - [ ] Development vs production settings
-- [ ] Add file output support
-  - [ ] Default: `/logs/application.log`
-  - [ ] Log rotation support
-- [ ] Enhance Buffalo's existing logger
-  - [ ] Keep Buffalo's middleware logging (already good)
-  - [ ] Add custom fields for business context
-  - [ ] Configure log level via environment
-
-##### **Phase 2: Structured Application Logging**
-- [ ] Create centralized logging service
-  - [ ] Wrapper around Buffalo's logger
-  - [ ] Consistent field names and formats
-  - [ ] Request correlation ID support
-- [ ] Add business event logging
-  - [ ] User registration/login/logout events
-  - [ ] Admin actions (user management, role changes)
-  - [ ] Error tracking with context
-  - [ ] Security events (failed login attempts, etc.)
-
-##### **Phase 3: Integration & Standards**
-- [ ] Update existing codebase
-  - [ ] Replace scattered `c.Logger().Debugf()` calls
-  - [ ] Add structured logging to key business flows
-  - [ ] Standardize error logging
-- [ ] Documentation and guidelines
-  - [ ] Logging standards for the team
-  - [ ] Examples and best practices
-
-#### **🔧 Technical Implementation Details**
-
-**Directory Structure:**
-```
-logs/
-├── application.log          # Main application logs
-├── access.log              # HTTP request logs (optional)
-├── error.log               # Error-only logs
-└── audit.log               # Security/admin events
-```
-
-**Configuration Approach:**
-- Use Buffalo's existing logger infrastructure (don't reinvent)
-- Environment variables for configuration
-- Sensible defaults that work out of the box
-- Compatible with Docker/container deployments
-
-**Log Levels & Events:**
-- **INFO**: User actions, business events
-- **WARN**: Unusual but handled conditions
-- **ERROR**: Application errors, failed operations
-- **DEBUG**: Development debugging (current usage)
-
-**Structured Fields Standard:**
-- `user_id`: Current user context
-- `request_id`: Buffalo's existing request IDs
-- `action`: Business action being performed
-- `resource`: What resource is being acted upon
-- `ip_address`: Client IP for security events
-
----
-
-## 📝 Content Management System (CMS)
-
-This template includes a comprehensive blog and content management system with advanced features for content creation, management, and SEO optimization.
-
-### CMS Features Overview
-
-#### Content Creation & Editing
-- **Rich Text Editor** - Professional WYSIWYG editor powered by Quill.js
-- **Draft System** - Save content as drafts before publishing
-- **SEO Optimization** - Complete meta tags and Open Graph support
-- **Automatic Slug Generation** - URL-friendly slugs generated from titles
-- **Content Excerpts** - Auto-generated or custom excerpts for listings
-
-#### Content Management
-- **Search & Filter** - Find posts by title, content, author, or publication status
-- **Bulk Operations** - Manage multiple posts simultaneously
-- **Status Management** - Published/Draft status with visual indicators
-- **Author Attribution** - Posts linked to user accounts with proper attribution
-
-### Using the CMS
-
-#### Creating Blog Posts
-
-1. **Access Admin Panel** - Log in as an admin user and navigate to `/admin`
-2. **Create New Post** - Click "Blog Posts" → "New Post"
-3. **Content Creation**:
-   - **Title**: Enter a descriptive title (slug auto-generates)
-   - **Content**: Use the rich text editor for formatted content
-   - **Excerpt**: Add custom excerpt or leave blank for auto-generation
-   - **Publication Status**: Check "Published" to make live, uncheck for draft
-
-#### Rich Text Editor Features
-
-The Quill.js editor provides:
-- **Text Formatting**: Bold, italic, underline, strikethrough
-- **Headers**: H1, H2, H3 for content structure
-- **Lists**: Numbered and bulleted lists with indentation
-- **Links**: Insert and edit hyperlinks
-- **Quotes**: Blockquotes for emphasized content
-- **Code**: Inline code and code blocks
-- **Cleanup**: Remove formatting tool
-
-#### SEO & Social Media Optimization
-
-Each post includes comprehensive SEO fields accessible via the "SEO & Social Media Settings" section:
-
-##### Meta Tags (SEO)
-- **Meta Title**: Custom title for search engines (50-60 chars recommended)
-- **Meta Description**: Search result snippet (150-160 chars recommended)  
-- **Meta Keywords**: Comma-separated keywords for search engines
-
-##### Open Graph (Social Media)
-- **OG Title**: Title for social media shares
-- **OG Description**: Description for social media previews
-- **OG Image**: Image URL for social media previews (1200x630px recommended)
-
-**Best Practices:**
-- Leave fields blank to use post title/excerpt as defaults
-- Optimize meta descriptions for click-through rates
-- Use high-quality, relevant Open Graph images
-- Test social media previews before publishing
-
-#### Content Search & Filtering
-
-The admin posts interface provides powerful search capabilities:
-
-##### Search Options
-- **Text Search**: Search across post titles, content, and author names
-- **Status Filter**: Filter by Published, Draft, or All Posts
-- **Combined Filters**: Use search text and status filter together
-
-##### Usage Tips
-- Use specific keywords to quickly find posts
-- Filter by status to review drafts or published content
-- Clear filters to return to full post listing
-
-#### Bulk Operations
-
-Efficiently manage multiple posts with bulk actions:
-
-##### Available Actions
-- **Bulk Publish**: Make multiple drafts live simultaneously
-- **Bulk Unpublish**: Convert published posts to drafts
-- **Bulk Delete**: Remove multiple posts (with confirmation)
-
-##### How to Use Bulk Operations
-1. **Select Posts**: Check boxes next to posts you want to modify
-2. **Select All**: Use the header checkbox to select all visible posts
-3. **Choose Action**: Select desired action from dropdown
-4. **Apply**: Click "Apply" and confirm the action
-5. **Confirmation**: Review the confirmation dialog before proceeding
-
-**Safety Features:**
-- Confirmation dialogs for all bulk actions
-- Special confirmation for destructive delete operations
-- Flash messages confirm successful operations
-
-### CMS Administration
-
-#### Post Management Workflow
-
-##### Content Creation Process
-1. **Draft Creation**: Create posts as drafts for review
-2. **Content Development**: Use rich text editor for professional formatting
-3. **SEO Optimization**: Complete meta tags and social media fields
-4. **Review Process**: Preview content before publishing
-5. **Publication**: Publish when ready or schedule for later
-
-##### Content Maintenance
-- **Regular Reviews**: Use search/filter to find content needing updates
-- **Bulk Updates**: Use bulk operations for status changes
-- **SEO Monitoring**: Review and update meta descriptions periodically
-- **Content Audits**: Use draft status for content under revision
-
-#### Admin Routes for CMS
-
-| Route | Method | Description | Access Level |
-|-------|--------|-------------|--------------|
-| `/admin/posts` | GET | Post listing with search/filter | Admin Only |
-| `/admin/posts/new` | GET | New post creation form | Admin Only |
-| `/admin/posts` | POST | Create new post | Admin Only |
-| `/admin/posts/bulk` | POST | Bulk operations on posts | Admin Only |
-| `/admin/posts/{id}` | GET | View single post details | Admin Only |
-| `/admin/posts/{id}/edit` | GET | Edit post form | Admin Only |
-| `/admin/posts/{id}` | POST | Update existing post | Admin Only |
-| `/admin/posts/{id}` | DELETE | Delete single post | Admin Only |
-
-#### Database Schema for Posts
-
-```sql
-posts (
-    id INTEGER PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE NOT NULL,
-    content TEXT NOT NULL,
-    excerpt TEXT,
-    published BOOLEAN DEFAULT false,
-    author_id UUID NOT NULL REFERENCES users(id),
-    
-    -- SEO Fields
-    meta_title VARCHAR(255),
-    meta_description TEXT,
-    meta_keywords TEXT,
-    og_title VARCHAR(255),
-    og_description TEXT,
-    og_image VARCHAR(255),
-    
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-### CMS Best Practices
-
-#### Content Strategy
-- **Consistent Publishing**: Maintain regular content publication schedule
-- **SEO Optimization**: Always complete meta descriptions and titles
-- **Draft Workflow**: Use drafts for collaborative content creation
-- **Content Organization**: Use descriptive titles and proper excerpts
-
-#### Technical Considerations
-- **Image Optimization**: Optimize images before adding to Open Graph fields
-- **Link Management**: Regularly check and update external links
-- **Performance**: Monitor content length for page load performance
-- **Backup**: Regular database backups to protect content
-
-#### Security & Access Control
-- **Admin Access**: Only trusted users should have admin privileges
-- **Content Review**: Implement content review process for published materials
-- **Draft Protection**: Use draft status for sensitive content under development
-- **Audit Trail**: Monitor who creates and modifies content
-
-### Troubleshooting CMS Issues
-
-#### Common Problems
-
-**Rich Text Editor Not Loading**
-- Check that Quill.js assets are properly served from `/public/js/` and `/public/css/`
-- Verify JavaScript console for loading errors
-- Ensure proper MIME types for static assets
-
-**Search Not Working**
-- Verify database connection and query parameters
-- Check PostgreSQL ILIKE support for case-insensitive search
-- Review search term encoding and special characters
-
-**Bulk Operations Failing**
-- Confirm POST request includes CSRF token
-- Check that post IDs are properly submitted in form data
-- Verify admin permissions for bulk operation routes
-
-**SEO Fields Not Saving**
-- Ensure database migration for SEO fields completed successfully
-- Check form field names match model properties
-- Verify model validation allows optional SEO fields

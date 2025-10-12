@@ -20,10 +20,11 @@ Production deployment, security, and monitoring for the AVR NPO donation system.
 
 ### Infrastructure Requirements
 - **Linux server** - Ubuntu 20.04+ or similar
-- **PostgreSQL** - Version 13+ for production database
-- **Reverse proxy** - Nginx or similar for HTTPS termination
+- **PocketBase** - Embedded SQLite database (no separate DB server needed)
+- **Reverse proxy** - Nginx or Coolify for HTTPS termination
 - **SSL certificate** - Valid certificate for secure connections
 - **Email service** - SMTP for donation receipts and notifications
+- **Persistent storage** - Volume for `pb_data/` directory
 
 ### Security Considerations
 - **Environment variables** - All secrets stored securely
@@ -110,8 +111,8 @@ Production deployment, security, and monitoring for the AVR NPO donation system.
 
 ## 📚 Additional Resources
 
-- **[Buffalo Production Guide](../buffalo-framework/README.md)** - Framework-specific deployment
+- **[Coolify PocketBase Deployment](./coolify-pocketbase-migration.md)** - PocketBase deployment to Coolify
 - **[Payment System Security](../payment-system/README.md)** - Payment processing security
-- **[Database Operations](../buffalo-framework/database.md)** - Database management procedures
+- **[Development Guide](../DEVELOPMENT_GUIDE.md)** - PocketBase development patterns
 
 For detailed implementation guidance, see the specific documentation files listed above.

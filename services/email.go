@@ -24,15 +24,16 @@ func (r *realSMTPClient) SendMail(addr string, a smtp.Auth, from string, to []st
 
 // EmailService handles sending emails
 type EmailService struct {
-	SMTPHost     string
-	SMTPPort     string
-	SMTPUsername string
-	SMTPPassword string
-	FromEmail    string
-	FromName     string
-	ContactEmail string // configurable contact form recipient email
-	EmailEnabled bool   // controls whether emails are actually sent
-	client       SMTPClient
+	SMTPHost         string
+	SMTPPort         string
+	SMTPUsername     string
+	SMTPPassword     string
+	FromEmail        string
+	FromName         string
+	ContactEmail     string // configurable contact form recipient email
+	EmailEnabled     bool   // controls whether emails are actually sent
+	DevEmailOverride string // if set in dev, all emails go here
+	client           SMTPClient
 }
 
 // NewEmailService creates a new email service instance
@@ -40,11 +41,12 @@ func NewEmailService() *EmailService {
 	// In test mode, return a service with EmailEnabled=false and a nil client to avoid network calls
 	if os.Getenv("GO_ENV") == "test" {
 		return &EmailService{
-			EmailEnabled: false,
-			FromEmail:    "test@example.com",
-			FromName:     "AVRNPO Test",
-			ContactEmail: "test-contact@example.com",
-			client:       nil,
+			EmailEnabled:     false,
+			FromEmail:        "test@example.com",
+			FromName:         "AVRNPO Test",
+			ContactEmail:     "test-contact@example.com",
+			DevEmailOverride: "",
+			client:           nil,
 		}
 	}
 	// Determine default for EMAIL_ENABLED based on GO_ENV
@@ -65,16 +67,20 @@ func NewEmailService() *EmailService {
 		contactEmail = "AmericanVeteransRebuilding@avrnpo.org" // Default to match displayed email
 	}
 
+	// Get dev email override
+	devEmailOverride := os.Getenv("DEV_EMAIL_OVERRIDE")
+
 	svc := &EmailService{
-		SMTPHost:     os.Getenv("SMTP_HOST"),
-		SMTPPort:     os.Getenv("SMTP_PORT"),
-		SMTPUsername: os.Getenv("SMTP_USERNAME"),
-		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
-		FromEmail:    os.Getenv("FROM_EMAIL"),
-		FromName:     os.Getenv("FROM_NAME"),
-		ContactEmail: contactEmail,
-		EmailEnabled: emailEnabled,
-		client:       &realSMTPClient{},
+		SMTPHost:         os.Getenv("SMTP_HOST"),
+		SMTPPort:         os.Getenv("SMTP_PORT"),
+		SMTPUsername:     os.Getenv("SMTP_USERNAME"),
+		SMTPPassword:     os.Getenv("SMTP_PASSWORD"),
+		FromEmail:        os.Getenv("FROM_EMAIL"),
+		FromName:         os.Getenv("FROM_NAME"),
+		ContactEmail:     contactEmail,
+		EmailEnabled:     emailEnabled,
+		DevEmailOverride: devEmailOverride,
+		client:           &realSMTPClient{},
 	}
 	return svc
 }
@@ -441,6 +447,18 @@ func (e *EmailService) sendEmailWithBCC(toEmail, subject, htmlBody, textBody str
 	startTime := time.Now()
 	fmt.Printf("[EMAIL_SMTP] Starting email send operation at %s\n", startTime.Format("2006-01-02 15:04:05"))
 
+	originalToEmail := toEmail
+	if e.DevEmailOverride != "" {
+		fmt.Printf("[EMAIL_DEV] DEV EMAIL OVERRIDE ACTIVE\n")
+		fmt.Printf("[EMAIL_DEV] Original recipient: %s\n", toEmail)
+		fmt.Printf("[EMAIL_DEV] Redirecting to: %s\n", e.DevEmailOverride)
+		toEmail = e.DevEmailOverride
+		if bccEmails != nil && len(bccEmails) > 0 {
+			fmt.Printf("[EMAIL_DEV] Clearing BCC recipients (was: %v)\n", bccEmails)
+			bccEmails = nil
+		}
+	}
+
 	// Create message with both HTML and text parts
 	message := fmt.Sprintf(`To: %s
 From: %s <%s>
@@ -481,7 +499,11 @@ Content-Type: text/html; charset=UTF-8
 	if !e.EmailEnabled {
 		elapsed := time.Since(startTime)
 		fmt.Printf("[EMAIL_DISABLED] Email sending disabled - Duration: %v\n", elapsed)
-		fmt.Printf("[EMAIL_DISABLED] To: %s Subject: %s\nPreview: %.200s\n", toEmail, subject, textBody)
+		if e.DevEmailOverride != "" {
+			fmt.Printf("[EMAIL_DISABLED] To: %s (original: %s) Subject: %s\nPreview: %.200s\n", toEmail, originalToEmail, subject, textBody)
+		} else {
+			fmt.Printf("[EMAIL_DISABLED] To: %s Subject: %s\nPreview: %.200s\n", toEmail, subject, textBody)
+		}
 		return nil
 	}
 
@@ -510,15 +532,25 @@ Content-Type: text/html; charset=UTF-8
 	if err != nil {
 		fmt.Printf("[EMAIL_SMTP] SEND FAILED - Duration: %v, Total: %v, Error: %v\n",
 			sendDuration, totalDuration, err)
-		fmt.Printf("[EMAIL_SMTP] Failed details - To: %s, Size: %d bytes, Recipients: %d\n",
-			toEmail, messageSize, len(recipients))
+		if e.DevEmailOverride != "" {
+			fmt.Printf("[EMAIL_SMTP] Failed details - To: %s (original: %s), Size: %d bytes, Recipients: %d\n",
+				toEmail, originalToEmail, messageSize, len(recipients))
+		} else {
+			fmt.Printf("[EMAIL_SMTP] Failed details - To: %s, Size: %d bytes, Recipients: %d\n",
+				toEmail, messageSize, len(recipients))
+		}
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
 	fmt.Printf("[EMAIL_SMTP] SEND SUCCESS - Send: %v, Total: %v, Size: %d bytes\n",
 		sendDuration, totalDuration, messageSize)
-	fmt.Printf("[EMAIL_SMTP] Successfully delivered to %s (+ %d BCC recipients)\n",
-		toEmail, len(recipients)-1)
+	if e.DevEmailOverride != "" {
+		fmt.Printf("[EMAIL_SMTP] Successfully delivered to %s (original: %s, + %d BCC recipients)\n",
+			toEmail, originalToEmail, len(recipients)-1)
+	} else {
+		fmt.Printf("[EMAIL_SMTP] Successfully delivered to %s (+ %d BCC recipients)\n",
+			toEmail, len(recipients)-1)
+	}
 
 	return nil
 }

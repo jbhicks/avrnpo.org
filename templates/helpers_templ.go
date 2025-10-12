@@ -20,11 +20,12 @@ type FlashMessage struct {
 }
 
 type Post struct {
-	Slug        string
-	Title       string
-	Content     string
-	Excerpt     string
-	PublishedAt string
+	Slug          string
+	Title         string
+	Content       string
+	Excerpt       string
+	PublishedAt   string
+	FeaturedImage string
 }
 
 func FlashMessages() templ.Component {
@@ -102,7 +103,7 @@ func Flash(msg FlashMessage) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(msg.Message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 29, Col: 15}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 30, Col: 15}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -151,7 +152,7 @@ func ErrorList(errors map[string][]string) templ.Component {
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(field)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 39, Col: 25}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 40, Col: 25}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -164,7 +165,7 @@ func ErrorList(errors map[string][]string) templ.Component {
 					var templ_7745c5c3_Var8 string
 					templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 39, Col: 43}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/helpers.templ`, Line: 40, Col: 43}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 					if templ_7745c5c3_Err != nil {

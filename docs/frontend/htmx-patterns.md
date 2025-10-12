@@ -8,12 +8,16 @@
 
 ```go
 // ✅ ALWAYS USE: Simple full page handlers
-func DonateHandler(c buffalo.Context) error {
-    return c.Render(http.StatusOK, r.HTML("pages/donate.plush.html"))
+func handleDonate(e *core.RequestEvent) error {
+    csrfToken, _ := middleware.GetCSRFToken(e)
+    component := templates.DonatePage(csrfToken)
+    return component.Render(context.Background(), e.Response())
 }
 
-func AdminUsersHandler(c buffalo.Context) error {
-    return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
+func handleBlog(e *core.RequestEvent) error {
+    posts, _ := getBlogPosts(app)
+    component := templates.BlogPage(posts)
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -28,11 +32,14 @@ func AdminUsersHandler(c buffalo.Context) error {
 
 ```go
 // ❌ NEVER USE: This breaks bookmarks and direct URL access
-func BadHandler(c buffalo.Context) error {
-    if c.Request().Header.Get("HX-Request") == "true" {
-        return c.Render(http.StatusOK, r.HTML("partial.plush.html"))
+func BadHandler(e *core.RequestEvent) error {
+    if e.Request.Header.Get("HX-Request") == "true" {
+        // Don't do this - returns partial without full page context
+        component := templates.PartialComponent()
+        return component.Render(context.Background(), e.Response())
     }
-    return c.Render(http.StatusOK, r.HTML("full.plush.html"))
+    component := templates.FullPage()
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -47,17 +54,19 @@ func BadHandler(c buffalo.Context) error {
 
 The **official HTMX documentation recommends `hx-boost`** as the optimal approach:
 
-```html
-<!-- ✅ GOOD: Already implemented in application.plush.html -->
-<body hx-boost="true">
-    <nav>
-        <a href="/">Home</a>
-        <a href="/about">About</a>
-        <a href="/donate">Donate</a>
-        <a href="/admin">Admin</a>
-    </nav>
-    <!-- All navigation links automatically use HTMX -->
-</body>
+```templ
+// ✅ GOOD: Already implemented in base.templ
+templ Base(title string, csrfToken string, contents templ.Component) {
+    <!DOCTYPE html>
+    <html lang="en">
+    <body hx-boost="true">
+        @Navigation()
+        @contents
+        @Footer()
+    </body>
+    </html>
+}
+```
 ```
 
 **How `hx-boost` works:**
@@ -71,12 +80,16 @@ The **official HTMX documentation recommends `hx-boost`** as the optimal approac
 
 ```go
 // ✅ Perfect for hx-boost - just return full pages
-func AboutHandler(c buffalo.Context) error {
-    return c.Render(http.StatusOK, r.HTML("pages/about.plush.html"))
+func handleAbout(e *core.RequestEvent) error {
+    csrfToken, _ := middleware.GetCSRFToken(e)
+    component := templates.AboutPage(csrfToken)
+    return component.Render(context.Background(), e.Response())
 }
 
-func AdminUsersHandler(c buffalo.Context) error {
-    return c.Render(http.StatusOK, r.HTML("admin/users/index.plush.html"))
+func handleBlog(e *core.RequestEvent) error {
+    posts, _ := getBlogPosts(app)
+    component := templates.BlogPage(posts)
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -118,7 +131,7 @@ Only use explicit HTMX attributes for specialized functionality:
 ## 📋 IMPLEMENTATION CHECKLIST
 
 ### ✅ Current Status
-- [x] **Global `hx-boost` enabled** in `templates/application.plush.html`
+- [x] **Global `hx-boost` enabled** in `templates/base.templ`
 - [x] **Navigation links work** with and without JavaScript  
 - [x] **Forms use progressive enhancement** patterns
 
@@ -127,9 +140,11 @@ Only use explicit HTMX attributes for specialized functionality:
 Every page handler follows this simple pattern:
 
 ```go
-func PageHandler(c buffalo.Context) error {
+func handlePage(e *core.RequestEvent) error {
+    csrfToken, _ := middleware.GetCSRFToken(e)
     // Always return full page - hx-boost handles the rest!
-    return c.Render(http.StatusOK, r.HTML("pages/page.plush.html"))
+    component := templates.PageComponent(csrfToken)
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -144,8 +159,8 @@ func PageHandler(c buffalo.Context) error {
 
 **Full page templates** include:
 - Complete HTML structure (`<html>`, `<head>`, `<body>`)
-- Navigation (`_nav.plush.html` partial)
-- Footer (`_footer.plush.html` partial)  
+- Navigation (via `@Navigation()` component)
+- Footer (via `@Footer()` component)
 - Main content area with HTMX target containers
 
 **HTMX automatically handles:**

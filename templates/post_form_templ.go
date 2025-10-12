@@ -86,7 +86,7 @@ func editPostContent(post *PostFormData, csrfToken string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" hx-target=\"body\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" hx-target=\"body\" hx-encoding=\"multipart/form-data\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -138,7 +138,7 @@ func editPostContent(post *PostFormData, csrfToken string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea></div><div class=\"form-field\"><label><input type=\"checkbox\" id=\"published\" name=\"published\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</textarea></div><div class=\"form-field\"><label for=\"featured_image\">Featured Image</label> <input type=\"file\" id=\"featured_image\" name=\"featured_image\" accept=\"image/*\"> <small class=\"text-muted\">Optional. Upload a featured image for this post.</small></div><div class=\"form-field\"><label><input type=\"checkbox\" id=\"published\" name=\"published\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -177,20 +177,20 @@ func createPostContent(csrfToken string) templ.Component {
 			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"admin-container\"><div class=\"admin-nav\"><a href=\"/cms/posts\">&larr; Back to Posts</a> <button hx-post=\"/auth/logout\" role=\"button\" class=\"outline small\">Logout</button></div><article class=\"admin-card\"><h1>Create New Post</h1><form hx-post=\"/cms/posts\" hx-target=\"body\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"admin-container\"><div class=\"admin-nav\"><a href=\"/cms/posts\">&larr; Back to Posts</a> <button hx-post=\"/auth/logout\" role=\"button\" class=\"outline small\">Logout</button></div><article class=\"admin-card\"><h1>Create New Post</h1><form hx-post=\"/cms/posts\" hx-target=\"body\" hx-encoding=\"multipart/form-data\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/post_form.templ`, Line: 68, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/post_form.templ`, Line: 73, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"><div class=\"form-field\"><label for=\"title\">Title</label> <input type=\"text\" id=\"title\" name=\"title\" placeholder=\"Enter post title\" required></div><div class=\"form-field\"><label for=\"markdown-editor\">Content (Markdown)</label> <textarea id=\"markdown-editor\" name=\"content\"></textarea></div><div class=\"form-field\"><label for=\"excerpt\">Excerpt</label> <textarea id=\"excerpt\" name=\"excerpt\" rows=\"3\" placeholder=\"Brief summary of your post\"></textarea></div><div class=\"form-field\"><label><input type=\"checkbox\" id=\"published\" name=\"published\"> Publish immediately</label></div><div class=\"form-actions\"><button type=\"submit\" role=\"button\" class=\"contrast\">Create Post</button> <a href=\"/cms/posts\" role=\"button\" class=\"secondary\">Cancel</a></div></form></article></div><link rel=\"stylesheet\" href=\"https://unpkg.com/easymde/dist/easymde.min.css\"><script src=\"https://unpkg.com/easymde/dist/easymde.min.js\"></script><script src=\"/assets/js/markdown-editor.js\"></script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "\"><div class=\"form-field\"><label for=\"title\">Title</label> <input type=\"text\" id=\"title\" name=\"title\" placeholder=\"Enter post title\" required></div><div class=\"form-field\"><label for=\"markdown-editor\">Content (Markdown)</label> <textarea id=\"markdown-editor\" name=\"content\"></textarea></div><div class=\"form-field\"><label for=\"excerpt\">Excerpt</label> <textarea id=\"excerpt\" name=\"excerpt\" rows=\"3\" placeholder=\"Brief summary of your post\"></textarea></div><div class=\"form-field\"><label for=\"featured_image\">Featured Image</label> <input type=\"file\" id=\"featured_image\" name=\"featured_image\" accept=\"image/*\"> <small class=\"text-muted\">Optional. Upload a featured image for this post.</small></div><div class=\"form-field\"><label><input type=\"checkbox\" id=\"published\" name=\"published\"> Publish immediately</label></div><div class=\"form-actions\"><button type=\"submit\" role=\"button\" class=\"contrast\">Create Post</button> <a href=\"/cms/posts\" role=\"button\" class=\"secondary\">Cancel</a></div></form></article></div><link rel=\"stylesheet\" href=\"https://unpkg.com/easymde/dist/easymde.min.css\"><script src=\"https://unpkg.com/easymde/dist/easymde.min.js\"></script><script src=\"/assets/js/markdown-editor.js\"></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

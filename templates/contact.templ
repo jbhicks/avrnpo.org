@@ -4,6 +4,10 @@ templ ContactPage(csrfToken string) {
 	@Base("Contact", csrfToken, contactContent(csrfToken))
 }
 
+templ ContactFragment(csrfToken string) {
+	@contactContent(csrfToken)
+}
+
 templ contactContent(csrfToken string) {
 	<section>
 		<hgroup>
@@ -12,31 +16,6 @@ templ contactContent(csrfToken string) {
 		</hgroup>
 	</section>
 	<section class="grid">
-		<article>
-			<header>
-				<h2>Send us a Message</h2>
-			</header>
-		<form method="post" action="/contact">
-			<input type="hidden" name="csrf_token" value={ csrfToken }/>
-			<label for="name">
-					Name *
-					<input type="text" id="name" name="name" required/>
-				</label>
-				<label for="email">
-					Email *
-					<input type="email" id="email" name="email" required/>
-				</label>
-				<label for="phone">
-					Phone (optional)
-					<input type="tel" id="phone" name="phone"/>
-				</label>
-				<label for="message">
-					Message *
-					<textarea id="message" name="message" rows="6" required></textarea>
-				</label>
-				<button type="submit">Send Message</button>
-			</form>
-		</article>
 		<article>
 			<header>
 				<h2>Get in Touch</h2>
@@ -76,6 +55,31 @@ templ contactContent(csrfToken string) {
 					Let us know how you'd like to contribute to our mission.
 				</p>
 			</div>
+		</article>
+		<article>
+			<header>
+				<h2>Send us a Message</h2>
+			</header>
+		<form method="post" action="/contact">
+			<input type="hidden" name="csrf_token" value={ csrfToken }/>
+			<label for="name">
+					Name *
+					<input type="text" id="name" name="name" required/>
+				</label>
+				<label for="email">
+					Email *
+					<input type="email" id="email" name="email" required/>
+				</label>
+				<label for="phone">
+					Phone (optional)
+					<input type="tel" id="phone" name="phone"/>
+				</label>
+				<label for="message">
+					Message *
+					<textarea id="message" name="message" rows="6" required></textarea>
+				</label>
+				<button type="submit">Send Message</button>
+			</form>
 		</article>
 	</section>
 }

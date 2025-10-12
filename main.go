@@ -13,7 +13,6 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
-	"github.com/pocketbase/pocketbase/tools/hook"
 
 	"avrnpo.org/middleware"
 	_ "avrnpo.org/migrations"
@@ -88,50 +87,43 @@ func main() {
 		return se.Next()
 	})
 
-	app.OnServe().Bind(&hook.Handler[*core.ServeEvent]{
-		Func: func(e *core.ServeEvent) error {
-			e.Router.GET("/{path...}", func(re *core.RequestEvent) error {
-				path := re.Request.URL.Path
-				log.Printf("Catch-all route hit: %s", path)
-
-				if path == "/" {
-					return handleHome(re)
-				}
-
-				return apis.Static(os.DirFS("./pb_public"), false)(re)
-			})
-			return e.Next()
-		},
-		Priority: -999,
-	})
-
 	app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		log.Printf("Registering custom routes...")
+
 		se.Router.GET("/auth/login", handleLoginPage)
 		se.Router.POST("/auth/login", loginRateLimiter.RequestEventMiddleware(middleware.CSRFProtection(handleLoginPost)))
-		se.Router.POST("/auth/logout", handleLogout)
+		se.Router.POST("/auth/logout", middleware.CSRFProtection(handleLogout))
 
 		se.Router.GET("/cms/posts/new", handleNewPost)
 		se.Router.POST("/cms/posts", middleware.CSRFProtection(handleCreatePost))
-		se.Router.GET("/cms/posts/:id/edit", handleEditPost)
-		se.Router.PUT("/cms/posts/:id", middleware.CSRFProtection(handleUpdatePost))
-		se.Router.DELETE("/cms/posts/:id", middleware.CSRFProtection(handleDeletePost))
+		se.Router.GET("/cms/posts/{id}/edit", handleEditPost)
+		se.Router.PUT("/cms/posts/{id}", middleware.CSRFProtection(handleUpdatePost))
+		se.Router.DELETE("/cms/posts/{id}", middleware.CSRFProtection(handleDeletePost))
 		se.Router.GET("/cms/posts", handleAdminPostList)
-		log.Printf("Registered /cms/posts route")
+		log.Printf("Registered /cms/posts routes")
 
-		se.Router.GET("/blog/:slug", handleBlogPost)
 		se.Router.GET("/blog", handleBlogList)
+		log.Printf("Registered /blog route")
+		se.Router.GET("/blog/{slug}", handleBlogPost)
+		log.Printf("Registered /blog/{slug} route")
+
 		se.Router.GET("/donate/success", handleDonateSuccess)
 		se.Router.GET("/donate/failed", handleDonateFailed)
+		se.Router.GET("/donate/fragment", handleDonateFragment)
 		se.Router.GET("/donate", handleDonate)
 		se.Router.POST("/donate", donateRateLimiter.RequestEventMiddleware(middleware.CSRFProtection(handleDonatePost)))
-		se.Router.POST("/api/donations/process", handleProcessPayment)
+		se.Router.POST("/api/donations/process", middleware.CSRFProtection(handleProcessPayment))
 		se.Router.GET("/api/nav-state", handleNavState)
 		se.Router.GET("/contact", handleContact)
+		se.Router.GET("/contact/fragment", handleContactFragment)
 		se.Router.POST("/contact", contactRateLimiter.RequestEventMiddleware(middleware.CSRFProtection(handleContactPost)))
 		se.Router.GET("/team", handleTeam)
 		se.Router.GET("/projects", handleProjects)
 		se.Router.GET("/about", handleAbout)
+
+		se.Router.GET("/", handleHome)
+		se.Router.GET("/assets/{path...}", apis.Static(os.DirFS("./pb_public/assets"), false))
+		log.Printf("Registered static file handler at /assets/{path...}")
 
 		return se.Next()
 	})
@@ -142,6 +134,7 @@ func main() {
 }
 
 func handleHome(e *core.RequestEvent) error {
+	log.Printf("[HOME] Handler called for URL: %s", e.Request.URL.Path)
 	csrfToken, err := middleware.GetCSRFToken(e)
 	if err != nil {
 		log.Printf("Error generating CSRF token: %v", err)
@@ -205,10 +198,22 @@ func handleBlogList(e *core.RequestEvent) error {
 
 func handleBlogPost(e *core.RequestEvent) error {
 	slug := e.Request.PathValue("slug")
+	log.Printf("[BLOG POST] Handler called for slug: %s", slug)
+	log.Printf("[BLOG POST] Full URL: %s", e.Request.URL.Path)
+
+	// Check if user is admin
+	_, err := isAdmin(e)
+	isAdminUser := err == nil
+
+	// Build filter based on admin status
+	filter := "slug = {:slug}"
+	if !isAdminUser {
+		filter += " && published = true"
+	}
 
 	post, err := e.App.FindFirstRecordByFilter(
 		"posts",
-		"slug = {:slug} && published = true",
+		filter,
 		map[string]any{"slug": slug},
 	)
 	if err != nil {
@@ -228,7 +233,7 @@ func handleBlogPost(e *core.RequestEvent) error {
 	templatePost := templates.Post{
 		Slug:        slug,
 		Title:       post.GetString("title"),
-		Content:     services.SanitizeHTML(post.GetString("content")),
+		Content:     services.SanitizeContent(post.GetString("content")),
 		PublishedAt: post.GetDateTime("published_at").Time().Format("January 2, 2006"),
 	}
 
@@ -246,7 +251,17 @@ func handleDonate(e *core.RequestEvent) error {
 		log.Printf("Error generating CSRF token: %v", err)
 		return e.HTML(500, "Internal server error")
 	}
+	log.Printf("[DONATE] GET /donate - Generated CSRF token: %s (length: %d)", csrfToken[:10], len(csrfToken))
 	return templates.DonatePage(csrfToken).Render(e.Request.Context(), e.Response)
+}
+
+func handleDonateFragment(e *core.RequestEvent) error {
+	csrfToken, err := middleware.GetCSRFToken(e)
+	if err != nil {
+		log.Printf("Error generating CSRF token for donate fragment: %v", err)
+		return e.HTML(500, "Internal server error")
+	}
+	return templates.DonateFragment(csrfToken).Render(e.Request.Context(), e.Response)
 }
 
 func handleDonatePost(e *core.RequestEvent) error {
@@ -259,6 +274,8 @@ func handleDonatePost(e *core.RequestEvent) error {
 	province := e.Request.FormValue("province")
 	postalCode := e.Request.FormValue("postal_code")
 	country := e.Request.FormValue("country")
+
+	log.Printf("[DONATE] Form values - province: '%s', postal_code: '%s', country: '%s'", province, postalCode, country)
 
 	if err := middleware.ValidateDonationType(donationType); err != nil {
 		return e.JSON(400, map[string]string{"error": err.Error()})
@@ -322,6 +339,9 @@ func handleDonatePost(e *core.RequestEvent) error {
 		},
 	}
 
+	log.Printf("[DONATE] Submitting to Helcim - Name: %s, Email: %s, Address: %s, City: %s, Province: %s, Country: %s, Postal: %s, Amount: %.2f",
+		name, email, addressLine1, city, province, country, postalCode, amount)
+
 	initResp, err := helcimClient.Initialize(initReq)
 	if err != nil {
 		record.Set("status", "failed")
@@ -336,14 +356,23 @@ func handleDonatePost(e *core.RequestEvent) error {
 		return e.JSON(500, map[string]string{"error": "Failed to update donation"})
 	}
 
+	newCsrfToken, err := middleware.GetCSRFToken(e)
+	if err != nil {
+		log.Printf("[DONATE] Error generating new CSRF token: %v", err)
+		return e.JSON(500, map[string]string{"error": "Failed to generate security token"})
+	}
+
 	return e.JSON(200, map[string]any{
 		"donationId":    record.Id,
 		"checkoutToken": initResp.CheckoutToken,
 		"secretToken":   initResp.SecretToken,
+		"csrfToken":     newCsrfToken,
 	})
 }
 
 func handleProcessPayment(e *core.RequestEvent) error {
+	log.Printf("[PAYMENT_PROCESS] Received payment processing request from %s", e.Request.RemoteAddr)
+
 	var req struct {
 		DonationID    string  `json:"donationId"`
 		CustomerCode  string  `json:"customerCode"`
@@ -352,9 +381,14 @@ func handleProcessPayment(e *core.RequestEvent) error {
 		TransactionID string  `json:"transactionId"`
 	}
 
+	log.Printf("[PAYMENT_PROCESS] Binding request body...")
 	if err := e.BindBody(&req); err != nil {
+		log.Printf("[PAYMENT_PROCESS] Failed to bind request body: %v", err)
 		return e.JSON(400, map[string]string{"error": "Invalid request"})
 	}
+
+	log.Printf("[PAYMENT_PROCESS] Request data: donationId=%s, customerCode=%s, amount=%.2f",
+		req.DonationID, req.CustomerCode, req.Amount)
 
 	collection, err := e.App.FindCollectionByNameOrId("donations")
 	if err != nil {
@@ -368,56 +402,27 @@ func handleProcessPayment(e *core.RequestEvent) error {
 
 	donationType := record.GetString("donation_type")
 	amount := record.GetFloat("amount")
-	donorName := record.GetString("donor_name")
-	donorEmail := record.GetString("donor_email")
 
 	if donationType == "one-time" {
-		paymentReq := services.PaymentAPIRequest{
-			PaymentType:  "purchase",
-			Amount:       amount,
-			Currency:     "USD",
-			CustomerCode: req.CustomerCode,
-			CardData: services.CardData{
-				CardToken: req.CardToken,
-			},
-			IPAddress:     e.Request.RemoteAddr,
-			InvoiceNumber: fmt.Sprintf("DONATION-%s", req.DonationID),
-			Description:   "One-time donation to AVR NPO",
-			BillingAddress: &services.BillingAddress{
-				Name:       donorName,
-				Street1:    record.GetString("address_line1"),
-				City:       record.GetString("city"),
-				Province:   record.GetString("province"),
-				Country:    record.GetString("country"),
-				PostalCode: record.GetString("postal_code"),
-			},
-			CustomerEmail: donorEmail,
-			CustomerName:  donorName,
-		}
+		// HelcimPay.js already processed the payment - just record the transaction
+		log.Printf("[PAYMENT] Recording HelcimPay transaction %s for donation %s", req.TransactionID, req.DonationID)
 
-		paymentResp, err := helcimClient.ProcessPayment(paymentReq)
-		if err != nil {
-			record.Set("status", "failed")
-			record.Set("error_message", err.Error())
-			e.App.Save(record)
-			log.Printf("Payment failed: %v", err)
-			return e.JSON(500, map[string]string{"error": "Payment processing failed"})
-		}
+		record.Set("helcim_transaction_id", req.TransactionID)
+		record.Set("customer_id", req.CustomerCode)
+		record.Set("status", "completed")
 
-		record.Set("helcim_transaction_id", paymentResp.TransactionID)
-		record.Set("helcim_customer_code", paymentResp.CustomerCode)
-		record.Set("status", paymentResp.Status)
-		record.Set("processed_at", time.Now())
-
+		log.Printf("[PAYMENT] Saving donation record %s", req.DonationID)
 		if err := e.App.Save(record); err != nil {
+			log.Printf("[PAYMENT] Failed to save record for donation %s: %v", req.DonationID, err)
 			return e.JSON(500, map[string]string{"error": "Failed to save record"})
 		}
+		log.Printf("[PAYMENT] Successfully saved donation record %s", req.DonationID)
 
-		go sendDonationReceipt(record, fmt.Sprintf("%d", paymentResp.TransactionID), "")
+		go sendDonationReceipt(record, req.TransactionID, "")
 
 		return e.JSON(200, map[string]any{
 			"status":         "success",
-			"transaction_id": paymentResp.TransactionID,
+			"transaction_id": req.TransactionID,
 			"message":        "Thank you for your donation!",
 		})
 
@@ -448,12 +453,12 @@ func handleProcessPayment(e *core.RequestEvent) error {
 			return e.JSON(500, map[string]string{"error": "Failed to create subscription"})
 		}
 
-		record.Set("helcim_subscription_id", subscriptionResp.ID)
-		record.Set("helcim_payment_plan_id", plan.ID)
-		record.Set("helcim_customer_code", req.CustomerCode)
-		record.Set("status", "active")
+		record.Set("subscription_id", subscriptionResp.ID)
+		record.Set("payment_plan_id", plan.ID)
+		record.Set("customer_id", req.CustomerCode)
+		record.Set("status", "completed")
+		record.Set("subscription_status", "active")
 		record.Set("next_billing_date", subscriptionResp.NextBillingDate)
-		record.Set("processed_at", time.Now())
 
 		if err := e.App.Save(record); err != nil {
 			return e.JSON(500, map[string]string{"error": "Failed to save record"})
@@ -485,9 +490,9 @@ func sendDonationReceipt(record *core.Record, transactionID string, subscription
 		TransactionID:       transactionID,
 		DonationDate:        time.Now(),
 		TaxDeductibleAmount: amount,
-		OrganizationEIN:     "83-1234567",
-		OrganizationName:    "Armed Services Vocational Aptitude Battery Research NPO",
-		OrganizationAddress: "123 Main St, City, State 12345",
+		OrganizationEIN:     os.Getenv("ORGANIZATION_EIN"),
+		OrganizationName:    "American Veterans Rebuilding",
+		OrganizationAddress: os.Getenv("ORGANIZATION_ADDRESS"),
 		DonorAddressLine1:   record.GetString("address_line1"),
 		DonorCity:           record.GetString("city"),
 		DonorState:          record.GetString("province"),
@@ -524,6 +529,15 @@ func handleContact(e *core.RequestEvent) error {
 		return e.HTML(500, "Internal server error")
 	}
 	return templates.ContactPage(csrfToken).Render(e.Request.Context(), e.Response)
+}
+
+func handleContactFragment(e *core.RequestEvent) error {
+	csrfToken, err := middleware.GetCSRFToken(e)
+	if err != nil {
+		log.Printf("Error generating CSRF token for fragment: %v", err)
+		return e.HTML(500, "Internal server error")
+	}
+	return templates.ContactFragment(csrfToken).Render(e.Request.Context(), e.Response)
 }
 
 func handleContactPost(e *core.RequestEvent) error {
@@ -752,7 +766,10 @@ func handleCreatePost(e *core.RequestEvent) error {
 }
 
 func handleEditPost(e *core.RequestEvent) error {
+	log.Printf("[EDIT POST] Handler called, URL: %s", e.Request.URL.Path)
+
 	if _, err := isAdmin(e); err != nil {
+		log.Printf("[EDIT POST] Admin check failed, redirecting to login")
 		return e.Redirect(http.StatusSeeOther, "/auth/login")
 	}
 
@@ -763,6 +780,7 @@ func handleEditPost(e *core.RequestEvent) error {
 	}
 
 	postId := e.Request.PathValue("id")
+	log.Printf("[EDIT POST] Post ID: %s", postId)
 	post, err := e.App.FindRecordById("posts", postId)
 	if err != nil {
 		return e.HTML(404, "Post not found")

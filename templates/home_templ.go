@@ -29,7 +29,7 @@ func HomePage(posts []Post, csrfToken string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Base("", csrfToken, homeContent(posts)).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Base("", csrfToken, homeContent(posts, csrfToken)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -37,7 +37,7 @@ func HomePage(posts []Post, csrfToken string) templ.Component {
 	})
 }
 
-func homeContent(posts []Post) templ.Component {
+func homeContent(posts []Post, csrfToken string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -192,165 +192,12 @@ func homeContent(posts []Post) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></section><section id=\"projects\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><h2>AVR Projects</h2><p>The American Veterans Rebuilding Home Ownership Option is based on veteran participants  completing training offered through AVR and funded by donations.</p><p>Through the AVR Home Ownership Option, veteran participants will be able to:</p><ol class=\"projects-benefits\"><li>Become certified in a trade they can depend on to provide for their families.</li><li>Become a member of professional networking as well as a community of like minded veterans who have lived similar experiences.</li><li>Have an opportunity to purchase a home at project cost rather than today's inflated market values.</li><li>Build personal equity in the appraised value of the home to assist in future loans for personal or professional development.</li></ol><h3>The Process</h3><div class=\"grid process-grid\"><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">1</span> Property Acquisition</h4></header><ul class=\"process-list\"><li>AVR works with the local municipalities to identify properties with liens, foreclosures or condemnable blight.</li><li>AVR then contacts the responsible parties and if successful, purchases the properties with donated funds.</li><li>Property purchase value is not to exceed $100,000.</li></ul></article><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">2</span> Renovation</h4></header><ul class=\"process-list\"><li>AVR renovates the property with volunteer and participant labor.</li><li>AVR will purchase the construction materials with donated funds.</li><li>Renovation costs are not to exceed $40,000.</li></ul></article><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">3</span> Transfer</h4></header><ul class=\"process-list\"><li>Upon completion of training and property renovation, the participant can purchase the property for actual project cost.</li><li>Property can be purchased for $140,000 (maximum) and appraised for current market value (likely to be $180,000 - $220,000).</li><li>The participant then has $40,000 - $80,000 in instant equity to assist with future loans.</li></ul></article></div></section><section id=\"donate\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><h2>Make a Difference</h2><p>Join us in supporting veterans on their path to success. Every contribution, big or small, makes a meaningful impact.</p><div class=\"grid donation-grid\"><div class=\"impact-info\"><h3>How Your Donation Helps</h3><article class=\"impact-item\"><h4>Housing Projects</h4><p>Fund property acquisition, construction materials, and renovation costs for veteran housing projects. Each completed home provides a veteran family with affordable homeownership and instant equity.</p></article><article class=\"impact-item\"><h4>Skills Training</h4><p>Support technical training programs that help veterans earn professional certifications in high-demand trades, providing stable career paths and family-supporting wages.</p></article><article class=\"impact-item\"><h4>Community Support</h4><p>Enable networking events, mentorship programs, and community building activities that connect veterans with resources and like-minded individuals who understand their experiences.</p></article><article class=\"impact-item\"><h4>Program Operations</h4><p>Ensure AVR can continue coordinating programs, managing projects, and providing ongoing support to veteran participants throughout their journey to self-sufficiency.</p></article></div><div class=\"donation-form\"><div class=\"donation-card\"><form id=\"donationForm\" method=\"POST\" action=\"/donate\"><h3>Make a Donation</h3><p class=\"donation-subtitle text-muted\">Choose your donation amount or enter a custom amount. All donations are tax-deductible.</p><div id=\"error-message\"></div><div class=\"donation-amounts\"><label>Select Amount</label><div class=\"amount-grid\"><button type=\"button\" class=\"outline amount-btn\" data-amount=\"25\">$25</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"50\">$50</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"100\">$100</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"250\">$250</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"500\">$500</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"1000\">$1000</button></div><label for=\"amount\">Or enter a custom amount</label> <input type=\"number\" id=\"amount\" name=\"amount\" placeholder=\"Enter custom amount\" step=\"0.01\" min=\"1\" required></div><div class=\"donation-frequency\"><fieldset><legend>Donation Frequency</legend> <label><input type=\"radio\" name=\"donation_type\" value=\"one-time\" required checked> One-time donation</label> <label><input type=\"radio\" name=\"donation_type\" value=\"monthly\" required> Monthly recurring</label></fieldset></div><div class=\"donor-info\"><h4>Donor Information</h4><label for=\"name\">Full Name *</label> <input type=\"text\" id=\"name\" name=\"name\" autocomplete=\"name\" required> <label for=\"email\">Email Address *</label> <input type=\"email\" id=\"email\" name=\"email\" autocomplete=\"email\" required></div><div class=\"address-info\"><h4>Billing Address</h4><label for=\"address_line1\">Address Line 1 *</label> <input type=\"text\" id=\"address_line1\" name=\"address_line1\" autocomplete=\"address-line1\" required><div class=\"grid\"><div><label for=\"city\">City *</label> <input type=\"text\" id=\"city\" name=\"city\" autocomplete=\"address-level2\" required></div><div><label for=\"province\">State *</label> <input type=\"text\" id=\"province\" name=\"province\" autocomplete=\"address-level1\" required></div></div><div class=\"grid\"><div><label for=\"postal_code\">ZIP Code *</label> <input type=\"text\" id=\"postal_code\" name=\"postal_code\" autocomplete=\"postal-code\" pattern=\"[0-9]{5}(-[0-9]{4})?\" required></div><div><label for=\"country\">Country *</label> <input type=\"text\" id=\"country\" name=\"country\" value=\"US\" autocomplete=\"country\" required></div></div></div><button type=\"submit\" id=\"submitButton\" class=\"contrast donation-submit\">Donate Now</button> <small class=\"text-muted\">Your donation is secure and tax-deductible. You will receive a receipt for your records.</small></form></div></div></div></section><section id=\"contact\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><h2>Get in Touch</h2><p>We'd love to hear from you. Whether you're a veteran looking for support, someone who wants to help, or you just have questions about our mission, don't hesitate to reach out.</p><div class=\"grid\"><article><header><h3>Send us a Message</h3></header><form method=\"post\" action=\"/contact\"><label for=\"name\">Name * <input type=\"text\" id=\"name\" name=\"name\" required></label> <label for=\"email\">Email * <input type=\"email\" id=\"email\" name=\"email\" required></label> <label for=\"phone\">Phone (optional) <input type=\"tel\" id=\"phone\" name=\"phone\"></label> <label for=\"message\">Message * <textarea id=\"message\" name=\"message\" rows=\"6\" required></textarea></label> <button type=\"submit\">Send Message</button></form></article><article><header><h3>Contact Information</h3></header><section><h4>Email</h4><p><a href=\"mailto:AmericanVeteransRebuilding@avrnpo.org\">AmericanVeteransRebuilding@avrnpo.org</a></p></section><section><h4>Follow Us</h4><div class=\"grid social-links\"><a href=\"https://discord.com/invite/f6TzKart7J\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Join us on Discord\"><img src=\"/assets/images/Discord.svg\" alt=\"Discord\"></a> <a href=\"https://open.spotify.com/show/5BBarK2chVBVPCbqrILO73\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Listen to our Spotify podcast\"><img src=\"/assets/images/Spotify.svg\" alt=\"Spotify\"></a> <a href=\"https://www.facebook.com/AmericanVeteransRebuilding\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Follow us on Facebook\"><img src=\"/assets/images/Facebook.svg\" alt=\"Facebook\"></a> <a href=\"https://x.com/avrnpo\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Follow us on X\"><img src=\"/assets/images/X.svg\" alt=\"X\"></a></div></section><div><h4>For Veterans</h4><p>If you're a veteran interested in our programs, please include your service information and what type of support you're looking for in your message.</p></div><div><h4>For Supporters</h4><p>Interested in volunteering, donating, or partnering with us? Let us know how you'd like to contribute to our mission.</p></div></article></div></section><style>\n\t\t.amount-btn.active {\n\t\t\tbackground-color: var(--pico-primary);\n\t\t\tborder-color: var(--pico-primary);\n\t\t\tcolor: var(--pico-primary-inverse);\n\t\t}\n\t</style>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = donationScript().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></section><section id=\"projects\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><h2>AVR Projects</h2><p>The American Veterans Rebuilding Home Ownership Option is based on veteran participants  completing training offered through AVR and funded by donations.</p><p>Through the AVR Home Ownership Option, veteran participants will be able to:</p><ol class=\"projects-benefits\"><li>Become certified in a trade they can depend on to provide for their families.</li><li>Become a member of professional networking as well as a community of like minded veterans who have lived similar experiences.</li><li>Have an opportunity to purchase a home at project cost rather than today's inflated market values.</li><li>Build personal equity in the appraised value of the home to assist in future loans for personal or professional development.</li></ol><h3>The Process</h3><div class=\"grid process-grid\"><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">1</span> Property Acquisition</h4></header><ul class=\"process-list\"><li>AVR works with the local municipalities to identify properties with liens, foreclosures or condemnable blight.</li><li>AVR then contacts the responsible parties and if successful, purchases the properties with donated funds.</li><li>Property purchase value is not to exceed $100,000.</li></ul></article><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">2</span> Renovation</h4></header><ul class=\"process-list\"><li>AVR renovates the property with volunteer and participant labor.</li><li>AVR will purchase the construction materials with donated funds.</li><li>Renovation costs are not to exceed $40,000.</li></ul></article><article class=\"process-card\"><header class=\"process-header\"><h4><span class=\"process-number\">3</span> Transfer</h4></header><ul class=\"process-list\"><li>Upon completion of training and property renovation, the participant can purchase the property for actual project cost.</li><li>Property can be purchased for $140,000 (maximum) and appraised for current market value (likely to be $180,000 - $220,000).</li><li>The participant then has $40,000 - $80,000 in instant equity to assist with future loans.</li></ul></article></div></section><section id=\"donate\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><div hx-get=\"/donate/fragment\" hx-trigger=\"revealed once\"><div class=\"loading-spinner\" aria-busy=\"true\">Loading donation form...</div></div></section><section id=\"contact\" class=\"snap-section fade-in\" hx-trigger=\"revealed\"><div hx-get=\"/contact/fragment\" hx-trigger=\"revealed once\">Loading contact form...</div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		return nil
 	})
-}
-
-func donationScript() templ.ComponentScript {
-	return templ.ComponentScript{
-		Name: `__templ_donationScript_9efc`,
-		Function: `function __templ_donationScript_9efc(){const form = document.getElementById('donationForm');
-	const submitButton = document.getElementById('submitButton');
-	const errorDiv = document.getElementById('error-message');
-	const amountButtons = document.querySelectorAll('.amount-btn');
-	const amountInput = document.getElementById('amount');
-
-	amountButtons.forEach(button => {
-		button.addEventListener('click', function() {
-			amountButtons.forEach(btn => btn.classList.remove('active'));
-			this.classList.add('active');
-			amountInput.value = this.dataset.amount;
-		});
-	});
-
-	amountInput.addEventListener('input', function() {
-		amountButtons.forEach(btn => btn.classList.remove('active'));
-	});
-
-	function showError(message) {
-		errorDiv.textContent = message;
-		errorDiv.style.display = 'block';
-	}
-
-	function hideError() {
-		errorDiv.style.display = 'none';
-	}
-
-	form.addEventListener('submit', async function(event) {
-		event.preventDefault();
-		hideError();
-
-		submitButton.disabled = true;
-		submitButton.textContent = 'Processing...';
-
-		const formData = new FormData(form);
-
-		try {
-			const response = await fetch('/donate', {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to initialize payment');
-			}
-
-			const data = await response.json();
-
-			if (!data.checkoutToken || !data.donationId) {
-				throw new Error('Invalid response from server');
-			}
-
-			initializeHelcimPay(data.checkoutToken, data.donationId, formData.get('amount'));
-
-		} catch (error) {
-			console.error('Error:', error);
-			showError('Failed to initialize payment. Please try again.');
-			submitButton.disabled = false;
-			submitButton.textContent = 'Donate Now';
-		}
-	});
-
-	function initializeHelcimPay(checkoutToken, donationId, amount) {
-		try {
-			appendHelcimPayIframe(checkoutToken);
-
-			const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
-
-			window.addEventListener('message', function(event) {
-				if (event.data.eventName === helcimPayJsIdentifierKey) {
-					if (event.data.eventStatus === 'SUCCESS') {
-						const paymentData = JSON.parse(event.data.eventMessage);
-						processPaymentSuccess(paymentData, donationId, amount);
-					} else if (event.data.eventStatus === 'ABORTED') {
-						window.location.href = '/donate/failed';
-					} else if (event.data.eventStatus === 'HIDE') {
-						window.location.href = '/donate';
-					}
-				}
-			});
-
-		} catch (error) {
-			console.error('[HelcimPay] Initialization error:', error);
-			showError('Payment system initialization failed. Please try again.');
-			submitButton.disabled = false;
-			submitButton.textContent = 'Donate Now';
-		}
-	}
-
-	async function processPaymentSuccess(paymentResponse, donationId, amount) {
-		let data = paymentResponse;
-		if (paymentResponse.data && typeof paymentResponse.data === 'object') {
-			if (paymentResponse.data.data && typeof paymentResponse.data.data === 'object') {
-				data = paymentResponse.data.data;
-			} else {
-				data = paymentResponse.data;
-			}
-		}
-
-		if (!data.customerCode) {
-			data.customerCode = 'DON_' + donationId + '_' + Date.now();
-		}
-
-		const requestData = {
-			customerCode: data.customerCode,
-			cardToken: data.cardToken || data.bankToken,
-			transactionId: data.transactionId,
-			donationId: donationId,
-			amount: parseFloat(amount)
-		};
-
-		try {
-			const response = await fetch('/api/donations/process', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(requestData)
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to process payment');
-			}
-
-			const result = await response.json();
-
-			if (result.status === 'success') {
-				if (window.removeHelcimPayIframe) {
-					removeHelcimPayIframe();
-				}
-				window.location.href = '/donate/success';
-			} else {
-				window.location.href = '/donate/failed';
-			}
-
-		} catch (error) {
-			console.error('[HelcimPay] Error processing payment:', error);
-			window.location.href = '/donate/failed';
-		}
-	}
-}`,
-		Call:       templ.SafeScript(`__templ_donationScript_9efc`),
-		CallInline: templ.SafeScriptInline(`__templ_donationScript_9efc`),
-	}
 }
 
 var _ = templruntime.GeneratedTemplate

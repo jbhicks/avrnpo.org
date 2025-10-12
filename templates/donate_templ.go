@@ -29,39 +29,36 @@ func DonatePage(csrfToken string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\" data-theme=\"dark\">")
+		templ_7745c5c3_Err = Base("Donate", csrfToken, donateContent(csrfToken)).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Head("Donate", csrfToken).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		return nil
+	})
+}
+
+func DonateFragment(csrfToken string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
 		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<main class=\"container\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
+		ctx = templ.ClearChildren(ctx)
 		templ_7745c5c3_Err = donateContent(csrfToken).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</main>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -85,25 +82,25 @@ func donateContent(csrfToken string) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
+		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var3 == nil {
+			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<script src=\"https://myhelcim.com/js/version2/helcim-pay.js\"></script><section class=\"donate-intro\"><h1>Support Our Mission</h1><p>Your generous donation helps American Veterans Rebuilding provide life-changing opportunities for combat veterans. Every contribution directly supports housing projects, skills training, and community building programs that transform lives and strengthen communities.</p></section><section class=\"donation-impact\"><div class=\"grid donation-grid\"><div class=\"impact-info\"><h2>How Your Donation Helps</h2><article class=\"impact-item\"><h4 class=\"impact-title\">Housing Projects</h4><p>Fund property acquisition, construction materials, and renovation costs for veteran housing projects. Each completed home provides a veteran family with affordable homeownership and instant equity.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Skills Training</h4><p>Support technical training programs that help veterans earn professional certifications in high-demand trades, providing stable career paths and family-supporting wages.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Community Support</h4><p>Enable networking events, mentorship programs, and community building activities that connect veterans with resources and like-minded individuals who understand their experiences.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Program Operations</h4><p>Ensure AVR can continue coordinating programs, managing projects, and providing ongoing support to veteran participants throughout their journey to self-sufficiency.</p></article></div><div class=\"donation-form\"><div class=\"donation-card\"><form id=\"donationForm\" method=\"POST\" action=\"/donate\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<script src=\"https://secure.helcim.app/helcim-pay/services/start.js\" defer></script><section class=\"donate-intro\"><h1>Support Our Mission</h1><p>Your generous donation helps American Veterans Rebuilding provide life-changing opportunities for combat veterans. Every contribution directly supports housing projects, skills training, and community building programs that transform lives and strengthen communities.</p></section><section class=\"donation-impact\"><div class=\"grid donation-grid\"><div class=\"impact-info\"><h2>How Your Donation Helps</h2><article class=\"impact-item\"><h4 class=\"impact-title\">Housing Projects</h4><p>Fund property acquisition, construction materials, and renovation costs for veteran housing projects. Each completed home provides a veteran family with affordable homeownership and instant equity.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Skills Training</h4><p>Support technical training programs that help veterans earn professional certifications in high-demand trades, providing stable career paths and family-supporting wages.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Community Support</h4><p>Enable networking events, mentorship programs, and community building activities that connect veterans with resources and like-minded individuals who understand their experiences.</p></article><article class=\"impact-item\"><h4 class=\"impact-title\">Program Operations</h4><p>Ensure AVR can continue coordinating programs, managing projects, and providing ongoing support to veteran participants throughout their journey to self-sufficiency.</p></article></div><div class=\"donation-form\"><div class=\"donation-card\"><form id=\"donationForm\" method=\"POST\" action=\"/donate\"><input type=\"hidden\" name=\"csrf_token\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(csrfToken)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/donate.templ`, Line: 63, Col: 61}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/donate.templ`, Line: 57, Col: 61}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"><h3>Make a Donation</h3><p class=\"donation-subtitle\">Choose your donation amount or enter a custom amount. All donations are tax-deductible.</p><div id=\"error-message\"></div><div class=\"donation-amounts\"><label>Select Amount</label><div class=\"amount-grid\"><button type=\"button\" class=\"outline amount-btn\" data-amount=\"25\">$25</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"50\">$50</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"100\">$100</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"250\">$250</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"500\">$500</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"1000\">$1000</button></div><label for=\"amount\">Or enter a custom amount</label> <input type=\"number\" id=\"amount\" name=\"amount\" placeholder=\"Enter custom amount\" step=\"0.01\" min=\"1\" required></div><div class=\"donation-frequency\"><fieldset><legend>Donation Frequency</legend> <label><input type=\"radio\" name=\"donation_type\" value=\"one-time\" required checked> One-time donation</label> <label><input type=\"radio\" name=\"donation_type\" value=\"monthly\" required> Monthly recurring</label></fieldset></div><div class=\"donor-info\"><h4>Donor Information</h4><label for=\"name\">Full Name *</label> <input type=\"text\" id=\"name\" name=\"name\" autocomplete=\"name\" required> <label for=\"email\">Email Address *</label> <input type=\"email\" id=\"email\" name=\"email\" autocomplete=\"email\" required></div><div class=\"address-info\"><h4>Billing Address</h4><label for=\"address_line1\">Address Line 1 *</label> <input type=\"text\" id=\"address_line1\" name=\"address_line1\" autocomplete=\"address-line1\" required><div class=\"grid\"><div><label for=\"city\">City *</label> <input type=\"text\" id=\"city\" name=\"city\" autocomplete=\"address-level2\" required></div><div><label for=\"province\">State *</label> <input type=\"text\" id=\"province\" name=\"province\" autocomplete=\"address-level1\" required></div></div><div class=\"grid\"><div><label for=\"postal_code\">ZIP Code *</label> <input type=\"text\" id=\"postal_code\" name=\"postal_code\" autocomplete=\"postal-code\" pattern=\"[0-9]{5}(-[0-9]{4})?\" required></div><div><label for=\"country\">Country *</label> <input type=\"text\" id=\"country\" name=\"country\" value=\"USA\" autocomplete=\"country\" required></div></div></div><button type=\"submit\" id=\"submitButton\" class=\"contrast donation-submit\">Donate Now</button> <small class=\"donation-disclaimer\">Your donation is secure and tax-deductible. You will receive a receipt for your records.</small></form></div></div></div></section><section class=\"tax-info\"><h2>Tax Deductible Information</h2><p>American Veterans Rebuilding (AVRNPO) is a registered 501(c)(3) non-profit organization. All donations are tax-deductible to the full extent allowed by law. Our EIN is available upon request.</p><details class=\"contact-details\"><summary>Contact Information</summary><p>For questions about donations, receipts, or our programs, please contact us:</p><ul><li><strong>Email:</strong> michael@avrnpo.org</li><li><strong>Phone:</strong> Available upon request</li><li><strong>Address:</strong> Louisiana, United States</li></ul></details></section><style>\n\t\t.amount-btn.active {\n\t\t\tbackground-color: var(--pico-primary);\n\t\t\tborder-color: var(--pico-primary);\n\t\t\tcolor: var(--pico-primary-inverse);\n\t\t}\n\t</style>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><h3>Make a Donation</h3><p class=\"donation-subtitle\">Choose your donation amount or enter a custom amount. All donations are tax-deductible.</p><div id=\"error-message\"></div><div class=\"donation-amounts\"><label>Select Amount</label><div class=\"amount-grid\"><button type=\"button\" class=\"outline amount-btn\" data-amount=\"25\">$25</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"50\">$50</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"100\">$100</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"250\">$250</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"500\">$500</button> <button type=\"button\" class=\"outline amount-btn\" data-amount=\"1000\">$1000</button></div><label for=\"amount\">Or enter a custom amount</label> <input type=\"number\" id=\"amount\" name=\"amount\" placeholder=\"Enter custom amount\" step=\"0.01\" min=\"1\" required></div><div class=\"donation-frequency\"><fieldset><legend>Donation Frequency</legend> <label><input type=\"radio\" name=\"donation_type\" value=\"one-time\" required checked> One-time donation</label> <label><input type=\"radio\" name=\"donation_type\" value=\"monthly\" required> Monthly recurring</label></fieldset></div><div class=\"donor-info\"><h4>Donor Information</h4><label for=\"name\">Full Name *</label> <input type=\"text\" id=\"name\" name=\"name\" autocomplete=\"billing name\" required> <label for=\"email\">Email Address *</label> <input type=\"email\" id=\"email\" name=\"email\" autocomplete=\"billing email\" required></div><div class=\"address-info\"><h4>Billing Address</h4><label for=\"address_line1\">Address Line 1 *</label> <input type=\"text\" id=\"address_line1\" name=\"address_line1\" autocomplete=\"billing address-line1\" required><div class=\"grid\"><div><label for=\"city\">City *</label> <input type=\"text\" id=\"city\" name=\"city\" autocomplete=\"billing address-level2\" required></div><div><label for=\"province\">State *</label> <select id=\"province\" name=\"province\" autocomplete=\"billing address-level1\" required><option value=\"\">Select State</option> <option value=\"AL\">Alabama</option> <option value=\"AK\">Alaska</option> <option value=\"AZ\">Arizona</option> <option value=\"AR\">Arkansas</option> <option value=\"CA\">California</option> <option value=\"CO\">Colorado</option> <option value=\"CT\">Connecticut</option> <option value=\"DE\">Delaware</option> <option value=\"FL\">Florida</option> <option value=\"GA\">Georgia</option> <option value=\"HI\">Hawaii</option> <option value=\"ID\">Idaho</option> <option value=\"IL\">Illinois</option> <option value=\"IN\">Indiana</option> <option value=\"IA\">Iowa</option> <option value=\"KS\">Kansas</option> <option value=\"KY\">Kentucky</option> <option value=\"LA\">Louisiana</option> <option value=\"ME\">Maine</option> <option value=\"MD\">Maryland</option> <option value=\"MA\">Massachusetts</option> <option value=\"MI\">Michigan</option> <option value=\"MN\">Minnesota</option> <option value=\"MS\">Mississippi</option> <option value=\"MO\">Missouri</option> <option value=\"MT\">Montana</option> <option value=\"NE\">Nebraska</option> <option value=\"NV\">Nevada</option> <option value=\"NH\">New Hampshire</option> <option value=\"NJ\">New Jersey</option> <option value=\"NM\">New Mexico</option> <option value=\"NY\">New York</option> <option value=\"NC\">North Carolina</option> <option value=\"ND\">North Dakota</option> <option value=\"OH\">Ohio</option> <option value=\"OK\">Oklahoma</option> <option value=\"OR\">Oregon</option> <option value=\"PA\">Pennsylvania</option> <option value=\"RI\">Rhode Island</option> <option value=\"SC\">South Carolina</option> <option value=\"SD\">South Dakota</option> <option value=\"TN\">Tennessee</option> <option value=\"TX\">Texas</option> <option value=\"UT\">Utah</option> <option value=\"VT\">Vermont</option> <option value=\"VA\">Virginia</option> <option value=\"WA\">Washington</option> <option value=\"WV\">West Virginia</option> <option value=\"WI\">Wisconsin</option> <option value=\"WY\">Wyoming</option></select></div></div><div class=\"grid\"><div><label for=\"postal_code\">ZIP Code *</label> <input type=\"text\" id=\"postal_code\" name=\"postal_code\" autocomplete=\"billing postal-code\" pattern=\"[0-9]{5}(-[0-9]{4})?\" required></div><div><label for=\"country\">Country *</label> <select id=\"country\" name=\"country\" autocomplete=\"billing country\" required><option value=\"USA\" selected>United States</option> <option value=\"CAN\">Canada</option></select></div></div></div><button type=\"submit\" id=\"submitButton\" class=\"contrast donation-submit\">Donate Now</button> <small class=\"donation-disclaimer\">Your donation is secure and tax-deductible. You will receive a receipt for your records.</small></form></div></div></div></section><section class=\"tax-info\"><h2>Tax Deductible Information</h2><p>American Veterans Rebuilding (AVRNPO) is a registered 501(c)(3) non-profit organization. All donations are tax-deductible to the full extent allowed by law. Our EIN is available upon request.</p><details class=\"contact-details\"><summary>Contact Information</summary><p>For questions about donations, receipts, or our programs, please contact us:</p><ul><li><strong>Email:</strong> michael@avrnpo.org</li><li><strong>Phone:</strong> Available upon request</li><li><strong>Address:</strong> Louisiana, United States</li></ul></details></section><style>\n\t\t.amount-btn.active {\n\t\t\tbackground-color: var(--pico-primary);\n\t\t\tborder-color: var(--pico-primary);\n\t\t\tcolor: var(--pico-primary-inverse);\n\t\t}\n\t</style>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -117,8 +114,8 @@ func donateContent(csrfToken string) templ.Component {
 
 func donateScript() templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_donateScript_9efc`,
-		Function: `function __templ_donateScript_9efc(){const form = document.getElementById('donationForm');
+		Name: `__templ_donateScript_c52e`,
+		Function: `function __templ_donateScript_c52e(){const form = document.getElementById('donationForm');
 	const submitButton = document.getElementById('submitButton');
 	const errorDiv = document.getElementById('error-message');
 	const amountButtons = document.querySelectorAll('.amount-btn');
@@ -154,6 +151,12 @@ func donateScript() templ.ComponentScript {
 
 		const formData = new FormData(form);
 
+		// Debug: Log form data
+		console.log('[DONATE] Form data being sent:');
+		for (let [key, value] of formData.entries()) {
+			console.log(key, value);
+		}
+
 		try {
 			const response = await fetch('/donate', {
 				method: 'POST',
@@ -170,7 +173,7 @@ func donateScript() templ.ComponentScript {
 				throw new Error('Invalid response from server');
 			}
 
-			initializeHelcimPay(data.checkoutToken, data.donationId, formData.get('amount'));
+			initializeHelcimPay(data.checkoutToken, data.donationId, formData.get('amount'), data.csrfToken);
 
 		} catch (error) {
 			console.error('Error:', error);
@@ -180,46 +183,88 @@ func donateScript() templ.ComponentScript {
 		}
 	});
 
-	function initializeHelcimPay(checkoutToken, donationId, amount) {
-		try {
-			appendHelcimPayIframe(checkoutToken);
+ 	function initializeHelcimPay(checkoutToken, donationId, amount, csrfToken) {
+ 		try {
+ 			console.log('[HelcimPay] Initializing payment with checkoutToken:', checkoutToken, 'donationId:', donationId, 'amount:', amount);
+ 			appendHelcimPayIframe(checkoutToken);
+ 			console.log('[HelcimPay] Iframe appended successfully');
 
-			const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+ 			const helcimPayJsIdentifierKey = 'helcim-pay-js-' + checkoutToken;
+ 			console.log('[HelcimPay] Listening for events with key:', helcimPayJsIdentifierKey);
 
-			window.addEventListener('message', function(event) {
-				if (event.data.eventName === helcimPayJsIdentifierKey) {
-					if (event.data.eventStatus === 'SUCCESS') {
-						const paymentData = JSON.parse(event.data.eventMessage);
-						processPaymentSuccess(paymentData, donationId, amount);
-					} else if (event.data.eventStatus === 'ABORTED') {
-						window.location.href = '/donate/failed';
-					} else if (event.data.eventStatus === 'HIDE') {
-						window.location.href = '/donate';
-					}
-				}
-			});
+ 			window.addEventListener('message', function(event) {
+ 				console.log('[HelcimPay] Received message event:', event.data);
+ 				if (event.data.eventName === helcimPayJsIdentifierKey) {
+ 					console.log('[HelcimPay] Event matches our key:', helcimPayJsIdentifierKey);
+ 					if (event.data.eventStatus === 'SUCCESS') {
+ 						console.log('[PAYMENT] Received SUCCESS event from Helcim:', event.data);
+ 						const paymentData = JSON.parse(event.data.eventMessage);
+ 						console.log('[PAYMENT] Parsed payment data:', paymentData);
+ 						console.log('[PAYMENT] Payment data keys:', Object.keys(paymentData));
+ 						processPaymentSuccess(paymentData, donationId, amount, csrfToken);
+ 					} else if (event.data.eventStatus === 'ABORTED') {
+ 						console.log('[PAYMENT] Payment was aborted by user');
+ 						window.location.href = '/donate/failed';
+ 					} else if (event.data.eventStatus === 'HIDE') {
+ 						console.log('[PAYMENT] Payment modal was hidden');
+ 						window.location.href = '/donate';
+ 					} else {
+ 						console.log('[HelcimPay] Unknown event status:', event.data.eventStatus);
+ 					}
+ 				} else if (event.data.eventName === 'helcim-pay-initializing' || event.data.eventName === 'helcim-pay-initialized') {
+ 					console.log('[HelcimPay] Helcim iframe status event:', event.data.eventName, event.data.eventStatus);
+ 				} else {
+ 					console.log('[HelcimPay] Event does not match our key or known events, ignoring');
+ 				}
+ 			});
 
-		} catch (error) {
-			console.error('[HelcimPay] Initialization error:', error);
-			showError('Payment system initialization failed. Please try again.');
-			submitButton.disabled = false;
-			submitButton.textContent = 'Donate Now';
-		}
-	}
+ 		} catch (error) {
+ 			console.error('[HelcimPay] Initialization error:', error);
+ 			showError('Payment system initialization failed. Please try again.');
+ 			submitButton.disabled = false;
+ 			submitButton.textContent = 'Donate Now';
+ 		}
+ 	}
 
-	async function processPaymentSuccess(paymentResponse, donationId, amount) {
+	async function processPaymentSuccess(paymentResponse, donationId, amount, csrfToken) {
+		console.log('[PAYMENT] Processing payment success with response:', paymentResponse);
+		console.log('[PAYMENT] Response type:', typeof paymentResponse);
+		console.log('[PAYMENT] Response keys:', Object.keys(paymentResponse));
+
 		let data = paymentResponse;
 		if (paymentResponse.data && typeof paymentResponse.data === 'object') {
+			console.log('[PAYMENT] Response has data property, checking structure');
 			if (paymentResponse.data.data && typeof paymentResponse.data.data === 'object') {
 				data = paymentResponse.data.data;
+				console.log('[PAYMENT] Using nested data structure: paymentResponse.data.data');
 			} else {
 				data = paymentResponse.data;
+				console.log('[PAYMENT] Using data structure: paymentResponse.data');
 			}
+		} else {
+			console.log('[PAYMENT] Using response as-is');
 		}
+
+		console.log('[PAYMENT] Final data object:', data);
+		console.log('[PAYMENT] Data keys:', Object.keys(data));
 
 		if (!data.customerCode) {
 			data.customerCode = 'DON_' + donationId + '_' + Date.now();
+			console.log('[PAYMENT] Generated customerCode:', data.customerCode);
 		}
+
+		console.log('[PAYMENT] Helcim payment data received:', data);
+		
+		// Validate required fields
+		if (!data.transactionId) {
+			console.error('[PAYMENT] Missing transactionId in Helcim response. Available fields:', Object.keys(data));
+			console.error('[PAYMENT] Full data object for debugging:', JSON.stringify(data, null, 2));
+			window.location.href = '/donate/failed';
+			return;
+		}
+
+		// Log the full response structure for debugging
+		console.log('[PAYMENT] Full Helcim response structure:', JSON.stringify(data, null, 2));
 
 		const requestData = {
 			customerCode: data.customerCode,
@@ -229,38 +274,58 @@ func donateScript() templ.ComponentScript {
 			amount: parseFloat(amount)
 		};
 
+		console.log('[PAYMENT] Sending to backend:', requestData);
+		console.log('[PAYMENT] Request JSON:', JSON.stringify(requestData, null, 2));
+
 		try {
+			console.log('[PAYMENT] CSRF token for backend request:', csrfToken ? csrfToken.substring(0, 10) + '...' : 'none');
+
+			const headers = {
+				'Content-Type': 'application/json'
+			};
+
+			if (csrfToken) {
+				headers['X-CSRF-Token'] = csrfToken;
+			}
+
 			const response = await fetch('/api/donations/process', {
 				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
+				headers: headers,
 				body: JSON.stringify(requestData)
 			});
 
+			console.log('[PAYMENT] Backend response status:', response.status);
 			if (!response.ok) {
-				throw new Error('Failed to process payment');
+				const errorText = await response.text();
+				console.error('[PAYMENT] Backend returned error:', response.status, errorText);
+				throw new Error(` + "`" + `Failed to process payment: ${response.status} ${errorText}` + "`" + `);
 			}
 
 			const result = await response.json();
+			console.log('[PAYMENT] Backend response received:', result);
+			console.log('[PAYMENT] Backend response keys:', Object.keys(result));
 
+			console.log('[PAYMENT] Backend response:', result);
 			if (result.status === 'success') {
+				console.log('[PAYMENT] Payment processed successfully, redirecting to success page');
 				if (window.removeHelcimPayIframe) {
 					removeHelcimPayIframe();
 				}
 				window.location.href = '/donate/success';
 			} else {
+				console.error('[PAYMENT] Payment processing failed:', result);
 				window.location.href = '/donate/failed';
 			}
 
 		} catch (error) {
 			console.error('[HelcimPay] Error processing payment:', error);
+			console.error('[HelcimPay] Request data that failed:', requestData);
 			window.location.href = '/donate/failed';
 		}
 	}
 }`,
-		Call:       templ.SafeScript(`__templ_donateScript_9efc`),
-		CallInline: templ.SafeScriptInline(`__templ_donateScript_9efc`),
+		Call:       templ.SafeScript(`__templ_donateScript_c52e`),
+		CallInline: templ.SafeScriptInline(`__templ_donateScript_c52e`),
 	}
 }
 
@@ -280,44 +345,12 @@ func DonationSuccessPage() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var4 == nil {
-			templ_7745c5c3_Var4 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<!doctype html><html lang=\"en\" data-theme=\"dark\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Head("Thank You").Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<body>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<main class=\"container\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = donationSuccessContent().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</main>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</body></html>")
+		templ_7745c5c3_Err = Base("Thank You", "", donationSuccessContent()).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -341,12 +374,12 @@ func donationSuccessContent() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<section class=\"donation-result success\"><div class=\"result-icon\">✓</div><h1>Thank You for Your Donation!</h1><p class=\"result-message\">Your donation has been processed successfully.</p><p class=\"text-muted\">You will receive a receipt via email shortly.</p><div class=\"result-actions\"><a href=\"/\" role=\"button\" class=\"secondary\">Return to Home</a></div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<section class=\"donation-result success\"><div class=\"result-icon\">✓</div><h1>Thank You for Your Donation!</h1><p class=\"result-message\">Your donation has been processed successfully.</p><p class=\"text-muted\">You will receive a receipt via email shortly.</p><div class=\"result-actions\"><a href=\"/\" role=\"button\" class=\"secondary\">Return to Home</a></div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -370,44 +403,12 @@ func DonationFailedPage() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var6 == nil {
-			templ_7745c5c3_Var6 = templ.NopComponent
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<!doctype html><html lang=\"en\" data-theme=\"dark\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Head("Payment Failed").Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<body>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Header().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<main class=\"container\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = donationFailedContent().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</main>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = Footer().Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</body></html>")
+		templ_7745c5c3_Err = Base("Payment Failed", "", donationFailedContent()).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -431,12 +432,12 @@ func donationFailedContent() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var7 == nil {
-			templ_7745c5c3_Var7 = templ.NopComponent
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<section class=\"donation-result failed\"><div class=\"result-icon error\">✗</div><h1>Payment Failed</h1><p class=\"result-message\">We were unable to process your donation.</p><p class=\"text-muted\">Please try again or contact us for assistance.</p><div class=\"result-actions\"><a href=\"/donate\" role=\"button\" class=\"contrast\">Try Again</a> <a href=\"/contact\" role=\"button\" class=\"secondary\">Contact Us</a></div></section>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<section class=\"donation-result failed\"><div class=\"result-icon error\">✗</div><h1>Payment Failed</h1><p class=\"result-message\">We were unable to process your donation.</p><p class=\"text-muted\">Please try again or contact us for assistance.</p><div class=\"result-actions\"><a href=\"/donate\" role=\"button\" class=\"contrast\">Try Again</a> <a href=\"/contact\" role=\"button\" class=\"secondary\">Contact Us</a></div></section>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
