@@ -51,28 +51,14 @@ body::before {
 
 .sticky-header .nav-link {
   position: relative;
-  padding: 0.5rem 0;
-  transition: color 0.3s ease;
-}
-
-.sticky-header .nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: var(--pico-primary);
-  transform: scaleX(0);
-  transition: transform 0.3s ease;
-}
-
-.sticky-header .nav-link.active::after {
-  transform: scaleX(1);
+  padding: 0.5rem 1rem;
+  border-radius: var(--pico-border-radius);
+  transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 .sticky-header .nav-link.active {
-  color: var(--pico-primary);
+  background-color: var(--pico-primary-background);
+  color: var(--pico-primary-inverse);
 }
 
 .snap-container {

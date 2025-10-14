@@ -1,39 +1,45 @@
 # avrnpo.org Development Guidelines
 
-## Important: DO NOT Run the Server Directly
+## Important: Server and Long-Running Process Management
 
-**NEVER** run `./avrnpo serve` or `make dev` directly in your shell as it will block your thread of execution and prevent you from doing anything else.
+### Running the Development Server
 
-### If You Must Start the Server
+**The `make dev` command now automatically runs in the background with logging.**
 
-If you absolutely need to start the server for testing:
+- Starting server: `make dev` (logs to `/tmp/avrnpo-dev.log`)
+- Stopping server: `make stop`
+- Viewing logs: `tail -f /tmp/avrnpo-dev.log` or `tail /tmp/avrnpo-dev.log` (without `-f` to avoid blocking)
 
-1. **Use background execution with logging:**
-   ```bash
-   ./avrnpo serve --http=0.0.0.0:8090 > /tmp/avrnpo.log 2>&1 &
-   SERVER_PID=$!
-   sleep 2
-   tail -f /tmp/avrnpo.log
-   ```
+### General Pattern for Long-Running Processes
 
-2. **Or use `make dev` in background:**
-   ```bash
-   make dev > /tmp/avrnpo.log 2>&1 &
-   SERVER_PID=$!
-   sleep 2
-   tail /tmp/avrnpo.log
-   ```
+**ALWAYS** redirect output to log files and run in background to avoid blocking execution:
 
-3. **Always remember to kill the process when done:**
-   ```bash
-   kill $SERVER_PID
-   # or
-   pkill -f "avrnpo serve"
-   ```
+```bash
+# Good: Background with logging
+command > /tmp/process.log 2>&1 &
+PROCESS_PID=$!
+sleep 2
+tail /tmp/process.log  # View logs without blocking
 
-### Preferred Approach
+# Bad: Direct execution (blocks thread)
+command
 
-**ASK THE USER** to start the server themselves. The user can run `make dev` in their own terminal and you can focus on code changes and testing.
+# Bad: tail -f (blocks thread)
+tail -f /tmp/process.log
+```
+
+### When to Ask User vs Automate
+
+**Ask the user** to start the server when:
+- Making code changes that don't require immediate testing
+- The user has their own terminal setup/workflow
+
+**Use `make dev` automatically** when:
+- You need to test functionality immediately
+- Running E2E tests that require server
+- Debugging live server behavior
+
+**Always clean up:** Use `make stop` or `pkill -f "avrnpo serve"` when done testing.
 
 ## Active Technologies
 - Go 1.23.0 + PocketBase v0.22+
@@ -57,7 +63,9 @@ main.go               # Application entry point
 
 ## Commands
 ```bash
-make dev          # Start development server
+make install      # Install development tools (Air, Templ)
+make dev          # Start development server (background, logs to /tmp/avrnpo-dev.log)
+make stop         # Stop development server
 go test ./...     # Run unit tests
 E2E_TESTS=1 go test -v -run E2E  # Run E2E tests
 templ generate    # Regenerate template Go files
@@ -296,7 +304,10 @@ rec := httptest.NewRecorder()
 ### Debugging
 ```bash
 # View logs (use tail without -f to avoid blocking)
-tail /tmp/avrnpo.log
+tail /tmp/avrnpo-dev.log
+
+# Follow logs (only when you want to monitor continuously)
+tail -f /tmp/avrnpo-dev.log
 
 # Check database directly
 sqlite3 pb_data/data.db "SELECT * FROM posts;"
@@ -305,7 +316,7 @@ sqlite3 pb_data/data.db "SELECT * FROM posts;"
 go test -v -run TestHandleContact
 
 # Run with verbose PocketBase logs
-LOG_LEVEL=debug ./avrnpo serve
+LOG_LEVEL=debug ./avrnpo serve --http=0.0.0.0:8090 > /tmp/avrnpo-debug.log 2>&1 &
 ```
 
 ### Tool Usage Guidelines

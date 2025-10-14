@@ -157,6 +157,9 @@ type SubscriptionResponse struct {
 func NewHelcimClient() HelcimAPI {
 	apiKey := os.Getenv("HELCIM_PRIVATE_API_KEY")
 	goEnv := os.Getenv("GO_ENV")
+	if goEnv == "" {
+		goEnv = "development"
+	}
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
 
 	// In development or test environments, prefer a safe fallback rather than panicking (unless live testing enabled)

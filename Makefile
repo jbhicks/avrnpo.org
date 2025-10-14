@@ -1,4 +1,4 @@
-.PHONY: help dev build clean clean-caches update-deps
+.PHONY: help dev stop build clean clean-caches update-deps install
 
 # Default target
 help:
@@ -9,7 +9,9 @@ help:
 
 	@echo ""
 	@echo "Quick Start:"
-	@echo "  dev        - 🏃 Start PocketBase development server"
+	@echo "  install    - 📦 Install development tools (Air, Templ)"
+	@echo "  dev        - 🏃 Start PocketBase development server (background)"
+	@echo "  stop       - 🛑 Stop development server"
 	@echo "  build      - 🔨 Build the application for production"
 	@echo ""
 	@echo "Development:"
@@ -20,13 +22,58 @@ help:
 
 
 
+# Install development tools
+install:
+	@echo "📦 Installing development tools..."
+	@echo ""
+	@echo "🔥 Installing Air (hot reload)..."
+	@go install github.com/air-verse/air@latest
+	@echo "✅ Air installed"
+	@echo ""
+	@echo "📝 Installing Templ (template engine)..."
+	@go install github.com/a-h/templ/cmd/templ@latest
+	@echo "✅ Templ installed"
+	@echo ""
+	@echo "📥 Downloading Go module dependencies..."
+	@go mod download
+	@echo "✅ Go modules downloaded"
+	@echo ""
+	@echo "🎉 All development tools installed successfully!"
+	@echo ""
+	@echo "💡 Next steps:"
+	@echo "   1. Copy .env.example to .env and configure"
+	@echo "   2. Run 'make dev' to start the development server"
+
 # Start database and development server with auto-reload
 dev:
 	@echo "🏃 Starting PocketBase development environment with auto-reload..."
 	@echo "🔥 Air will watch for changes and rebuild automatically"
 	@echo "📱 Visit http://127.0.0.1:8090 to see your application"
 	@echo "📱 Admin UI: http://127.0.0.1:8090/_/ (first run will prompt for admin creation)"
-	@air || (echo "❌ Air failed to start. Run 'go install github.com/air-verse/air@latest' to install." && exit 1)
+	@echo "📋 Logs: /tmp/avrnpo-dev.log"
+	@echo ""
+	@air > /tmp/avrnpo-dev.log 2>&1 & echo $$! > /tmp/avrnpo-dev.pid
+	@sleep 2
+	@if kill -0 $$(cat /tmp/avrnpo-dev.pid 2>/dev/null) 2>/dev/null; then \
+		echo "✅ Server started successfully (PID: $$(cat /tmp/avrnpo-dev.pid))"; \
+		echo "📋 View logs: tail -f /tmp/avrnpo-dev.log"; \
+		echo "🛑 Stop server: make stop"; \
+	else \
+		echo "❌ Air failed to start. Check logs: tail /tmp/avrnpo-dev.log"; \
+		exit 1; \
+	fi
+
+# Stop development server
+stop:
+	@echo "🛑 Stopping development server..."
+	@if [ -f /tmp/avrnpo-dev.pid ]; then \
+		kill $$(cat /tmp/avrnpo-dev.pid) 2>/dev/null && \
+		rm /tmp/avrnpo-dev.pid && \
+		echo "✅ Server stopped"; \
+	else \
+		echo "⚠️  No PID file found. Trying to kill by process name..."; \
+		pkill -f "avrnpo serve" && echo "✅ Server stopped" || echo "❌ No server process found"; \
+	fi
 
 
 
