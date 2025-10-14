@@ -41,6 +41,8 @@ remove_home_assistant.sh
 
 # Compiled project binaries
 /avrnpo.org
+/avrnpo
+/avrnpo_test
 /main
 /fresh-build
 /test-binary
@@ -94,3 +96,10 @@ cookies.txt
 *.pem
 *.key
 *.crt
+
+# PocketBase data files
+pb_data/*.db
+pb_data/*.db-shm
+pb_data/*.db-wal
+pb_data/backups/
+pb_data/storage/
