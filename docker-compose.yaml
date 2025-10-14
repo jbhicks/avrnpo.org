@@ -2,11 +2,11 @@ services:
   avrnpo:
     build: .
     container_name: avrnpo
-    ports:
-      - "8090:8090"
     volumes:
       - pb_data:/app/pb_data
     environment:
+      # Coolify routing - tells proxy to route avrnpo.org to container port 8090
+      - SERVICE_FQDN_AVRNPO_8090
       # PocketBase Admin (set these in production!)
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD}
