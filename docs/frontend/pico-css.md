@@ -127,9 +127,9 @@ There are two main categories of CSS variables:
 - `--pico-form-element-border-color`
 - `--pico-form-element-color`
 
-## Theme Implementation in Buffalo SaaS Template
+## Theme Implementation in AVR NPO
 
-Our template implements theme switching using:
+The application implements theme switching using:
 
 ```javascript
 function setTheme(theme) {

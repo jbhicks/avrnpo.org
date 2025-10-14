@@ -1,0 +1,161 @@
+package templates
+
+templ HomePage(posts []Post, csrfToken string) {
+	@Base("", csrfToken, homeContent(posts, csrfToken))
+}
+
+templ homeContent(posts []Post, csrfToken string) {
+	<section id="mission" class="snap-section fade-in" hx-trigger="revealed">
+		<h2>THE AVR MISSION</h2>
+		<p>American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking.</p>
+	</section>
+	<section class="grid-responsive-2 snap-section fade-in" hx-trigger="revealed">
+		<article class="card">
+			<header>
+				<h3>Technical Training</h3>
+			</header>
+			<p>Participants in AVR construction projects receive tools and training in the Residential Construction occupation of their choosing.</p>
+		</article>
+		<article class="card">
+			<header>
+				<h3>Occupational Licensing</h3>
+			</header>
+			<p>Participants who complete Technical Training apprenticeship receive assistance in acquiring their Occupational Licenses providing them the opportunity of a steady income.</p>
+		</article>
+		<article class="card">
+			<header>
+				<h3>Home Ownership</h3>
+			</header>
+			<p>Select participants are offered the opportunity to purchase AVR project homes at the total construction cost rather than inflated market values.</p>
+		</article>
+		<article class="card">
+			<header>
+				<h3>Professional Networking</h3>
+			</header>
+			<p>Participants who receive professional trade licenses have access to job opportunities, VA benefits assistance, and a network of like-minded veterans.</p>
+		</article>
+	</section>
+	
+	<section id="blog" class="snap-section fade-in" hx-trigger="revealed">
+		<h2>Latest Updates</h2>
+		if len(posts) == 0 {
+			<p class="text-muted">No blog posts yet. Check back soon for updates on our mission and projects!</p>
+		} else {
+			<p class="text-muted">Stay informed about AVR's projects, events, and impact in the veteran community.</p>
+			<div class="grid">
+				for _, post := range posts {
+					<article class="card">
+						<header>
+							<h3><a href={ templ.URL("/blog/" + post.Slug) }>{ post.Title }</a></h3>
+							<p><small class="text-muted">{ post.PublishedAt }</small></p>
+						</header>
+						<p>{ post.Excerpt }</p>
+						<footer>
+							<a href={ templ.URL("/blog/" + post.Slug) } role="button" class="outline">Read More</a>
+						</footer>
+					</article>
+				}
+			</div>
+			<div>
+				<a href="/blog" role="button" class="secondary">View All Updates</a>
+			</div>
+		}
+	</section>
+	
+	<section id="team" class="snap-section fade-in" hx-trigger="revealed">
+		<h2>Meet The Team</h2>
+		<p>
+			The American Veterans Rebuilding team is made up of individuals who have served their country
+			with honor and distinction. We are committed to helping veterans rebuild their lives according
+			to the military's core values of loyalty, duty, respect, selfless service, honor, integrity and personal courage.
+		</p>
+		<div class="grid">
+			@TeamMemberCard(TeamMember{
+				Name:  "Michael Price",
+				Title: "Founder / President",
+				Image: "/assets/images/michaelPrice.avif",
+				Bio:   "Michael Price is the Founder and President of American Veterans Rebuilding. He is a father to his daughter Madeline and husband to his wife Jessica. Michael served in the U.S. Army as Active Duty Infantry from 2004 to 2007, forming a brotherhood with Sergio Rubio and Joshua Hicks during a combat tour in Ramadi. He later earned the 37F MOS and served until 2010 as a Psychological Operations Specialist. After separating from the Army in 2010, Michael founded American Veterans Renovations, where he has been improving homes. American Veterans Rebuilding represents the shared vision of the team.",
+			})
+			@TeamMemberCard(TeamMember{
+				Name:  "Sergio Rubio",
+				Title: "Executive VP",
+				Image: "/assets/images/sergioRubio.avif",
+				Bio:   "Sergio Rubio is a Registered Nurse with over six years of experience, currently working in the Emergency and Cardiac departments at Kaweah Delta in Southern California. He served his community during the COVID-19 pandemic. Sergio graduated from California State University, Bakersfield in 2018 with a bachelor's degree in Nursing. He served in the U.S. Army for nine years, achieving the rank of Staff Sergeant and completing two combat deployments in Iraq. Sergio brings his expertise to support the mission of American Veterans Rebuilding.",
+			})
+		</div>
+		<div class="grid">
+			@TeamMemberCard(TeamMember{
+				Name:  "Joshua Hicks",
+				Title: "VP / Secretary",
+				Image: "/assets/images/joshuaHicks.avif",
+				Bio:   "Joshua Hicks is a husband, father, and Army veteran who served from 2004 to 2009, including a combat deployment to Ramadi, Iraq, with Michael Price and Sergio Rubio. After the military, Joshua pursued a career in technology, working as a software engineer and currently serving as Lead Software Engineer. He is passionate about using his technical expertise to help veterans transition into meaningful careers in technology and contribute to AVR's mission of rebuilding veteran lives.",
+			})
+			@TeamMemberCard(TeamMember{
+				Name:  "William Cuccurullo",
+				Title: "Treasurer",
+				Image: "/assets/images/williamCuccurullo.avif",
+				Bio:   "William Cuccurullo serves as Treasurer for American Veterans Rebuilding. He brings extensive financial expertise and a commitment to ensuring the organization's resources are managed effectively to maximize impact for veterans. William's dedication to fiscal responsibility helps AVR maintain transparency and accountability in all its programs and operations.",
+			})
+		</div>
+	</section>
+	
+	<section id="projects" class="snap-section fade-in" hx-trigger="revealed">
+		<h2>AVR Projects</h2>
+		<p>
+			The American Veterans Rebuilding Home Ownership Option is based on veteran participants 
+			completing training offered through AVR and funded by donations.
+		</p>
+		<p>Through the AVR Home Ownership Option, veteran participants will be able to:</p>
+		<ol class="projects-benefits">
+			<li>Become certified in a trade they can depend on to provide for their families.</li>
+			<li>Become a member of professional networking as well as a community of like minded veterans who have lived similar experiences.</li>
+			<li>Have an opportunity to purchase a home at project cost rather than today's inflated market values.</li>
+			<li>Build personal equity in the appraised value of the home to assist in future loans for personal or professional development.</li>
+		</ol>
+		<h3>The Process</h3>
+		<div class="grid process-grid">
+			<article class="process-card">
+				<header class="process-header">
+					<h4><span class="process-number">1</span> Property Acquisition</h4>
+				</header>
+				<ul class="process-list">
+					<li>AVR works with the local municipalities to identify properties with liens, foreclosures or condemnable blight.</li>
+					<li>AVR then contacts the responsible parties and if successful, purchases the properties with donated funds.</li>
+					<li>Property purchase value is not to exceed $100,000.</li>
+				</ul>
+			</article>
+			<article class="process-card">
+				<header class="process-header">
+					<h4><span class="process-number">2</span> Renovation</h4>
+				</header>
+				<ul class="process-list">
+					<li>AVR renovates the property with volunteer and participant labor.</li>
+					<li>AVR will purchase the construction materials with donated funds.</li>
+					<li>Renovation costs are not to exceed $40,000.</li>
+				</ul>
+			</article>
+			<article class="process-card">
+				<header class="process-header">
+					<h4><span class="process-number">3</span> Transfer</h4>
+				</header>
+				<ul class="process-list">
+					<li>Upon completion of training and property renovation, the participant can purchase the property for actual project cost.</li>
+					<li>Property can be purchased for $140,000 (maximum) and appraised for current market value (likely to be $180,000 - $220,000).</li>
+					<li>The participant then has $40,000 - $80,000 in instant equity to assist with future loans.</li>
+				</ul>
+			</article>
+		</div>
+	</section>
+	
+	<section id="donate" class="snap-section fade-in" hx-trigger="revealed">
+		<div hx-get="/donate/fragment" hx-trigger="revealed once">
+			<div class="loading-spinner" aria-busy="true">Loading donation form...</div>
+		</div>
+	</section>
+	
+	<section id="contact" class="snap-section fade-in" hx-trigger="revealed">
+		<div hx-get="/contact/fragment" hx-trigger="revealed once">
+			Loading contact form...
+		</div>
+	</section>
+}

@@ -11,9 +11,8 @@ American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghani
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Go 1.19+** - [Download Go](https://golang.org/dl/)
-- **Podman** or **Docker** - [Install Podman](https://podman.io/getting-started/installation)
-- **Buffalo CLI** - `go install github.com/gobuffalo/cli/cmd/buffalo@latest`
+- **Go 1.23+** - [Download Go](https://golang.org/dl/)
+- **Templ CLI** - `go install github.com/a-h/templ/cmd/templ@latest`
 
 ### Local Development
 
@@ -22,14 +21,19 @@ American Veterans Rebuilding is formed by Combat Veterans of the wars in Afghani
 git clone <repository-url>
 cd avrnpo.org
 
-# Complete setup (database + migrations + first run)
-make setup
+# Copy environment template
+cp .env.example .env
 
-# Start development mode
+# Edit .env with your settings (SMTP, Helcim, admin credentials)
+# Important: Set PB_ADMIN_EMAIL and PB_ADMIN_PASSWORD
+
+# Build and start development server
 make dev
 ```
 
-After setup, visit [http://127.0.0.1:3001](http://127.0.0.1:3001) to see the website running locally.
+After setup, visit [http://127.0.0.1:8090](http://127.0.0.1:8090) to see the website running locally.
+
+Admin dashboard available at [http://127.0.0.1:8090/_/](http://127.0.0.1:8090/_/)
 
 ### Development Commands
 
@@ -37,14 +41,17 @@ After setup, visit [http://127.0.0.1:3001](http://127.0.0.1:3001) to see the web
 # Start development server with hot reload
 make dev
 
-# Run tests
-make test
+# Run unit tests
+go test ./...
 
-# Reset database (development)
-make db-reset
+# Run E2E tests
+E2E_TESTS=1 go test -v -run E2E
 
-# Create admin user (promote first registered user)
-make admin
+# Regenerate Templ templates
+templ generate
+
+# Build production binary
+go build
 ```
 
 ## 🌟 Website Features
@@ -68,11 +75,12 @@ make admin
 
 ## 🛠️ Technology Stack
 
-- **Backend**: Buffalo (Go web framework), PostgreSQL
-- **Frontend**: HTMX, Pico.css (semantic CSS framework)
+- **Backend**: Go 1.23.0 + PocketBase v0.22+ (embedded SQLite database)
+- **Templates**: Templ v0.3.943 (type-safe Go templates)
+- **Frontend**: HTMX, Pico CSS v2 (semantic CSS framework)
 - **Payments**: Helcim Payment and Recurring APIs
-- **Authentication**: Session-based with role management
-- **Deployment**: Container-ready with Docker/Podman
+- **Authentication**: PocketBase auth with role management
+- **Deployment**: Container-ready with Docker
 
 ## 💳 Helcim Integration Quickstart
 
@@ -95,15 +103,14 @@ make dev
 ```
 
 ### Key Files
-- **Template**: `templates/pages/donate_payment.plush.html`
-- **Backend**: `actions/donations.go`
-- **Validation**: `scripts/validate-helcim-urls.sh`
+- **Templates**: `templates/*.templ` (Templ templates)
+- **Backend**: `main.go`, `services/helcim.go`
 - **Docs**: `docs/payment-system/`
 
 ### Testing
 - Use official Helcim test cards: `4124939999999990` (CVV: 100)
 - Check browser console for Helcim script loading
-- Monitor Buffalo logs for payment processing
+- Monitor server logs for payment processing
 
 See [Payment System Documentation](./docs/payment-system/) for complete details.
 
@@ -118,11 +125,11 @@ For detailed development information, see the [comprehensive documentation](./do
 
 ### Core Systems
 - **[Payment System](./docs/payment-system/README.md)** - Donation and subscription management
-- **[Buffalo Framework](./docs/buffalo-framework/README.md)** - Web framework patterns and best practices
-- **[Frontend Development](./docs/frontend/README.md)** - HTMX patterns and Pico.css styling
+- **[Frontend Development](./docs/frontend/README.md)** - HTMX patterns and Pico CSS styling
+- **[PocketBase](https://pocketbase.io/docs/)** - Database and admin UI
 
 ### Deployment & Production
-- **[Deployment Guide](./docs/deployment/README.md)** - Production deployment procedures
+- **[Coolify Deployment](./docs/deployment/coolify-pocketbase-migration.md)** - PocketBase deployment guide
 - **[Security Guidelines](./docs/deployment/security.md)** - Security best practices
 
 ## 🎯 Project Status
@@ -143,8 +150,8 @@ For detailed development information, see the [comprehensive documentation](./do
 This is a private repository for AVR NPO. For development work:
 
 1. **Review Documentation** - Start with [docs/getting-started/](./docs/getting-started/)
-2. **Follow Conventions** - Check [docs/buffalo-framework/](./docs/buffalo-framework/) for patterns
-3. **Test Changes** - Use `make test` to verify all functionality works
+2. **Follow Conventions** - Check [AGENTS.md](./AGENTS.md) for patterns
+3. **Test Changes** - Use `go test ./...` to verify all functionality works
 4. **Security First** - Follow [security guidelines](./docs/deployment/security.md)
 
 ## 📞 Contact
@@ -155,7 +162,7 @@ This is a private repository for AVR NPO. For development work:
 
 **For Technical Issues:**
 - Review documentation in [./docs/](./docs/)
-- Check [troubleshooting guides](./docs/buffalo-framework/troubleshooting.md)
+- Check [troubleshooting guides](./docs/deployment/README.md)
 
 ## 📝 License
 

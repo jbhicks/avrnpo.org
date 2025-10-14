@@ -1,0 +1,55 @@
+package templates
+
+templ BlogIndexPage(posts []Post, csrfToken string) {
+	@Base("Updates", csrfToken, blogIndexContent(posts))
+}
+
+templ blogIndexContent(posts []Post) {
+	<section class="blog-header">
+		<h1>Latest Updates</h1>
+		<p class="text-muted">Stay informed about AVR's projects, events, and impact in the veteran community.</p>
+	</section>
+	if len(posts) == 0 {
+		<section class="blog-empty">
+			<p>No blog posts yet. Check back soon for updates on our mission and projects!</p>
+			<a href="/" role="button" class="secondary">Return Home</a>
+		</section>
+	} else {
+		<section class="blog-posts">
+			for _, post := range posts {
+				@BlogPostListItem(post)
+			}
+		</section>
+	}
+}
+
+templ BlogPostListItem(post Post) {
+	<article class="blog-post-item">
+		<h3><a href={ templ.URL("/blog/" + post.Slug) }>{ post.Title }</a></h3>
+		<p><small class="text-muted">Published: { post.PublishedAt }</small></p>
+		<p>{ post.Excerpt }</p>
+		<a href={ templ.URL("/blog/" + post.Slug) } role="button" class="outline">Read More</a>
+	</article>
+}
+
+templ BlogPostPage(post Post, csrfToken string) {
+	@Base(post.Title, csrfToken, blogPostContent(post))
+}
+
+templ blogPostContent(post Post) {
+	<article class="blog-post-detail">
+		<header class="post-header">
+			<h1>{ post.Title }</h1>
+			<p><small class="text-muted">Published: { post.PublishedAt }</small></p>
+		</header>
+		if post.FeaturedImage != "" {
+			<img src={ post.FeaturedImage } alt={ post.Title } class="post-featured-image"/>
+		}
+		<div class="post-content">
+			@templ.Raw(post.Content)
+		</div>
+		<footer class="post-footer">
+			<a href="/blog" role="button" class="outline">← Back to Updates</a>
+		</footer>
+	</article>
+}

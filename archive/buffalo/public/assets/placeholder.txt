@@ -1,0 +1,2 @@
+This is a placeholder file to ensure Go embed finds at least one file in this directory.
+You can safely delete this once you add real assets.

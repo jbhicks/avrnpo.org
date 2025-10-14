@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>CSRF Diagnostic</title></head>
+<body>
+<h1>CSRF Token Diagnostic</h1>
+<button onclick="checkToken()">Check CSRF Token</button>
+<pre id="output"></pre>
+<script>
+function checkToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  const hidden = document.querySelector('input[name="csrf_token"]');
+  const form = document.querySelector('#donationForm');
+  
+  let output = "Meta tag CSRF token: " + (meta ? meta.content : "NOT FOUND") + "\n";
+  output += "Hidden field CSRF token: " + (hidden ? hidden.value : "NOT FOUND") + "\n";
+  output += "Form exists: " + (form ? "YES" : "NO") + "\n";
+  
+  if (form) {
+    const formData = new FormData(form);
+    output += "FormData csrf_token: " + formData.get('csrf_token') + "\n";
+  }
+  
+  document.getElementById('output').textContent = output;
+}
+</script>
+</body>
+</html>

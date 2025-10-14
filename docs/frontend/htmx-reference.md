@@ -59,9 +59,11 @@ For most requests, including navigation and form submissions, handlers should re
 
 ```go
 // Standard handler for a boosted link or form
-func MyPageHandler(c buffalo.Context) error {
+func handleMyPage(e *core.RequestEvent) error {
     // ... logic to fetch data ...
-    return c.Render(http.StatusOK, r.HTML("pages/my_page.plush.html"))
+    csrfToken, _ := middleware.GetCSRFToken(e)
+    component := templates.MyPage(csrfToken, data)
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -80,9 +82,10 @@ The handler for this would return just the HTML for the results:
 
 ```go
 // Handler for a partial update
-func SearchResultsHandler(c buffalo.Context) error {
+func handleSearchResults(e *core.RequestEvent) error {
     // ... logic to fetch search results ...
-    return c.Render(http.StatusOK, r.HTML("partials/_search_results.plush.html"))
+    component := templates.SearchResultsPartial(results)
+    return component.Render(context.Background(), e.Response())
 }
 ```
 
@@ -166,7 +169,14 @@ htmx.logAll();
 ## Security Considerations
 
 ### CSRF Protection
-Buffalo's `formFor` helper automatically includes a CSRF token. For manual forms or AJAX requests with `hx-post`, ensure the token is included. `hx-boost` automatically handles this for forms.
+Include CSRF token in all forms. For manual forms or AJAX requests with `hx-post`, ensure the token is included as a hidden input. `hx-boost` automatically handles this for forms.
+
+```html
+<form action="/contact" method="post">
+    <input type="hidden" name="csrf_token" value="<%= csrfToken %>">
+    <!-- Form fields -->
+</form>
+```
 
 ### Validation
 Always validate data on the server side. HTMX is just a transport mechanism.

@@ -45,8 +45,22 @@ func GetPaymentPlanCache() *PaymentPlanCache {
 	return paymentPlanCache
 }
 
+// Initialize structures for HelcimPay hosted checkout
+type InitializeRequest struct {
+	PaymentType     string           `json:"paymentType"`
+	Amount          float64          `json:"amount"`
+	Currency        string           `json:"currency"`
+	CustomerRequest *CustomerRequest `json:"customerRequest"`
+}
+
+type InitializeResponse struct {
+	CheckoutToken string `json:"checkoutToken"`
+	SecretToken   string `json:"secretToken"`
+}
+
 // HelcimAPI defines the methods used by the application
 type HelcimAPI interface {
+	Initialize(req InitializeRequest) (*InitializeResponse, error)
 	ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error)
 	CreatePaymentPlan(amount float64, planName string) (*PaymentPlan, error)
 	CreateSubscription(req SubscriptionRequest) (*SubscriptionResponse, error)
@@ -143,6 +157,9 @@ type SubscriptionResponse struct {
 func NewHelcimClient() HelcimAPI {
 	apiKey := os.Getenv("HELCIM_PRIVATE_API_KEY")
 	goEnv := os.Getenv("GO_ENV")
+	if goEnv == "" {
+		goEnv = "development"
+	}
 	useLivePayments := os.Getenv("HELCIM_LIVE_TESTING") == "true"
 
 	// In development or test environments, prefer a safe fallback rather than panicking (unless live testing enabled)
@@ -216,14 +233,56 @@ func (h *HelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIRespons
 	}
 	defer resp.Body.Close()
 
+	// Read response body once for both logging and parsing
+	body, _ := io.ReadAll(resp.Body)
+
 	if resp.StatusCode != http.StatusOK {
-		// Debug: read and log the error response
-		body, _ := io.ReadAll(resp.Body)
-		fmt.Printf("[Helcim] Payment API error response: %s\n", string(body))
+		// Debug: log the error response
+		fmt.Printf("[Helcim] Payment API error response (status %d): %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
 	}
 
+	// Debug: log the successful response
+	fmt.Printf("[Helcim] Payment API success response: %s\n", string(body))
+
 	var result PaymentAPIResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return &result, nil
+}
+
+// Initialize creates a HelcimPay checkout session for hosted payment modal
+func (h *HelcimClient) Initialize(req InitializeRequest) (*InitializeResponse, error) {
+	url := fmt.Sprintf("%s/helcim-pay/initialize", h.BaseURL)
+
+	jsonData, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("api-token", h.APIToken)
+
+	resp, err := h.Client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] Initialize API error response: %s\n", string(body))
+		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+	}
+
+	var result InitializeResponse
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
@@ -377,7 +436,7 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
@@ -414,6 +473,8 @@ func (h *HelcimClient) CreateSubscription(req SubscriptionRequest) (*Subscriptio
 func (h *HelcimClient) GetSubscription(subscriptionID string) (*SubscriptionResponse, error) {
 	url := fmt.Sprintf("%s/subscriptions/%s", h.BaseURL, subscriptionID)
 
+	fmt.Printf("[Helcim] Getting subscription ID: %s\n", subscriptionID)
+
 	httpReq, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -430,6 +491,7 @@ func (h *HelcimClient) GetSubscription(subscriptionID string) (*SubscriptionResp
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] GetSubscription error response (status %d): %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -438,12 +500,15 @@ func (h *HelcimClient) GetSubscription(subscriptionID string) (*SubscriptionResp
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
+	fmt.Printf("[Helcim] Successfully retrieved subscription ID: %s, Status: %s\n", subscriptionID, result.Status)
 	return &result, nil
 }
 
 // CancelSubscription cancels a subscription by ID
 func (h *HelcimClient) CancelSubscription(subscriptionID string) error {
 	url := fmt.Sprintf("%s/subscriptions/%s", h.BaseURL, subscriptionID)
+
+	fmt.Printf("[Helcim] Cancelling subscription ID: %s\n", subscriptionID)
 
 	httpReq, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -461,9 +526,11 @@ func (h *HelcimClient) CancelSubscription(subscriptionID string) error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] CancelSubscription error response (status %d): %s\n", resp.StatusCode, string(body))
 		return fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
+	fmt.Printf("[Helcim] Successfully cancelled subscription ID: %s\n", subscriptionID)
 	return nil
 }
 
@@ -488,6 +555,8 @@ func (h *HelcimClient) UpdateSubscription(subscriptionID string, updates map[str
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	fmt.Printf("[Helcim] Updating subscription ID: %s with data: %s\n", subscriptionID, string(jsonData))
+
 	httpReq, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -504,6 +573,7 @@ func (h *HelcimClient) UpdateSubscription(subscriptionID string, updates map[str
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] UpdateSubscription error response (status %d): %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -517,12 +587,15 @@ func (h *HelcimClient) UpdateSubscription(subscriptionID string, updates map[str
 		return nil, fmt.Errorf("no subscription returned in response")
 	}
 
+	fmt.Printf("[Helcim] Successfully updated subscription ID: %s, New status: %s\n", subscriptionID, responseData[0].Status)
 	return &responseData[0], nil
 }
 
 // ListSubscriptionsByCustomer retrieves all subscriptions for a customer
 func (h *HelcimClient) ListSubscriptionsByCustomer(customerID string) ([]SubscriptionResponse, error) {
 	url := fmt.Sprintf("%s/subscriptions?customerId=%s", h.BaseURL, customerID)
+
+	fmt.Printf("[Helcim] Listing subscriptions for customer ID: %s\n", customerID)
 
 	httpReq, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -540,6 +613,7 @@ func (h *HelcimClient) ListSubscriptionsByCustomer(customerID string) ([]Subscri
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
+		fmt.Printf("[Helcim] ListSubscriptionsByCustomer error response (status %d): %s\n", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
@@ -548,11 +622,20 @@ func (h *HelcimClient) ListSubscriptionsByCustomer(customerID string) ([]Subscri
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 
+	fmt.Printf("[Helcim] Successfully retrieved %d subscriptions for customer ID: %s\n", len(result), customerID)
 	return result, nil
 }
 
 // mockHelcimClient implements HelcimAPI for development/testing
 type mockHelcimClient struct{}
+
+func (m *mockHelcimClient) Initialize(req InitializeRequest) (*InitializeResponse, error) {
+	timestamp := fmt.Sprintf("%d", time.Now().UnixNano())
+	return &InitializeResponse{
+		CheckoutToken: "mock_checkout_token_" + timestamp,
+		SecretToken:   "mock_secret_token_" + timestamp,
+	}, nil
+}
 
 func (m *mockHelcimClient) ProcessPayment(req PaymentAPIRequest) (*PaymentAPIResponse, error) {
 	// Simulate an approved transaction

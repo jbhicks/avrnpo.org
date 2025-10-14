@@ -1,0 +1,46 @@
+package templates
+
+import "time"
+
+func currentYear() string {
+	return time.Now().Format("2006")
+}
+
+type FlashMessage struct {
+	Type    string
+	Message string
+}
+
+type Post struct {
+	Slug          string
+	Title         string
+	Content       string
+	Excerpt       string
+	PublishedAt   string
+	FeaturedImage string
+}
+
+templ FlashMessages() {
+	<div id="flash-messages" hx-swap-oob="true">
+	</div>
+}
+
+templ Flash(msg FlashMessage) {
+	<div class={ "flash-message", "flash-" + msg.Type } role="alert">
+		{ msg.Message }
+	</div>
+}
+
+templ ErrorList(errors map[string][]string) {
+	if len(errors) > 0 {
+		<div class="errors" role="alert">
+			<ul>
+				for field, msgs := range errors {
+					for _, msg := range msgs {
+						<li><strong>{ field }:</strong> { msg }</li>
+					}
+				}
+			</ul>
+		</div>
+	}
+}

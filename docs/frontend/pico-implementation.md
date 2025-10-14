@@ -1,8 +1,8 @@
 # Pico.css Implementation Guide
 
-> **For Buffalo SaaS Template Development**
+> **For AVR NPO Development**
 
-This guide outlines how to effectively use Pico.css in the Buffalo SaaS template, focusing on semantic HTML and minimal CSS classes.
+This guide outlines how to effectively use Pico.css in the AVR NPO application, focusing on semantic HTML and minimal CSS classes.
 
 ## Core Philosophy
 
@@ -285,34 +285,43 @@ Pico.css includes built-in accessibility features:
 }
 ```
 
-## Integration with Buffalo Templates
+## Integration with Templ Templates
 
-### Plush Template Example
+### Templ Component Example
 
-```html
-<!-- Authentication-aware navigation -->
-<nav>
-  <ul>
-    <li><strong>SaaS App</strong></li>
-  </ul>
-  <ul>
-    <% if (current_user) { %>
-      <li><a href="/dashboard">Dashboard</a></li>
-      <li>
-        <details class="dropdown">
-          <summary role="button">Profile</summary>
-          <ul>
-            <li><a href="/profile">Profile</a></li>
-            <li><a href="/signout">Sign Out</a></li>
-          </ul>
-        </details>
-      </li>
-    <% } else { %>
-      <li><a href="/login" role="button">Login</a></li>
-      <li><a href="/signup" role="button" class="contrast">Sign Up</a></li>
-    <% } %>
-  </ul>
-</nav>
+```templ
+package templates
+
+// Navigation component with authentication awareness
+templ Navigation() {
+    <nav>
+        <ul>
+            <li><strong>American Veterans Rebuilding</strong></li>
+        </ul>
+        <ul>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+            <li><a href="/donate" role="button" class="contrast">Donate</a></li>
+        </ul>
+    </nav>
+}
+
+// Card component example
+templ ProjectCard(title, description string, imageUrl string) {
+    <article>
+        if imageUrl != "" {
+            <img src={ imageUrl } alt={ title }/>
+        }
+        <header>
+            <h3>{ title }</h3>
+        </header>
+        <p>{ description }</p>
+        <footer>
+            <a href="#" role="button">Learn More</a>
+        </footer>
+    </article>
+}
 ```
 
 ## Resources

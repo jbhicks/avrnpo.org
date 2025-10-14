@@ -1,6 +1,6 @@
 # JavaScript Progressive Enhancement Patterns
 
-This guide provides specific patterns for progressively enhancing Buffalo + Plush applications with JavaScript.
+This guide provides specific patterns for progressively enhancing Templ + HTMX applications with JavaScript.
 
 ## Core Philosophy
 

@@ -1,0 +1,163 @@
+package templates
+
+templ Head(title string, csrfToken ...string) {
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		if len(csrfToken) > 0 && csrfToken[0] != "" {
+			<meta name="csrf-token" content={ csrfToken[0] }/>
+		}
+		if title != "" {
+			<title>{ title } - American Veterans Rebuilding</title>
+			<meta name="title" content={ title + " - American Veterans Rebuilding" }/>
+		} else {
+			<title>American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community</title>
+			<meta name="title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+		}
+		<meta name="description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+		<meta name="keywords" content="veterans, rebuilding, technical training, occupational licensing, home ownership, professional networking, American Veterans Rebuilding, AVR"/>
+		<meta name="author" content="American Veterans Rebuilding"/>
+		<meta name="robots" content="index, follow"/>
+		<meta property="og:type" content="website"/>
+		<meta property="og:url" content="https://avrnpo.org/"/>
+		if title != "" {
+			<meta property="og:title" content={ title + " - American Veterans Rebuilding" }/>
+		} else {
+			<meta property="og:title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+		}
+		<meta property="og:description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+		<meta property="og:image" content="/assets/images/logo.avif"/>
+		<meta property="og:site_name" content="American Veterans Rebuilding"/>
+		<meta property="twitter:card" content="summary_large_image"/>
+		<meta property="twitter:url" content="https://avrnpo.org/"/>
+		if title != "" {
+			<meta property="twitter:title" content={ title + " - American Veterans Rebuilding" }/>
+		} else {
+			<meta property="twitter:title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+		}
+		<meta property="twitter:description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+		<meta property="twitter:image" content="/assets/images/logo.avif"/>
+		<link rel="canonical" href="https://avrnpo.org/"/>
+		<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=2"/>
+		<link rel="icon" type="image/avif" href="/assets/images/logo.avif?v=2"/>
+		<link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=2"/>
+		<link rel="stylesheet" href="/assets/css/pico.min.css"/>
+		<link rel="stylesheet" href="/assets/css/layout.css"/>
+		<link rel="stylesheet" href="/assets/css/custom.css"/>
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "NonProfitOrganization",
+				"name": "American Veterans Rebuilding",
+				"description": "Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking",
+				"url": "https://avrnpo.org",
+				"logo": "/assets/images/logo.avif",
+				"foundingDate": "2021",
+				"address": {
+					"@type": "PostalAddress",
+					"addressCountry": "US"
+				},
+				"sameAs": [
+					"https://facebook.com/AmericanVeteransRebuilding",
+					"https://x.com/avrnpo"
+				]
+			}
+		</script>
+		<script src="https://unpkg.com/htmx.org@2.0.3"></script>
+		<script src="/assets/js/application.js"></script>
+		<script src="/assets/js/theme.js" defer></script>
+	</head>
+}
+
+templ BasePage(title string, csrfToken string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en" data-theme="dark">
+		@Head(title, csrfToken)
+		<body>
+			@Header()
+			<main class="container">
+				@content
+			</main>
+			@Footer()
+		</body>
+	</html>
+}
+
+templ Base(title string, csrfToken string, content templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			if csrfToken != "" {
+				<meta name="csrf-token" content={ csrfToken }/>
+			}
+			if title != "" {
+				<title>{ title } - American Veterans Rebuilding</title>
+				<meta name="title" content={ title + " - American Veterans Rebuilding" }/>
+			} else {
+				<title>American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community</title>
+				<meta name="title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+			}
+			<meta name="description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+			<meta name="keywords" content="veterans, rebuilding, technical training, occupational licensing, home ownership, professional networking, American Veterans Rebuilding, AVR"/>
+			<meta name="author" content="American Veterans Rebuilding"/>
+			<meta name="robots" content="index, follow"/>
+			<meta property="og:type" content="website"/>
+			<meta property="og:url" content="https://avrnpo.org/"/>
+			if title != "" {
+				<meta property="og:title" content={ title + " - American Veterans Rebuilding" }/>
+			} else {
+				<meta property="og:title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+			}
+			<meta property="og:description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+			<meta property="og:image" content="/assets/images/logo.avif"/>
+			<meta property="og:site_name" content="American Veterans Rebuilding"/>
+			<meta property="twitter:card" content="summary_large_image"/>
+			<meta property="twitter:url" content="https://avrnpo.org/"/>
+			if title != "" {
+				<meta property="twitter:title" content={ title + " - American Veterans Rebuilding" }/>
+			} else {
+				<meta property="twitter:title" content="American Veterans Rebuilding - Rebuilding the American Veteran's Self, Family and Community"/>
+			}
+			<meta property="twitter:description" content="American Veterans Rebuilding is dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking."/>
+			<meta property="twitter:image" content="/assets/images/logo.avif"/>
+			<link rel="canonical" href="https://avrnpo.org/"/>
+			<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=2"/>
+			<link rel="icon" type="image/avif" href="/assets/images/logo.avif?v=2"/>
+		<link rel="icon" type="image/x-icon" href="/assets/favicon.ico?v=2"/>
+		<link rel="stylesheet" href="/assets/css/pico.min.css"/>
+		<link rel="stylesheet" href="/assets/css/layout.css"/>
+		<link rel="stylesheet" href="/assets/css/custom.css"/>
+		<script type="application/ld+json">
+				{
+					"@context": "https://schema.org",
+					"@type": "NonProfitOrganization",
+					"name": "American Veterans Rebuilding",
+					"description": "Dedicated to the improvement of the American Veteran's Self, Family and Community through Technical Training, Occupational Licensing, Home Ownership Options and Professional Networking",
+					"url": "https://avrnpo.org",
+					"logo": "/assets/images/logo.avif",
+					"foundingDate": "2021",
+					"address": {
+						"@type": "PostalAddress",
+						"addressCountry": "US"
+					},
+					"sameAs": [
+						"https://facebook.com/AmericanVeteransRebuilding",
+						"https://x.com/avrnpo"
+					]
+				}
+			</script>
+			<script src="https://unpkg.com/htmx.org@2.0.3"></script>
+			<script src="/assets/js/application.js"></script>
+	</head>
+	<body class="js-enabled">
+		<div class="sticky-header-sentinel"></div>
+		@Header()
+		@Navigation()
+		<main id="main-content" class="container">
+			@content
+		</main>
+	</body>
+	</html>
+}

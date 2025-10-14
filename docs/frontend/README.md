@@ -11,6 +11,8 @@ User interface, styling, and interactive patterns for the AVR NPO donation syste
 ### ⚡ Interactive Patterns  
 - **[HTMX Patterns](./htmx-patterns.md)** - Progressive enhancement and navigation
 - **[HTMX Reference](./htmx-reference.md)** - Complete HTMX integration guide
+- **[Templ + Progressive Enhancement](./templ-progressive-enhancement.md)** - Architecture patterns
+- **[JavaScript Enhancement](./javascript-enhancement-patterns.md)** - Progressive JavaScript patterns
 
 ### 📦 Asset Management
 - **[Assets](./assets.md)** - Asset pipeline, optimization, and serving *(planned)*
@@ -20,8 +22,8 @@ User interface, styling, and interactive patterns for the AVR NPO donation syste
 ### Core Technologies
 - **Pico CSS** - Semantic styling with CSS variables
 - **HTMX** - Progressive enhancement and AJAX navigation
-- **Buffalo Asset Pipeline** - CSS/JS compilation and serving
-- **Plush Templates** - Server-side HTML rendering
+- **Templ** - Type-safe server-side HTML rendering
+- **Static Assets** - Served from `public/assets/`
 
 ### Styling Philosophy
 - **Semantic HTML first** - Use proper HTML elements before adding classes
@@ -86,9 +88,9 @@ User interface, styling, and interactive patterns for the AVR NPO donation syste
 5. **Test responsiveness** - Multiple screen sizes
 
 ### Asset Pipeline
-- **Development** - Files served individually with hot reload
-- **Production** - Concatenated and minified automatically
-- **Caching** - Proper cache headers for performance
+- **Development** - Files served directly from `public/assets/`
+- **Production** - Static files served with proper cache headers
+- **Caching** - Browser caching for performance
 
 ## 🎯 Key Implementation Guidelines
 

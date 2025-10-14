@@ -1,54 +1,58 @@
-# Buffalo Development Workflow
+# Development Workflow
 
 ## Starting the Development Server
 
-Buffalo provides a built-in development server with hot reloading capabilities.
+The project uses Air for hot reloading during development.
 
 ### Primary Development Command
 
 ```bash
-buffalo dev
+make dev
 ```
 
 This command:
-- Starts the development server on port 3000 by default
+- Starts the PocketBase server on port 8090
 - Automatically watches for file changes
-- Recompiles and restarts the server when changes are detected
-- Handles Go files, templates, and assets
+- Recompiles and restarts when Go files or templates change
+- Serves static assets from `public/`
 
-### Development Server Features
+### What Runs During Development
 
-- **Hot Reload**: Automatically rebuilds when files change
-- **Asset Pipeline**: Processes CSS, JS, and other assets
-- **Template Watching**: Reloads when Plush templates change
-- **Database Integration**: Connects to configured database
+- **PocketBase Server**: Embedded database + API + admin UI
+- **Custom Routes**: Donation system, contact form, blog
+- **Hot Reload**: Via Air configuration in `.air.toml`
+- **Template Generation**: Templ files auto-compile to `.go` files
 
 ### Configuration
 
-The development server reads configuration from:
-- `config/buffalo-app.toml` - Main application configuration
-- Environment variables
-- Database configuration from `database.yml`
+Development configuration is read from:
+- `.env` - Environment variables (admin credentials, API keys)
+- `.air.toml` - Hot reload configuration
+- `main.go` - PocketBase initialization and custom routes
 
 ### Port Configuration
 
-Default port is 3000. To change:
+Default port is 8090. To change:
 
 ```bash
-# Via environment variable
-PORT=8080 buffalo dev
+# Via command line flag
+./avrnpo serve --http=0.0.0.0:3000
 
-# Or set in buffalo-app.toml
+# Or set in .env
+HTTP_PORT=3000
 ```
 
-### Development Environment
+### Development Best Practices
 
-Buffalo sets `GO_ENV=development` automatically when using `buffalo dev`.
+1. **Use `make dev`** - Never run `./avrnpo serve` directly (it blocks your shell)
+2. **Let Air handle restarts** - File changes trigger automatic rebuilds
+3. **Check logs in terminal** - Air shows compilation errors and runtime logs
+4. **Run tests in separate terminal** - Don't stop dev server to test
 
 ## Stopping the Server
 
-- **Graceful shutdown**: `Ctrl+C` in the terminal running `buffalo dev`
-- **Force kill**: `buffalo dev` handles most cleanup automatically
+- **Graceful shutdown**: `Ctrl+C` in the terminal running `make dev`
+- **Force kill**: `pkill -f "avrnpo serve"` (if process is stuck)
 
 ## Troubleshooting Development Server
 
@@ -57,118 +61,160 @@ Buffalo sets `GO_ENV=development` automatically when using `buffalo dev`.
 If you get "address already in use" errors:
 
 ```bash
-# Check what's using port 3000
-lsof -ti:3000
+# Check what's using port 8090
+lsof -ti:8090
 
-# Kill specific processes if needed
-pkill -f "my-go-saas-template"
+# Kill specific process if needed
+pkill -f "avrnpo serve"
 ```
 
 ### Server Not Reloading
 
-1. Check file permissions
+1. Check `.air.toml` configuration
 2. Verify you're in the project root directory
-3. Check for syntax errors in Go files
-4. Review Buffalo logs for specific errors
+3. Check for syntax errors in Go files or Templ templates
+4. Run `templ generate` manually if template changes aren't detected
 
-### Database Connection Issues
+### Database Issues
 
-1. Ensure PostgreSQL is running: `docker-compose ps`
-2. Check database configuration in `database.yml`
-3. Verify migrations are up to date: `soda migrate up`
-
-## Best Practices
-
-1. **Always use `buffalo dev`** for development - don't run the binary directly
-2. **Keep one terminal dedicated** to the Buffalo dev server
-3. **Check logs** in the Buffalo dev terminal for errors
-4. **Use `Ctrl+C`** to stop the server cleanly before making major changes
-5. **Restart only when necessary** - the hot reload should handle most changes
-
-## Alternative Commands
-
-### Building for Production
 ```bash
-buffalo build
+# Reset database (WARNING: Deletes all data)
+rm -rf pb_data/
+make dev  # Recreates database with migrations
+
+# Check database manually
+sqlite3 pb_data/data.db "SELECT * FROM users;"
 ```
 
-### Running Tests
+### Template Compilation Errors
+
 ```bash
-buffalo test
+# Manually regenerate Templ templates
+templ generate
+
+# Check for syntax errors in .templ files
+templ fmt templates/
+```
+
+## Common Development Tasks
+
+### Working with Templates
+
+```bash
+# Regenerate all templates after editing .templ files
+templ generate
+
+# Format Templ files
+templ fmt templates/
+
+# Check for Templ syntax errors
+templ generate -path templates/
 ```
 
 ### Database Operations
 
-**IMPORTANT: Buffalo v0.18.14+ uses `soda` for database migrations, NOT `buffalo pop`**
+**PocketBase uses SQLite with automatic migrations:**
 
 ```bash
-# Run migrations
-soda migrate up
+# Create new migration (Go-based)
+# Create file: pb_migrations/TIMESTAMP_description.go
 
-# Create databases  
-soda create -a
+# View database contents
+sqlite3 pb_data/data.db
+> .tables
+> SELECT * FROM users;
+> .quit
 
-# Reset database (drop, create, migrate)
-soda reset
-
-# Reset test database specifically
-GO_ENV=test soda reset
-
-# Check migration status
-soda migrate status
-
-# Create new migration
-soda generate migration create_posts
-
-# Rollback migrations
-soda migrate down
+# Reset database (deletes all data)
+rm -rf pb_data/
+make dev
 ```
 
-**Legacy Documentation Note**: Older Buffalo documentation may reference `buffalo pop` commands, but these are not available in Buffalo v0.18.14+. Always use `soda` commands directly.
+### Testing Workflow
 
-**Testing Database Setup**: 
-- Buffalo tests automatically run migrations before each test suite
-- Use `GO_ENV=test soda reset` if you need to manually reset the test database
-- The test environment uses a separate database specified in `database.yml`
-
-### Asset Management
 ```bash
-buffalo generate webpack  # Generate webpack config
+# Run unit tests (in separate terminal while dev server runs)
+go test ./...
+
+# Run specific test
+go test -v -run TestContactHandler
+
+# Run E2E tests
+E2E_TESTS=1 go test -v -run E2E
+
+# Check test coverage
+go test -cover ./...
+```
+
+### Building for Production
+
+```bash
+# Build production binary
+go build -o avrnpo
+
+# Run production server
+./avrnpo serve --http=0.0.0.0:8090
+
+# Build with optimizations
+go build -ldflags="-s -w" -o avrnpo
 ```
 
 ## File Watching
 
-Buffalo watches these file types by default:
-- `.go` files (actions, models, etc.)
-- `.plush.html` files (templates)  
-- `.js` files in assets
-- `.css` files in assets
+Air watches these file types (configured in `.air.toml`):
+- `.go` files (handlers, middleware, services)
+- `.templ` files (automatically runs `templ generate`)
+- `.env` file (triggers reload)
 
-Changes to these files trigger automatic rebuilds.
+**Not watched:**
+- Static assets in `public/` (no restart needed)
+- `pb_data/` directory (database files)
 
 ## Environment Variables
 
-Key environment variables for development:
+Key environment variables for development (set in `.env`):
 
 ```bash
-GO_ENV=development     # Set automatically by buffalo dev
-PORT=3000             # Server port
-DATABASE_URL=         # Override database connection
+# Admin credentials
+PB_ADMIN_EMAIL=admin@example.com
+PB_ADMIN_PASSWORD=changeme
+
+# Payment integration (optional for local dev)
+HELCIM_API_TOKEN=your_token
+HELCIM_TERMINAL_ID=your_terminal
+
+# Email (optional, use mock in tests)
+RESEND_API_KEY=your_key
 ```
 
-## Docker Integration
+## Working with PocketBase Admin UI
 
-When using Docker for services like PostgreSQL:
+The admin UI is available at `/_/` during development:
 
-1. Start services: `docker-compose up -d`
-2. Start Buffalo: `buffalo dev`
-3. Buffalo will connect to containerized services
+1. Navigate to http://127.0.0.1:8090/_/
+2. Login with PB_ADMIN_EMAIL and PB_ADMIN_PASSWORD from `.env`
+3. Manage collections: users, posts, donations
+4. View API logs and requests
+5. Test API endpoints using built-in API preview
 
 ## Logs and Debugging
 
-Buffalo dev server shows:
+Development server shows:
 - HTTP requests and responses
-- Template compilation errors
-- Database queries (if enabled)
-- Asset pipeline status
+- PocketBase database queries
+- Template compilation results
+- Air rebuild triggers
 - Go compilation errors
+- Runtime panics and errors
+
+**Debugging Tips:**
+```go
+// Add debug logging in handlers
+app.Logger().Info("Debug message", "data", someVar)
+
+// Check PocketBase logs
+// Logs are shown in terminal during `make dev`
+
+// Enable PocketBase debug mode
+app.Bootstrap().(*core.BaseApp).Debug = true
+```

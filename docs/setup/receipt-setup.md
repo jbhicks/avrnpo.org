@@ -377,11 +377,11 @@ go get google.golang.org/api/option
 
 ### Step 3: Test the Receipt System
 
-1. **Restart Buffalo**: `make dev`
+1. **Restart server**: `make dev`
 2. **Make a test donation** through the website
 3. **Check logs** for receipt status:
    ```bash
-   tail -f buffalo.log | grep receipt
+   tail -f /tmp/avrnpo.log | grep receipt
    ```
 4. **Verify email received** in donor's inbox
 
@@ -425,10 +425,10 @@ go get google.golang.org/api/option
 ### Check Receipt Status in Logs
 ```bash
 # Success message:
-grep "Donation receipt sent" buffalo.log
+grep "Donation receipt sent" /tmp/avrnpo.log
 
 # Error message:
-grep "Failed to send donation receipt" buffalo.log
+grep "Failed to send donation receipt" /tmp/avrnpo.log
 ```
 
 ### Common Issues
@@ -459,25 +459,30 @@ grep "Failed to send donation receipt" buffalo.log
 
 ### Test Email Sending
 
-1. **Add test endpoint** (temporary):
+1. **Add test handler** (temporary):
    ```go
-   // In actions/donations.go
-   func (app *App) TestEmail(c buffalo.Context) error {
-       emailService := services.NewEmailService()
-       
-       err := emailService.SendDonationReceipt(
-           "test@example.com",
-           "Test Donor",
-           100.00,
-           "TEST123",
-           time.Now(),
-       )
-       
-       if err != nil {
-           return c.Render(200, r.String("Email failed: " + err.Error()))
-       }
-       
-       return c.Render(200, r.String("Email sent successfully!"))
+   // In main.go
+   app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+       e.Router.GET("/test-email", func(e *core.RequestEvent) error {
+           emailService := services.NewEmailService()
+           
+           err := emailService.SendDonationReceipt(
+               "test@example.com",
+               "Test Donor",
+               100.00,
+               "TEST123",
+               time.Now(),
+           )
+           
+           if err != nil {
+               return e.String(200, "Email failed: " + err.Error())
+           }
+           
+           return e.String(200, "Email sent successfully!")
+       })
+       return nil
+   })
+   ```
    }
    ```
 
