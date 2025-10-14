@@ -20,7 +20,13 @@ func init() {
 
 		adminUser, err := app.FindFirstRecordByFilter(usersCollection, "role = 'admin'")
 		if err != nil {
-			return nil
+			return nil // Admin doesn't exist yet, skip seeding (will run again on next startup)
+		}
+
+		// Check if posts already exist to avoid duplicates
+		existingPost, _ := app.FindFirstRecordByFilter(postsCollection, "slug = 'markdown-guide'")
+		if existingPost != nil {
+			return nil // Posts already seeded
 		}
 
 		now := types.NowDateTime()
